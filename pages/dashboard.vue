@@ -1,8 +1,8 @@
 <template>
-  <div class="mobile-container min-h-screen bg-umu-gradient">
+  <div class="dashboard-container min-h-screen bg-umu-gradient">
     <AppHeader title="Explore" :showBack="false" right="profile" />
 
-    <main class="pb-24">
+    <main class="pb-24 max-w-7xl mx-auto">
       <!-- Hero -->
       <div class="px-4">
         <HeroSection
@@ -16,7 +16,7 @@
       </div>
 
       <!-- Search bar (tap to open drawer) -->
-      <div class="px-4 mb-5" @click="showSearchDrawer = true">
+      <div class="px-4 mb-5 md:max-w-xl md:mx-auto" @click="showSearchDrawer = true">
         <div
           class="flex items-center bg-white rounded-full border border-gray-200 shadow-sm gap-3 cursor-pointer search-bar"
         >
@@ -43,7 +43,7 @@
       </div>
 
       <!-- Action cards -->
-      <div class="px-4 flex flex-col gap-4 mb-7">
+      <div class="px-4 grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
         <!-- Card 1: Find your Homehealth Score -->
         <div
           class="action-card cursor-pointer"
@@ -155,15 +155,15 @@
           </p>
         </div>
 
-        <!-- Carousel — 88% width per slide, overflow-hidden for peeking -->
+        <!-- Carousel — 88% width per slide on mobile, grid on desktop -->
         <div
           ref="carouselRef"
-          class="relative overflow-hidden"
+          class="relative overflow-hidden md:overflow-visible"
           @touchstart="onTouchStart"
           @touchend="onTouchEnd"
         >
           <div
-            class="flex transition-transform duration-300 ease-in-out"
+            class="flex transition-transform duration-300 ease-in-out md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:px-4 md:transform-none"
             :style="{
               transform: `translateX(-${currentSlide * slideWidth}px)`,
             }"
@@ -172,8 +172,8 @@
               v-for="(property, index) in recommendedProperties"
               :key="property.id"
               @click="viewProperty(property.id)"
-              class="flex-none pl-4 pr-2 pb-2 cursor-pointer"
-              :style="{ width: slideWidth + 'px' }"
+              class="flex-none pl-4 pr-2 pb-2 cursor-pointer md:pl-0 md:pr-0"
+              :style="{ width: isMobile ? slideWidth + 'px' : 'auto' }"
             >
               <div
                 class="rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100"
@@ -293,10 +293,10 @@
           </div>
         </div>
 
-        <!-- Dots below carousel -->
+        <!-- Dots below carousel (mobile only) -->
         <div
           v-if="recommendedProperties.length > 1"
-          class="flex justify-center gap-1.5 mt-3"
+          class="flex justify-center gap-1.5 mt-3 md:hidden"
         >
           <span
             v-for="(_, i) in recommendedProperties"
@@ -322,8 +322,8 @@
           </p>
         </div>
 
-        <div class="flex gap-3 overflow-x-auto pb-4 px-4 scrollbar-hide">
-          <div class="journey-card flex-shrink-0">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 px-4">
+          <div class="journey-card">
             <OPIcon name="findTrustedUsers" class="journey-illustration" />
             <h3 class="journey-title">Find Trusted Traders</h3>
             <p class="journey-desc">
@@ -333,7 +333,7 @@
             <button class="journey-btn">Marketplace</button>
           </div>
 
-          <div class="journey-card flex-shrink-0">
+          <div class="journey-card">
             <OPIcon name="buyersHub" class="journey-illustration" />
             <h3 class="journey-title">Property Bible</h3>
             <p class="journey-desc">
@@ -343,7 +343,7 @@
           </div>
 
           <div
-            class="journey-card flex-shrink-0"
+            class="journey-card"
             @click="router.push('/passport/collections')"
           >
             <OPIcon name="sellersHub" class="journey-illustration" />
@@ -364,7 +364,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import AppHeader from '~/components/core/AppHeader.vue'
 import BottomNav from '@/components/core/BottomNav.vue'
 import HeroSection from '~/components/HeroSection.vue'
@@ -385,6 +385,15 @@ const recommendedProperties = ref<any[]>([])
 const currentSlide = ref(0)
 const carouselRef = ref<HTMLElement | null>(null)
 const slideWidth = ref(0)
+const windowWidth = ref(768)
+const isMobile = computed(() => windowWidth.value < 768)
+
+const onResize = () => {
+  windowWidth.value = window.innerWidth
+  if (carouselRef.value) {
+    slideWidth.value = carouselRef.value.offsetWidth * 0.88
+  }
+}
 
 let touchStartX = 0
 const onTouchStart = (e: TouchEvent) => {
@@ -406,6 +415,8 @@ const onTouchEnd = (e: TouchEvent) => {
 
 onMounted(async () => {
   await nextTick()
+  windowWidth.value = window.innerWidth
+  window.addEventListener('resize', onResize)
   // 88% width so next card peeks 12% on the right
   slideWidth.value = (carouselRef.value?.offsetWidth ?? 0) * 0.88
 
@@ -434,6 +445,10 @@ onMounted(async () => {
   } catch {
     // Backend unreachable or user not logged in
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
 })
 
 const viewProperty = (id: string) => {
@@ -663,5 +678,19 @@ const viewProperty = (id: string) => {
   background: #00a19a1a;
   padding: 6px 12px;
   border-radius: 50px;
+}
+
+/* Dashboard container — full width for desktop */
+.dashboard-container {
+  width: 100%;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* Journey cards responsive */
+@media (min-width: 768px) {
+  .journey-card {
+    width: 100%;
+  }
 }
 </style>

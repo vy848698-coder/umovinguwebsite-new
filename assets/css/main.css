@@ -48,7 +48,7 @@
 
 @layer components {
   .mobile-container {
-    @apply max-w-md mx-auto min-h-dvh relative w-full;
+    @apply mx-auto min-h-dvh relative w-full;
   }
 
   .backgound-image {

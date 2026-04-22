@@ -1,9 +1,9 @@
 <template>
-  <div class="mobile-container min-h-screen bg-umu-gradient pb-8">
-    <header class="flex items-center justify-between px-4 pt-5">
+  <div class="w-full min-h-screen bg-umu-gradient pb-8">
+    <header class="flex items-center justify-between px-4 pt-5 max-w-7xl mx-auto">
       <button
         type="button"
-        class="w-10 h-10 flex items-center justify-center"
+        class="w-10 h-10 flex items-center justify-center flex-shrink-0"
         @click="goBack"
       >
         <Icon
@@ -12,24 +12,26 @@
         />
       </button>
       <h1
-        class="w-[82.85px] h-[22px] font-sf-pro text-[17px] leading-[22px] tracking-[-0.43px] font-[20px]t-center text-black"
+        class="flex-1 text-center font-sf-pro text-[17px] leading-[22px] tracking-[-0.43px] text-black"
       >
         My Profile
       </h1>
 
       <button
         type="button"
-        class="w-8 h-8 rounded-full bg-[#403d91] flex items-center justify-center"
+        class="w-10 h-10 flex items-center justify-center flex-shrink-0"
         aria-label="More"
       >
-        <Icon
-          name="i-heroicons-ellipsis-horizontal"
-          class="w-5 h-5 text-white"
-        />
+        <div class="w-8 h-8 rounded-full bg-[#403d91] flex items-center justify-center">
+          <Icon
+            name="i-heroicons-ellipsis-horizontal"
+            class="w-5 h-5 text-white"
+          />
+        </div>
       </button>
     </header>
 
-    <main class="px-5 pb-8">
+    <main class="px-5 pb-8 max-w-7xl mx-auto">
       <section class="pt-6 text-center">
         <div class="relative w-fit mx-auto">
           <img
@@ -62,7 +64,7 @@
         </button>
       </section>
 
-      <div class="mt-8 flex gap-3 items-center">
+      <div class="mt-8 flex gap-3 items-center md:max-w-xl md:mx-auto">
         <div class="flex-1 bg-white rounded-2xl h-14 px-4 flex items-center">
           <Icon
             name="i-heroicons-magnifying-glass"
@@ -85,7 +87,7 @@
         </button>
       </div>
 
-      <div class="mt-8 space-y-3">
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
         <button
           v-for="item in filteredItems"
           :key="item.title"
@@ -115,13 +117,15 @@
         </button>
       </div>
 
-      <button
-        type="button"
-        class="mt-8 w-full h-[50px] rounded-[12px] pt-[14px] pr-[20px] pb-[14px] pl-[20px] bg-brand-aqua text-white inline-flex items-center justify-center gap-[4px] text-[17px] leading-[38px] font-medium"
-        @click="showLogoutModal = true"
-      >
-        Log Out
-      </button>
+      <div class="mt-8 flex justify-center">
+        <button
+          type="button"
+          class="w-full md:max-w-md h-[50px] rounded-[12px] pt-[14px] pr-[20px] pb-[14px] pl-[20px] bg-brand-aqua text-white inline-flex items-center justify-center gap-[4px] text-[17px] leading-[38px] font-medium"
+          @click="showLogoutModal = true"
+        >
+          Log Out
+        </button>
+      </div>
     </main>
 
     <!-- Logout confirmation modal -->
