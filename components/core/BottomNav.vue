@@ -1,8 +1,8 @@
 <template>
   <nav
-    class="fixed bottom-0 w-full max-w-app bg-white border-t border-gray-200"
+    class="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 z-50"
   >
-    <div class="flex justify-around py-2">
+    <div class="flex justify-around py-2 max-w-7xl mx-auto">
       <button
         class="flex flex-col items-center py-2"
         :class="isActive('explore')"

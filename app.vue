@@ -14,7 +14,7 @@ useHead({
 </script>
 <style scoped>
 .app {
-  @apply min-h-dvh bg-black flex items-center justify-center overflow-x-hidden;
+  @apply min-h-dvh flex flex-col overflow-x-hidden;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);

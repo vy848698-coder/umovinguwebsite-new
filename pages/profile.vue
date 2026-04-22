@@ -1,8 +1,8 @@
 <template>
   <NuxtPage v-if="!isProfileRoot" />
 
-  <div v-else class="mobile-container min-h-screen bg-umu-gradient pb-8">
-    <header class="flex items-center justify-between px-4 pt-5">
+  <div v-else class="w-full min-h-screen bg-umu-gradient pb-8">
+    <header class="flex items-center justify-between px-4 pt-5 max-w-7xl mx-auto">
       <button
         type="button"
         class="w-10 h-10 flex items-center justify-center"
@@ -27,7 +27,7 @@
       </button>
     </header>
 
-    <main class="px-5 pb-8">
+    <main class="px-5 pb-8 max-w-7xl mx-auto">
       <section class="pt-6 text-center">
         <div class="relative w-fit mx-auto">
           <img
@@ -60,7 +60,7 @@
         </button>
       </section>
 
-      <div class="mt-8 flex gap-3 items-center">
+      <div class="mt-8 flex gap-3 items-center md:max-w-xl md:mx-auto">
         <div class="flex-1 bg-white rounded-2xl h-14 px-4 flex items-center">
           <Icon
             name="i-heroicons-magnifying-glass"
@@ -83,7 +83,7 @@
         </button>
       </div>
 
-      <div class="mt-8 space-y-3">
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
         <button
           v-for="item in filteredItems"
           :key="item.title"
@@ -113,7 +113,7 @@
 
       <button
         type="button"
-        class="mt-8 w-full h-[60px] rounded-2xl bg-brand-aqua text-white text-[32px] leading-[38px] font-medium"
+        class="mt-8 w-full md:max-w-md md:mx-auto md:block h-[60px] rounded-2xl bg-brand-aqua text-white text-[32px] leading-[38px] font-medium"
         @click="logout"
       >
         Log Out
