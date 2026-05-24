@@ -22,7 +22,10 @@ export default defineNuxtPlugin({
     try {
       const { Capacitor } = await import('@capacitor/core')
       if (!Capacitor.isNativePlatform()) return
-      const { SplashScreen } = await import('@capacitor/splash-screen')
+      // Keep this import runtime-only so web/SSR builds do not require
+      // resolving the native plugin package up-front.
+      const splashModule = '@capacitor/splash-screen'
+      const { SplashScreen } = await import(/* @vite-ignore */ splashModule)
       // Give the first paint a frame to actually land before fading out.
       requestAnimationFrame(() => {
         SplashScreen.hide({ fadeOutDuration: 300 }).catch(() => {
