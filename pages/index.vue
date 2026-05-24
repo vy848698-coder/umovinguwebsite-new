@@ -1,1729 +1,1582 @@
 <template>
-  <div class="ld-page mobile-container" :data-screen="screen">
-    <!-- ══════════════════════ LANDING ══════════════════════ -->
-    <div v-show="screen === 'landing'" class="ld-screen">
-      <!-- Brand row -->
-      <div class="brand-row">
-        <div class="brand-mark">
-          <div class="brand-logo">
-            <OPIcon name="logo" class="w-[32px] h-[32px]" />
-          </div>
+  <div class="landing-v2" :class="{ 'calm-mode': isCalmMode, [`variant-${ctaVariant.toLowerCase()}`]: true }">
+    <div class="ambient ambient-a" />
+    <div class="ambient ambient-b" />
+    <div class="mesh" />
+
+    <header class="header">
+      <div class="shell header-inner">
+        <button class="brand" type="button" @click="scrollToTop">
+          <OPIcon name="logo" class="brand-logo" />
           <span>umovingu</span>
+        </button>
+
+        <nav class="nav" aria-label="Primary navigation">
+          <button type="button" @click="scrollToSection('homescore')">HomeScore</button>
+          <button type="button" @click="scrollToSection('passport')">Passport</button>
+          <button type="button" @click="scrollToSection('story')">Story</button>
+          <button type="button" @click="scrollToSection('market')">Market</button>
+          <button type="button" @click="scrollToSection('reviews')">Reviews</button>
+        </nav>
+
+        <div class="header-actions">
+          <button class="btn ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+          <button class="btn solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
         </div>
-        <div class="brand-spacer" />
-        <div class="beta-pill">Beta</div>
       </div>
+    </header>
 
-      <!-- Hero -->
-      <div class="hero">
-        <div class="hero-title">
-          Know your home<br /><span class="lt-teal">inside out.</span>
-        </div>
-        <div class="hero-sub">Tap any card to bring it to the front.</div>
-      </div>
+    <main>
+      <section class="hero reveal is-visible" data-reveal @mousemove="onHeroMove" @mouseleave="resetHeroMove">
+        <div class="shell hero-grid" :style="heroStyleVars">
+          <div class="hero-copy">
+            <p class="eyebrow">Property intelligence, redesigned for the web</p>
+            <h1>
+              Find your <span>HomeScore</span>
+              before the market finds your weak points.
+            </h1>
+            <p class="hero-sub">
+              A future-ready property website with immediate scoring, structured passport evidence,
+              real-case narrative, and live market context in one clear flow.
+            </p>
 
-      <!-- The deck -->
-      <div class="deck-wrap">
-        <div
-          v-for="card in cards"
-          :key="card.id"
-          class="deck-card"
-          :class="card.id"
-          :data-pos="positionOf(card.id)"
-          @click="bringToFront(card.id)"
-        >
-          <div class="dc-peek">
-            <span class="dc-peek-label">{{ card.peekLabel }}</span>
-            <span class="dc-peek-pill">{{ card.peekPill }}</span>
-          </div>
-
-          <div class="dc-top">
-            <div class="dc-eyebrow"><span class="dot" />{{ card.peekLabel }}</div>
-            <div class="dc-pill">{{ card.peekPill }}</div>
-          </div>
-
-          <!-- HomeScore body -->
-          <div v-if="card.id === 'HomeScore'" class="dc-content">
-            <div class="dc-headline">How does your<br />home compare?</div>
-            <div class="dc-sub">
-              Bills vs. street. Value vs. neighbours. Where you could save. In 60 seconds.
-            </div>
-            <div class="dc-hs-row">
-              <div class="dc-hs-gauge">
-                <svg viewBox="0 0 88 88">
-                  <circle class="g-bg" cx="44" cy="44" r="36" fill="none" stroke-width="5" />
-                  <circle class="g-fill" cx="44" cy="44" r="36" fill="none" stroke-width="5" stroke-dasharray="226.2" stroke-dashoffset="58.8" />
-                </svg>
-                <div class="g-num">
-                  <div class="gn-big">74</div>
-                  <div class="gn-small">/ 100</div>
-                </div>
-              </div>
-              <div class="dc-hs-meta">
-                Sample · bills <strong>22% above</strong> the street. EPC <strong>C</strong>. Up to <strong>£330/yr</strong> savings available.
-              </div>
-            </div>
-          </div>
-
-          <!-- Property Passport body -->
-          <div v-if="card.id === 'passport'" class="dc-content">
-            <div class="dc-headline">Find out now.<br />Not three weeks in.</div>
-            <div class="dc-sub">
-              Everything a buyer's solicitor needs — and will ask for. You stay in control.
-            </div>
-            <div class="dc-pp-row">
-              <div class="dc-pp-book-wrap">
-                <img
-                  src="/op-icons/passportview/umu-passport.png"
-                  alt="Property Passport"
-                  class="dc-pp-book-img"
+            <form class="hero-search" @submit.prevent="onHomeScoreCheckClick">
+              <label class="hero-label">Start with HomeScore</label>
+              <div class="hero-search-row">
+                <PropertySearchInput
+                  placeholder="Postcode or address"
+                  variant="light"
+                  :show-passport-status="true"
+                  @select="onHomeScoreResultSelect"
+                  @enter="onHomeScoreSearchEnter"
                 />
-                <div class="dc-pp-book-addr">
-                  <div class="dc-pp-book-addr-1">55, Woodfield Rd</div>
-                  <div class="dc-pp-book-addr-2">CV5 6AJ</div>
+                <button class="btn solid lg" type="submit" @click="trackCtaClick('hero_search_button', '/homescore')">
+                  {{ primaryCtaLabel }}
+                </button>
+              </div>
+            </form>
+
+            <div class="stat-row">
+              <article>
+                <strong>74 / 100</strong>
+                <span>Sample HomeScore</span>
+              </article>
+              <article>
+                <strong>17 sections</strong>
+                <span>Passport structure</span>
+              </article>
+              <article>
+                <strong>14 days</strong>
+                <span>Illustrative prepared completion</span>
+              </article>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <article class="panel score-panel float-a">
+              <div class="panel-top">
+                <span>HomeScore</span>
+                <span class="chip">Primary</span>
+              </div>
+
+              <div class="score-body">
+                <div class="score-ring-wrap" aria-label="HomeScore value 74 out of 100">
+                  <svg class="score-ring" viewBox="0 0 140 140">
+                    <circle class="ring-bg" cx="70" cy="70" r="52" />
+                    <circle class="ring-meter" cx="70" cy="70" r="52" />
+                  </svg>
+                  <div class="ring-center">
+                    <strong>{{ gaugeScore }}</strong>
+                    <span>{{ gaugeLabel }}</span>
+                  </div>
+                </div>
+
+                <div class="score-copy">
+                  <h2>Instant signal, clear next action.</h2>
+                  <p>Score first. Evidence second. Decisions with confidence.</p>
                 </div>
               </div>
-              <div class="dc-pp-cats">
-                <div class="dc-pp-cat">Deeds</div>
-                <div class="dc-pp-cat">Planning</div>
-                <div class="dc-pp-cat">Surveys</div>
-                <div class="dc-pp-cat">Fittings</div>
-                <div class="dc-pp-cat more">+13 more</div>
-              </div>
-            </div>
-          </div>
+            </article>
 
-          <!-- Aisha body -->
-          <div v-if="card.id === 'aisha'" class="dc-content">
-            <div class="dc-headline">Aisha sold<br />in 14 days.</div>
-            <div class="dc-sub">
-              A two-bed semi in Coventry. No surveys lost. No fall-throughs. Sold March 2026.
-            </div>
-            <div class="dc-ai-row">
-              <div class="dc-ai-num">14<span class="unit">days</span></div>
-              <div class="dc-ai-text">
-                vs UK average <strong>179 days</strong>. <strong>£0</strong> in lost survey fees.
+            <article class="panel passport-preview float-b">
+              <div class="passport-card-inline">
+                <PassportCard
+                  :line1="dummyPassportAddress.line1"
+                  :line2="dummyPassportAddress.line2"
+                />
               </div>
-            </div>
-          </div>
+              <div class="passport-content">
+                <span>Property Passport</span>
+                <strong>Real app visual, now in web flow</strong>
+                <p>Title deeds, searches, fixtures, boundaries, and compliance in one verified record.</p>
+              </div>
+            </article>
 
-          <!-- Market body -->
-          <div v-if="card.id === 'market'" class="dc-content">
-            <div class="dc-headline">UK home sales<br />are broken.</div>
-            <div class="dc-sub">
-              A third collapse before completion. The average that does complete takes nearly six months.
-            </div>
-            <div class="dc-mk-row">
-              <div class="dc-mk-cell">
-                <div class="dc-mk-num">179<span class="unit">d</span></div>
-                <div class="dc-mk-label">Avg sale</div>
+            <article class="panel image-preview float-c">
+              <img src="/images/findPropertyBackground.png" alt="Residential property" />
+              <div class="image-caption">
+                <span>Market visibility</span>
+                <strong>See profile, risk, and readiness together</strong>
               </div>
-              <div class="dc-mk-cell">
-                <div class="dc-mk-num">1 in 3</div>
-                <div class="dc-mk-label">Collapse</div>
-              </div>
-              <div class="dc-mk-cell">
-                <div class="dc-mk-num">£2.7k</div>
-                <div class="dc-mk-label">Lost</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="dc-foot">
-            <button type="button" class="dc-cta" @click.stop="onCardCta(card.id)">
-              {{ card.cta }}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </button>
+            </article>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="deck-dots">
-        <span
-          v-for="card in cards"
-          :key="card.id"
-          class="deck-dot"
-          :class="{ active: stack[0] === card.id }"
-          @click="bringToFront(card.id)"
-        />
-      </div>
-
-      <div class="cta-section">
-        <button class="btn-primary" type="button" @click="navigateTo('/onboarding/signup')">
-          Get started
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-        <div class="cta-signin">
-          Already have an account?
-          <a @click="navigateTo('/onboarding/signin')">Sign in</a>
+      <section class="media-strip reveal" data-reveal>
+        <div class="media-track">
+          <figure v-for="(item, index) in ukHouseSamples" :key="`uk-house-${index}`">
+            <img :src="item.src" :alt="item.alt" @error="onMediaImageError(index)" />
+          </figure>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- ══════════════════════ MARKET ══════════════════════ -->
-    <div v-show="screen === 'market'" class="ld-screen">
-      <div class="back-bar">
-        <button class="back-btn" type="button" @click="screen = 'landing'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <div class="back-bar-title">The market today</div>
-      </div>
+      <section id="homescore" class="section reveal" data-reveal>
+        <div class="shell split">
+          <div class="copy">
+            <p class="eyebrow">HomeScore first</p>
+            <h2>Lead with the thing users care about immediately</h2>
+            <p>
+              Search-led websites win because the first action is obvious. Here, that first action is HomeScore.
+              From there, users can move into structured passport evidence without friction.
+            </p>
+            <ul>
+              <li>Energy and cost signals in seconds</li>
+              <li>Readiness indicators before listing or offering</li>
+              <li>Natural bridge into passport detail</li>
+            </ul>
+            <button class="btn solid lg" type="button" @click="goToHomeScore">Open HomeScore</button>
+          </div>
 
-      <div class="market-hero">
-        <div class="market-eyebrow">Why we built it</div>
-        <div class="market-title">UK home sales<br />are broken.</div>
-        <div class="market-sub">
-          A third of all sales collapse before they reach completion. Of the ones that do,
-          the average takes nearly six months — almost all of it spent waiting for paperwork
-          that could have been ready on day one. Here's what's actually going wrong, what's
-          being done about it, and why we built UMU.
+          <article class="panel detail-panel">
+            <div class="detail-head">
+              <span>Sample property profile</span>
+              <span>CV5 6AJ</span>
+            </div>
+            <div class="detail-main">
+              <strong>74</strong>
+              <div>
+                <h3>Good readiness</h3>
+                <p>Strong baseline with practical opportunities to improve before transaction pressure starts.</p>
+              </div>
+            </div>
+            <div class="progress-set">
+              <div><label>Energy profile</label><i style="width: 72%" /></div>
+              <div><label>Documentation readiness</label><i style="width: 84%" /></div>
+              <div><label>Buyer confidence</label><i style="width: 78%" /></div>
+            </div>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <!-- THE NUMBERS -->
-      <div class="market-section-h">The numbers</div>
+      <section id="passport" class="section reveal" data-reveal>
+        <div class="shell split reverse">
+          <article class="panel passport-panel">
+            <div class="passport-book-wrap">
+              <div class="passport-card-inline passport-card-inline-lg">
+                <PassportCard
+                  :line1="dummyPassportAddress.line1"
+                  :line2="dummyPassportAddress.line2"
+                />
+              </div>
+            </div>
+            <div class="passport-list">
+              <div>Title deeds and plan</div>
+              <div>Searches and planning</div>
+              <div>Fixtures and fittings</div>
+              <div>Boundaries and compliance</div>
+            </div>
+          </article>
 
-      <div class="market-stat-block navy">
-        <div class="market-stat-num">
-          179<span class="ms-d">days</span>
-          <span class="ms-arrow">→</span>
-          <span class="ms-target">14<span class="ms-target-unit">days</span></span>
+          <div class="copy">
+            <p class="eyebrow">Property Passport</p>
+            <h2>Same trusted passport identity as your app</h2>
+            <p>
+              The web page now uses the real passport visual and presents the structure in a way that feels
+              product-grade and ready for serious property workflows.
+            </p>
+          </div>
         </div>
-        <div class="market-stat-label">12× slower</div>
-        <div class="market-stat-headline">UK avg vs. with Passport</div>
-        <div class="market-stat-text">
-          The average UK home sale takes <strong>179 days</strong> from offer accepted to
-          completion. Almost all of that time is the buyer's solicitor asking for documents
-          the seller didn't have ready — title deeds, planning permissions, FENSA certificates,
-          surveys, fittings forms. With a Property Passport in place from day one, that drops
-          to around <strong>14 days</strong>.
+      </section>
+
+      <section id="story" class="section reveal" data-reveal>
+        <div class="shell split">
+          <div class="copy">
+            <p class="eyebrow">A real story</p>
+            <h2>Aisha sold in fourteen days because preparation started early</h2>
+            <p>
+              Case content is fully visible, not hidden. Users can understand outcomes and trust before signup.
+            </p>
+            <blockquote>
+              "We prepared documents before viewings, so legal review started with context, not confusion."
+            </blockquote>
+          </div>
+
+          <article class="panel timeline">
+            <div>
+              <span>Before</span>
+              <strong>Preparation before viewings</strong>
+              <p>Evidence and documents were organized before buyer enquiries.</p>
+            </div>
+            <div>
+              <span>During</span>
+              <strong>Faster solicitor response</strong>
+              <p>Fewer surprises and lower delay risk across the transaction path.</p>
+            </div>
+            <div>
+              <span>After</span>
+              <strong>14-day completion path</strong>
+              <p>A practical proof of what structured preparation can change.</p>
+            </div>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <div class="market-stat-block teal">
-        <div class="market-stat-num">1 in 3</div>
-        <div class="market-stat-label">Sales collapse</div>
-        <div class="market-stat-headline">No safety net before completion</div>
-        <div class="market-stat-text">
-          <strong>Roughly 33% of agreed UK property sales fall through</strong> before
-          completion. The most common cause is a problem revealed in the buyer's solicitor's
-          enquiries weeks into the transaction — something the seller didn't know about,
-          or didn't think mattered. By that point both sides have spent thousands.
+      <section id="market" class="section reveal" data-reveal>
+        <div class="shell market-block">
+          <div class="copy compact">
+            <p class="eyebrow">Market Today</p>
+            <h2>Show urgency with clear market data</h2>
+          </div>
+
+          <div class="market-grid">
+            <article class="panel market-card">
+              <strong>179 days</strong>
+              <p>Average sale path when key information appears late.</p>
+            </article>
+            <article class="panel market-card">
+              <strong>GBP 2.7k</strong>
+              <p>Average consumer loss when transactions fail.</p>
+            </article>
+            <article class="panel market-card">
+              <strong>1 in 3</strong>
+              <p>Sales that still collapse before completion.</p>
+            </article>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="market-stat-block deep">
-        <div class="market-stat-num">£2,700</div>
-        <div class="market-stat-label">Lost per consumer</div>
-        <div class="market-stat-headline">Per failed sale, on average</div>
-        <div class="market-stat-text">
-          The average buyer or seller burns about <strong>£2,700 per fall-through</strong> —
-          survey fees, legal fees, mortgage application fees, removal deposits, and the
-          personal cost of stress and time off work. Multiply across the country and the
-          figure is roughly <strong>£900 million a year</strong> in waste.
+      <section id="reviews" class="section reveal" data-reveal>
+        <div class="shell review-block">
+          <div class="copy compact">
+            <p class="eyebrow">Social proof</p>
+            <h2>Credibility in a visible position</h2>
+          </div>
+
+          <div class="review-grid">
+            <article class="panel review-card">
+              <div class="stars">★★★★★</div>
+              <p>"HomeScore made the first week dramatically clearer than our previous process."</p>
+              <span>Seller · Coventry</span>
+            </article>
+            <article class="panel review-card">
+              <div class="stars">★★★★★</div>
+              <p>"Passport structure reduced solicitor back-and-forth and made the workflow calmer."</p>
+              <span>Landlord · Manchester</span>
+            </article>
+            <article class="panel review-card">
+              <div class="stars">★★★★★</div>
+              <p>"Score + story + market context made value obvious in under a minute."</p>
+              <span>Buyer · London</span>
+            </article>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- WHY IT HAPPENS -->
-      <div class="market-section-h">Why it happens</div>
-
-      <p class="market-para">
-        The English property system has a quiet design flaw at its heart:
-        <strong>everything important is revealed at the wrong time.</strong> A buyer falls
-        in love with a house, makes an offer, gets it accepted — and only then do the
-        questions begin. Where are the title deeds? Has the loft conversion got building
-        regs? Is there a covenant on the boundary? When was the boiler last serviced?
-      </p>
-
-      <p class="market-para">
-        The seller scrambles. Most of these answers exist somewhere — in a drawer, an old
-        email, a council archive — but finding them takes weeks. While the seller hunts,
-        the buyer waits. Their mortgage offer expires. Their patience runs out. Or worse,
-        a survey reveals damp, or a search flags a planning issue, or a leasehold condition
-        turns out to be more onerous than it looked. The buyer pulls out. The seller starts
-        again.
-      </p>
-
-      <p class="market-para">
-        The system assumes <strong>discovery should happen during the transaction.</strong>
-        That's the design flaw. By the time problems surface, they're expensive, emotional,
-        and binary — fix it now or lose the sale. Most sellers had no idea anything was
-        wrong. They just wanted to move.
-      </p>
-
-      <div class="market-pull-quote">
-        "You don't know what you don't know — until you're three weeks in and the buyer's
-        solicitor asks for something you can't find."
-        <div class="market-pull-attr">
-          Industry observation
-          <span class="illustrative-tag">Illustrative</span>
-        </div>
-      </div>
-
-      <!-- GOVERNMENT SECTION -->
-      <div class="market-section-h">What's changing</div>
-
-      <div class="govt-card">
-        <div class="govt-eyebrow">Policy update</div>
-        <div class="govt-headline">The government is acting.</div>
-        <div class="govt-text">
-          The case for upfront information has been understood at a policy level for some
-          time. <strong>Mandation is coming</strong> — every UK property will be required
-          to have a Property Passport-equivalent record before being put on the market. The
-          aim is to surface what buyers' solicitors will inevitably ask for, before the
-          offer stage rather than after it. Estate agents, conveyancers, and consumer bodies
-          have been broadly supportive. UMU has been engaged in the conversations leading
-          up to this change, and is one of the providers preparing for the new regime.
-        </div>
-      </div>
-
-      <!-- FOUNDER SECTION -->
-      <div class="market-section-h">Why I started UMU</div>
-
-      <div class="founder-card">
-        <div class="founder-eyebrow">From the founder</div>
-        <div class="founder-headline">
-          I've spent over 34 years in this industry. I've watched the same thing happen,
-          again and again.
-        </div>
-
-        <div class="founder-para">
-          I've seen heartbreak. I've seen tears. I've watched people lose homes they'd
-          already mentally moved into, lose deposits they couldn't afford to lose, lose
-          months of their lives to a process that promised to deliver and didn't. I've
-          watched buyers and sellers alike feel completely <strong>out of control</strong>
-          — because every answer they need only arrives after they've already committed.
-        </div>
-
-        <div class="founder-para">
-          Every pitfall you can imagine, I've seen play out. The survey that revealed
-          something the seller genuinely didn't know about. The leasehold condition that
-          wasn't flagged until exchange. The chain that broke because the third party in
-          it had paperwork they couldn't find. None of these are dramatic stories on their
-          own — they're the quiet, ordinary failures that happen tens of thousands of
-          times a year in this country.
-        </div>
-
-        <div class="founder-para">
-          UMU exists because <strong>none of it has to be like this.</strong> The
-          information the buyer's solicitor will ask for is, almost without exception,
-          already discoverable. It's just discovered too late. If we surface it on day one
-          — verified, transferable, owned by the seller — the whole rhythm of the
-          transaction changes. The seller stays in control of their own home's record.
-          The buyer makes informed decisions. The system finally serves the people inside
-          it instead of testing them.
-        </div>
-
-        <div class="founder-para">
-          That's why I built this.
-        </div>
-
-        <div class="founder-sig">
-          UMU's founder
-          <span class="illustrative-tag">Draft copy · review with founder</span>
-        </div>
-      </div>
-
-      <!-- COMPARISON -->
-      <div class="market-section-h">With vs without a Passport</div>
-
-      <div class="compare-grid">
-        <div class="compare-cell without">
-          <div class="compare-cell-label">Without</div>
-          <div class="compare-row bad"><span class="day">Day 0</span><span class="what">Offer accepted</span></div>
-          <div class="compare-row bad"><span class="day">Day 21</span><span class="what">Survey reveals issue</span></div>
-          <div class="compare-row bad"><span class="day">Day 47</span><span class="what">Buyer renegotiates</span></div>
-          <div class="compare-row bad"><span class="day">Day 74</span><span class="what">Pulls out, starts again</span></div>
-          <div class="compare-row bad"><span class="day">Day 179</span><span class="what">Eventual completion</span></div>
-        </div>
-        <div class="compare-cell with">
-          <div class="compare-cell-label">With UMU</div>
-          <div class="compare-row good"><span class="day">Day -30</span><span class="what">Passport ready</span></div>
-          <div class="compare-row good"><span class="day">Day 0</span><span class="what">Offer accepted</span></div>
-          <div class="compare-row good"><span class="day">Day 2</span><span class="what">Solicitor reviews record</span></div>
-          <div class="compare-row good"><span class="day">Day 11</span><span class="what">Exchange</span></div>
-          <div class="compare-row good"><span class="day">Day 14</span><span class="what">Completion</span></div>
-        </div>
-      </div>
-
-      <!-- CTA -->
-      <div class="market-final-cta">
-        <div class="mfc-eyebrow">This is what UMU is for</div>
-        <div class="mfc-headline">Start with a free HomeScore.</div>
-        <div class="mfc-sub">
-          No card needed. See what your home tells you in 60 seconds. Upgrade to a Passport
-          when you're ready to sell.
-        </div>
-        <button class="mfc-btn" type="button" @click="navigateTo('/onboarding/signup')">
-          Get started — it's free
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-      </div>
-
-      <div style="height: 24px;" />
-    </div>
-
-    <!-- ══════════════════════ AISHA ══════════════════════ -->
-    <div v-show="screen === 'aisha'" class="ld-screen">
-      <div class="back-bar">
-        <button class="back-btn" type="button" @click="screen = 'landing'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <div class="back-bar-title">A real story</div>
-      </div>
-
-      <div class="aisha-hero">
-        <div class="aisha-eyebrow">A real story · Coventry, March 2026</div>
-        <div class="aisha-title">Aisha sold her two-bed in <em>fourteen days.</em></div>
-        <div class="aisha-byline">
-          <div class="aisha-byline-av">A</div>
+      <footer class="footer">
+        <div class="shell footer-grid">
           <div>
-            <div class="aisha-byline-name">Aisha Patel</div>
-            <div class="aisha-byline-meta">Seller · 5 min read</div>
+            <div class="footer-brand">
+              <OPIcon name="logo" class="brand-logo" />
+              <strong>umovingu</strong>
+            </div>
+            <p>
+              Professional property intelligence for sellers, buyers, and landlords.
+              Start with HomeScore and progress with confidence.
+            </p>
+          </div>
+
+          <div>
+            <h3>Product</h3>
+            <ul>
+              <li><a href="/homescore">HomeScore</a></li>
+              <li><a href="/passport/collections">Property Passport</a></li>
+              <li><a href="/marketplace">Marketplace</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Legal</h3>
+            <ul>
+              <li><a href="/legal/privacy">Privacy</a></li>
+              <li><a href="/legal/terms">Terms</a></li>
+              <li><a href="/legal/cookies">Cookies</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Account</h3>
+            <ul>
+              <li><a href="/onboarding/signin">Sign in</a></li>
+              <li><a href="/onboarding/signup">Create account</a></li>
+            </ul>
           </div>
         </div>
-      </div>
+        <div class="shell footer-bottom">© 2026 UMU. All rights reserved.</div>
+      </footer>
+    </main>
 
-      <!-- Numbers strip — designed tiles -->
-      <div class="aisha-numbers">
-        <div class="aisha-num-cell teal">
-          <div class="aisha-num-big">14<span class="unit">days</span></div>
-          <div class="aisha-num-label">Offer to completion</div>
-        </div>
-        <div class="aisha-num-cell gold">
-          <div class="aisha-num-big">£0</div>
-          <div class="aisha-num-label">Lost in survey fees</div>
-        </div>
-        <div class="aisha-num-cell navy">
-          <div class="aisha-num-big">£2.7<span class="unit">k</span></div>
-          <div class="aisha-num-label">Saved vs UK avg</div>
-        </div>
-      </div>
-
-      <!-- Chapter 1 -->
-      <div class="aisha-section-h">
-        <span class="aisha-section-num">01</span>
-        <span class="aisha-section-rule" />
-        <span class="aisha-section-num">Before</span>
-      </div>
-      <div class="aisha-section-title">Why she <em>started early.</em></div>
-      <p class="aisha-para">
-        Aisha had watched her parents lose a sale four years ago. The buyer's solicitor
-        asked for FENSA certificates her mother couldn't find, and after two months of
-        searching, the buyer pulled out. They lost £3,400 in survey fees. Her mother
-        started again from scratch.
-      </p>
-      <p class="aisha-para">
-        When Aisha decided to sell her two-bed semi in Coventry, she didn't want to risk
-        the same outcome. She started preparing the paperwork
-        <strong>three weeks before her first viewing.</strong>
-      </p>
-
-      <div class="aisha-pull">
-        <div class="aisha-pull-quote">
-          "I didn't want my house to fall through because the buyer's solicitor needed a
-          bit of paper I couldn't find."
-        </div>
-        <div class="aisha-pull-attr">— Aisha</div>
-      </div>
-
-      <!-- Chapter 2 -->
-      <div class="aisha-section-h">
-        <span class="aisha-section-num">02</span>
-        <span class="aisha-section-rule" />
-        <span class="aisha-section-num">During</span>
-      </div>
-      <div class="aisha-section-title">A passport, ready <em>before the first viewing.</em></div>
-      <p class="aisha-para">
-        Aisha set up her Property Passport in late February. Title deeds came through
-        automatically from HM Land Registry. The Coventry council's planning portal
-        returned her search results in three days. The 2019 FENSA certificate — the one
-        her mother couldn't find — was already on file with the installer.
-      </p>
-      <p class="aisha-para">
-        By the time the agent put a board up, the Passport was complete.
-        <strong>Fourteen sections, all verified, all ready to share.</strong> She listed
-        on March 3rd.
-      </p>
-
-      <!-- Chapter 3 -->
-      <div class="aisha-section-h">
-        <span class="aisha-section-num">03</span>
-        <span class="aisha-section-rule" />
-        <span class="aisha-section-num">After</span>
-      </div>
-      <div class="aisha-section-title">Fourteen days, <em>start to finish.</em></div>
-      <p class="aisha-para">
-        Two viewings on the first weekend. An offer at the asking price by Wednesday.
-        The buyer's solicitor downloaded Aisha's Passport on Thursday morning — and by
-        Thursday afternoon, they'd raised exactly two enquiries, both about the loft
-        conversion.
-      </p>
-      <p class="aisha-para">
-        Both questions had answers waiting in the Passport. Building regs sign-off from
-        2014. The original architect's plan. Searches were already in. Exchange happened
-        on day 11. Completion on day 14.
-      </p>
-
-      <div class="aisha-pull">
-        <div class="aisha-pull-quote">
-          "We had a Passport ready before our first viewing. The buyer's solicitor had
-          everything they needed in a day. No surveys lost, no fall-through."
-        </div>
-        <div class="aisha-pull-attr">— Aisha</div>
-      </div>
-
-      <!-- Closing CTA -->
-      <div class="aisha-final-cta">
-        <div class="afc-eyebrow-pill">Ready when you are</div>
-        <div class="afc-headline">Sell like Aisha did.</div>
-        <div class="afc-sub">
-          Start with a free HomeScore. Upgrade to a Passport when you're ready to list.
-        </div>
-        <button class="afc-btn" type="button" @click="navigateTo('/onboarding/signup')">
-          Start a Property Passport
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-      </div>
-
-      <div style="height: 24px;" />
-    </div>
-
-    <!-- ══════════════════════ SAMPLE PASSPORT ══════════════════════ -->
-    <div v-show="screen === 'sample'" class="ld-screen">
-      <div class="back-bar">
-        <button class="back-btn" type="button" @click="screen = 'landing'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <div class="back-bar-title">Sample Property Passport</div>
-      </div>
-
-      <div class="sample-banner">
-        <div class="sample-banner-tag">Sample</div>
-        <div class="sample-banner-text">
-          A demo passport for an illustrative property — not a real listing.
-        </div>
-      </div>
-
-      <!-- Buyer-access strip — only on the buyer view -->
-      <div v-if="currentSample.isBuyerView" class="buyer-access-strip">
-        <div class="bas-icon">🔓</div>
-        <div class="bas-info">
-          <div class="bas-title">You unlocked this passport</div>
-          <div class="bas-sub">Read-only access · expires in 30 days · paid £49</div>
-        </div>
-      </div>
-
-      <div class="sample-type-picker">
-        <button
-          v-for="t in sampleTypes"
-          :key="t.value"
-          type="button"
-          class="stp-btn"
-          :class="{ active: sampleType === t.value }"
-          @click="sampleType = t.value"
-        >
-          {{ t.label }}
-        </button>
-      </div>
-
-      <!-- Real-app-faithful sample passports — each component mirrors its
-           live page (hero, dashboard, action row, collaborators, subtabs)
-           but lists only 4 curated sections + a "+ N more" hint. -->
-      <SellerSampleView v-if="sampleType === 'seller'" />
-      <LandlordSampleView v-else-if="sampleType === 'landlord'" />
-      <BuyerSampleView v-else-if="sampleType === 'buyer'" />
-
-      <!-- CTA bar — shown for every sample type (seller, landlord, buyer) -->
-      <div v-if="currentSample.isBuyerView" class="sample-cta-bar buyer">
-        <div class="scb-headline">Like what you see?</div>
-        <div class="scb-sub">{{ currentSample.ctaSub }}</div>
-        <div class="buyer-cta-row">
-          <button class="buyer-cta secondary" type="button" @click="navigateTo('/onboarding/signup')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            Save
-          </button>
-          <button class="buyer-cta secondary" type="button" @click="navigateTo('/onboarding/signup')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            Message
-          </button>
-          <button class="buyer-cta secondary" type="button" @click="navigateTo('/onboarding/signup')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />
-            </svg>
-            Report
-          </button>
-        </div>
-        <button class="scb-btn" type="button" @click="navigateTo('/onboarding/signup')" style="margin-top: 12px;">
-          Make an offer
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-      </div>
-
-      <div v-else class="sample-cta-bar">
-        <div class="scb-headline">Want one for your home?</div>
-        <div class="scb-sub">{{ currentSample.ctaSub }}</div>
-        <button class="scb-btn" type="button" @click="navigateTo('/onboarding/signup')">
-          {{ currentSample.ctaLabel }}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-      </div>
-    </div>
+    <transition name="cta-fade">
+      <button
+        v-if="showStickyCta"
+        class="sticky-cta btn solid"
+        type="button"
+        @click="goToStickyCtaDestination"
+      >
+        {{ stickyCtaLabel }}
+      </button>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import OPIcon from '~/components/ui/OPIcon.vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
-import SellerSampleView from '~/components/landing/SellerSampleView.vue'
-import LandlordSampleView from '~/components/landing/LandlordSampleView.vue'
-import BuyerSampleView from '~/components/landing/BuyerSampleView.vue'
+import OPIcon from '~/components/ui/OPIcon.vue'
 
 definePageMeta({ middleware: 'guest' })
 
-type Screen = 'landing' | 'market' | 'aisha' | 'sample'
-type SampleType = 'seller' | 'landlord' | 'buyer'
+const gaugeScore = 74
+const showStickyCta = ref(false)
+const isCalmMode = ref(false)
+const ctaVariant = ref<'A' | 'B'>('A')
+const dummyPassportAddress = {
+  line1: '42 Willow Bank Road',
+  line2: 'Coventry, CV5 6AJ',
+}
+const ukHouseSamples = ref([
+  {
+    src: '/images/uk-houses/house-1.jpg',
+    alt: 'Sample UK detached home exterior',
+  },
+  {
+    src: '/images/uk-houses/house-2.jpg',
+    alt: 'Sample UK terraced homes',
+  },
+  {
+    src: '/images/uk-houses/house-3.jpg',
+    alt: 'Sample UK semi-detached house',
+  },
+  {
+    src: '/images/uk-houses/house-4.jpg',
+    alt: 'Sample London residential house exterior',
+  },
+  {
+    src: '/images/uk-houses/house-5.jpg',
+    alt: 'Sample British suburban home',
+  },
+  {
+    src: '/images/uk-houses/house-6.jpg',
+    alt: 'Sample England brick house exterior',
+  },
+  {
+    src: '/images/uk-houses/house-7.jpg',
+    alt: 'Sample UK cottage style house',
+  },
+  {
+    src: '/images/uk-houses/house-8.jpg',
+    alt: 'Sample Manchester residential street homes',
+  },
+])
+let revealObserver: IntersectionObserver | null = null
 
-const screen = ref<Screen>('landing')
-const sampleType = ref<SampleType>('seller')
+const heroTilt = reactive({ x: 0, y: 0 })
 
-// Allow deep-linking to the sample sub-screen via /?sample=seller|landlord|buyer
-const route = useRoute()
-onMounted(() => {
-  const s = route.query.sample
-  if (s === 'seller' || s === 'landlord' || s === 'buyer') {
-    sampleType.value = s
-    screen.value = 'sample'
-  }
+const heroStyleVars = computed(() => ({
+  '--tilt-x': `${heroTilt.x}px`,
+  '--tilt-y': `${heroTilt.y}px`,
+}))
+
+const gaugeLabel = computed(() => {
+  if (gaugeScore >= 80) return 'Excellent'
+  if (gaugeScore >= 60) return 'Good'
+  return 'Needs work'
 })
 
-const cards = [
-  { id: 'HomeScore', peekLabel: 'HomeScore', peekPill: 'Free', cta: 'Check your home' },
-  { id: 'passport', peekLabel: 'Property Passport', peekPill: 'Solicitor-grade', cta: 'See a sample' },
-  { id: 'aisha', peekLabel: 'A real story', peekPill: '5 min read', cta: 'Read her story' },
-  { id: 'market', peekLabel: 'The market today', peekPill: 'Why we built it', cta: 'Read the case' },
-]
-const stack = ref<string[]>(cards.map((c) => c.id))
+const primaryCtaLabel = computed(() =>
+  ctaVariant.value === 'A' ? 'Check HomeScore' : 'Start in 60 seconds',
+)
 
-function positionOf(id: string) { return stack.value.indexOf(id) + 1 }
-function bringToFront(id: string) {
-  if (stack.value[0] === id) {
-    onCardCta(id)
+const stickyCtaLabel = computed(() =>
+  ctaVariant.value === 'A' ? 'Check your HomeScore' : 'Start your Property Passport',
+)
+
+function onHeroMove(e: MouseEvent) {
+  const target = e.currentTarget as HTMLElement
+  if (!target) return
+  const rect = target.getBoundingClientRect()
+  const x = (e.clientX - rect.left) / rect.width
+  const y = (e.clientY - rect.top) / rect.height
+  heroTilt.x = (x - 0.5) * 12
+  heroTilt.y = (y - 0.5) * 10
+}
+
+function resetHeroMove() {
+  heroTilt.x = 0
+  heroTilt.y = 0
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function scrollToSection(id: string) {
+  const target = document.getElementById(id)
+  if (!target) return
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function trackLandingEvent(eventName: string, payload: Record<string, unknown> = {}) {
+  if (typeof window === 'undefined') return
+  const eventData = {
+    event: eventName,
+    page: 'landing',
+    ctaVariant: ctaVariant.value,
+    ...payload,
+    ts: Date.now(),
+  }
+  const win = window as Window & { dataLayer?: Array<Record<string, unknown>> }
+  if (!Array.isArray(win.dataLayer)) {
+    win.dataLayer = []
+  }
+  win.dataLayer.push(eventData)
+  window.dispatchEvent(new CustomEvent('umu:analytics', { detail: eventData }))
+}
+
+function trackCtaClick(source: string, destination: string) {
+  trackLandingEvent('landing_cta_click', { source, destination })
+}
+
+function goToHomeScore() {
+  goToHomeScoreFrom('general_cta')
+}
+
+function goToHomeScoreFrom(source: string) {
+  trackCtaClick(source, '/homescore')
+  navigateTo('/homescore')
+}
+
+function onHomeScoreResultSelect(property: { id: string }) {
+  trackLandingEvent('landing_homescore_search_select', {
+    source: 'hero_search',
+    propertyId: property.id,
+  })
+  navigateTo(`/homescore/${property.id}`)
+}
+
+function onHomeScoreSearchEnter(_q: string) {
+  // PropertySearchInput opens/selects from dropdown on enter, mirroring /homescore.
+}
+
+function onHomeScoreCheckClick() {
+  trackLandingEvent('landing_homescore_search_check_click', {
+    source: 'hero_search',
+  })
+  const input = document.querySelector<HTMLInputElement>('.hero-search-row input')
+  input?.focus()
+}
+
+function onMediaImageError(index: number) {
+  const fallback = '/op-icons/backgroundImage.jpeg'
+  if (!ukHouseSamples.value[index]) return
+  ukHouseSamples.value[index] = {
+    ...ukHouseSamples.value[index],
+    src: fallback,
+  }
+}
+
+function goToStickyCtaDestination() {
+  if (ctaVariant.value === 'B') {
+    trackCtaClick('sticky_cta', '/passport/collections')
+    navigateTo('/passport/collections')
     return
   }
-  stack.value = [id, ...stack.value.filter((x) => x !== id)]
-}
-function onCardCta(id: string) {
-  if (id === 'HomeScore') navigateTo('/homescore')
-  else if (id === 'passport') screen.value = 'sample'
-  else if (id === 'aisha') screen.value = 'aisha'
-  else if (id === 'market') screen.value = 'market'
+  goToHomeScoreFrom('sticky_cta')
 }
 
-const sampleTypes: { value: SampleType; label: string }[] = [
-  { value: 'seller', label: 'Seller' },
-  { value: 'landlord', label: 'Landlord' },
-  { value: 'buyer', label: 'Buyer' },
-]
-
-// Full 17-section seller dataset — used by both the SELLER and the BUYER
-// view (the buyer view is identical to the seller view, just read-only with
-// buyer-specific banners and CTAs).
-const SELLER_PROPERTY = {
-  addr: '55, Woodfield Road',
-  postcode: 'Coventry, CV5 6AJ',
-  bookAddress: '55, Woodfield<br/>Road<br/>CV5 6AJ',
-  value: '£420,000',
-  pills: ['🏠 4 bed', 'House', '📐 1,406 sqft'],
+function onWindowScroll() {
+  if (typeof window === 'undefined') return
+  const threshold = window.innerWidth <= 760 ? 320 : 520
+  showStickyCta.value = window.scrollY > threshold
+  isCalmMode.value = window.scrollY > 760
 }
 
-// Curated 4 sections — sample stays scannable (full live passport has 17).
-const SELLER_SECTIONS = [
-  { name: 'Title Deeds & Plan', sub: 'HM Land Registry · CV722359', icon: '📜', illusBg: 'linear-gradient(135deg,#fff,#f5f4f0)', status: 'Verified', statusTone: 'done', pct: 100 },
-  { name: 'Searches', sub: 'Local authority · Drainage · Environmental', icon: '🔍', illusBg: 'linear-gradient(135deg,#e2f1ea,#fff)', status: 'Verified', statusTone: 'done', pct: 100 },
-  { name: 'Fixtures & Fittings', sub: 'TA10 · 24 items declared', icon: '🛋️', illusBg: 'linear-gradient(135deg,#fdf4dc,#fff)', status: 'Verified', statusTone: 'done', pct: 100 },
-  { name: 'Boundaries', sub: 'Identified and confirmed', icon: '📐', illusBg: 'linear-gradient(135deg,#e2f1ea,#fff)', status: 'Verified', statusTone: 'done', pct: 100 },
-]
-const SELLER_MORE = {
-  moreText: '+ 13 more sections',
-  moreMeta: 'Occupiers · Services · Disputes · Insurance · Environmental · Parking · ...',
+function initCtaVariant() {
+  if (typeof window === 'undefined') return
+  const key = 'umu_landing_cta_variant'
+  const saved = window.localStorage.getItem(key)
+  if (saved === 'A' || saved === 'B') {
+    ctaVariant.value = saved
+    return
+  }
+  const assigned = Math.random() >= 0.5 ? 'B' : 'A'
+  ctaVariant.value = assigned
+  window.localStorage.setItem(key, assigned)
 }
 
-const samples: Record<SampleType, any> = {
-  seller: {
-    bookLabel: 'Property Passport',
-    bookAddress: SELLER_PROPERTY.bookAddress,
-    eyebrow: 'Verified Property Passport',
-    addr: SELLER_PROPERTY.addr,
-    postcode: SELLER_PROPERTY.postcode,
-    stats: [
-      { num: '74', label: 'HS' },
-      { num: '17', label: 'Sections' },
-      { num: '100', suffix: '%', label: 'Complete' },
-    ],
-    value: SELLER_PROPERTY.value,
-    valueLabel: 'Estimated value',
-    completion: '100% complete · 0 red flags',
-    pills: SELLER_PROPERTY.pills,
-    recordsHeading: 'Official records',
-    recordsSub: 'Verified documents that define the legal and structural status of the property.',
-    recordStats: [
-      { tone: 'green', num: '17', label: 'Fully<br/>answered' },
-      { tone: 'amber', num: '0', label: 'Partially' },
-      { tone: 'grey', num: '0', label: 'Not yet<br/>shared' },
-    ],
-    sections: SELLER_SECTIONS,
-    moreText: SELLER_MORE.moreText,
-    moreMeta: SELLER_MORE.moreMeta,
-    ctaSub: 'Solicitor-grade documentation, ready before your first viewing.',
-    ctaLabel: 'Start a Property Passport',
-  },
-  landlord: {
-    bookLabel: 'Landlord Passport',
-    bookAddress: '14 Hazel Grove<br/>SK7 4BL',
-    eyebrow: 'Letting Passport · Active',
-    addr: '14 Hazel Grove',
-    postcode: 'Stockport, SK7 4BL',
-    stats: [
-      { num: '11', label: 'Docs' },
-      { num: '83', suffix: '%', label: 'Compliant' },
-      { num: '1', label: 'Tenant' },
-    ],
-    value: '£1,200/mo',
-    valueLabel: 'Current rent',
-    completion: 'Gas Safety renewing in 30 days',
-    pills: ['🏠 3 bed', 'Mid-terrace', '🪪 Tenant verified'],
-    recordsHeading: 'Compliance & tenancy',
-    recordsSub: 'Statutory documents for letting plus tenancy paperwork — kept current and shareable.',
-    recordStats: [
-      { tone: 'green', num: '9', label: 'Valid' },
-      { tone: 'amber', num: '1', label: 'Renew<br/>soon' },
-      { tone: 'grey', num: '1', label: 'To<br/>upload' },
-    ],
-    sections: [
-      { name: 'Gas Safety (CP12)', sub: 'Annual · renewing in 30 days', icon: '🔥', illusBg: 'linear-gradient(135deg,#fef3c7,#fff)', status: '⚠ Renew soon', statusTone: 'warn', pct: 80 },
-      { name: 'Electrical Safety (EICR)', sub: '5-yearly · valid to Apr 2028', icon: '⚡', illusBg: 'linear-gradient(135deg,#e2f1ea,#fff)', status: '✓ Satisfactory', statusTone: 'done', pct: 100 },
-      { name: 'Tenancy Agreement (AST)', sub: 'Signed · J. Smith · 12-month term', icon: '📜', illusBg: 'linear-gradient(135deg,#e2f1ea,#fff)', status: '✓ Active', statusTone: 'done', pct: 100 },
-      { name: 'Deposit Protection', sub: 'DPS · £1,200 protected', icon: '£', illusBg: 'linear-gradient(135deg,#e2f1ea,#fff)', status: '✓ Protected', statusTone: 'done', pct: 100 },
-    ],
-    moreText: '+ 8 more sections',
-    moreMeta: 'EPC · Smoke & CO · Legionella · Insurance · Right to Rent · Inventory · ...',
-    ctaSub: 'Stay compliant. Share with your tenant in one tap.',
-    ctaLabel: 'Start a Landlord Passport',
-  },
-  buyer: {
-    bookLabel: 'Property Passport',
-    bookAddress: SELLER_PROPERTY.bookAddress,
-    eyebrow: 'Buyer access · read-only',
-    addr: SELLER_PROPERTY.addr,
-    postcode: SELLER_PROPERTY.postcode,
-    stats: [
-      { num: '74', label: 'HS' },
-      { num: '17', label: 'Sections' },
-      { num: '100', suffix: '%', label: 'Complete' },
-    ],
-    value: SELLER_PROPERTY.value,
-    valueLabel: 'Asking price',
-    completion: 'Verified passport · 0 red flags',
-    pills: SELLER_PROPERTY.pills,
-    recordsHeading: 'What this passport tells you',
-    recordsSub: 'Every section the seller has shared with you. Tap any section to read the answers and download the supporting documents.',
-    recordStats: [
-      { tone: 'green', num: '17', label: 'Fully<br/>answered' },
-      { tone: 'amber', num: '0', label: 'Partially' },
-      { tone: 'grey', num: '0', label: 'Not yet<br/>shared' },
-    ],
-    sections: SELLER_SECTIONS,
-    moreText: SELLER_MORE.moreText,
-    moreMeta: SELLER_MORE.moreMeta,
-    ctaSub: 'Save this property, message the owner, or download the full report to share with your solicitor.',
-    ctaLabel: 'Save & message owner',
-    isBuyerView: true,
-  },
+function trackVariantExposure() {
+  if (typeof window === 'undefined') return
+  const key = `umu_landing_exposure_${ctaVariant.value}`
+  if (window.sessionStorage.getItem(key)) return
+  window.sessionStorage.setItem(key, '1')
+  trackLandingEvent('landing_cta_variant_exposure', {
+    variant: ctaVariant.value,
+  })
 }
 
-const currentSample = computed(() => samples[sampleType.value])
+onMounted(() => {
+  if (typeof window === 'undefined') return
+
+  initCtaVariant()
+  trackVariantExposure()
+
+  if ('IntersectionObserver' in window) {
+    const sections = document.querySelectorAll<HTMLElement>('[data-reveal]')
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+          }
+        }
+      },
+      {
+        threshold: 0.2,
+        rootMargin: '0px 0px -10% 0px',
+      },
+    )
+
+    sections.forEach((section) => revealObserver?.observe(section))
+  }
+
+  onWindowScroll()
+  window.addEventListener('scroll', onWindowScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  revealObserver?.disconnect()
+  revealObserver = null
+  window.removeEventListener('scroll', onWindowScroll)
+})
 </script>
 
 <style scoped>
-.ld-page {
-  min-height: 100dvh;
-  background: #fafafa;
-  color: #231d45;
+.landing-v2 {
   position: relative;
+  min-height: 100dvh;
+  color: #1f2b3f;
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
   overflow-x: hidden;
 }
-.ld-screen { padding-bottom: 32px; }
 
-.brand-row {
-  display: flex; align-items: center;
-  padding: 14px 22px 0;
-  padding-top: calc(14px + env(safe-area-inset-top));
-  gap: 8px;
-}
-.brand-mark {
-  display: inline-flex; align-items: center; gap: 9px;
-  font-size: 16px; font-weight: 800; color: #231d45; letter-spacing: -0.3px;
-}
-.brand-logo { width: 32px; height: 32px; flex-shrink: 0; color: #00a19a; }
-.brand-spacer { flex: 1; }
-.beta-pill {
-  font-size: 11px; font-weight: 800;
-  color: #00a19a; letter-spacing: 1.4px;
-  padding: 4px 10px; border-radius: 100px;
-  border: 1px solid #00a19a; text-transform: uppercase;
-}
-
-.hero { padding: 22px 22px 0; }
-.hero-title {
-  font-size: 30px; font-weight: 800;
-  color: #231d45; letter-spacing: -1px;
-  line-height: 1.02; margin-bottom: 8px;
-}
-.hero-title .lt-teal { color: #00a19a; }
-.hero-sub { font-size: 15px; font-weight: 500; color: #6b6783; line-height: 1.5; }
-
-/* Deck */
-.deck-wrap { margin: 22px 22px 0; position: relative; height: 468px; }
-.deck-card {
-  position: absolute; left: 0; right: 0;
-  height: 360px; border-radius: 22px;
-  cursor: pointer;
-  transition:
-    top 0.55s cubic-bezier(0.22, 0.94, 0.32, 1.04),
-    transform 0.55s cubic-bezier(0.22, 0.94, 0.32, 1.04),
-    box-shadow 0.4s, opacity 0.4s;
-  overflow: hidden; padding: 22px;
-  display: flex; flex-direction: column;
-  color: #fff;
-  box-shadow:
-    0 18px 40px -10px rgba(0, 0, 0, 0.32),
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-.deck-card.HomeScore { background: #00a19a; }
-.deck-card.passport { background: #231d45; }
-.deck-card.aisha { background: #c18a38; }
-.deck-card.market { background: #1a1535; }
-.deck-card[data-pos="1"] { top: 0; transform: scale(1); z-index: 4; }
-.deck-card[data-pos="2"] { top: 36px; transform: scale(0.985); z-index: 3; }
-.deck-card[data-pos="3"] { top: 72px; transform: scale(0.97); z-index: 2; }
-.deck-card[data-pos="4"] { top: 108px; transform: scale(0.955); z-index: 1; }
-
-.dc-peek {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 36px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 22px;
+.mesh {
+  position: fixed;
+  inset: 0;
   pointer-events: none;
-}
-.dc-peek-label {
-  font-size: 12px; font-weight: 800;
-  letter-spacing: 1.4px; text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
-  display: inline-flex; align-items: center; gap: 7px;
-}
-.dc-peek-label::before {
-  content: ''; width: 5px; height: 5px;
-  border-radius: 50%; background: rgba(255, 255, 255, 0.9);
-}
-.dc-peek-pill {
-  font-size: 11px; font-weight: 800;
-  background: rgba(255, 255, 255, 0.18); color: #fff;
-  padding: 3px 9px; border-radius: 100px;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-}
-.deck-card[data-pos="1"] .dc-peek { opacity: 0; transition: opacity 0.25s; }
-.deck-card:not([data-pos="1"]) .dc-peek { opacity: 1; transition: opacity 0.4s 0.2s; }
-.deck-card:not([data-pos="1"]) .dc-content,
-.deck-card:not([data-pos="1"]) .dc-foot {
-  opacity: 0; pointer-events: none; transition: opacity 0.25s;
-}
-.deck-card[data-pos="1"] .dc-content,
-.deck-card[data-pos="1"] .dc-foot {
-  opacity: 1; transition: opacity 0.4s 0.2s;
+  opacity: 0.04;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 92%);
 }
 
-.dc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.dc-eyebrow {
-  font-size: 11px; font-weight: 800;
-  letter-spacing: 1.6px; text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.78);
-  display: inline-flex; align-items: center; gap: 7px;
-}
-.dc-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); }
-.dc-pill {
-  font-size: 11px; font-weight: 800;
-  background: rgba(255, 255, 255, 0.18); color: #fff;
-  padding: 4px 10px; border-radius: 100px;
-  letter-spacing: 0.6px; text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-}
-
-.dc-content { flex: 1; display: flex; flex-direction: column; }
-.dc-headline {
-  font-size: 26px; font-weight: 800; color: #fff;
-  letter-spacing: -0.8px; line-height: 1.05; margin-bottom: 8px;
-}
-.dc-sub { font-size: 15px; font-weight: 500; color: rgba(255, 255, 255, 0.78); line-height: 1.5; }
-
-.dc-hs-row { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
-.dc-hs-gauge { width: 88px; height: 88px; position: relative; flex-shrink: 0; }
-.dc-hs-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.dc-hs-gauge .g-bg { stroke: rgba(255, 255, 255, 0.18); }
-.dc-hs-gauge .g-fill { stroke: #fff; stroke-linecap: round; }
-.g-num {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-}
-.gn-big { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -1px; line-height: 1; }
-.gn-small {
-  font-size: 8.5px; font-weight: 800; color: rgba(255, 255, 255, 0.65);
-  letter-spacing: 1.2px; text-transform: uppercase; margin-top: 2px;
-}
-.dc-hs-meta { flex: 1; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.78); line-height: 1.5; }
-.dc-hs-meta strong { color: #fff; font-weight: 800; }
-
-.dc-pp-row { display: flex; gap: 14px; margin-top: 16px; align-items: center; }
-.dc-pp-book-wrap {
-  width: 70px;
-  flex-shrink: 0;
-  position: relative;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.32));
-}
-.dc-pp-book-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.dc-pp-book-addr {
-  position: absolute;
-  bottom: 13%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 78%;
-  text-align: center;
-  color: #fff;
-  line-height: 1.15;
+.ambient {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(36px);
   pointer-events: none;
-}
-.dc-pp-book-addr-1 {
-  font-size: 7px;
-  font-weight: 800;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
-}
-.dc-pp-book-addr-2 {
-  font-size: 6px;
-  font-weight: 700;
-  opacity: 0.9;
-  margin-top: 1px;
-  letter-spacing: 0.2px;
-}
-.dc-pp-book {
-  width: 56px; height: 80px;
-  background: #00a19a; border-radius: 6px 3px 3px 6px;
-  flex-shrink: 0; padding: 8px;
-  position: relative;
-  display: flex; flex-direction: column; align-items: center;
-}
-.dc-pp-book::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2), transparent);
-  border-radius: 6px 0 0 6px;
-}
-.dc-pp-book-label {
-  font-size: 5px; font-weight: 800; color: #fff;
-  letter-spacing: 0.4px; text-transform: uppercase;
-  text-align: center; margin-top: 6px; line-height: 1.2;
-}
-.dc-pp-cats { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; align-content: flex-start; }
-.dc-pp-cat {
-  font-size: 12px; font-weight: 800;
-  background: rgba(255, 255, 255, 0.12); color: #fff;
-  padding: 5px 10px; border-radius: 100px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-.dc-pp-cat.more { background: rgba(0, 161, 154, 0.32); border-color: rgba(0, 161, 154, 0.5); }
-
-.dc-ai-row { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
-.dc-ai-num { font-size: 56px; font-weight: 800; color: #fff; letter-spacing: -2px; line-height: 0.9; flex-shrink: 0; }
-.dc-ai-num .unit { font-size: 24px; color: rgba(255, 255, 255, 0.55); font-weight: 800; margin-left: 4px; }
-.dc-ai-text { flex: 1; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.78); line-height: 1.5; }
-.dc-ai-text strong { color: #fff; font-weight: 800; }
-
-.dc-mk-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 18px; }
-.dc-mk-cell {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px; padding: 12px 10px; text-align: center;
-}
-.dc-mk-num { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
-.dc-mk-num .unit { font-size: 12px; color: rgba(255, 255, 255, 0.55); font-weight: 800; margin-left: 2px; }
-.dc-mk-label { font-size: 9px; font-weight: 700; color: rgba(255, 255, 255, 0.6); letter-spacing: 0.3px; text-transform: uppercase; line-height: 1.2; }
-
-.dc-foot { margin-top: auto; padding-top: 14px; }
-.dc-cta {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 12px;
-  font-family: inherit; font-size: 15px; font-weight: 800;
-  padding: 11px 14px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  letter-spacing: -0.2px; transition: all 0.15s;
-}
-.dc-cta:hover { background: rgba(255, 255, 255, 0.26); }
-.dc-cta svg { width: 13px; height: 13px; }
-
-.deck-dots { display: flex; justify-content: center; gap: 6px; margin: 18px 22px 0; }
-.deck-dot { width: 6px; height: 6px; border-radius: 50%; background: #ececef; transition: all 0.3s; cursor: pointer; }
-.deck-dot.active { width: 22px; border-radius: 100px; background: #00a19a; }
-
-.cta-section { padding: 22px 22px 24px; }
-.btn-primary {
-  width: 100%; background: #00a19a; color: #fff;
-  border: none; font-family: inherit;
-  font-size: 15px; font-weight: 800;
-  padding: 16px 18px; border-radius: 14px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  letter-spacing: -0.2px;
-  box-shadow: 0 8px 22px rgba(0, 161, 154, 0.32);
-}
-.btn-primary svg { width: 14px; height: 14px; }
-.cta-signin { margin-top: 14px; font-size: 14px; font-weight: 600; color: #6b6783; text-align: center; }
-.cta-signin a { color: #00a19a; font-weight: 800; cursor: pointer; }
-
-/* Sub-screen back bar */
-.back-bar {
-  display: flex; align-items: center;
-  padding: 10px 16px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 10px;
-  background: #fff;
-  border-bottom: 1px solid #ececef;
-  position: sticky; top: 0; z-index: 5;
-}
-.back-btn {
-  width: 36px; height: 36px;
-  border-radius: 50%; background: #fafafa; color: #231d45;
-  border: 1px solid #ececef; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-family: inherit;
-}
-.back-btn svg { width: 14px; height: 14px; }
-.back-bar-title { font-size: 14px; font-weight: 800; color: #231d45; letter-spacing: -0.2px; flex: 1; }
-
-/* Market screen */
-.market-hero { padding: 24px 22px 22px; border-bottom: 1px solid #f5f5f7; }
-.market-eyebrow {
-  font-size: 11px; font-weight: 800; color: #00a19a;
-  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
-}
-.market-title { font-size: 32px; font-weight: 800; color: #231d45; letter-spacing: -1.1px; line-height: 1; margin-bottom: 12px; }
-.market-sub { font-size: 14px; font-weight: 500; color: #6b6783; line-height: 1.55; }
-
-.market-section-h { font-size: 12px; font-weight: 800; color: #9c98ad; letter-spacing: 2px; text-transform: uppercase; padding: 28px 22px 14px; }
-
-.market-stat-block { margin: 0 22px 12px; padding: 24px 22px 22px; border-radius: 18px; position: relative; overflow: hidden; }
-.market-stat-block.navy { background: #231d45; }
-.market-stat-block.teal { background: #00a19a; }
-.market-stat-block.deep { background: #1a1535; }
-.market-stat-block::after {
-  content: ''; position: absolute;
-  top: -60px; right: -60px; width: 180px; height: 180px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
-}
-.market-stat-num {
-  font-size: 48px; font-weight: 800; color: #fff;
-  letter-spacing: -2px; line-height: 0.95; margin-bottom: 10px;
-  display: flex; align-items: baseline; gap: 10px;
-  position: relative; z-index: 1;
-}
-.ms-d, .ms-target-unit { font-size: 18px; color: rgba(255, 255, 255, 0.55); font-weight: 800; margin-left: 4px; }
-.ms-arrow { font-size: 20px; color: rgba(255, 255, 255, 0.45); font-weight: 700; }
-.ms-target { font-size: 24px; color: rgba(255, 255, 255, 0.72); letter-spacing: -0.6px; font-weight: 800; }
-.market-stat-label {
-  font-size: 11px; font-weight: 800;
-  color: rgba(255, 255, 255, 0.72);
-  letter-spacing: 1.6px; text-transform: uppercase;
-  margin-bottom: 18px; position: relative; z-index: 1;
-}
-.market-stat-headline { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.4px; line-height: 1.25; margin-bottom: 8px; position: relative; z-index: 1; }
-.market-stat-text { font-size: 15px; font-weight: 500; color: rgba(255, 255, 255, 0.78); line-height: 1.55; position: relative; z-index: 1; }
-.market-stat-text strong { color: #fff; font-weight: 800; }
-
-.market-para { padding: 0 22px; margin-bottom: 14px; font-size: 15px; font-weight: 500; color: #231d45; line-height: 1.6; }
-.market-para strong { color: #231d45; font-weight: 800; }
-
-/* Pull quote */
-.market-pull-quote {
-  margin: 22px 22px;
-  padding: 16px 0 16px 18px;
-  border-left: 3px solid #00a19a;
-  font-size: 18px; font-weight: 700;
-  color: #231d45;
-  line-height: 1.35;
-  letter-spacing: -0.3px;
-}
-.market-pull-attr {
-  font-size: 12px; font-weight: 700;
-  color: #9c98ad;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  margin-top: 12px;
-}
-.illustrative-tag {
-  display: inline-block;
-  margin-left: 6px;
-  font-size: 9px;
-  background: #fafafa;
-  color: #6b6783;
-  padding: 2px 6px;
-  border-radius: 100px;
-  letter-spacing: 0.3px;
-  text-transform: none;
+  opacity: 0.32;
+  animation: drift 20s ease-in-out infinite;
 }
 
-/* Government section — navy strip */
-.govt-card {
-  margin: 0 22px 14px;
-  background: #231d45;
-  color: #fff;
-  border-radius: 16px;
-  padding: 18px;
-  position: relative;
-  overflow: hidden;
-}
-.govt-eyebrow {
-  font-size: 11px; font-weight: 800;
-  color: #00a19a;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: inline-flex; align-items: center; gap: 8px;
-}
-.govt-eyebrow::before {
-  content: ''; width: 14px; height: 1px;
-  background: #00a19a;
-}
-.govt-headline {
-  font-size: 18px; font-weight: 800;
-  letter-spacing: -0.4px;
-  line-height: 1.2;
-  margin-bottom: 10px;
-  color: #fff;
-}
-.govt-text {
-  font-size: 15px; font-weight: 500;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.55;
-  letter-spacing: -0.1px;
-}
-.govt-text strong { color: #fff; font-weight: 800; }
-
-/* Founder section — soft cream */
-.founder-card {
-  margin: 0 22px 14px;
-  background: #f7f2e8;
-  border: 1px solid #efe6cd;
-  border-radius: 16px;
-  padding: 20px 18px;
-}
-.founder-eyebrow {
-  font-size: 11px; font-weight: 800;
-  color: #6b6783;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: inline-flex; align-items: center; gap: 8px;
-}
-.founder-eyebrow::before {
-  content: ''; width: 14px; height: 1px;
-  background: #9c98ad;
-}
-.founder-headline {
-  font-size: 20px; font-weight: 800;
-  letter-spacing: -0.5px;
-  line-height: 1.15;
-  margin-bottom: 12px;
-  color: #231d45;
-}
-.founder-para {
-  font-size: 15px; font-weight: 500;
-  color: #231d45;
-  line-height: 1.6;
-  letter-spacing: -0.1px;
-  margin-bottom: 12px;
-}
-.founder-para:last-child { margin-bottom: 0; }
-.founder-para strong { font-weight: 800; }
-.founder-sig {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(35, 29, 69, 0.1);
-  font-size: 12px; font-weight: 700;
-  color: #6b6783;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  display: flex; align-items: center; gap: 8px;
-}
-.founder-sig .illustrative-tag {
-  font-size: 9px;
-  background: rgba(35, 29, 69, 0.06);
-  color: #6b6783;
-  padding: 3px 7px;
-  border-radius: 100px;
-  letter-spacing: 0.3px;
-  text-transform: none;
-  font-weight: 700;
-  margin-left: 0;
+.ambient-a {
+  width: 260px;
+  height: 260px;
+  top: 120px;
+  left: -60px;
+  background: rgba(0, 161, 154, 0.3);
 }
 
-/* With/without comparison — joined grid */
-.compare-grid {
-  margin: 0 22px 18px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: #ececef;
-  border: 1px solid #ececef;
-  border-radius: 14px;
-  overflow: hidden;
-}
-.compare-cell {
-  background: #fff;
-  padding: 14px 12px;
-}
-.compare-cell.without { background: #fafafa; }
-.compare-cell-label {
-  font-size: 11px; font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.compare-cell.without .compare-cell-label { color: #6b6783; }
-.compare-cell.with .compare-cell-label { color: #00a19a; }
-.compare-row {
-  display: flex; align-items: flex-start;
-  gap: 8px;
-  padding: 6px 0;
-  border-top: 1px solid #f5f5f7;
-  font-size: 13px; font-weight: 600;
-  color: #231d45;
-  line-height: 1.4;
-  letter-spacing: -0.1px;
-}
-.compare-row:first-of-type { border-top: none; padding-top: 0; }
-.compare-row .day {
-  font-size: 11px; font-weight: 800;
-  color: #9c98ad;
-  letter-spacing: 0.4px;
-  flex-shrink: 0;
-  width: 38px;
-  padding-top: 2px;
-}
-.compare-row .what { flex: 1; }
-.compare-row.bad .what { color: #b85b36; }
-.compare-row.good .what { color: #00a19a; font-weight: 800; }
-
-/* Closing CTA */
-.market-final-cta {
-  margin: 24px 22px;
-  padding: 22px 20px;
-  background: #231d45;
-  color: #fff;
-  border-radius: 18px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.market-final-cta::before {
-  content: '';
-  position: absolute;
-  top: -40%; right: -25%;
-  width: 70%; height: 180%;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.22), transparent 60%);
-  pointer-events: none;
-}
-.mfc-eyebrow {
-  font-size: 11px; font-weight: 800;
-  color: #00a19a;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  position: relative; z-index: 2;
-}
-.mfc-headline {
-  font-size: 22px; font-weight: 800;
-  letter-spacing: -0.6px;
-  line-height: 1.15;
-  margin-bottom: 8px;
-  position: relative; z-index: 2;
-}
-.mfc-sub {
-  font-size: 14px; font-weight: 600;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.5;
-  margin-bottom: 18px;
-  position: relative; z-index: 2;
-}
-.mfc-btn {
-  width: 100%;
-  background: #00a19a;
-  color: #fff;
-  border: none;
-  font-family: inherit;
-  font-size: 14px; font-weight: 800;
-  padding: 14px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px;
-  letter-spacing: -0.2px;
-  position: relative; z-index: 2;
-}
-.mfc-btn:hover { background: #00b6ae; }
-.mfc-btn svg { width: 13px; height: 13px; }
-
-/* ── AISHA STORY SCREEN ───────────────────────────────────── */
-.aisha-hero {
-  padding: 28px 22px 24px;
-  border-bottom: 1px solid #f5f5f7;
-}
-.aisha-eyebrow {
-  font-size: 11px; font-weight: 800;
-  color: #007e78;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
-.aisha-title {
-  font-size: 30px; font-weight: 800;
-  color: #231d45;
-  letter-spacing: -1px;
-  line-height: 1.05;
-  margin-bottom: 16px;
-}
-.aisha-title em {
-  font-style: normal;
-  color: #00a19a;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-.aisha-byline {
-  display: flex; align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #6b6783;
-  letter-spacing: -0.1px;
-}
-.aisha-byline-av {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #c18a38 0%, #8a5f1f 100%);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800;
-  flex-shrink: 0;
-}
-.aisha-byline-name { font-weight: 800; color: #231d45; }
-.aisha-byline-meta { color: #9c98ad; }
-
-.aisha-numbers {
-  background: transparent;
-  padding: 24px 22px 8px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-}
-.aisha-num-cell {
-  position: relative;
-  padding: 18px 14px 14px;
-  border-radius: 14px;
-  text-align: left;
-}
-.aisha-num-cell.teal { background: #00a19a; }
-.aisha-num-cell.navy { background: #231d45; }
-.aisha-num-cell.gold { background: #c18a38; }
-.aisha-num-big {
-  font-size: 32px; font-weight: 800;
-  color: #fff;
-  letter-spacing: -1.5px;
-  line-height: 1;
-  margin-bottom: 10px;
-}
-.aisha-num-big .unit {
-  font-size: 14px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: -0.1px;
-  margin-left: 3px;
-}
-.aisha-num-label {
-  font-size: 9px; font-weight: 800;
-  color: rgba(255, 255, 255, 0.88);
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  line-height: 1.35;
+.ambient-b {
+  width: 280px;
+  height: 280px;
+  top: 160px;
+  right: -80px;
+  background: rgba(95, 139, 255, 0.26);
+  animation-duration: 30s;
 }
 
-.aisha-section-h {
-  display: flex; align-items: center;
-  gap: 10px;
-  padding: 28px 22px 14px;
-}
-.aisha-section-num {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12px; font-weight: 700;
-  color: #00a19a;
-}
-.aisha-section-rule {
-  flex: 1;
-  height: 1px;
-  background: #ececef;
-}
-.aisha-section-title {
-  font-size: 18px; font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.4px;
-  line-height: 1.2;
-  padding: 0 22px 14px;
-}
-.aisha-section-title em {
-  font-style: normal;
-  color: #00a19a;
-  font-weight: 800;
-}
-.aisha-para {
-  padding: 0 22px;
-  margin-bottom: 14px;
-  font-size: 15px; font-weight: 500;
-  color: #231d45;
-  line-height: 1.6;
-  letter-spacing: -0.1px;
-}
-.aisha-para strong { font-weight: 800; }
-
-.aisha-pull {
-  margin: 22px 22px;
-  padding: 14px 0 14px 18px;
-  border-left: 3px solid #00a19a;
-}
-.aisha-pull-quote {
-  font-size: 18px;
-  font-weight: 700;
-  color: #231d45;
-  line-height: 1.4;
-  letter-spacing: -0.3px;
-  margin-bottom: 10px;
-}
-.aisha-pull-attr {
-  font-size: 11px; font-weight: 800;
-  color: #9c98ad;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+.shell {
+  width: min(1240px, calc(100% - 40px));
+  margin: 0 auto;
 }
 
-.aisha-final-cta {
-  margin: 24px 22px;
-  padding: 22px 20px 20px;
-  background: #fff;
-  border: 1px solid #e5f4f2;
-  border-radius: 18px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(35, 29, 69, 0.04);
-}
-.afc-eyebrow-pill {
-  display: inline-block;
-  font-size: 11px; font-weight: 800;
-  color: #007e78;
-  background: #f2faf8;
-  border: 1px solid #e5f4f2;
-  padding: 5px 11px;
-  border-radius: 100px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
-.afc-headline {
-  font-size: 22px; font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.5px;
-  line-height: 1.15;
-  margin-bottom: 8px;
-}
-.afc-sub {
-  font-size: 15px; font-weight: 500;
-  color: #6b6783;
-  line-height: 1.55;
-  margin-bottom: 18px;
-  letter-spacing: -0.05px;
-  padding: 0 4px;
-}
-.afc-btn {
-  display: inline-flex;
-  background: #00a19a;
-  color: #fff;
-  border: none;
-  font-family: inherit;
-  font-size: 15px; font-weight: 800;
-  padding: 11px 22px;
-  border-radius: 100px;
-  cursor: pointer;
-  align-items: center; justify-content: center;
-  gap: 6px;
-  letter-spacing: -0.2px;
-}
-.afc-btn:hover { background: #00b6ae; }
-.afc-btn svg { width: 11px; height: 11px; opacity: 0.85; }
-
-/* Sample passport */
-.sample-banner {
-  margin: 16px 22px 0; padding: 12px 14px;
-  background: linear-gradient(135deg, #fef3c7, #fff);
-  border: 1px solid rgba(193, 138, 56, 0.3);
-  border-radius: 12px;
-  display: flex; align-items: center; gap: 10px;
-}
-.sample-banner-tag {
-  font-size: 11px; font-weight: 800;
-  background: #c18a38; color: #fff;
-  padding: 3px 8px; border-radius: 100px;
-  letter-spacing: 0.4px; text-transform: uppercase;
-}
-.sample-banner-text { flex: 1; font-size: 14px; font-weight: 600; color: #6b4e9f; line-height: 1.4; }
-
-.sample-type-picker { display: flex; gap: 6px; padding: 14px 22px 6px; }
-.stp-btn {
-  flex: 1; background: #fff;
-  border: 1px solid #ececef; border-radius: 100px;
-  padding: 9px 12px;
-  font-family: inherit; font-size: 14px; font-weight: 800;
-  color: #6b6783; cursor: pointer; letter-spacing: -0.2px;
-  transition: all 0.18s;
-}
-.stp-btn.active { background: #231d45; color: #fff; border-color: #231d45; }
-
-.passport-header {
-  margin: 14px 22px 0; padding: 18px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, #f5f5f7, #fff);
-  border: 1px solid #ececef;
-  display: flex; gap: 16px;
-}
-.passport-header.tone-seller { background: linear-gradient(135deg, #fdf4dc, #fff); border-color: rgba(193, 138, 56, 0.32); }
-.passport-header.tone-landlord { background: linear-gradient(135deg, #e2f1ea, #fff); border-color: rgba(0, 161, 154, 0.32); }
-.passport-header.tone-buyer { background: linear-gradient(135deg, #ede5ff, #fff); border-color: rgba(157, 123, 255, 0.32); }
-
-.ph-book {
-  width: 96px; flex-shrink: 0;
-  aspect-ratio: 5 / 7;
-  border-radius: 8px 12px 12px 8px;
-  background: linear-gradient(135deg, #00a19a, #007e78);
-  position: relative; padding: 12px 10px;
-  display: flex; flex-direction: column; align-items: center;
-  color: #fff;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-}
-.tone-seller .ph-book { background: linear-gradient(135deg, #c18a38, #8a5f1f); }
-.tone-buyer .ph-book { background: linear-gradient(135deg, #231d45, #1a1535); }
-.ph-book-spine { position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: rgba(255, 255, 255, 0.4); }
-.ph-book-label-top { font-size: 8px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; text-align: center; margin-left: 8px; }
-.ph-book-logo { margin: 0 0 8px 8px; }
-.ph-book-addr { font-size: 8.5px; font-weight: 800; text-align: center; margin-top: auto; margin-left: 8px; line-height: 1.25; letter-spacing: -0.2px; }
-
-.ph-info { flex: 1; min-width: 0; }
-.ph-eyebrow { font-size: 11px; font-weight: 800; color: #00a19a; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 6px; }
-.ph-addr { font-size: 18px; font-weight: 800; color: #231d45; letter-spacing: -0.5px; line-height: 1.1; }
-.ph-postcode { font-size: 13px; font-weight: 700; color: #6b6783; margin-top: 2px; margin-bottom: 12px; }
-.ph-stats { display: flex; gap: 8px; align-items: center; }
-.ph-stat { flex: 1; text-align: left; }
-.phs-num { font-size: 16px; font-weight: 800; color: #231d45; letter-spacing: -0.4px; }
-.phs-pct { font-size: 12px; color: #6b6783; margin-left: 1px; }
-.phs-label { font-size: 9px; font-weight: 800; color: #9c98ad; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 2px; }
-.ph-stat-divider { width: 1px; height: 24px; background: #ececef; }
-
-.addr-block {
-  margin: 14px 22px 0; padding: 18px;
-  background: #fff; border: 1px solid #ececef;
-  border-radius: 18px;
-}
-.addr-h { font-size: 22px; font-weight: 800; color: #231d45; letter-spacing: -0.6px; }
-.addr-sub { font-size: 14px; font-weight: 700; color: #6b6783; margin-top: 2px; margin-bottom: 14px; }
-.addr-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-.addr-value { font-size: 24px; font-weight: 800; color: #00a19a; letter-spacing: -0.6px; }
-.addr-value-label { font-size: 12px; font-weight: 700; color: #9c98ad; letter-spacing: 0.4px; text-transform: uppercase; flex: 1; }
-.addr-status {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 800;
-  background: #e2f1ea; color: #007e78;
-  padding: 4px 10px; border-radius: 100px;
-}
-.addr-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.addr-pill {
-  font-size: 12px; font-weight: 800;
-  background: #f5f5f7; color: #4a4566;
-  padding: 5px 11px; border-radius: 100px;
-  display: inline-flex; align-items: center; gap: 4px;
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
 }
 
-.or-header { padding: 22px 22px 8px; }
-.or-h { font-size: 18px; font-weight: 800; color: #231d45; letter-spacing: -0.4px; margin-bottom: 4px; }
-.or-sub { font-size: 13px; font-weight: 500; color: #6b6783; line-height: 1.5; }
-
-.or-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 22px 14px; }
-.or-stat { padding: 12px; border-radius: 14px; text-align: center; }
-.or-stat.green { background: #e2f1ea; color: #007e78; }
-.or-stat.amber { background: #fef3c7; color: #92400e; }
-.or-stat.grey { background: #f5f5f7; color: #6b6783; }
-.ors-num { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
-.ors-label { font-size: 9px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; margin-top: 6px; line-height: 1.2; }
-
-.section-cards { padding: 0 22px; }
-.sec-card {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px;
-  background: #fff; border: 1px solid #ececef;
-  border-radius: 16px; margin-bottom: 8px;
-}
-.sec-illus {
-  width: 52px; height: 52px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0;
-}
-.sec-info { flex: 1; min-width: 0; }
-.sec-name { font-size: 15px; font-weight: 800; color: #231d45; letter-spacing: -0.2px; }
-.sec-sub { font-size: 12px; font-weight: 600; color: #6b6783; margin-top: 1px; }
-.sec-status-pill {
-  display: inline-block; margin-top: 6px;
-  font-size: 11px; font-weight: 800;
-  padding: 3px 8px; border-radius: 100px;
-  letter-spacing: 0.3px;
-}
-.sec-status-pill.done { background: #e2f1ea; color: #007e78; }
-.sec-status-pill.warn { background: #fef3c7; color: #92400e; }
-.sec-status-pill.grey { background: #f5f5f7; color: #6b6783; }
-.sec-progress-col { width: 56px; flex-shrink: 0; }
-.sec-bar { height: 4px; background: #f5f5f7; border-radius: 100px; overflow: hidden; }
-.sec-bar-fill { height: 100%; background: #00a19a; border-radius: 100px; transition: width 0.3s; }
-.sec-pct { font-size: 11px; font-weight: 800; color: #00a19a; text-align: right; margin-top: 4px; }
-.sec-arrow { color: #9c98ad; font-size: 18px; flex-shrink: 0; }
-
-.sec-more {
-  margin-top: 8px; padding: 14px;
-  background: linear-gradient(135deg, #f5f5f7, #fff);
-  border: 1px dashed #ececef; border-radius: 14px;
-  text-align: center;
-}
-.sec-more-text { font-size: 13px; font-weight: 800; color: #4a4566; }
-.sec-more-meta { font-size: 12px; font-weight: 600; color: #9c98ad; margin-top: 4px; line-height: 1.4; }
-
-.sample-cta-bar {
-  margin: 22px 22px 0; padding: 24px 22px;
-  background: linear-gradient(135deg, #00a19a, #007e78);
-  border-radius: 22px; text-align: center; color: #fff;
-  box-shadow: 0 16px 36px rgba(0, 161, 154, 0.4);
-}
-.scb-headline { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; margin-bottom: 6px; }
-.scb-sub { font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.85); line-height: 1.5; margin-bottom: 14px; }
-.scb-btn {
-  width: 100%; background: #fff; color: #00857f;
-  border: none; font-family: inherit;
-  font-size: 14px; font-weight: 800;
-  padding: 13px 18px; border-radius: 14px;
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  letter-spacing: -0.2px;
-}
-.scb-btn svg { width: 14px; height: 14px; }
-
-/* ── Buyer-view extras ────────────────────────── */
-.buyer-access-strip {
-  margin: 10px 22px 0;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, #ede5ff, #fff);
-  border: 1px solid rgba(157, 123, 255, 0.32);
-  border-radius: 14px;
+.header-inner {
+  min-height: 76px;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-.bas-icon {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(157, 123, 255, 0.2);
-}
-.bas-info { flex: 1; min-width: 0; }
-.bas-title { font-size: 15px; font-weight: 800; color: #231d45; letter-spacing: -0.2px; }
-.bas-sub { font-size: 12px; font-weight: 700; color: #6b4e9f; margin-top: 2px; }
-
-.sample-cta-bar.buyer {
-  background: linear-gradient(135deg, #231d45, #1a1535);
-  box-shadow: 0 16px 36px rgba(35, 29, 69, 0.4);
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.buyer-cta-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-top: 4px;
-}
-.buyer-cta {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  padding: 10px 6px;
-  cursor: pointer;
+.brand {
+  border: 0;
+  background: transparent;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  letter-spacing: -0.2px;
-  transition: all 0.15s;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #1e2b41;
+  cursor: pointer;
 }
-.buyer-cta:hover { background: rgba(255, 255, 255, 0.24); }
-.buyer-cta svg { width: 14px; height: 14px; }
-.buyer-cta.secondary { background: rgba(255, 255, 255, 0.16); }
+
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  color: #00a19a;
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav button {
+  border: 0;
+  background: transparent;
+  color: #52627e;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.nav button:hover {
+  background: rgba(20, 53, 98, 0.06);
+  color: #1e2b41;
+}
+
+.header-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.btn {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn.solid {
+  color: #fff;
+  background: linear-gradient(135deg, #00a19a, #1a79c8);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+  background-size: 150% 150%;
+  animation: ctaPulse 5.6s ease-in-out infinite;
+}
+
+.btn.ghost {
+  background: #fff;
+  color: #1f2b3f;
+  border-color: #d4dfeb;
+}
+
+.btn.lg { padding: 14px 20px; font-size: 15px; }
+.btn:not(.lg) { padding: 10px 14px; font-size: 14px; }
+
+.btn.solid:hover {
+  box-shadow: 0 16px 28px rgba(26, 121, 200, 0.3);
+  background-position: 85% 15%;
+}
+
+.hero {
+  padding: 58px 0 40px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: #00857f;
+  font-weight: 800;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  color: #18263b;
+  font-size: clamp(34px, 4.6vw, 56px);
+  line-height: 0.98;
+  letter-spacing: -1.2px;
+  font-weight: 650;
+}
+
+.hero-copy h1 span {
+  color: #00a19a;
+}
+
+.hero-sub,
+.copy p,
+.timeline p,
+.market-card p,
+.review-card p,
+.footer p,
+.footer a,
+.footer-bottom {
+  color: #586a83;
+  line-height: 1.65;
+}
+
+.hero-sub {
+  margin: 18px 0 0;
+  font-size: 17px;
+}
+
+.hero-search {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d8e3ef;
+  border-radius: 20px;
+  box-shadow: 0 20px 34px rgba(32, 60, 96, 0.08);
+  padding: 18px;
+}
+
+.hero-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #50637f;
+  font-weight: 700;
+}
+
+.hero-search-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.hero-search-row :deep(.psi-input) {
+  min-height: 50px;
+  border-radius: 14px;
+  border-color: #d2dcea;
+  background: #fff;
+}
+
+.hero-search-row :deep(.psi-input:focus) {
+  border-color: #8ab4db;
+}
+
+.hero-search-row :deep(.psi-drop) {
+  z-index: 12;
+}
+
+.stat-row {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat-row article {
+  border-radius: 14px;
+  border: 1px solid #d9e4ee;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 12px;
+}
+
+.stat-row strong {
+  display: block;
+  color: #18293f;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.stat-row span {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: #60728c;
+}
+
+.hero-visual {
+  display: grid;
+  gap: 10px;
+  transform: translate3d(var(--tilt-x, 0), var(--tilt-y, 0), 0);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #d8e3ee;
+  border-radius: 20px;
+  box-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.panel:hover {
+  transform: translateY(-3px);
+  border-color: #c6d9ea;
+  box-shadow: 0 22px 34px rgba(33, 61, 98, 0.12);
+}
+
+.score-panel {
+  padding: 18px;
+}
+
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: #4b657f;
+  font-size: 12px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.chip {
+  border-radius: 999px;
+  background: #eafaf7;
+  color: #00857f;
+  padding: 5px 10px;
+}
+
+.score-body {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.score-ring-wrap {
+  position: relative;
+  width: 170px;
+  height: 170px;
+}
+
+.score-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg,
+.ring-meter {
+  fill: none;
+  stroke-width: 10;
+}
+
+.ring-bg {
+  stroke: #dcebf4;
+}
+
+.ring-meter {
+  stroke: #00a19a;
+  stroke-linecap: round;
+  stroke-dasharray: 326.73;
+  stroke-dashoffset: 84.95;
+  filter: drop-shadow(0 0 8px rgba(0, 161, 154, 0.36));
+  animation: ringGlow 3.4s ease-in-out infinite;
+}
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ring-center strong {
+  color: #16263d;
+  font-size: 50px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.ring-center span {
+  margin-top: 4px;
+  color: #00857f;
+  font-weight: 700;
+}
+
+.score-copy h2 {
+  margin: 0;
+  color: #15263d;
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+  font-weight: 600;
+}
+
+.score-copy p {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.passport-preview,
+.image-preview {
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.passport-preview img {
+  width: 100%;
+  max-width: 94px;
+  filter: drop-shadow(0 12px 20px rgba(21, 40, 66, 0.25));
+}
+
+.passport-card-inline {
+  width: 94px;
+}
+
+.passport-card-inline :deep(.passport-card) {
+  margin: 0;
+}
+
+.passport-card-inline :deep(.passport-container) {
+  max-width: 94px;
+}
+
+.passport-card-inline :deep(.passport-address) {
+  bottom: 13%;
+}
+
+.passport-card-inline-lg {
+  width: 132px;
+}
+
+.passport-card-inline-lg :deep(.passport-container) {
+  max-width: 132px;
+}
+
+.image-preview img {
+  width: 100%;
+  max-width: 110px;
+  border-radius: 12px;
+  height: 86px;
+  object-fit: cover;
+}
+
+.passport-content span,
+.image-caption span {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-size: 10px;
+  color: #00857f;
+  font-weight: 800;
+}
+
+.passport-content strong,
+.image-caption strong {
+  display: block;
+  margin-top: 6px;
+  color: #1d2e47;
+  font-size: 18px;
+  line-height: 1.14;
+  font-weight: 650;
+}
+
+.passport-content p,
+.image-caption p {
+  margin: 6px 0 0;
+  color: #5d708a;
+  font-size: 13px;
+}
+
+.float-a { animation: float 8s ease-in-out infinite; }
+.float-b { animation: float 10s ease-in-out infinite; }
+.float-c { animation: float 9s ease-in-out infinite; }
+
+.variant-b .sticky-cta {
+  background: linear-gradient(135deg, #1573bf, #00a19a);
+}
+
+.variant-b .hero-search {
+  border-color: #c8ddef;
+}
+
+.media-strip {
+  padding: 10px 0 6px;
+  overflow: hidden;
+}
+
+.media-track {
+  --item-width: 220px;
+  --item-gap: 12px;
+  --item-count: 8;
+  display: flex;
+  gap: var(--item-gap);
+  width: max-content;
+  animation: marquee 52s linear infinite;
+}
+
+.media-track figure {
+  margin: 0;
+  width: var(--item-width);
+  height: 130px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #dbe6ef;
+  box-shadow: 0 14px 26px rgba(36, 64, 100, 0.1);
+}
+
+.media-track img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.section {
+  padding: 44px 0;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(34px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal .panel {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.reveal.is-visible .panel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.market-grid .market-card:nth-child(2),
+.review-grid .review-card:nth-child(2),
+.timeline > div:nth-child(2) {
+  transition-delay: 70ms;
+}
+
+.market-grid .market-card:nth-child(3),
+.review-grid .review-card:nth-child(3),
+.timeline > div:nth-child(3) {
+  transition-delay: 130ms;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.reverse > :first-child { order: 1; }
+.reverse > :last-child { order: 2; }
+
+.copy h2 {
+  margin: 0;
+  color: #18273c;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.06;
+  letter-spacing: -0.6px;
+  font-weight: 620;
+}
+
+.copy ul {
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.copy li {
+  position: relative;
+  padding-left: 16px;
+  color: #596b84;
+}
+
+.copy li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00a19a;
+}
+
+.detail-panel {
+  padding: 18px;
+}
+
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  color: #5f748f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detail-main {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.detail-main > strong {
+  font-size: 68px;
+  line-height: 1;
+  color: #00a19a;
+  letter-spacing: -1.8px;
+  font-weight: 700;
+}
+
+.detail-main h3 {
+  margin: 0;
+  color: #1d2f48;
+  font-size: 20px;
+  font-weight: 620;
+}
+
+.detail-main p {
+  margin: 6px 0 0;
+}
+
+.progress-set {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.progress-set div {
+  display: grid;
+  gap: 4px;
+}
+
+.progress-set label {
+  color: #5a6d86;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.progress-set i {
+  display: block;
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00a19a, #5898f6);
+}
+
+.passport-panel {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.passport-book-wrap {
+  display: grid;
+  place-items: center;
+}
+
+.passport-book-wrap img {
+  width: 100%;
+  max-width: 132px;
+  filter: drop-shadow(0 14px 22px rgba(22, 42, 67, 0.24));
+}
+
+.passport-list {
+  display: grid;
+  gap: 8px;
+}
+
+.passport-list div {
+  border-radius: 12px;
+  border: 1px solid #dde8f1;
+  background: #f7fbff;
+  color: #28384e;
+  padding: 11px;
+  font-weight: 650;
+  font-size: 14px;
+}
+
+blockquote {
+  margin: 16px 0 0;
+  border-left: 3px solid #00a19a;
+  padding-left: 14px;
+  color: #1f324d;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.timeline {
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.timeline div {
+  border-radius: 12px;
+  border: 1px solid #dce7f0;
+  background: #fff;
+  padding: 12px;
+}
+
+.timeline span {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-size: 10px;
+  color: #00857f;
+  font-weight: 800;
+}
+
+.timeline strong {
+  display: block;
+  margin-top: 7px;
+  color: #1e314a;
+  font-size: 18px;
+  line-height: 1.16;
+  font-weight: 620;
+}
+
+.market-block,
+.review-block {
+  display: grid;
+  gap: 14px;
+}
+
+.market-grid,
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.market-card {
+  padding: 16px;
+}
+
+.market-card strong {
+  display: block;
+  color: #1d2f47;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.7px;
+  font-weight: 650;
+}
+
+.review-card {
+  padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 36px rgba(35, 66, 106, 0.14);
+}
+
+.stars {
+  color: #ffb31a;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.review-card span {
+  display: block;
+  margin-top: 10px;
+  color: #61758f;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.footer {
+  margin-top: 34px;
+  padding: 26px 0 16px;
+  background: linear-gradient(180deg, rgba(246, 251, 255, 0.88), rgba(235, 243, 249, 0.95));
+  border-top: 1px solid rgba(30, 47, 71, 0.11);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-brand strong {
+  color: #1f3049;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.footer h3 {
+  margin: 2px 0 8px;
+  color: #21354f;
+  font-size: 14px;
+}
+
+.footer ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 7px;
+}
+
+.footer a {
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: #21354f;
+}
+
+.footer-bottom {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(30, 47, 71, 0.1);
+  font-size: 13px;
+}
+
+.sticky-cta {
+  position: fixed;
+  right: 20px;
+  bottom: 18px;
+  z-index: 55;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 14px;
+  box-shadow: 0 16px 30px rgba(27, 118, 193, 0.36);
+}
+
+.variant-b .sticky-cta {
+  left: 20px;
+  right: auto;
+}
+
+.calm-mode .ambient,
+.calm-mode .mesh {
+  opacity: 0.18;
+}
+
+.calm-mode .panel,
+.calm-mode .btn,
+.calm-mode .hero-visual {
+  transition-duration: 0.18s;
+}
+
+.calm-mode .float-a,
+.calm-mode .float-b,
+.calm-mode .float-c,
+.calm-mode .media-track,
+.calm-mode .ring-meter,
+.calm-mode .btn.solid {
+  animation-play-state: paused;
+}
+
+.cta-fade-enter-active,
+.cta-fade-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.cta-fade-enter-from,
+.cta-fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(22px, -16px, 0) scale(1.05); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% {
+    transform: translateX(
+      calc((var(--item-width) + var(--item-gap)) * var(--item-count) * -1)
+    );
+  }
+}
+
+@keyframes ringGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(0, 161, 154, 0.32));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(0, 161, 154, 0.48));
+  }
+}
+
+@keyframes ctaPulse {
+  0%,
+  100% {
+    box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+  }
+  50% {
+    box-shadow: 0 18px 30px rgba(26, 121, 200, 0.32);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient,
+  .media-track,
+  .float-a,
+  .float-b,
+  .float-c,
+  .ring-meter,
+  .btn.solid,
+  .reveal {
+    animation: none;
+    transition: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 1120px) {
+  .hero-grid,
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-row,
+  .market-grid,
+  .review-grid,
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reverse > :first-child,
+  .reverse > :last-child {
+    order: initial;
+  }
+}
+
+@media (max-width: 760px) {
+  .shell { width: calc(100% - 28px); }
+
+  .header { position: static; }
+
+  .nav,
+  .header-actions .btn.ghost { display: none; }
+
+  .header-inner { min-height: 64px; }
+
+  .hero { padding: 30px 0 26px; }
+
+  .hero-copy h1 { font-size: 38px; }
+
+  .hero-search-row,
+  .score-body,
+  .passport-preview,
+  .image-preview,
+  .detail-main,
+  .passport-panel,
+  .stat-row,
+  .market-grid,
+  .review-grid,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .score-ring-wrap { margin: 0 auto; }
+
+  .section { padding: 34px 0; }
+
+  .copy h2 { font-size: 30px; }
+
+  .passport-card-inline {
+    width: 110px;
+  }
+
+  .passport-card-inline :deep(.passport-container) {
+    max-width: 110px;
+  }
+
+  .passport-card-inline-lg {
+    width: 132px;
+  }
+
+  .sticky-cta {
+    right: 14px;
+    left: 14px;
+    bottom: 14px;
+    text-align: center;
+    justify-content: center;
+  }
+}
 </style>
