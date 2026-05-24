@@ -23,15 +23,15 @@
 
       <!-- Action Buttons -->
       <div class="thankyou-page__actions">
-        <button @click="skipToApp" class="thankyou-page__button-primary">
-          Start Exploring
+        <button @click="continueToPreferences" class="thankyou-page__button-primary">
+          Personalise My Experience
         </button>
 
         <button
-          @click="continueToQuestionnaire"
+          @click="skipToApp"
           class="thankyou-page__button-secondary"
         >
-          Tell us more about your search
+          Skip for now
         </button>
       </div>
     </div>
@@ -47,12 +47,17 @@ definePageMeta({
   title: 'Thank You - UmovingU',
 })
 
-const continueToQuestionnaire = () => {
-  return navigateTo('/onboarding/questionnaire/1')
+const continueToPreferences = () => {
+  return navigateTo('/onboarding/preferences?new=true')
 }
 
 const skipToApp = () => {
-  return navigateTo('/dashboard')
+  let redirectPath = null
+  if (typeof localStorage !== 'undefined') {
+    redirectPath = localStorage.getItem('redirectAfterLogin')
+    if (redirectPath) localStorage.removeItem('redirectAfterLogin')
+  }
+  return navigateTo(redirectPath || '/explore')
 }
 </script>
 

@@ -1,401 +1,662 @@
 <template>
-  <div class="hs-search-page">
-    <!-- Header -->
-    <AppHeader title="Homehealth Score" :showBack="true" />
+  <div class="hs-page">
+    <!-- ── Top nav: back · eyebrow pill · tour ──────────────────────── -->
+    <div class="hs-topnav">
+      <button class="hs-back" @click="router.back()" aria-label="Back">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="hs-eyebrow-pill"><span class="hs-pulse" />HomeScore</div>
+      <div class="hs-topnav-spacer" />
+    </div>
 
-    <main class="hs-search-main">
-      <!-- Hero -->
-      <div class="hs-hero">
-        <div class="hs-hero-ring">
-          <svg viewBox="0 0 120 120" width="96" height="96">
-            <circle cx="60" cy="60" r="48" fill="#f0fafa" stroke="#00a19a" stroke-width="2" stroke-dasharray="4 6" />
-            <circle cx="60" cy="60" r="36" fill="white" stroke="#e8f8f7" stroke-width="1" />
-            <text x="60" y="55" text-anchor="middle" font-size="22" font-weight="800" fill="#00a19a" font-family="sans-serif">HS</text>
-            <text x="60" y="71" text-anchor="middle" font-size="10" fill="#8e8e93" font-family="sans-serif">Score</text>
-          </svg>
-        </div>
-        <h1 class="hs-hero-title">Homehealth Score</h1>
-        <p class="hs-hero-sub">Search any UK property to instantly generate its Homehealth Score using EPC and public data — no questions required to start.</p>
+    <!-- ── Hero ─────────────────────────────────────────────────────── -->
+    <div class="hs-hero">
+      <div class="hs-hero-title">How energy efficient is any UK property?</div>
+      <div class="hs-hero-sub">
+        Instantly scored from public EPC data — for any address, anyone. See how
+        a property compares to its street in seconds.
       </div>
+    </div>
 
-      <!-- Search bar -->
+    <!-- ── Search ───────────────────────────────────────────────────── -->
+    <div class="hs-search-block">
       <div class="hs-search-wrap">
-        <div class="hs-search-box" :class="{ focused: inputFocused }">
-          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" class="hs-search-icon">
-            <circle cx="11" cy="11" r="7" stroke="#aaa" stroke-width="2" />
-            <path d="M16.5 16.5L21 21" stroke="#aaa" stroke-width="2" stroke-linecap="round" />
+        <PropertySearchInput
+          placeholder="Postcode or address"
+          variant="light"
+          :show-passport-status="true"
+          @select="onResultSelect"
+          @enter="onSearchEnter"
+        />
+        <button class="hs-search-go" type="button" @click="onCheckClick">
+          Check
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="13 5 19 12 13 19" />
           </svg>
-          <input
-            ref="inputEl"
-            v-model="query"
-            class="hs-search-input"
-            placeholder="Postcode or address..."
-            @focus="inputFocused = true"
-            @blur="inputFocused = false"
-            @keydown.enter="doSearch"
-          />
-          <button v-if="query" class="hs-search-clear" @click="query = ''; results = []">
-            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
-              <path d="M18 6L6 18M6 6l12 12" stroke="#aaa" stroke-width="2" stroke-linecap="round" />
-            </svg>
-          </button>
-        </div>
-        <button class="hs-search-btn" :class="{ loading }" @click="doSearch" :disabled="loading || query.length < 2">
-          {{ loading ? '...' : 'Search' }}
         </button>
       </div>
 
-      <!-- Info chips -->
-      <div v-if="!results.length && !loading" class="hs-chips">
-        <div class="hs-chip">
-          <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#00a19a" stroke-width="2"/></svg>
-          Auto-scored from EPC data
-        </div>
-        <div class="hs-chip">
-          <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#00a19a" stroke-width="2"/></svg>
-          Improve with your answers
-        </div>
-        <div class="hs-chip">
-          <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><circle cx="12" cy="12" r="10" stroke="#00a19a" stroke-width="2"/><path d="M12 6v6l4 2" stroke="#00a19a" stroke-width="2" stroke-linecap="round"/></svg>
-          Takes under 2 minutes
-        </div>
-      </div>
-
-      <!-- Loading skeleton -->
-      <div v-if="loading" class="hs-results-list">
-        <div v-for="i in 4" :key="i" class="hs-result-skeleton">
-          <div class="hs-skel-line wide"></div>
-          <div class="hs-skel-line narrow"></div>
-        </div>
-      </div>
-
-      <!-- Results -->
-      <div v-else-if="results.length" class="hs-results-section">
-        <p class="hs-results-label">{{ results.length }} propert{{ results.length === 1 ? 'y' : 'ies' }} found</p>
-        <div class="hs-results-list">
-          <button
-            v-for="prop in results"
-            :key="prop.id"
-            class="hs-result-item"
-            @click="goToScore(prop.id)"
+      <div class="hs-meta-row">
+        <span class="hs-meta-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <div class="hs-result-left">
-              <div class="hs-result-icon">
-                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="#00a19a" stroke-width="2" stroke-linejoin="round" />
-                </svg>
-              </div>
-              <div class="hs-result-info">
-                <p class="hs-result-address">{{ prop.addressLine1 }}</p>
-                <p class="hs-result-sub">{{ prop.postcode }}{{ prop.city ? ' · ' + prop.city : '' }}</p>
-              </div>
-            </div>
-            <div class="hs-result-right">
-              <div v-if="prop.epcRating" class="hs-epc-badge" :style="{ background: epcColor(prop.epcRating) }">
-                EPC {{ prop.epcRating }}
-              </div>
-              <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
-                <path d="M9 18l6-6-6-6" stroke="#c7c7cc" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </div>
-          </button>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Free
+        </span>
+        <span class="hs-meta-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Instant
+        </span>
+        <span class="hs-meta-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          No account needed
+        </span>
+      </div>
+    </div>
+
+    <!-- ── Real story card ─────────────────────────────────────────── -->
+    <div class="hs-real-story">
+      <div class="hs-real-story-bar" />
+      <div class="hs-real-story-body">
+        <div class="hs-real-story-eyebrow">Real story</div>
+        <div class="hs-real-story-quote">
+          "My neighbour was being charged £150 a month extra — her supplier
+          thought she had a swimming pool."
+        </div>
+        <div class="hs-real-story-text">
+          Energy suppliers estimate usage based on assumptions. Those
+          assumptions are sometimes very wrong. HomeScore shows you what your
+          home should actually cost — and flags when something doesn't add up.
         </div>
       </div>
+    </div>
 
-      <!-- No results -->
-      <div v-else-if="searched && !loading" class="hs-empty">
-        <svg viewBox="0 0 64 64" fill="none" width="56" height="56">
-          <circle cx="32" cy="32" r="28" fill="#f5f5f8" />
-          <circle cx="28" cy="28" r="14" stroke="#d1d5db" stroke-width="2.5" />
-          <path d="M38 38l10 10" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round" />
-        </svg>
-        <p class="hs-empty-title">No properties found</p>
-        <p class="hs-empty-sub">Try a different postcode or address</p>
+    <!-- ── Live activity ───────────────────────────────────────────── -->
+    <div class="hs-live-row">
+      <span class="hs-live-pulse" />
+      <span><strong>147</strong> HomeScores run in the last hour</span>
+    </div>
+
+    <!-- ── How it works ───────────────────────────────────────────── -->
+    <div class="hs-section-h-row">
+      <div class="hs-section-h">How it works</div>
+    </div>
+
+    <div class="hs-how-tabs" role="tablist">
+      <button
+        v-for="t in howTabs"
+        :key="t.id"
+        class="hs-how-tab"
+        :class="{ active: activeHow === t.id }"
+        @click="activeHow = t.id"
+      >
+        {{ t.label }}
+      </button>
+    </div>
+
+    <div class="hs-steps-list">
+      <div v-for="(step, i) in currentHowSteps" :key="i" class="hs-step-row">
+        <div class="hs-step-num">{{ i + 1 }}</div>
+        <div class="hs-step-body">
+          <div class="hs-step-title">{{ step.title }}</div>
+          <div class="hs-step-sub">{{ step.sub }}</div>
+        </div>
       </div>
-    </main>
+    </div>
+
+    <!-- ── Powered by OpenProperty ─────────────────────────────────── -->
+    <div class="hs-powered-by">
+      <div class="hs-powered-eyebrow">Powered by</div>
+      <img
+        src="/op-icons/opLogo.png"
+        alt="OpenProperty"
+        class="hs-powered-logo"
+      />
+      <div class="hs-powered-name">OpenProperty</div>
+      <div class="hs-powered-tag">Property data infrastructure</div>
+    </div>
+
+    <div style="height: 24px" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useRuntimeConfig } from '#app'
-import AppHeader from '~/components/core/AppHeader.vue'
+import { ref, computed } from 'vue'
+import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 
 const router = useRouter()
-const config = useRuntimeConfig()
 
-const query = ref('')
-const inputFocused = ref(false)
-const loading = ref(false)
-const searched = ref(false)
-const results = ref<any[]>([])
-const inputEl = ref<HTMLInputElement | null>(null)
-
-async function doSearch() {
-  const q = query.value.trim()
-  if (q.length < 2) return
-  loading.value = true
-  searched.value = true
-  try {
-    const res = await fetch(`${config.public.apiBase}/property/search?q=${encodeURIComponent(q)}&limit=20`)
-    if (res.ok) {
-      const data = await res.json()
-      results.value = data.items ?? []
-    }
-  } catch {
-    results.value = []
-  } finally {
-    loading.value = false
-  }
+function onResultSelect(property: any) {
+  // HomeScore detail is the page's main purpose — go there directly.
+  // Street compare is reachable from the "See street comparison" button on
+  // the detail page itself.
+  router.push(`/homescore/${property.id}`)
 }
 
-function goToScore(id: string) {
-  router.push(`/homescore/${id}`)
+function onSearchEnter(_q: string) {
+  // PropertySearchInput already opens its dropdown on enter.
 }
 
-function epcColor(rating: string): string {
-  const map: Record<string, string> = {
-    A: '#00b050', B: '#33b800', C: '#92d050',
-    D: '#ffff00', E: '#ffbf00', F: '#ff6600', G: '#ff0000',
-  }
-  return map[rating?.toUpperCase()] ?? '#8e8e93'
+function onCheckClick() {
+  const input = document.querySelector<HTMLInputElement>(
+    '.hs-search-wrap input',
+  )
+  input?.focus()
 }
+
+// ── How it works tabs ────────────────────────────────────────────────
+type HowId = 'buyers' | 'owners' | 'curious'
+const activeHow = ref<HowId>('buyers')
+
+const howTabs: { id: HowId; label: string }[] = [
+  { id: 'buyers', label: 'Looking to buy' },
+  { id: 'owners', label: "It's my property" },
+  { id: 'curious', label: 'Just curious' },
+]
+
+const howCopy: Record<HowId, { title: string; sub: string }[]> = {
+  buyers: [
+    {
+      title: 'Search any UK address',
+      sub: 'Type a postcode or street and see how it scores against its neighbours.',
+    },
+    {
+      title: 'See running costs & risks',
+      sub: 'Energy costs, sold history, flood risk — everything public records can tell you before you make an offer.',
+    },
+    {
+      title: 'Know what to ask before you view',
+      sub: 'Get a list of questions based on what the EPC data flags — walk in already informed.',
+    },
+  ],
+  owners: [
+    {
+      title: 'Search your address',
+      sub: "See your property's estimated score from public EPC data — takes 5 seconds.",
+    },
+    {
+      title: 'See how you compare to your street',
+      sub: 'Find out if this property is costing more to run than similar homes nearby — and why.',
+    },
+    {
+      title: 'Upload bills to get your real number',
+      sub: 'Public EPC data can be years out of date. Your actual bills tell the real story — and start building your Property Passport.',
+    },
+  ],
+  curious: [
+    {
+      title: "Search any address — yours or anyone's",
+      sub: 'No account, no commitment. Just type a postcode and see what the data says.',
+    },
+    {
+      title: 'See what your street is paying',
+      sub: 'Compare running costs across nearby homes — renting or owning, the data is the same for everyone.',
+    },
+    {
+      title: 'Find out if you could be paying less',
+      sub: 'If this property is costing more than its neighbours, the HomeScore shows you exactly why — and what could change it.',
+    },
+  ],
+}
+const currentHowSteps = computed(() => howCopy[activeHow.value])
 </script>
 
 <style scoped>
-.hs-search-page {
-  min-height: 100vh;
-  background: #f5f5f8;
-  max-width: 480px;
+.hs-page {
+  min-height: 100dvh;
+  background: #fff;
+  color: #231d45;
+  max-width: 28rem;
+  width: 100%;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-.hs-search-main {
-  flex: 1;
-  padding: 24px 20px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Hero */
-.hs-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 8px 0 4px;
-}
-.hs-hero-ring {
-  margin-bottom: 14px;
-}
-.hs-hero-title {
-  font-size: 22px;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin: 0 0 8px;
-}
-.hs-hero-sub {
-  font-size: 14px;
-  color: #8e8e93;
-  line-height: 1.5;
-  max-width: 280px;
-  margin: 0 auto;
-}
-
-/* Search */
-.hs-search-wrap {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.hs-search-box {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 14px;
-  border: 1.5px solid #e8e8ee;
-  padding: 0 12px;
-  height: 50px;
-  gap: 8px;
-  transition: border-color 0.15s;
-}
-.hs-search-box.focused {
-  border-color: #00a19a;
-  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12);
-}
-.hs-search-icon { flex-shrink: 0; }
-.hs-search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 15px;
-  background: transparent;
-  color: #1a1a1a;
-}
-.hs-search-input::placeholder { color: #aeaeb2; }
-.hs-search-clear {
-  background: none;
-  border: none;
-  padding: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-.hs-search-btn {
-  padding: 0 20px;
-  height: 50px;
-  background: #231d45;
-  color: white;
-  border: none;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 0.15s;
-  flex-shrink: 0;
-}
-.hs-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.hs-search-btn.loading { opacity: 0.7; }
-
-/* Info chips */
-.hs-chips {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.hs-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #3c3c43;
-  font-weight: 500;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-}
-
-/* Results */
-.hs-results-section { display: flex; flex-direction: column; gap: 10px; }
-.hs-results-label {
-  font-size: 12px;
-  color: #8e8e93;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding: 0 2px;
-}
-.hs-results-list { display: flex; flex-direction: column; gap: 2px; }
-.hs-result-item {
+/* ── Top nav ──────────────────────────────────────────────────────── */
+.hs-topnav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: white;
-  border-radius: 16px;
-  padding: 14px 16px;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  gap: 12px;
-  transition: background 0.12s;
-  width: 100%;
+  padding: 14px 20px 8px;
+  padding-top: calc(14px + env(safe-area-inset-top));
 }
-.hs-result-item:active { background: #f2f2f7; }
-.hs-result-left {
+.hs-back {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f9f4;
+  border: 1px solid #e2f1ea;
+  display: grid;
+  place-items: center;
+  color: #00a19a;
+  cursor: pointer;
+}
+.hs-back svg {
+  width: 14px;
+  height: 14px;
+}
+.hs-topnav-spacer {
+  width: 32px;
+}
+
+.hs-eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f9f4;
+  border: 1px solid #e2f1ea;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #00a19a;
+  text-transform: uppercase;
+}
+.hs-pulse {
+  width: 6px;
+  height: 6px;
+  background: #00a19a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #e2f1ea;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────── */
+.hs-hero {
+  padding: 18px 24px 14px;
+}
+.hs-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: #231d45;
+  margin-bottom: 12px;
+}
+.hs-hero-sub {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b6783;
+  line-height: 1.55;
+  letter-spacing: -0.05px;
+}
+
+/* ── Search ───────────────────────────────────────────────────────── */
+.hs-search-block {
+  padding: 8px 24px 0;
+}
+
+.hs-search-wrap {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid #ececef;
+  border-radius: 14px;
+  padding: 4px 4px 4px 10px;
+  transition: all 0.15s;
+}
+/* Make the dropdown span the full width of the outer search shell, not just
+   the inner input's narrower column. We do this by making .psi-wrap
+   non-positioned so the dropdown's `position: absolute` resolves against
+   .hs-search-wrap instead. */
+.hs-search-wrap :deep(.psi-wrap) {
+  position: static !important;
+}
+.hs-search-wrap :deep(.psi-drop) {
+  left: 0;
+  right: 0;
+  width: auto;
+  top: calc(100% + 8px);
+}
+.hs-search-wrap:focus-within {
+  border-color: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
+}
+/* Make the embedded PropertySearchInput visually flat — the outer wrap is the shell */
+.hs-search-wrap :deep(> div),
+.hs-search-wrap :deep(.property-search) {
   flex: 1;
   min-width: 0;
 }
-.hs-result-icon {
-  width: 38px;
-  height: 38px;
-  background: #e8f8f7;
+.hs-search-wrap :deep(input) {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  /* Keep ~38px left padding so the absolutely-positioned .psi-icon at left:14px
+     doesn't overlap the typed text. */
+  padding: 11px 4px 11px 38px !important;
+  font-size: 14px;
+  font-weight: 600;
+  color: #231d45;
+  outline: none !important;
+}
+.hs-search-wrap :deep(input::placeholder) {
+  color: #9c98ad;
+  font-weight: 500;
+}
+.hs-search-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #00a19a;
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 9px 14px;
   border-radius: 10px;
+  cursor: pointer;
+  letter-spacing: -0.1px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.hs-search-go:hover {
+  background: #00b6ae;
+}
+
+.hs-meta-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #9c98ad;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+.hs-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.hs-meta-item svg {
+  width: 10px;
+  height: 10px;
+  color: #00a19a;
+}
+
+/* ── Real story card ──────────────────────────────────────────── */
+.hs-real-story {
+  margin: 16px 22px 0;
+  background: #fff;
+  border: 1.5px solid #f5f5f7;
+  border-radius: 16px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 10px;
+}
+.hs-real-story-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #00a19a;
+  border-radius: 4px 0 0 4px;
+}
+.hs-real-story-body {
+  padding-left: 10px;
+  flex: 1;
+}
+.hs-real-story-eyebrow {
+  font-size: 9px;
+  font-weight: 800;
+  color: #007e78;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.hs-real-story-quote {
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  letter-spacing: -0.1px;
+}
+.hs-real-story-text {
+  font-size: 13px;
+  color: #6b6783;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* ── Powered by OpenProperty (footer) ─────────────────────────── */
+.hs-powered-by {
+  text-align: center;
+  padding: 36px 22px 20px;
+}
+.hs-powered-eyebrow {
+  font-size: 9px;
+  font-weight: 800;
+  color: #9c98ad;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.hs-powered-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto 8px;
+  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.2);
+  object-fit: cover;
+}
+.hs-powered-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.2px;
+}
+.hs-powered-tag {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b6783;
+  margin-top: 2px;
+}
+
+/* ── Live row ─────────────────────────────────────────────────────── */
+.hs-live-row {
+  margin: 14px 24px 0;
+  padding: 10px 14px;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-.hs-result-info { flex: 1; min-width: 0; }
-.hs-result-address {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 0 2px;
-}
-.hs-result-sub {
-  font-size: 12px;
-  color: #8e8e93;
-  margin: 0;
-}
-.hs-result-right {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  flex-shrink: 0;
-}
-.hs-epc-badge {
-  font-size: 10px;
-  font-weight: 800;
-  color: white;
-  padding: 2px 7px;
-  border-radius: 6px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-}
-
-/* Skeleton */
-.hs-result-skeleton {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.hs-skel-line {
-  height: 12px;
-  background: linear-gradient(90deg, #f2f2f7 25%, #e8e8ee 50%, #f2f2f7 75%);
-  background-size: 200% 100%;
-  border-radius: 6px;
-  animation: shimmer 1.2s infinite;
-}
-.hs-skel-line.wide { width: 70%; }
-.hs-skel-line.narrow { width: 45%; }
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Empty */
-.hs-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 8px;
-  padding: 32px 0;
-}
-.hs-empty-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #3c3c43;
-  margin: 0;
-}
-.hs-empty-sub {
   font-size: 13px;
-  color: #8e8e93;
-  margin: 0;
+  font-weight: 600;
+  color: #007e78;
+  letter-spacing: -0.05px;
+}
+.hs-live-row strong {
+  color: #00a19a;
+  font-weight: 800;
+}
+.hs-live-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00a19a;
+  position: relative;
+}
+.hs-live-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 161, 154, 0.4);
+  animation: hs-live-pulse 1.6s ease-out infinite;
+}
+@keyframes hs-live-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* ── How it works ─────────────────────────────────────────────────── */
+.hs-section-h-row {
+  padding: 26px 24px 8px;
+}
+.hs-section-h {
+  font-size: 13px;
+  font-weight: 800;
+  color: #9c98ad;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Tabs: inline-flex segmented pill (prototype-exact) */
+.hs-how-tabs {
+  display: inline-flex;
+  background: #fafafa;
+  border: 1px solid #ececef;
+  border-radius: 100px;
+  padding: 4px;
+  gap: 2px;
+  margin: 0 22px 14px;
+  width: calc(100% - 28px);
+  justify-content: space-evenly;
+}
+.hs-how-tab {
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  color: #6b6783;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  letter-spacing: -0.05px;
+  transition: all 0.15s;
+}
+.hs-how-tab:hover {
+  color: #231d45;
+}
+.hs-how-tab.active {
+  background: #fff;
+  color: #231d45;
+  box-shadow: 0 2px 6px rgba(35, 29, 69, 0.08);
+}
+
+/* Steps — generous spacing + connecting vertical line between numbers */
+.hs-steps-list {
+  padding: 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.hs-step-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+.hs-step-row:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 28px;
+  width: 1.5px;
+  height: calc(100% + 22px - 6px);
+  background: #e5f4f2;
+  z-index: 0;
+}
+.hs-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #e5f4f2;
+  color: #007e78;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.hs-step-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+.hs-step-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.hs-step-sub {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b6783;
+  line-height: 1.5;
+  letter-spacing: -0.05px;
 }
 </style>

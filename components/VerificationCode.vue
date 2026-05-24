@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-container gradient-bg backgound-image">
+  <div class="mobile-container" style="background: #fff">
     <div class="relative z-10 flex flex-col min-h-screen">
       <!-- Header -->
       <div class="verification-header">
@@ -9,9 +9,9 @@
       <!-- Main Content -->
       <div class="verification-content">
         <div class="verification-content__header">
-          <h1 class="verification-content__title">Enter code</h1>
+          <h1 class="verification-content__title">Check your email</h1>
           <p class="verification-content__subtitle">
-            We sent a verification code to your email<br />
+            We sent a 6-digit verification code to your email<br />
             <span class="font-medium">{{ email }}</span>
           </p>
         </div>
@@ -29,6 +29,18 @@
           {{ error }}
         </div>
 
+        <!-- Continue Button -->
+        <div class="verification-content__continue">
+          <button
+            @click="verifyCode"
+            :disabled="!isCodeComplete || isLoading"
+            class="verification-content__continue-button"
+          >
+            {{ isLoading ? 'Verifying...' : 'Continue' }}
+            <span class="ml-2">→</span>
+          </button>
+        </div>
+
         <!-- Resend Code -->
         <div class="verification-content__resend">
           <button
@@ -40,18 +52,6 @@
             }"
           >
             {{ resendText }}
-          </button>
-        </div>
-
-        <!-- Continue Button -->
-        <div class="verification-content__continue">
-          <button
-            @click="verifyCode"
-            :disabled="!isCodeComplete || isLoading"
-            class="verification-content__continue-button"
-          >
-            {{ isLoading ? 'Verifying...' : 'Continue' }}
-            <span class="ml-2">→</span>
           </button>
         </div>
       </div>
@@ -72,12 +72,9 @@ const {
   isCodeComplete,
   canResend,
   resendText,
-  handleNumberInput,
-  handleBackspace,
   handleCodeComplete,
   verifyCode,
   resendCode,
-  goBack,
 } = useVerificationCode()
 </script>
 
@@ -97,15 +94,17 @@ const {
 }
 
 .verification-content__header {
-  @apply text-start mb-12;
+  @apply text-center mb-12;
 }
 
 .verification-content__title {
-  @apply text-28-emphasized text-white mb-4;
+  @apply text-28-emphasized mb-4;
+  color: #231d45;
 }
 
 .verification-content__subtitle {
-  @apply text-16-medium text-white/70 leading-relaxed;
+  @apply text-16-medium leading-relaxed;
+  color: #4a5568;
 }
 
 .verification-content__code {
@@ -113,7 +112,7 @@ const {
 }
 
 .verification-content__error {
-  @apply text-red-300 text-center text-sm mb-4;
+  @apply text-red-500 text-center text-sm mb-4;
 }
 
 .verification-content__resend {
@@ -125,7 +124,7 @@ const {
 }
 
 .verification-content__resend-button--disabled {
-  @apply text-white/50 cursor-not-allowed hover:text-white/50;
+  @apply text-gray-400 cursor-not-allowed hover:text-gray-400;
 }
 
 .verification-content__continue {
@@ -133,8 +132,14 @@ const {
 }
 
 .verification-content__continue-button {
-  @apply w-full h-12 bg-brand-aqua hover:bg-brand-aqua/90 disabled:bg-white/30 text-white font-medium text-base rounded-full flex items-center justify-center transition-colors;
+  @apply w-full h-12 bg-brand-aqua hover:bg-brand-aqua/90 text-white font-medium text-base rounded-full flex items-center justify-center transition-colors;
+  box-shadow: 0 4px 18px rgba(0, 161, 154, 0.3);
+}
+
+.verification-content__continue-button:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 </style>
-
-

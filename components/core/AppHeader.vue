@@ -18,16 +18,30 @@
       <slot name="title" v-else></slot>
     </div>
 
-    <!-- Right Section: Avatar, Dots, or Slot -->
-    <div class="w-10 flex items-center justify-end">
+    <!-- Right Section: Avatar, Dots, Tour button, or Slot -->
+    <div class="flex items-center justify-end gap-2">
+      <!-- Optional tour-restart button — pages that pass `showTour` get a
+           small "?" affordance that emits `tour` so the page can replay the
+           OnboardingTour. -->
+      <button
+        v-if="showTour"
+        type="button"
+        class="tour-help-btn"
+        aria-label="Take a quick tour"
+        @click="emit('tour')"
+      >
+        ?
+      </button>
+
       <!-- Use slot override if provided -->
       <slot name="right">
         <template v-if="right === 'profile'">
           <button type="button" @click="navigateTo('/profile')" aria-label="My Profile">
-            <img
-              :src="profileSrc"
-              alt="Profile"
-              class="w-8 h-8 rounded-full object-cover border"
+            <UserAvatar
+              :src="profile?.avatarUrl"
+              :firstName="profile?.firstName"
+              :lastName="profile?.lastName"
+              :size="32"
             />
           </button>
         </template>
@@ -49,8 +63,11 @@
 import { defineProps, defineEmits, computed } from 'vue'
 import BackButton from '~/components/core/BackButton.vue'
 import ModalBackButton from '~/components/core/ModalBackButton.vue'
+import UserAvatar from '~/components/ui/UserAvatar.vue'
 
-const emit = defineEmits(['back'])
+const { profile } = useProfile()
+
+const emit = defineEmits(['back', 'tour'])
 
 const props = defineProps({
   title: String, // Heading text
@@ -71,6 +88,9 @@ const props = defineProps({
     default: '/op-icons/temp/profilepic.png',
   },
   isOverlay: { type: Boolean, default: false },
+  // When true, render a small "?" button that emits `tour` so the host
+  // page can replay its OnboardingTour.
+  showTour: { type: Boolean, default: false },
 })
 </script>
 
@@ -83,6 +103,24 @@ const props = defineProps({
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.tour-help-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f9f4;
+  border: 1px solid #e2f1ea;
+  color: #00a19a;
+  font-size: 13px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tour-help-btn:hover,
+.tour-help-btn:active {
+  background: #ccfbf1;
 }
 </style>
 
