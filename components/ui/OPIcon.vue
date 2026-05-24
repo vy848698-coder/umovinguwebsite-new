@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const iconMap: Record<string, string> = {
-  logo: '/op-icons/logo.svg',
+  logo: '/op-icons/logo.png',
   'user-code': '/op-icons/User-Code.svg',
   check: '/op-icons/Check.svg',
   'home-search': '/op-icons/Home-Search.svg',
@@ -200,6 +200,7 @@ const iconMap: Record<string, string> = {
   buyerTitleNumber: '/op-icons/buyer-passport/titleNumber.svg',
   tapTheOwner: '/op-icons/property/tapTheOwner.svg',
   registerInterestDrawer: '/op-icons/explore/registerInterest.svg',
+  opLogo: '/op-icons/opLogo.png',
 }
 
 const iconPath = computed(() => {

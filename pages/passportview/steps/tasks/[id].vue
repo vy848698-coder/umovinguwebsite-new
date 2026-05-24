@@ -3,40 +3,59 @@
     <AppHeader :showBack="true" :backTo="backToStepsUrl" right="dots" />
 
     <div class="task-content">
-      <HeroSection
-        :iconName="currentStep?.icon"
-        iconClass="w-[176px] h-[176px]"
-        heroClass="w-[176px] h-[176x]"
-        :mainTitle="currentStep?.title"
-        :subTitle="currentTask?.title"
-      />
-
-      <div class="progress-section">
-        <div class="progress-bar">
-          <div
-            class="progress-fill"
-            :style="{ width: taskProgress + '%' }"
-          ></div>
+      <!-- ── Hero (matches prototype: teal-pale gradient + ring meta) ─── -->
+      <section class="qhero">
+        <span class="qhero-badge">
+          <span class="qhero-dot"></span>
+          {{ currentStep?.title || '' }}
+        </span>
+        <div class="qhero-illustration" aria-hidden="true">
+          <OPIcon
+            v-if="currentStep?.icon"
+            :name="currentStep.icon"
+            class="w-[120px] h-[120px]"
+          />
         </div>
-        <div class="progress-info">
-          <span class="progress-label">TASK PROGRESS</span>
-          <span class="progress-remaining"
-            >{{ remainingQuestions }} Remaining</span
-          >
+        <h1 class="qhero-title">{{ currentStep?.title || '' }}</h1>
+        <p class="qhero-sub">{{ currentTask?.title || '' }}</p>
+        <div class="qhero-meta">
+          <div class="qring" :style="{ '--p': taskProgress }">
+            <span>{{ taskAnsweredCount }}/{{ totalQuestions }}</span>
+          </div>
+          <div class="qmeta-text">
+            <small>Task Progress</small>
+            <strong>
+              {{ remainingQuestions }}
+              {{ remainingQuestions === 1 ? 'question' : 'questions' }}
+              remaining
+              <em>· ~{{ estimatedMinutesLeft }} min left</em>
+            </strong>
+          </div>
         </div>
-      </div>
+      </section>
 
       <div class="action-buttons">
-        <button class="help-btn" @click="openHelp">
-          <span class="btn-icon"
-            ><OPIcon name="helpIcon" class="w-[15px] h-[15px]"
-          /></span>
+        <button class="qpill ghost" @click="openHelp">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
           Help
         </button>
-        <button class="video-btn" @click="openVideo">
-          <span class="play-icon"
-            ><OPIcon name="playIcon" class="w-[15px] h-[15px]"
-          /></span>
+        <button class="qpill primary" @click="openVideo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="6 4 20 12 6 20 6 4" />
+          </svg>
           Play Video
         </button>
       </div>
@@ -121,18 +140,18 @@
         </div>
       </div>
 
-      <div class="question-header">
-        <h2 class="question-number">
-          Question {{ currentQuestionIndex + 1 }}
-          <div class="total">
+      <div class="qheader">
+        <div>
+          <h2 class="qheader-h2">Question {{ currentQuestionIndex + 1 }}</h2>
+          <div class="qheader-sub">
             {{ currentQuestionIndex + 1 }} of {{ totalQuestions }} in this
             section
           </div>
-        </h2>
-        <div class="question-actions">
+        </div>
+        <div class="qnav">
           <button
-            v-if="currentQuestionIndex != 0"
-            class="prev-btn"
+            v-if="currentQuestionIndex !== 0"
+            class="qnav-btn ghost-muted"
             :disabled="currentQuestionIndex === 0"
             @click="goToPreviousQuestion"
           >
@@ -140,11 +159,50 @@
           </button>
           <button
             v-if="currentQuestionIndex < totalQuestions - 1"
-            class="skip-btn"
+            class="qnav-btn"
             @click="skipQuestion"
           >
             Skip
           </button>
+        </div>
+      </div>
+
+      <!-- Segmented progress (one chip per question) -->
+      <div v-if="totalQuestions > 0" class="qsegments" aria-hidden="true">
+        <span
+          v-for="i in totalQuestions"
+          :key="i"
+          class="qseg"
+          :class="{
+            done: i - 1 < currentQuestionIndex,
+            current: i - 1 === currentQuestionIndex,
+          }"
+        />
+      </div>
+
+      <!-- "What is this?" tip — kept on aqua per request -->
+      <div v-if="tipBody" class="qtip">
+        <div class="qtip-ic">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 18h6" />
+            <path d="M10 22h4" />
+            <path
+              d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v1.3h6v-1.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"
+            />
+          </svg>
+        </div>
+        <div class="qtip-body">
+          <strong>What is this?</strong>
+          <p>{{ tipBody }}</p>
         </div>
       </div>
       <div class="question-section">
@@ -412,7 +470,29 @@ onMounted(async () => {
 
   // Load property images for the home story task
   await loadPropertyImages()
+
+  // Track this task as the user's last visited so the "Pick up where you
+  // left off" CTA on the passport view routes them straight back here.
+  recordLastVisited()
 })
+
+async function recordLastVisited() {
+  const passportId = route.query.propertyId
+  if (!passportId || !taskId) return
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) return
+  const cfg = useRuntimeConfig()
+  try {
+    await $fetch(`${cfg.public.apiBase}/passport/${passportId}/last-visited`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { taskId },
+    })
+  } catch {
+    /* non-critical — silent */
+  }
+}
 
 // Typing animation removed - display questions immediately
 // const typeText = (targetRef, cursorRef, text, speed = 30) => {
@@ -518,6 +598,47 @@ const taskProgress = computed(() => {
   if (!currentTask.value || totalQuestions.value === 0) return 0
   const completed = currentQuestions.value.filter((q) => q.completed).length
   return Math.round((completed / totalQuestions.value) * 100)
+})
+
+const taskAnsweredCount = computed(
+  () =>
+    currentQuestions.value.filter((q) => q.answer != null && q.answer !== '')
+      .length,
+)
+const estimatedMinutesLeft = computed(() => {
+  const r = remainingQuestions.value || 0
+  return Math.max(1, Math.round(r * 1.2))
+})
+
+// Pick a short body string out of whatever shape `helpContent` arrives in.
+function extractTipBody(content) {
+  if (!content) return ''
+  if (typeof content === 'string') return content
+  return (
+    content.body ||
+    content.description ||
+    content.text ||
+    content.summary ||
+    (Array.isArray(content.sections) ? content.sections[0]?.body : '') ||
+    ''
+  )
+}
+
+// Resolve the tip body with fallbacks so "What is this?" always shows when
+// any contextual help is available — question helpContent → step helpContent
+// → question hint / description / placeholder.
+const tipBody = computed(() => {
+  const q = currentQuestion.value
+  const s = currentStep.value
+  return (
+    extractTipBody(q?.helpContent) ||
+    extractTipBody(s?.helpContent) ||
+    q?.hint ||
+    q?.description ||
+    q?.subtitle ||
+    q?.placeholder ||
+    ''
+  )
 })
 
 const remainingQuestions = computed(() => {
@@ -1015,6 +1136,279 @@ const handleContinue = () => {
   padding-bottom: 40px;
 }
 
+/* ── Hero (matches prototype/disputes.html teal-pale gradient) ─── */
+.qhero {
+  margin: 8px 0 16px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #e6fbf6 0%, #def7f1 60%, #b8f2e6 100%);
+  padding: 22px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.qhero::before {
+  content: '';
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.7),
+    transparent 65%
+  );
+  pointer-events: none;
+}
+.qhero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(15, 118, 110, 0.15);
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  position: relative;
+  z-index: 1;
+}
+.qhero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #14b8a6;
+}
+.qhero-illustration {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 8px;
+  position: relative;
+  z-index: 1;
+}
+.qhero-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #0a0f2c;
+  margin: 4px 0 4px;
+  position: relative;
+  z-index: 1;
+}
+.qhero-sub {
+  color: #115e59;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0 0 16px;
+  position: relative;
+  z-index: 1;
+}
+.qhero-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+.qring {
+  --p: 0;
+  --size: 56px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: conic-gradient(
+    #1f7a66 calc(var(--p) * 1%),
+    rgba(15, 118, 110, 0.15) 0
+  );
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.qring::after {
+  content: '';
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border-radius: 50%;
+  grid-area: 1 / 1;
+}
+.qring span {
+  grid-area: 1 / 1;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a0f2c;
+  line-height: 1;
+}
+.qmeta-text small {
+  display: block;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #115e59;
+  margin-bottom: 4px;
+}
+.qmeta-text strong {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0a0f2c;
+}
+.qmeta-text strong em {
+  font-style: normal;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ── Help / Play pills (even split) ───────────────────────────── */
+.qpill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: transform 0.12s ease;
+}
+.qpill:active {
+  transform: scale(0.98);
+}
+.qpill.ghost {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #0f766e;
+}
+.qpill.primary {
+  background: #1f7a66;
+  color: #fff;
+  box-shadow: 0 8px 20px -8px rgba(13, 148, 136, 0.6);
+}
+
+/* ── Question header + segmented progress ─────────────────────── */
+.qheader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0 0 12px;
+}
+.qheader-h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0a0f2c;
+  letter-spacing: -0.02em;
+}
+.qheader-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+.qnav {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.qnav-btn {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #0f766e;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: transform 0.12s ease;
+}
+.qnav-btn:active {
+  transform: scale(0.97);
+}
+.qnav-btn.ghost-muted {
+  color: #64748b;
+}
+
+.qsegments {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 18px;
+}
+.qseg {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+.qseg.done {
+  background: #14b8a6;
+}
+.qseg.current {
+  background: #99f6e4;
+}
+.qseg.current::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #14b8a6 0%, #14b8a6 50%, transparent 50%);
+}
+
+/* ── "What is this?" tip — kept on aqua per request ─────────── */
+.qtip {
+  background: #e6f9f7;
+  border: 1px solid #e2f1ea;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.qtip-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #e2f1ea;
+  color: #00756f;
+  display: grid;
+  place-items: center;
+}
+.qtip-body {
+  flex: 1;
+  min-width: 0;
+}
+.qtip-body strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #00756f;
+  margin-bottom: 4px;
+}
+.qtip-body p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #115e59;
+}
+
 .task-header {
   display: flex;
   justify-content: space-between;
@@ -1027,7 +1421,7 @@ const handleContinue = () => {
   background: none;
   border: none;
   font-size: 16px;
-  color: #00b8a9;
+  color: #00a19a;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1095,7 +1489,7 @@ const handleContinue = () => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00b8a9 0%, #00d4c3 100%);
+  background: linear-gradient(90deg, #00a19a 0%, #00d4c3 100%);
   transition: width 0.3s ease;
 }
 
@@ -1141,14 +1535,14 @@ const handleContinue = () => {
   justify-content: center;
   gap: 8px;
   transition: all 0.2s;
-  color: #00b8a9;
+  color: #00a19a;
   max-width: fit-content;
 }
 
 .video-btn {
-  background: #00b8a9;
+  background: #00a19a;
   color: white;
-  border-color: #00b8a9;
+  border-color: #00a19a;
 }
 
 .help-btn {

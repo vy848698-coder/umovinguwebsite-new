@@ -15,19 +15,29 @@ interface Address {
 export const useCreateAccountData = () => {
   const config = useRuntimeConfig()
   const { register } = useAuth()
-  const { email } = useSession()
+  const { email, pendingSignup } = useSession()
 
-  // ✅ Form state
+  // Pre-split fullName from signup into firstName / lastName
+  const splitName = (fullName: string) => {
+    const parts = fullName.trim().split(/\s+/)
+    return { firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') }
+  }
+
+  const { firstName: preFirstName, lastName: preLastName } = pendingSignup.value
+    ? splitName(pendingSignup.value.fullName)
+    : { firstName: '', lastName: '' }
+
+  // ✅ Form state — pre-populated from signup page where available
   const form = reactive({
-    firstName: '',
-    lastName: '',
+    firstName: preFirstName,
+    lastName: preLastName,
     email: '',
-    mobile: '',
+    mobile: pendingSignup.value?.phone ?? '',
     dateOfBirth: '',
-    postcode: '', // <-- important
+    postcode: '',
     gender: '',
-    password: '',
-    confirmPassword: '',
+    password: pendingSignup.value?.password ?? '',
+    confirmPassword: pendingSignup.value?.password ?? '',
   })
 
   // UI state only
@@ -57,8 +67,8 @@ export const useCreateAccountData = () => {
       addressResults.value = res.items.map((p, i) => ({
         id: i + 1,
         line1: toTitleCase(p.addressLine1),
-        line2: [p.city, p.postcode].filter(Boolean).map(toTitleCase).join(', '),
-        postcode: p.postcode,
+        line2: [p.city ? toTitleCase(p.city) : null, p.postcode?.toUpperCase()].filter(Boolean).join(', '),
+        postcode: p.postcode?.toUpperCase(),
       }))
       // Store last searched postcode on the form so the modal title is correct
       form.postcode = query
@@ -151,12 +161,12 @@ export const useCreateAccountData = () => {
       })
       console.log('Registration successful:', response)
 
-      // Store token in localStorage for automatic login
       if (response.token) {
         localStorage.setItem('token', response.token)
       }
+      pendingSignup.value = null
 
-      await navigateTo('/onboarding/thank-you')
+      await navigateTo('/onboarding/preferences?new=true')
     } catch (err) {
       console.error('Registration failed:', err)
 

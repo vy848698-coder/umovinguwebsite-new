@@ -1,154 +1,128 @@
 <template>
-  <div class="mobile-container backgound-image content">
-    <BackButton v-if="resetStep === 'idle'" />
-    <button
-      v-else
-      class="back-btn"
-      @click="handleResetBack"
-    >
-      <Icon name="i-heroicons-arrow-left" class="w-5 h-5 text-white" />
-    </button>
+  <div class="mobile-container auth-screen">
 
-    <!-- Session / logout banner -->
-    <div
-      v-if="bannerMessage && resetStep === 'idle'"
-      class="mx-4 mt-4 mb-2 rounded-2xl px-4 py-3 flex items-center gap-3"
-      :class="bannerReason === 'logout' ? 'bg-brand-aqua/15 border border-brand-aqua/30' : 'bg-yellow-400/20 border border-yellow-400/40'"
-    >
-      <Icon
-        :name="bannerReason === 'logout' ? 'i-heroicons-check-circle' : 'i-heroicons-lock-closed'"
-        class="w-5 h-5 flex-shrink-0"
-        :class="bannerReason === 'logout' ? 'text-brand-aqua' : 'text-yellow-500'"
-      />
-      <p class="font-sf-pro text-[13px] font-medium" :class="bannerReason === 'logout' ? 'text-brand-aqua' : 'text-yellow-700'">
-        {{ bannerMessage }}
-      </p>
+    <!-- Topbar -->
+    <div class="auth-topbar">
+      <button class="auth-back-btn" @click="handleBack">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="auth-spacer" />
+      <div class="auth-brand-mini">
+        <OPIcon name="logo" class="w-[26px] h-[26px]" />
+      </div>
     </div>
 
-    <!-- ── Sign In ─────────────────────────────────────────────────────── -->
-    <template v-if="resetStep === 'idle'">
-      <div class="logo-and-welcome">
-        <OPIcon name="logo" class="w-16 h-16" />
-        <h1>Welcome to UmovingU, it's great to have you back!</h1>
-        <h5 class="text-white mt-2">Log in using Social</h5>
+    <!-- ── Sign-in / forgot-password (entry) / verify code / new password ── -->
+    <template v-if="resetStep !== 'sent' && resetStep !== 'success'">
+      <div class="auth-hero">
+        <div class="auth-hero-eyebrow">{{ heroEyebrow }}</div>
+        <div class="auth-hero-title">{{ heroTitle }}</div>
+        <div class="auth-hero-sub">{{ heroSub }}</div>
       </div>
 
-      <div class="login-options">
-        <div class="social-logins">
-          <button class="social-logins__button" @click="handleAppleLogin">
-            <OPIcon name="appleNew" class="w-[20px] h-[20px]" />
-            <span v-if="isDev" class="absolute -top-1.5 -right-1.5 text-[9px] bg-yellow-400 text-black rounded px-1 font-bold leading-tight">DEV</span>
-          </button>
-
-          <!-- Google button: our icon is visible; the GIS button sits on top (opacity near 0)
-               and handles the redirect when tapped. ux_mode=redirect means no popup. -->
-          <button class="social-logins__button social-logins__button--google">
-            <OPIcon name="googleNew" class="w-[20px] h-[20px]" />
-            <div id="google-gis-btn"></div>
-          </button>
-
-          <button class="social-logins__button" @click="handleSocialLogin('facebook')">
-            <OPIcon name="facebookNew" class="w-[20px] h-[20px]" />
-          </button>
-        </div>
-
-        <!-- Email Form -->
-        <form class="email-form" @submit.prevent="handleLogin">
-          <div class="email-form__divider">
-            <div class="flex-1 h-px bg-white/80"></div>
-            <span class="text-white/80 text-sm">or login with email and password</span>
-            <div class="flex-1 h-px bg-white/80"></div>
-          </div>
-
-          <input
-            v-model="emailInput"
-            type="email"
-            name="email"
-            required
-            placeholder="your@email.com"
-            class="w-full h-12 bg-white text-gray-900 rounded-xl px-4 border-0 focus:ring-2 focus:ring-brand-aqua"
-          />
-
-          <input
-            v-model="passwordInput"
-            type="password"
-            name="password"
-            required
-            placeholder="your password"
-            class="w-full h-12 bg-white text-gray-900 rounded-xl px-4 border-0 focus:ring-2 focus:ring-brand-aqua"
-          />
-
-          <!-- Forgot password link -->
-          <div class="text-right -mt-2">
-            <button
-              type="button"
-              class="text-white/70 text-sm underline underline-offset-2 hover:text-white transition-colors"
-              @click="startForgotPassword"
-            >
-              Forgot password?
-            </button>
-          </div>
-
-          <div v-if="loginError" class="rounded-xl bg-red-500/20 border border-red-400/40 px-4 py-3 text-red-200 text-sm">
-            {{ loginError }}
-          </div>
-
-          <button class="email-form__button" type="submit" :disabled="loginLoading">
-            <span v-if="loginLoading" class="flex items-center gap-2">
-              <span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-              Signing in…
-            </span>
-            <span v-else>Continue</span>
-          </button>
-        </form>
+      <!-- Logout / session toast -->
+      <div
+        v-if="bannerMessage && resetStep === 'idle'"
+        class="logged-out-toast"
+        :class="bannerReason === 'logout' ? 'logged-out-toast--teal' : 'logged-out-toast--yellow'"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        {{ bannerMessage }}
       </div>
-    </template>
 
-    <!-- ── Forgot Password: enter email ───────────────────────────────── -->
-    <template v-else-if="resetStep === 'email'">
-      <div class="reset-section">
-        <div class="reset-icon">
-          <Icon name="i-heroicons-lock-closed" class="w-8 h-8 text-brand-aqua" />
-        </div>
-        <h1 class="reset-title">Forgot password?</h1>
-        <p class="reset-subtitle">Enter your email and we'll send you a reset code.</p>
+      <form class="auth-form" @submit.prevent="onPrimary">
 
-        <form class="reset-form" @submit.prevent="handleForgotPassword">
-          <input
-            v-model="resetEmail"
-            type="email"
-            required
-            placeholder="your@email.com"
-            class="reset-input"
-          />
+        <!-- ── Sign in ── -->
+        <template v-if="resetStep === 'idle'">
+          <div class="form-field">
+            <label class="form-label">Email address</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </span>
+              <input v-model="emailInput" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Password</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <input
+                v-model="passwordInput"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Your password"
+                class="form-input with-icon with-action"
+                autocomplete="current-password"
+              />
+              <button type="button" class="form-input-action" @click="showPassword = !showPassword">
+                <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="loginError" class="error-banner">{{ loginError }}</div>
+
+          <button type="submit" class="btn-primary" :disabled="loginLoading">
+            <span v-if="loginLoading" class="spinner" />
+            {{ loginLoading ? 'Signing in…' : 'Sign in' }}
+          </button>
+
+          <button type="button" class="btn-text" @click="startForgotPassword">Forgot password?</button>
+        </template>
+
+        <!-- ── Forgot password: enter email ── -->
+        <template v-else-if="resetStep === 'email'">
+          <div class="form-field">
+            <label class="form-label">Email address</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </span>
+              <input v-model="resetEmail" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
+            </div>
+          </div>
 
           <div v-if="resetError" class="error-banner">{{ resetError }}</div>
 
-          <button class="reset-btn" type="submit" :disabled="resetLoading">
-            <span v-if="resetLoading" class="flex items-center justify-center gap-2">
-              <span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-              Sending…
-            </span>
-            <span v-else>Send reset code</span>
+          <button type="submit" class="btn-primary" :disabled="resetLoading">
+            <span v-if="resetLoading" class="spinner" />
+            {{ resetLoading ? 'Sending…' : 'Send reset code' }}
           </button>
-        </form>
-      </div>
-    </template>
 
-    <!-- ── Forgot Password: enter OTP ─────────────────────────────────── -->
-    <template v-else-if="resetStep === 'otp'">
-      <div class="reset-section">
-        <div class="reset-icon">
-          <Icon name="i-heroicons-envelope" class="w-8 h-8 text-brand-aqua" />
-        </div>
-        <h1 class="reset-title">Check your email</h1>
-        <p class="reset-subtitle">
-          We sent a 6-digit code to<br />
-          <strong class="text-white">{{ resetEmail }}</strong>
-        </p>
+          <button type="button" class="btn-text" @click="resetStep = 'idle'">Back to sign in</button>
+        </template>
 
-        <form class="reset-form" @submit.prevent="handleVerifyResetOtp">
-          <!-- OTP boxes -->
+        <!-- ── Forgot password: verify code ── -->
+        <template v-else-if="resetStep === 'otp'">
+          <p class="reset-helper-text">
+            We sent a 6-digit code to<br>
+            <strong>{{ resetEmail }}</strong>
+          </p>
+
           <div class="otp-boxes">
             <input
               v-for="(_, i) in otpDigits"
@@ -167,132 +141,130 @@
 
           <div v-if="resetError" class="error-banner">{{ resetError }}</div>
 
-          <button class="reset-btn" type="submit" :disabled="resetLoading || otpValue.length < 6">
-            <span v-if="resetLoading" class="flex items-center justify-center gap-2">
-              <span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-              Verifying…
-            </span>
-            <span v-else>Verify code</span>
+          <button type="submit" class="btn-primary" :disabled="resetLoading || otpValue.length < 6">
+            <span v-if="resetLoading" class="spinner" />
+            {{ resetLoading ? 'Verifying…' : 'Verify code' }}
           </button>
 
-          <!-- Resend -->
-          <div class="text-center mt-3">
-            <button
-              v-if="resendCountdown > 0"
-              type="button"
-              disabled
-              class="text-white/40 text-sm"
-            >
-              Resend code in {{ resendCountdown }}s
-            </button>
-            <button
-              v-else
-              type="button"
-              class="text-white/70 text-sm underline underline-offset-2 hover:text-white transition-colors"
-              @click="handleForgotPassword"
-            >
-              Resend code
-            </button>
-          </div>
-        </form>
-      </div>
-    </template>
+          <button v-if="resendCountdown > 0" type="button" class="btn-text" disabled>
+            Resend code in {{ resendCountdown }}s
+          </button>
+          <button v-else type="button" class="btn-text" @click="handleForgotPassword">Resend code</button>
+        </template>
 
-    <!-- ── Forgot Password: set new password ──────────────────────────── -->
-    <template v-else-if="resetStep === 'newPassword'">
-      <div class="reset-section">
-        <div class="reset-icon">
-          <Icon name="i-heroicons-key" class="w-8 h-8 text-brand-aqua" />
-        </div>
-        <h1 class="reset-title">Set new password</h1>
-        <p class="reset-subtitle">Choose a strong password for your account.</p>
-
-        <form class="reset-form" @submit.prevent="handleResetPassword">
-          <div class="relative">
-            <input
-              v-model="newPassword"
-              :type="showNewPassword ? 'text' : 'password'"
-              required
-              placeholder="New password"
-              class="reset-input pr-12"
-            />
-            <button
-              type="button"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              @click="showNewPassword = !showNewPassword"
-            >
-              <Icon :name="showNewPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'" class="w-5 h-5" />
-            </button>
-          </div>
-
-          <div class="relative">
-            <input
-              v-model="confirmPassword"
-              :type="showConfirmPassword ? 'text' : 'password'"
-              required
-              placeholder="Confirm new password"
-              class="reset-input pr-12"
-            />
-            <button
-              type="button"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              @click="showConfirmPassword = !showConfirmPassword"
-            >
-              <Icon :name="showConfirmPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'" class="w-5 h-5" />
-            </button>
-          </div>
-
-          <!-- Password strength -->
-          <div v-if="newPassword" class="space-y-1">
-            <div class="flex gap-1">
-              <div
-                v-for="n in 4"
-                :key="n"
-                class="h-1 flex-1 rounded-full transition-colors"
-                :class="n <= passwordStrength ? strengthColor : 'bg-white/20'"
-              ></div>
+        <!-- ── Forgot password: new password ── -->
+        <template v-else-if="resetStep === 'newPassword'">
+          <div class="form-field">
+            <label class="form-label">New password</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <input
+                v-model="newPassword"
+                :type="showNewPassword ? 'text' : 'password'"
+                placeholder="New password"
+                class="form-input with-icon with-action"
+              />
+              <button type="button" class="form-input-action" @click="showNewPassword = !showNewPassword">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
             </div>
-            <p class="text-xs" :class="strengthTextColor">{{ strengthLabel }}</p>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Confirm new password</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <input
+                v-model="confirmPassword"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                placeholder="Confirm new password"
+                class="form-input with-icon with-action"
+              />
+              <button type="button" class="form-input-action" @click="showConfirmPassword = !showConfirmPassword">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="newPassword" class="password-strength">
+            <div class="strength-bars">
+              <div v-for="n in 4" :key="n" class="strength-bar" :style="{ background: n <= passwordStrength ? strengthBg : '#eef0f6' }" />
+            </div>
+            <p :style="{ color: strengthColor }">{{ strengthLabel }}</p>
           </div>
 
           <div v-if="resetError" class="error-banner">{{ resetError }}</div>
 
-          <button
-            class="reset-btn"
-            type="submit"
-            :disabled="resetLoading || !passwordsMatch"
-          >
-            <span v-if="resetLoading" class="flex items-center justify-center gap-2">
-              <span class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-              Updating…
-            </span>
-            <span v-else>Update password</span>
+          <button type="submit" class="btn-primary" :disabled="resetLoading || !passwordsMatch">
+            <span v-if="resetLoading" class="spinner" />
+            {{ resetLoading ? 'Updating…' : 'Update password' }}
           </button>
-        </form>
+        </template>
+      </form>
+
+      <div v-if="resetStep === 'idle'" class="auth-footer">
+        Don't have an account? <NuxtLink to="/onboarding/signup">Create one</NuxtLink>
       </div>
     </template>
 
-    <!-- ── Forgot Password: success ───────────────────────────────────── -->
-    <template v-else-if="resetStep === 'success'">
-      <div class="reset-section items-center text-center">
-        <div class="w-20 h-20 rounded-full bg-brand-aqua/20 border-2 border-brand-aqua flex items-center justify-center mb-6">
-          <Icon name="i-heroicons-check" class="w-10 h-10 text-brand-aqua" />
+    <!-- ── Reset code sent — confirmation panel (prototype "forgot-sent") ── -->
+    <template v-else-if="resetStep === 'sent'">
+      <div class="confirm-state">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
         </div>
-        <h1 class="reset-title">Password updated!</h1>
-        <p class="reset-subtitle">Your password has been changed successfully. You can now sign in with your new password.</p>
-        <button class="reset-btn mt-6" @click="resetStep = 'idle'">
-          Back to sign in
-        </button>
+        <div class="confirm-h">Check your email</div>
+        <div class="confirm-sub">
+          We've sent a password reset code to<br><strong>{{ resetEmail }}</strong>.<br><br>
+          It should arrive in a minute or two. Check your spam folder if you can't see it.
+        </div>
+        <button class="btn-primary" @click="resetStep = 'otp'">Enter the code</button>
+        <button type="button" class="btn-text" @click="handleForgotPassword">Didn't get it? Resend</button>
+      </div>
+    </template>
+
+    <!-- ── Reset success ── -->
+    <template v-else-if="resetStep === 'success'">
+      <div class="confirm-state">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <div class="confirm-h">Password updated!</div>
+        <div class="confirm-sub">
+          Your password has been changed successfully.<br>
+          You can now sign in with your new password.
+        </div>
+        <button class="btn-primary" @click="resetStep = 'idle'">Back to sign in</button>
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import OPIcon from '~/components/ui/OPIcon.vue'
-import BackButton from '~/components/core/BackButton.vue'
 
 definePageMeta({
   title: 'Sign In - UmovingU',
@@ -300,23 +272,47 @@ definePageMeta({
 })
 
 const config = useRuntimeConfig()
-const { login, appleLogin, googleLogin, appleLoginMock } = useAuth()
-const { isNative, nativeAppleSignIn, nativeGoogleSignIn } = useNativeAuth()
-const isDev = process.dev
+const { login } = useAuth()
 const route = useRoute()
 
-// Banner shown when redirected after logout or session expiry
+// ── Hero copy depending on step
+type ResetStep = 'idle' | 'email' | 'sent' | 'otp' | 'newPassword' | 'success'
+const resetStep = ref<ResetStep>('idle')
+
+const heroEyebrow = computed(() => {
+  if (resetStep.value === 'idle') return 'Sign in'
+  if (resetStep.value === 'email') return 'Reset your password'
+  if (resetStep.value === 'otp') return 'Verify the code'
+  if (resetStep.value === 'newPassword') return 'Set a new password'
+  return ''
+})
+const heroTitle = computed(() => {
+  if (resetStep.value === 'idle') return 'Welcome back.'
+  if (resetStep.value === 'email') return 'No worries.'
+  if (resetStep.value === 'otp') return 'Check your email.'
+  if (resetStep.value === 'newPassword') return 'Choose a strong one.'
+  return ''
+})
+const heroSub = computed(() => {
+  if (resetStep.value === 'idle') return 'Good to see you again.'
+  if (resetStep.value === 'email') return "Enter your email and we'll send you a code to set a new password."
+  if (resetStep.value === 'otp') return 'Enter the 6-digit code we just sent you.'
+  if (resetStep.value === 'newPassword') return 'At least 8 characters. Mix in a number for extra strength.'
+  return ''
+})
+
+// Banner from query
 const bannerReason = computed(() => route.query.reason as string | undefined)
 const bannerMessage = computed(() => {
-  if (bannerReason.value === 'logout') return 'You have been logged out successfully.'
+  if (bannerReason.value === 'logout') return "You've been signed out."
   if (bannerReason.value === 'session') return 'Your session has expired. Please sign in again.'
   return ''
 })
 
-// ── Sign In ────────────────────────────────────────────────────────────────
-
+// Sign in
 const emailInput = ref('')
 const passwordInput = ref('')
+const showPassword = ref(false)
 const loginError = ref('')
 const loginLoading = ref(false)
 
@@ -326,159 +322,9 @@ const redirectAfterAuth = async () => {
     localStorage.removeItem('redirectAfterLogin')
     await navigateTo(redirectPath)
   } else {
-    await navigateTo('/dashboard')
+    await navigateTo('/explore')
   }
 }
-
-// ── Apple ──────────────────────────────────────────────────────────────────
-
-const loadAppleSdk = () =>
-  new Promise<void>((resolve) => {
-    if ((window as any).AppleID) { resolve(); return }
-    const s = document.createElement('script')
-    s.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js'
-    s.async = true
-    s.onload = () => resolve()
-    document.head.appendChild(s)
-  })
-
-const handleAppleLogin = async () => {
-  if (isDev) {
-    try {
-      const result: any = await appleLoginMock()
-      localStorage.setItem('token', result.token)
-      await redirectAfterAuth()
-    } catch (err) {
-      console.error('Apple mock error', err)
-      alert('Apple mock sign-in failed.')
-    }
-    return
-  }
-
-  // Native Capacitor — use the iOS Sign In with Apple plugin
-  if (await isNative()) {
-    try {
-      const { idToken, firstName, lastName } = await nativeAppleSignIn()
-      const result: any = await appleLogin(idToken, firstName, lastName)
-      localStorage.setItem('token', result.token)
-      await redirectAfterAuth()
-    } catch (err: any) {
-      if (err?.code === 'AS_AUTHORIZATION_ERROR_CODE_CANCELED') return
-      console.error('Native Apple sign-in error', err)
-      alert('Apple sign-in failed. Please try again.')
-    }
-    return
-  }
-
-  try {
-    await loadAppleSdk()
-
-    // Popups are blocked in: standalone PWA, WKWebView (native app wrapper).
-    // Detect all restricted environments and use redirect flow instead.
-    const isWKWebView = !!(window as any).webkit?.messageHandlers
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      !!(navigator as any).standalone ||
-      isWKWebView
-
-    const appleAuth = (window as any).AppleID.auth
-    appleAuth.init({
-      clientId: config.public.appleClientId,
-      scope: 'name email',
-      redirectURI: config.public.appleRedirectUri,
-      usePopup: !isStandalone,
-    })
-
-    if (!isStandalone) {
-      // Popup flow — SDK resolves the promise directly
-      const data = await appleAuth.signIn()
-      const idToken: string = data.authorization.id_token
-      const firstName: string | undefined = data.user?.name?.firstName
-      const lastName: string | undefined = data.user?.name?.lastName
-      const result: any = await appleLogin(idToken, firstName, lastName)
-      localStorage.setItem('token', result.token)
-      await redirectAfterAuth()
-    }
-    // Redirect flow: Apple will POST to redirectURI — handled by
-    // /server/routes/auth/apple/callback.post.ts — no further action here.
-  } catch (err: any) {
-    if (err?.error === 'popup_closed_by_user') return
-    console.error('Apple sign-in error', err)
-    alert('Apple sign-in failed. Please try again.')
-  }
-}
-
-// ── Google ─────────────────────────────────────────────────────────────────
-// Uses ux_mode='redirect' so Google does a full-page redirect instead of
-// opening a popup — works in iOS Safari, standalone PWA, and WKWebView.
-// The GIS library POSTs the credential to /auth/google/gis-callback (Nuxt
-// server route) which forwards it to the backend and redirects to /auth/google/callback.
-
-let googleInitialised = false
-
-const initGoogleGis = () => {
-  const w = window as any
-  if (googleInitialised || !w.google) return
-  googleInitialised = true
-
-  const loginUri = `${window.location.origin}/auth/google/gis-callback`
-
-  // ux_mode: 'redirect' — button click does a full-page redirect instead of
-  // opening a popup. Works in iOS Safari, standalone PWA mode, and WKWebViews.
-  w.google.accounts.id.initialize({
-    client_id: config.public.googleClientId as string,
-    ux_mode: 'redirect',
-    login_uri: loginUri,
-    use_fedcm_for_prompt: false,
-  })
-
-  // Render GIS button into the overlay div. With ux_mode=redirect the GIS
-  // button triggers a full redirect — no popup needed.
-  const container = document.getElementById('google-gis-btn')
-  if (container) {
-    w.google.accounts.id.renderButton(container, {
-      theme: 'outline',
-      size: 'large',
-      width: '100%',
-    })
-  }
-}
-
-const handleGoogleLogin = async () => {
-  // Native Capacitor — uses Google Sign In SDK via SFSafariViewController (Google-approved)
-  if (await isNative()) {
-    try {
-      const idToken = await nativeGoogleSignIn()
-      const result: any = await googleLogin(idToken)
-      localStorage.setItem('token', result.token)
-      await redirectAfterAuth()
-    } catch (err) {
-      console.error('Native Google sign-in error', err)
-      alert('Google sign-in failed. Please try again.')
-    }
-    return
-  }
-
-  // Web fallback — GIS redirect flow (works in Safari and PWA)
-  const w = window as any
-  if (!w.google) {
-    alert('Google sign-in is not available yet. Please try again.')
-    return
-  }
-  initGoogleGis()
-  w.google.accounts.id.prompt()
-}
-
-onMounted(() => {
-  const script = document.createElement('script')
-  script.src = 'https://accounts.google.com/gsi/client'
-  script.async = true
-  script.defer = true
-  script.onload = () => initGoogleGis()
-  document.head.appendChild(script)
-})
-
-// ── Email/password login ───────────────────────────────────────────────────
 
 const handleLogin = async () => {
   loginError.value = ''
@@ -494,44 +340,51 @@ const handleLogin = async () => {
   }
 }
 
-// ── Password Reset ─────────────────────────────────────────────────────────
-
-type ResetStep = 'idle' | 'email' | 'otp' | 'newPassword' | 'success'
-const resetStep = ref<ResetStep>('idle')
+// Forgot password
 const resetEmail = ref('')
 const resetToken = ref('')
 const resetError = ref('')
 const resetLoading = ref(false)
 
-// OTP boxes
+const handleBack = () => {
+  resetError.value = ''
+  if (resetStep.value === 'idle') return navigateTo('/')
+  if (resetStep.value === 'email') resetStep.value = 'idle'
+  else if (resetStep.value === 'sent') resetStep.value = 'email'
+  else if (resetStep.value === 'otp') resetStep.value = 'sent'
+  else if (resetStep.value === 'newPassword') resetStep.value = 'otp'
+  else resetStep.value = 'idle'
+}
+
+const startForgotPassword = () => {
+  resetEmail.value = emailInput.value
+  resetError.value = ''
+  resetStep.value = 'email'
+}
+
+// OTP
 const otpDigits = ref<string[]>(['', '', '', '', '', ''])
 const otpRefs = ref<HTMLInputElement[]>([])
 const otpValue = computed(() => otpDigits.value.join(''))
 
 const onOtpInput = (index: number) => {
   const val = otpDigits.value[index]
-  if (val && index < 5) {
-    otpRefs.value[index + 1]?.focus()
-  }
+  if (val && index < 5) otpRefs.value[index + 1]?.focus()
 }
-
 const onOtpBackspace = (index: number) => {
   if (!otpDigits.value[index] && index > 0) {
     otpDigits.value[index - 1] = ''
     otpRefs.value[index - 1]?.focus()
   }
 }
-
 const onOtpPaste = (e: ClipboardEvent) => {
   const text = e.clipboardData?.getData('text')?.replace(/\D/g, '').slice(0, 6) ?? ''
   text.split('').forEach((ch, i) => { otpDigits.value[i] = ch })
   otpRefs.value[Math.min(text.length, 5)]?.focus()
 }
 
-// Resend countdown
 const resendCountdown = ref(0)
 let resendTimer: ReturnType<typeof setInterval> | null = null
-
 const startResendCountdown = () => {
   resendCountdown.value = 60
   resendTimer = setInterval(() => {
@@ -543,78 +396,18 @@ const startResendCountdown = () => {
   }, 1000)
 }
 
-// New password fields
-const newPassword = ref('')
-const confirmPassword = ref('')
-const showNewPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-const passwordsMatch = computed(
-  () => newPassword.value.length >= 8 && newPassword.value === confirmPassword.value,
-)
-
-const passwordStrength = computed(() => {
-  const p = newPassword.value
-  let score = 0
-  if (p.length >= 8) score++
-  if (/[A-Z]/.test(p)) score++
-  if (/[0-9]/.test(p)) score++
-  if (/[^A-Za-z0-9]/.test(p)) score++
-  return score
-})
-
-const strengthColor = computed(() => {
-  if (passwordStrength.value <= 1) return 'bg-red-400'
-  if (passwordStrength.value === 2) return 'bg-yellow-400'
-  if (passwordStrength.value === 3) return 'bg-blue-400'
-  return 'bg-green-400'
-})
-
-const strengthTextColor = computed(() => {
-  if (passwordStrength.value <= 1) return 'text-red-300'
-  if (passwordStrength.value === 2) return 'text-yellow-300'
-  if (passwordStrength.value === 3) return 'text-blue-300'
-  return 'text-green-300'
-})
-
-const strengthLabel = computed(() => {
-  if (passwordStrength.value <= 1) return 'Weak'
-  if (passwordStrength.value === 2) return 'Fair'
-  if (passwordStrength.value === 3) return 'Good'
-  return 'Strong'
-})
-
-const startForgotPassword = () => {
-  resetEmail.value = emailInput.value
-  resetError.value = ''
-  resetStep.value = 'email'
-}
-
-const handleResetBack = () => {
-  resetError.value = ''
-  if (resetStep.value === 'email') resetStep.value = 'idle'
-  else if (resetStep.value === 'otp') resetStep.value = 'email'
-  else if (resetStep.value === 'newPassword') resetStep.value = 'otp'
-  else resetStep.value = 'idle'
-}
-
-const apiBase = computed(() => useRuntimeConfig().public.apiBase as string)
-
 const handleForgotPassword = async () => {
   if (!resetEmail.value) return
   resetError.value = ''
   resetLoading.value = true
   try {
-    await $fetch(`${apiBase.value}/auth/forgot-password`, {
+    await $fetch(`${config.public.apiBase}/auth/forgot-password`, {
       method: 'POST',
       body: { email: resetEmail.value },
     })
-    // Reset OTP boxes
     otpDigits.value = ['', '', '', '', '', '']
-    resetStep.value = 'otp'
+    resetStep.value = 'sent'
     startResendCountdown()
-    // Focus first box after transition
-    setTimeout(() => otpRefs.value[0]?.focus(), 100)
   } catch {
     resetError.value = 'Something went wrong. Please try again.'
   } finally {
@@ -627,7 +420,7 @@ const handleVerifyResetOtp = async () => {
   resetError.value = ''
   resetLoading.value = true
   try {
-    const res: any = await $fetch(`${apiBase.value}/auth/verify-reset-otp`, {
+    const res: any = await $fetch(`${config.public.apiBase}/auth/verify-reset-otp`, {
       method: 'POST',
       body: { email: resetEmail.value, code: otpValue.value },
     })
@@ -642,6 +435,37 @@ const handleVerifyResetOtp = async () => {
   }
 }
 
+// New password
+const newPassword = ref('')
+const confirmPassword = ref('')
+const showNewPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+const passwordsMatch = computed(() => newPassword.value.length >= 8 && newPassword.value === confirmPassword.value)
+
+const passwordStrength = computed(() => {
+  const p = newPassword.value
+  let score = 0
+  if (p.length >= 8) score++
+  if (/[A-Z]/.test(p)) score++
+  if (/[0-9]/.test(p)) score++
+  if (/[^A-Za-z0-9]/.test(p)) score++
+  return score
+})
+const strengthBg = computed(() => {
+  if (passwordStrength.value <= 1) return '#ef4444'
+  if (passwordStrength.value === 2) return '#f59e0b'
+  if (passwordStrength.value === 3) return '#3b82f6'
+  return '#00a19a'
+})
+const strengthColor = strengthBg
+const strengthLabel = computed(() => {
+  if (passwordStrength.value <= 1) return 'Weak'
+  if (passwordStrength.value === 2) return 'Fair'
+  if (passwordStrength.value === 3) return 'Good'
+  return 'Strong'
+})
+
 const handleResetPassword = async () => {
   if (!passwordsMatch.value) {
     resetError.value = 'Passwords do not match.'
@@ -650,7 +474,7 @@ const handleResetPassword = async () => {
   resetError.value = ''
   resetLoading.value = true
   try {
-    await $fetch(`${apiBase.value}/auth/reset-password`, {
+    await $fetch(`${config.public.apiBase}/auth/reset-password`, {
       method: 'POST',
       body: { resetToken: resetToken.value, newPassword: newPassword.value },
     })
@@ -662,127 +486,333 @@ const handleResetPassword = async () => {
   }
 }
 
-// Placeholder — social login not fully wired here
-const handleSocialLogin = (_provider: string) => {}
+// Single submit handler — dispatches based on step
+const onPrimary = () => {
+  if (resetStep.value === 'idle') return handleLogin()
+  if (resetStep.value === 'email') return handleForgotPassword()
+  if (resetStep.value === 'otp') return handleVerifyResetOtp()
+  if (resetStep.value === 'newPassword') return handleResetPassword()
+}
 </script>
 
 <style scoped>
-.content {
-  @apply pt-6 px-4;
-  @apply flex flex-col;
-  @apply min-h-dvh;
+.auth-screen {
+  background: #fff;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
-.back-btn {
-  @apply flex items-center justify-center w-10 h-10 rounded-full bg-white/10;
-  @apply mb-2;
+/* Topbar */
+.auth-topbar {
+  display: flex;
+  align-items: center;
+  padding: 16px 22px 4px;
+  gap: 10px;
+}
+.auth-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fafafa;
+  color: #231d45;
+  border: 1px solid #ececef;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.auth-back-btn svg { width: 14px; height: 14px; }
+.auth-spacer { flex: 1; }
+.auth-brand-mini {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.logo-and-welcome {
-  @apply mt-3;
-  h1 {
-    @apply text-[34px] font-bold text-white;
-  }
+/* Hero */
+.auth-hero { padding: 18px 24px 4px; }
+.auth-hero-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  color: #007e78;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.auth-hero-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -1px;
+  line-height: 1.05;
+  margin-bottom: 10px;
+}
+.auth-hero-sub {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #6b6783;
+  line-height: 1.55;
+  letter-spacing: -0.05px;
 }
 
-.login-options {
-  @apply flex flex-col h-full mb-6 flex-1 relative;
+/* Logged-out / session toast */
+.logged-out-toast {
+  margin: 6px 24px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logged-out-toast svg { width: 14px; height: 14px; flex-shrink: 0; }
+.logged-out-toast--teal {
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  color: #007e78;
+}
+.logged-out-toast--yellow {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #92400e;
 }
 
-.social-logins {
-  @apply flex items-center justify-center gap-2 mt-4;
-
-  &__button {
-    @apply flex items-center justify-center gap-2;
-    @apply w-full h-[50px] rounded-xl shadow-lg transition-colors;
-    @apply bg-white;
-    @apply text-black text-[17px];
-
-    &--google {
-      @apply relative overflow-hidden;
-    }
-  }
+/* Form */
+.auth-form { padding: 22px 24px 18px; }
+.form-field { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.1px;
+  margin-bottom: 6px;
 }
-
-#google-gis-btn {
+.form-input-wrap { position: relative; }
+.form-input {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #ececef;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #231d45;
+  letter-spacing: -0.1px;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.10);
+}
+.form-input::placeholder { color: #9c98ad; font-weight: 500; }
+.form-input.with-icon { padding-left: 40px; }
+.form-input.with-action { padding-right: 44px; }
+.form-input-icon {
   position: absolute;
-  inset: 0;
-  opacity: 0.001;
-  overflow: hidden;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9c98ad;
+  pointer-events: none;
+}
+.form-input-icon svg { width: 16px; height: 16px; display: block; }
+.form-input-action {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #9c98ad;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.form-input-action svg { width: 16px; height: 16px; }
 
-  :deep(iframe),
-  :deep(div) {
-    width: 100% !important;
-    height: 100% !important;
-  }
+/* Reset helper text above OTP */
+.reset-helper-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b6783;
+  margin: 0 0 18px;
+  line-height: 1.55;
+  text-align: center;
+}
+.reset-helper-text strong { color: #231d45; font-weight: 800; }
+
+/* OTP */
+.otp-boxes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.otp-box {
+  width: 46px;
+  height: 54px;
+  border: 1.5px solid #ececef;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: #231d45;
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+}
+.otp-box:focus {
+  border-color: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.10);
 }
 
-.email-form {
-  @apply space-y-4;
-
-  &__button {
-    @apply flex items-center justify-center;
-    @apply w-full h-[50px] rounded-xl shadow-lg transition-colors;
-    @apply bg-brand-aqua;
-    @apply text-white text-[17px] absolute bottom-0;
-    &:disabled {
-      @apply opacity-60;
-    }
-  }
-
-  &__divider {
-    @apply flex items-center space-x-4 mb-4 mt-6;
-  }
+/* Password strength */
+.password-strength { margin-bottom: 14px; }
+.strength-bars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.strength-bar {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+.password-strength p {
+  font-size: 12px;
+  margin: 0;
+  font-weight: 700;
 }
 
-/* ── Password Reset ──────────────────────────────────────────────────────── */
-
-.reset-section {
-  @apply flex flex-col flex-1 pt-10 pb-8;
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  background: #00a19a;
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 14px 18px;
+  border-radius: 100px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
+  transition: all 0.18s;
+  margin-top: 8px;
 }
-
-.reset-icon {
-  @apply w-16 h-16 rounded-full bg-brand-aqua/20 border-2 border-brand-aqua/50;
-  @apply flex items-center justify-center mb-6;
+.btn-primary:hover { background: #00b6ae; }
+.btn-primary:disabled { opacity: 0.65; cursor: not-allowed; }
+.btn-text {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b6783;
+  cursor: pointer;
+  padding: 10px;
+  margin: 8px auto 0;
+  display: block;
+  letter-spacing: -0.05px;
 }
+.btn-text:hover { color: #231d45; }
+.btn-text:disabled { opacity: 0.65; cursor: not-allowed; }
 
-.reset-title {
-  @apply text-[28px] font-bold text-white mb-2;
+/* Confirm state — used for "sent" and "success" */
+.confirm-state {
+  padding: 28px 24px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+.confirm-icon {
+  width: 64px;
+  height: 64px;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  border-radius: 50%;
+  margin: 8px auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00a19a;
+}
+.confirm-icon svg { width: 28px; height: 28px; }
+.confirm-h {
+  font-size: 22px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.confirm-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b6783;
+  line-height: 1.55;
+  margin-bottom: 22px;
+  letter-spacing: -0.05px;
+}
+.confirm-sub strong { color: #231d45; font-weight: 800; }
+.confirm-state .btn-primary { max-width: 280px; }
 
-.reset-subtitle {
-  @apply text-white/70 text-[15px] mb-8 leading-relaxed;
+/* Footer */
+.auth-footer {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b6783;
+  text-align: center;
+  padding: 16px 24px 24px;
+  letter-spacing: -0.05px;
 }
-
-.reset-form {
-  @apply space-y-4;
+.auth-footer a {
+  color: #00a19a;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
 }
-
-.reset-input {
-  @apply w-full h-12 bg-white text-gray-900 rounded-xl px-4 border-0;
-  @apply focus:ring-2 focus:ring-brand-aqua outline-none;
-}
-
-.reset-btn {
-  @apply w-full h-[50px] rounded-xl bg-brand-aqua text-white text-[17px] font-semibold;
-  @apply flex items-center justify-center transition-opacity;
-  &:disabled {
-    @apply opacity-50;
-  }
-}
+.auth-footer a:hover { color: #0d928b; }
 
 .error-banner {
-  @apply rounded-xl bg-red-500/20 border border-red-400/40 px-4 py-3 text-red-200 text-sm;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 12px;
+  color: #dc2626;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-/* OTP boxes */
-.otp-boxes {
-  @apply flex gap-3 justify-center;
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
 }
-
-.otp-box {
-  @apply w-12 h-14 rounded-xl bg-white text-gray-900 text-xl font-bold text-center;
-  @apply border-2 border-transparent focus:border-brand-aqua outline-none;
-  @apply transition-colors;
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>

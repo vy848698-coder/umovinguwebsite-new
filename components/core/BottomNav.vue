@@ -6,7 +6,7 @@
       <button
         class="flex flex-col items-center py-2"
         :class="isActive('explore')"
-        @click="router.push('/dashboard')"
+        @click="router.push('/explore')"
       >
         <OPIcon name="explore" :class="iconSize" />
         <span class="text-xs mt-1">Explore</span>
@@ -24,6 +24,7 @@
       <button
         class="flex flex-col items-center py-2"
         :class="isActive('marketplace')"
+        @click="router.push('/marketplace')"
       >
         <OPIcon name="marketplace" :class="iconSize" />
         <span class="text-xs mt-1">Marketplace</span>
