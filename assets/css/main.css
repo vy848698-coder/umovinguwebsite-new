@@ -38,6 +38,7 @@
 @layer base {
   body {
     font-family:
+      'Plus Jakarta Sans',
       'SF Pro Display',
       -apple-system,
       BlinkMacSystemFont,
