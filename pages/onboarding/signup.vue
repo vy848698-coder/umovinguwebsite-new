@@ -1,140 +1,191 @@
 <template>
-  <div class="mobile-container auth-screen">
+  <div class="mobile-container auth-screen signup-futuristic">
+
+    <div class="signup-bg">
+      <div class="signup-orb signup-orb-a" />
+      <div class="signup-orb signup-orb-b" />
+      <div class="signup-grid" />
+      <div class="signup-vignette" />
+    </div>
 
     <!-- Topbar — back button + brand mini -->
-    <div class="auth-topbar">
-      <button class="auth-back-btn" @click="$router.back()">
+    <div class="auth-topbar signup-topbar">
+      <button class="auth-back-btn signup-back-btn" @click="$router.back()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
-      <div class="auth-spacer" />
-      <div class="auth-brand-mini">
+      <div class="signup-topbar-copy">
+        <span class="signup-topbar-kicker">Neural onboarding</span>
+        <strong>Build your access in seconds</strong>
+      </div>
+      <div class="auth-brand-mini signup-brand-mini">
         <OPIcon name="logo" class="w-[26px] h-[26px]" />
       </div>
     </div>
 
-    <!-- Hero -->
-    <div class="auth-hero">
-      <div class="auth-hero-eyebrow">Create your account</div>
-      <div class="auth-hero-title">Start with your home.</div>
-      <div class="auth-hero-sub">A few details and you're in. Your details stay with us — we never share them with third parties.</div>
-    </div>
-
-    <form class="auth-form" @submit.prevent="handleSubmit">
-
-      <div v-if="formError" class="error-banner">{{ formError }}</div>
-
-      <!-- Email -->
-      <div class="form-field">
-        <label class="form-label">Email address</label>
-        <div class="form-input-wrap">
-          <span class="form-input-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          </span>
-          <input v-model="form.email" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
+    <div class="signup-shell">
+      <section class="signup-visual">
+        <div class="signup-badge-row">
+          <span class="signup-chip">Secure</span>
+          <span class="signup-chip signup-chip--alt">Property-first account creation</span>
         </div>
-      </div>
 
-      <!-- Password -->
-      <div class="form-field">
-        <label class="form-label">Password</label>
-        <div class="form-input-wrap">
-          <span class="form-input-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-          </span>
-          <input v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="At least 8 characters" class="form-input with-icon with-action" autocomplete="new-password" />
-          <button type="button" class="form-input-action" @click="showPassword = !showPassword">
-            <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-              <line x1="1" y1="1" x2="23" y2="23" />
-            </svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
+        <div class="auth-hero signup-hero">
+          <div class="auth-hero-eyebrow">Create your account</div>
+          <div class="auth-hero-title">Start with your home.</div>
+          <div class="auth-hero-sub">A few details and you're in. Your details stay with us — we never share them with third parties.</div>
         </div>
-      </div>
 
-      <!-- Full name -->
-      <div class="form-field">
-        <label class="form-label">Full name</label>
-        <div class="form-input-wrap">
-          <span class="form-input-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </span>
-          <input v-model="form.fullName" type="text" placeholder="Jane Smith" class="form-input with-icon" autocomplete="name" />
+        <div class="signup-image-stack">
+          <article class="signup-image-card signup-image-card--large">
+            <img src="/images/onboarding_background.jpg" alt="UK house exterior" />
+            <div class="signup-image-overlay">
+              <span>Instant onboarding</span>
+              <strong>Property context before first login</strong>
+            </div>
+          </article>
+          <article class="signup-image-card signup-image-card--small signup-float-a">
+            <img src="/welcome-house.png" alt="Sample house" />
+          </article>
+          <article class="signup-image-card signup-image-card--small signup-float-b">
+            <img src="/images/findPropertyBackground.png" alt="Residential property" />
+          </article>
         </div>
-      </div>
 
-      <!-- Mobile (optional) -->
-      <div class="form-field optional">
-        <label class="form-label">Mobile number <span class="opt">optional</span></label>
-        <PhoneInput v-model="form.mobile" />
-        <div class="form-help">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-          <span>We only text you about <strong>your Passport</strong> — never marketing.</span>
-        </div>
-      </div>
-
-      <!-- Postcode (optional) -->
-      <div class="form-field optional">
-        <label class="form-label">Postcode <span class="opt">optional</span></label>
-        <div v-if="selectedAddress" class="address-selected-row">
-          <div class="address-selected-body">
-            <div class="address-selected-line1">{{ selectedAddress.line1 }}</div>
-            <div class="address-selected-line2">{{ selectedAddress.line2 }}</div>
+        <div class="signup-metrics">
+          <div>
+            <strong>2 min</strong>
+            <span>Typical account setup</span>
           </div>
-          <button type="button" class="address-edit-btn" @click="editAddress">Edit</button>
+          <div>
+            <strong>74</strong>
+            <span>Sample HomeScore</span>
+          </div>
+          <div>
+            <strong>1 flow</strong>
+            <span>Property + access + passport</span>
+          </div>
         </div>
-        <PropertySearchInput
-          v-else
-          placeholder="CV5 6AJ"
-          variant="light"
-          @select="onAddressSelect"
-        />
-        <div class="postcode-prompt">
-          <div class="postcode-prompt-h">See your home's HomeScore the moment you sign in</div>
-          <div class="postcode-prompt-text">Add your postcode and we'll show you what your home tells us — bills, value, comparisons. You can skip this and add it later.</div>
+      </section>
+
+      <section class="signup-panel-wrap">
+        <form class="auth-form signup-panel" @submit.prevent="handleSubmit">
+
+          <div v-if="formError" class="error-banner">{{ formError }}</div>
+
+          <!-- Email -->
+          <div class="form-field">
+            <label class="form-label">Email address</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </span>
+              <input v-model="form.email" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-field">
+            <label class="form-label">Password</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <input v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="At least 8 characters" class="form-input with-icon with-action" autocomplete="new-password" />
+              <button type="button" class="form-input-action" @click="showPassword = !showPassword">
+                <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Full name -->
+          <div class="form-field">
+            <label class="form-label">Full name</label>
+            <div class="form-input-wrap">
+              <span class="form-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <input v-model="form.fullName" type="text" placeholder="Jane Smith" class="form-input with-icon" autocomplete="name" />
+            </div>
+          </div>
+
+          <!-- Mobile (optional) -->
+          <div class="form-field optional">
+            <label class="form-label">Mobile number <span class="opt">optional</span></label>
+            <PhoneInput v-model="form.mobile" />
+            <div class="form-help">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>We only text you about <strong>your Passport</strong> — never marketing.</span>
+            </div>
+          </div>
+
+          <!-- Postcode (optional) -->
+          <div class="form-field optional">
+            <label class="form-label">Postcode <span class="opt">optional</span></label>
+            <div v-if="selectedAddress" class="address-selected-row">
+              <div class="address-selected-body">
+                <div class="address-selected-line1">{{ selectedAddress.line1 }}</div>
+                <div class="address-selected-line2">{{ selectedAddress.line2 }}</div>
+              </div>
+              <button type="button" class="address-edit-btn" @click="editAddress">Edit</button>
+            </div>
+            <PropertySearchInput
+              v-else
+              placeholder="CV5 6AJ"
+              variant="light"
+              @select="onAddressSelect"
+            />
+            <div class="postcode-prompt">
+              <div class="postcode-prompt-h">See your home's HomeScore the moment you sign in</div>
+              <div class="postcode-prompt-text">Add your postcode and we'll show you what your home tells us — bills, value, comparisons. You can skip this and add it later.</div>
+            </div>
+          </div>
+
+          <!-- Marketing opt-in -->
+          <label class="checkbox-row">
+            <span class="checkbox-box" :class="{ checked: form.marketingOptIn }">
+              <input v-model="form.marketingOptIn" type="checkbox" hidden />
+            </span>
+            <span class="checkbox-text">Email me occasional product updates and tips. We won't spam you — and you can unsubscribe in one tap.</span>
+          </label>
+
+          <button type="submit" class="btn-primary btn-primary--futuristic" :disabled="isLoading">
+            <span v-if="isLoading" class="spinner" />
+            {{ isLoading ? 'Creating account…' : 'Create account' }}
+          </button>
+
+          <div class="terms-text">
+            By continuing you agree to our
+            <NuxtLink to="/legal/terms" target="_blank">Terms of Service</NuxtLink>
+            and
+            <NuxtLink to="/legal/privacy" target="_blank">Privacy Policy</NuxtLink>.
+          </div>
+        </form>
+
+        <div class="auth-footer signup-footer">
+          Already have an account? <NuxtLink to="/onboarding/signin">Sign in</NuxtLink>
         </div>
-      </div>
-
-      <!-- Marketing opt-in -->
-      <label class="checkbox-row">
-        <span class="checkbox-box" :class="{ checked: form.marketingOptIn }">
-          <input v-model="form.marketingOptIn" type="checkbox" hidden />
-        </span>
-        <span class="checkbox-text">Email me occasional product updates and tips. We won't spam you — and you can unsubscribe in one tap.</span>
-      </label>
-
-      <button type="submit" class="btn-primary" :disabled="isLoading">
-        <span v-if="isLoading" class="spinner" />
-        {{ isLoading ? 'Creating account…' : 'Create account' }}
-      </button>
-
-      <div class="terms-text">
-        By continuing you agree to our
-        <NuxtLink to="/legal/terms" target="_blank">Terms of Service</NuxtLink>
-        and
-        <NuxtLink to="/legal/privacy" target="_blank">Privacy Policy</NuxtLink>.
-      </div>
-    </form>
-
-    <div class="auth-footer">
-      Already have an account? <NuxtLink to="/onboarding/signin">Sign in</NuxtLink>
+      </section>
     </div>
 
     <TermsModal
@@ -616,4 +667,478 @@ const handleSubmit = async () => {
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.auth-screen.signup-futuristic {
+  background:
+    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
+  color: #1f2b3f;
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.signup-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.signup-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  opacity: 0.04;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 92%);
+}
+
+.signup-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(248, 251, 255, 0.66) 64%, rgba(238, 244, 249, 0.88) 100%);
+}
+
+.signup-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(36px);
+  animation: drift 16s ease-in-out infinite;
+}
+
+.signup-orb-a {
+  top: 8%;
+  left: 2%;
+  width: 280px;
+  height: 280px;
+  background: rgba(0, 161, 154, 0.3);
+}
+
+.signup-orb-b {
+  right: -3%;
+  top: 18%;
+  width: 340px;
+  height: 340px;
+  background: rgba(95, 139, 255, 0.26);
+  animation-duration: 21s;
+}
+
+.signup-topbar,
+.signup-shell,
+.signup-panel-wrap,
+.signup-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.signup-topbar {
+  padding: 16px 20px 6px;
+}
+
+.signup-back-btn {
+  background: rgba(255, 255, 255, 0.88);
+  color: #1f2b3f;
+  border-color: #d4dfeb;
+  backdrop-filter: blur(12px);
+}
+
+.signup-topbar-copy {
+  flex: 1;
+  text-align: center;
+  color: #50637f;
+}
+
+.signup-topbar-kicker {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #00857f;
+  margin-bottom: 2px;
+}
+
+.signup-topbar-copy strong {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signup-brand-mini {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #d4dfeb;
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  backdrop-filter: blur(12px);
+}
+
+.signup-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 18px 0 30px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.signup-visual {
+  padding: 14px 0 0;
+}
+
+.signup-panel-wrap {
+  position: relative;
+  padding-top: 8px;
+}
+
+.signup-badge-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.signup-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2b3f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid #d8e3ef;
+}
+
+.signup-chip--alt {
+  background: #eafaf7;
+  color: #00857f;
+}
+
+.signup-hero { padding: 0; }
+
+.signup-hero .auth-hero-eyebrow,
+.signup-hero .auth-hero-sub {
+  color: #586a83;
+}
+
+.signup-hero .auth-hero-title {
+  color: #18263b;
+  font-size: clamp(34px, 4.8vw, 56px);
+  line-height: 1;
+  letter-spacing: -1.3px;
+  font-weight: 650;
+}
+
+.signup-image-stack {
+  margin-top: 18px;
+  position: relative;
+  min-height: 312px;
+}
+
+.signup-image-card {
+  position: absolute;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid #d8e3ee;
+  box-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.signup-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.signup-image-card--large {
+  left: 0;
+  top: 0;
+  width: min(100%, 460px);
+  height: 296px;
+}
+
+.signup-image-card--small {
+  width: 160px;
+  height: 160px;
+}
+
+.signup-image-card--small:nth-of-type(2) {
+  left: auto;
+  right: 8px;
+  top: auto;
+  bottom: -4px;
+}
+
+.signup-image-card--small:nth-of-type(3) {
+  display: none;
+}
+
+.signup-image-overlay {
+  position: absolute;
+  inset: auto 16px 16px 16px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(24, 38, 59, 0.16), rgba(24, 38, 59, 0.72));
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.signup-image-overlay span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9beee9;
+  font-weight: 800;
+}
+
+.signup-image-overlay strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  font-weight: 700;
+}
+
+.signup-float-a {
+  animation: float 8s ease-in-out infinite;
+}
+
+.signup-float-b {
+  animation: float 11s ease-in-out infinite reverse;
+}
+
+.signup-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.signup-metrics > div {
+  padding: 13px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid #d9e4ee;
+  backdrop-filter: blur(12px);
+}
+
+.signup-metrics strong {
+  display: block;
+  font-size: 23px;
+  line-height: 1;
+  letter-spacing: -0.7px;
+  color: #18293f;
+}
+
+.signup-metrics span {
+  display: block;
+  margin-top: 6px;
+  color: #60728c;
+  font-size: 11px;
+}
+
+.signup-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d8e3ef;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 20px 34px rgba(32, 60, 96, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.signup-panel .btn-primary {
+  margin-top: 8px;
+}
+
+.signup-panel .form-label,
+.signup-panel .terms-text,
+.signup-panel .auth-footer,
+.signup-panel .form-help,
+.signup-panel .postcode-prompt-text,
+.signup-panel .postcode-prompt-h,
+.signup-panel .checkbox-text,
+.signup-panel .address-selected-line2,
+.signup-panel .opt {
+  color: #586a83;
+}
+
+.signup-panel .form-label,
+.signup-panel .postcode-prompt-h {
+  color: #18263b;
+}
+
+.signup-panel .form-input,
+.signup-panel :deep(.phone-field) {
+  background: #ffffff;
+  border-color: #d2dcea;
+  color: #1f2b3f;
+}
+
+.signup-panel .form-input::placeholder,
+.signup-panel :deep(.number-input::placeholder) {
+  color: #8ea3bc;
+}
+
+.signup-panel .form-input:focus,
+.signup-panel :deep(.phone-field--focused) {
+  border-color: #8ab4db;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+}
+
+.signup-panel .form-input-icon,
+.signup-panel .form-input-action,
+.signup-panel :deep(.country-dial) {
+  color: #60728c;
+}
+
+.signup-panel .address-selected-row,
+.signup-panel .postcode-prompt {
+  background: #f8fbff;
+  border-color: #d2dcea;
+}
+
+.signup-panel .address-selected-line1,
+.signup-panel .postcode-prompt-text,
+.signup-panel .form-help strong,
+.signup-panel .terms-text a,
+.signup-panel .auth-footer a {
+  color: #1e2b41;
+}
+
+.signup-panel .checkbox-box {
+  background: #ffffff;
+  border-color: #d2dcea;
+}
+
+.signup-panel .checkbox-box.checked {
+  background: linear-gradient(135deg, #00a19a, #1a79c8);
+  border-color: transparent;
+}
+
+.btn-primary--futuristic {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #00a19a, #1a79c8);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
+.btn-primary--futuristic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.16) 50%, transparent 100%);
+  transform: translateX(-120%);
+  animation: sheen 4.8s ease-in-out infinite;
+}
+
+.btn-primary--futuristic:hover {
+  background: linear-gradient(135deg, #00aba4, #2384d8);
+}
+
+.signup-panel .error-banner {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.signup-footer {
+  color: #586a83;
+  padding-top: 14px;
+}
+
+.signup-footer a {
+  color: #00a19a;
+}
+
+@keyframes sheen {
+  0%,
+  55% { transform: translateX(-120%); }
+  80%,
+  100% { transform: translateX(120%); }
+}
+
+@keyframes drift {
+  0%,
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(18px, -20px, 0) scale(1.08); }
+}
+
+@keyframes float {
+  0%,
+  100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 1040px) {
+  .signup-shell {
+    grid-template-columns: 1fr;
+    width: calc(100% - 28px);
+  }
+
+  .signup-image-stack {
+    min-height: 320px;
+  }
+
+  .signup-image-card--large {
+    width: min(100%, 520px);
+  }
+}
+
+@media (max-width: 760px) {
+  .signup-topbar {
+    padding: 14px 16px 6px;
+  }
+
+  .signup-shell {
+    width: calc(100% - 24px);
+    padding-bottom: 18px;
+  }
+
+  .signup-visual {
+    padding-top: 10px;
+  }
+
+  .signup-hero .auth-hero-title {
+    font-size: 38px;
+  }
+
+  .signup-image-stack {
+    min-height: 230px;
+  }
+
+  .signup-image-card--large {
+    width: 100%;
+    height: 220px;
+  }
+
+  .signup-image-card--small {
+    width: 102px;
+    height: 102px;
+  }
+
+  .signup-image-card--small:nth-of-type(2) {
+    right: 0;
+    bottom: -4px;
+  }
+
+  .signup-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .signup-panel {
+    padding: 18px;
+    border-radius: 24px;
+  }
+}
 </style>

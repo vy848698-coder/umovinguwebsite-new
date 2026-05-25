@@ -1,231 +1,276 @@
 <template>
-  <div class="mobile-container auth-screen">
+  <div class="mobile-container auth-screen signin-futuristic">
+    <div class="signin-bg">
+      <div class="signin-orb signin-orb-a" />
+      <div class="signin-orb signin-orb-b" />
+      <div class="signin-grid" />
+      <div class="signin-vignette" />
+    </div>
 
     <!-- Topbar -->
-    <div class="auth-topbar">
-      <button class="auth-back-btn" @click="handleBack">
+    <div class="auth-topbar signin-topbar">
+      <button class="auth-back-btn signin-back-btn" @click="handleBack" aria-label="Back">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
-      <div class="auth-spacer" />
-      <div class="auth-brand-mini">
+      <div class="signin-topbar-copy">
+        <span class="signin-topbar-kicker">Neural access</span>
+        <strong>{{ heroEyebrow }}</strong>
+      </div>
+      <div class="auth-brand-mini signin-brand-mini">
         <OPIcon name="logo" class="w-[26px] h-[26px]" />
       </div>
     </div>
 
     <!-- ── Sign-in / forgot-password (entry) / verify code / new password ── -->
     <template v-if="resetStep !== 'sent' && resetStep !== 'success'">
-      <div class="auth-hero">
-        <div class="auth-hero-eyebrow">{{ heroEyebrow }}</div>
-        <div class="auth-hero-title">{{ heroTitle }}</div>
-        <div class="auth-hero-sub">{{ heroSub }}</div>
-      </div>
-
-      <!-- Logout / session toast -->
-      <div
-        v-if="bannerMessage && resetStep === 'idle'"
-        class="logged-out-toast"
-        :class="bannerReason === 'logout' ? 'logged-out-toast--teal' : 'logged-out-toast--yellow'"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        {{ bannerMessage }}
-      </div>
-
-      <form class="auth-form" @submit.prevent="onPrimary">
-
-        <!-- ── Sign in ── -->
-        <template v-if="resetStep === 'idle'">
-          <div class="form-field">
-            <label class="form-label">Email address</label>
-            <div class="form-input-wrap">
-              <span class="form-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              </span>
-              <input v-model="emailInput" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
-            </div>
+      <div class="signin-shell">
+        <section class="signin-visual">
+          <div class="signin-badge-row">
+            <span class="signin-chip">Encrypted</span>
+            <span class="signin-chip signin-chip--alt">Property passport ready</span>
           </div>
 
-          <div class="form-field">
-            <label class="form-label">Password</label>
-            <div class="form-input-wrap">
-              <span class="form-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <input
-                v-model="passwordInput"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Your password"
-                class="form-input with-icon with-action"
-                autocomplete="current-password"
-              />
-              <button type="button" class="form-input-action" @click="showPassword = !showPassword">
-                <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
+          <h1 class="signin-title">{{ heroTitle }}</h1>
+          <p class="signin-sub">{{ heroSub }}</p>
+
+          <div class="signin-image-stack">
+            <article class="signin-image-card signin-image-card--large">
+              <img src="/images/onboarding_background.jpg" alt="UK property street" />
+              <div class="signin-image-overlay">
+                <span>HomeScore-ready flow</span>
+                <strong>See the home before the login</strong>
+              </div>
+            </article>
+            <article class="signin-image-card signin-image-card--small signin-float-a">
+              <img src="/welcome-house.png" alt="Sample house" />
+            </article>
+          </div>
+
+          <div class="signin-metrics">
+            <div>
+              <strong>74</strong>
+              <span>Typical HomeScore preview</span>
+            </div>
+            <div>
+              <strong>24/7</strong>
+              <span>Secure account access</span>
+            </div>
+            <div>
+              <strong>1 min</strong>
+              <span>Average sign-in flow</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="signin-panel-wrap">
+          <!-- Logout / session toast -->
+          <div
+            v-if="bannerMessage && resetStep === 'idle'"
+            class="logged-out-toast"
+            :class="bannerReason === 'logout' ? 'logged-out-toast--teal' : 'logged-out-toast--yellow'"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            {{ bannerMessage }}
+          </div>
+
+          <form class="auth-form signin-panel" @submit.prevent="onPrimary">
+
+            <!-- ── Sign in ── -->
+            <template v-if="resetStep === 'idle'">
+              <div class="form-field">
+                <label class="form-label">Email address</label>
+                <div class="form-input-wrap">
+                  <span class="form-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                  </span>
+                  <input v-model="emailInput" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Password</label>
+                <div class="form-input-wrap">
+                  <span class="form-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input
+                    v-model="passwordInput"
+                    :type="showPassword ? 'text' : 'password'"
+                    placeholder="Your password"
+                    class="form-input with-icon with-action"
+                    autocomplete="current-password"
+                  />
+                  <button type="button" class="form-input-action" @click="showPassword = !showPassword">
+                    <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="loginError" class="error-banner">{{ loginError }}</div>
+
+              <button type="submit" class="btn-primary btn-primary--futuristic" :disabled="loginLoading">
+                <span v-if="loginLoading" class="spinner" />
+                {{ loginLoading ? 'Signing in…' : 'Sign in' }}
               </button>
-            </div>
-          </div>
 
-          <div v-if="loginError" class="error-banner">{{ loginError }}</div>
+              <button type="button" class="btn-text" @click="startForgotPassword">Forgot password?</button>
+            </template>
 
-          <button type="submit" class="btn-primary" :disabled="loginLoading">
-            <span v-if="loginLoading" class="spinner" />
-            {{ loginLoading ? 'Signing in…' : 'Sign in' }}
-          </button>
+            <!-- ── Forgot password: enter email ── -->
+            <template v-else-if="resetStep === 'email'">
+              <div class="form-field">
+                <label class="form-label">Email address</label>
+                <div class="form-input-wrap">
+                  <span class="form-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                  </span>
+                  <input v-model="resetEmail" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
+                </div>
+              </div>
 
-          <button type="button" class="btn-text" @click="startForgotPassword">Forgot password?</button>
-        </template>
+              <div v-if="resetError" class="error-banner">{{ resetError }}</div>
 
-        <!-- ── Forgot password: enter email ── -->
-        <template v-else-if="resetStep === 'email'">
-          <div class="form-field">
-            <label class="form-label">Email address</label>
-            <div class="form-input-wrap">
-              <span class="form-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              </span>
-              <input v-model="resetEmail" type="email" placeholder="you@example.com" class="form-input with-icon" autocomplete="email" />
-            </div>
-          </div>
-
-          <div v-if="resetError" class="error-banner">{{ resetError }}</div>
-
-          <button type="submit" class="btn-primary" :disabled="resetLoading">
-            <span v-if="resetLoading" class="spinner" />
-            {{ resetLoading ? 'Sending…' : 'Send reset code' }}
-          </button>
-
-          <button type="button" class="btn-text" @click="resetStep = 'idle'">Back to sign in</button>
-        </template>
-
-        <!-- ── Forgot password: verify code ── -->
-        <template v-else-if="resetStep === 'otp'">
-          <p class="reset-helper-text">
-            We sent a 6-digit code to<br>
-            <strong>{{ resetEmail }}</strong>
-          </p>
-
-          <div class="otp-boxes">
-            <input
-              v-for="(_, i) in otpDigits"
-              :key="i"
-              :ref="el => { if (el) otpRefs[i] = el as HTMLInputElement }"
-              v-model="otpDigits[i]"
-              type="text"
-              inputmode="numeric"
-              maxlength="1"
-              class="otp-box"
-              @input="onOtpInput(i)"
-              @keydown.backspace="onOtpBackspace(i)"
-              @paste.prevent="onOtpPaste($event)"
-            />
-          </div>
-
-          <div v-if="resetError" class="error-banner">{{ resetError }}</div>
-
-          <button type="submit" class="btn-primary" :disabled="resetLoading || otpValue.length < 6">
-            <span v-if="resetLoading" class="spinner" />
-            {{ resetLoading ? 'Verifying…' : 'Verify code' }}
-          </button>
-
-          <button v-if="resendCountdown > 0" type="button" class="btn-text" disabled>
-            Resend code in {{ resendCountdown }}s
-          </button>
-          <button v-else type="button" class="btn-text" @click="handleForgotPassword">Resend code</button>
-        </template>
-
-        <!-- ── Forgot password: new password ── -->
-        <template v-else-if="resetStep === 'newPassword'">
-          <div class="form-field">
-            <label class="form-label">New password</label>
-            <div class="form-input-wrap">
-              <span class="form-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <input
-                v-model="newPassword"
-                :type="showNewPassword ? 'text' : 'password'"
-                placeholder="New password"
-                class="form-input with-icon with-action"
-              />
-              <button type="button" class="form-input-action" @click="showNewPassword = !showNewPassword">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
+              <button type="submit" class="btn-primary btn-primary--futuristic" :disabled="resetLoading">
+                <span v-if="resetLoading" class="spinner" />
+                {{ resetLoading ? 'Sending…' : 'Send reset code' }}
               </button>
-            </div>
-          </div>
 
-          <div class="form-field">
-            <label class="form-label">Confirm new password</label>
-            <div class="form-input-wrap">
-              <span class="form-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <input
-                v-model="confirmPassword"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                placeholder="Confirm new password"
-                class="form-input with-icon with-action"
-              />
-              <button type="button" class="form-input-action" @click="showConfirmPassword = !showConfirmPassword">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
+              <button type="button" class="btn-text" @click="resetStep = 'idle'">Back to sign in</button>
+            </template>
+
+            <!-- ── Forgot password: verify code ── -->
+            <template v-else-if="resetStep === 'otp'">
+              <p class="reset-helper-text">
+                We sent a 6-digit code to<br>
+                <strong>{{ resetEmail }}</strong>
+              </p>
+
+              <div class="otp-boxes">
+                <input
+                  v-for="(_, i) in otpDigits"
+                  :key="i"
+                  :ref="el => { if (el) otpRefs[i] = el as HTMLInputElement }"
+                  v-model="otpDigits[i]"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  class="otp-box"
+                  @input="onOtpInput(i)"
+                  @keydown.backspace="onOtpBackspace(i)"
+                  @paste.prevent="onOtpPaste($event)"
+                />
+              </div>
+
+              <div v-if="resetError" class="error-banner">{{ resetError }}</div>
+
+              <button type="submit" class="btn-primary btn-primary--futuristic" :disabled="resetLoading || otpValue.length < 6">
+                <span v-if="resetLoading" class="spinner" />
+                {{ resetLoading ? 'Verifying…' : 'Verify code' }}
               </button>
-            </div>
+
+              <button v-if="resendCountdown > 0" type="button" class="btn-text" disabled>
+                Resend code in {{ resendCountdown }}s
+              </button>
+              <button v-else type="button" class="btn-text" @click="handleForgotPassword">Resend code</button>
+            </template>
+
+            <!-- ── Forgot password: new password ── -->
+            <template v-else-if="resetStep === 'newPassword'">
+              <div class="form-field">
+                <label class="form-label">New password</label>
+                <div class="form-input-wrap">
+                  <span class="form-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input
+                    v-model="newPassword"
+                    :type="showNewPassword ? 'text' : 'password'"
+                    placeholder="New password"
+                    class="form-input with-icon with-action"
+                  />
+                  <button type="button" class="form-input-action" @click="showNewPassword = !showNewPassword">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Confirm new password</label>
+                <div class="form-input-wrap">
+                  <span class="form-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input
+                    v-model="confirmPassword"
+                    :type="showConfirmPassword ? 'text' : 'password'"
+                    placeholder="Confirm new password"
+                    class="form-input with-icon with-action"
+                  />
+                  <button type="button" class="form-input-action" @click="showConfirmPassword = !showConfirmPassword">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="newPassword" class="password-strength">
+                <div class="strength-bars">
+                  <div v-for="n in 4" :key="n" class="strength-bar" :style="{ background: n <= passwordStrength ? strengthBg : '#eef0f6' }" />
+                </div>
+                <p :style="{ color: strengthColor }">{{ strengthLabel }}</p>
+              </div>
+
+              <div v-if="resetError" class="error-banner">{{ resetError }}</div>
+
+              <button type="submit" class="btn-primary btn-primary--futuristic" :disabled="resetLoading || !passwordsMatch">
+                <span v-if="resetLoading" class="spinner" />
+                {{ resetLoading ? 'Updating…' : 'Update password' }}
+              </button>
+            </template>
+          </form>
+
+          <div v-if="resetStep === 'idle'" class="auth-footer signin-footer">
+            Don't have an account? <NuxtLink to="/onboarding/signup">Create one</NuxtLink>
           </div>
-
-          <div v-if="newPassword" class="password-strength">
-            <div class="strength-bars">
-              <div v-for="n in 4" :key="n" class="strength-bar" :style="{ background: n <= passwordStrength ? strengthBg : '#eef0f6' }" />
-            </div>
-            <p :style="{ color: strengthColor }">{{ strengthLabel }}</p>
-          </div>
-
-          <div v-if="resetError" class="error-banner">{{ resetError }}</div>
-
-          <button type="submit" class="btn-primary" :disabled="resetLoading || !passwordsMatch">
-            <span v-if="resetLoading" class="spinner" />
-            {{ resetLoading ? 'Updating…' : 'Update password' }}
-          </button>
-        </template>
-      </form>
-
-      <div v-if="resetStep === 'idle'" class="auth-footer">
-        Don't have an account? <NuxtLink to="/onboarding/signup">Create one</NuxtLink>
+        </section>
       </div>
     </template>
 
     <!-- ── Reset code sent — confirmation panel (prototype "forgot-sent") ── -->
     <template v-else-if="resetStep === 'sent'">
-      <div class="confirm-state">
+      <div class="confirm-state confirm-state--futuristic">
         <div class="confirm-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -244,7 +289,7 @@
 
     <!-- ── Reset success ── -->
     <template v-else-if="resetStep === 'success'">
-      <div class="confirm-state">
+      <div class="confirm-state confirm-state--futuristic">
         <div class="confirm-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12" />
@@ -497,10 +542,395 @@ const onPrimary = () => {
 
 <style scoped>
 .auth-screen {
-  background: #fff;
+  background:
+    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  color: #1f2b3f;
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.signin-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.signin-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  opacity: 0.04;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.75), transparent 90%);
+}
+
+.signin-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(248, 251, 255, 0.66) 64%, rgba(238, 244, 249, 0.88) 100%);
+}
+
+.signin-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(36px);
+  animation: drift 16s ease-in-out infinite;
+}
+
+.signin-orb-a {
+  top: 8%;
+  left: 2%;
+  width: 280px;
+  height: 280px;
+  background: rgba(0, 161, 154, 0.3);
+}
+
+.signin-orb-b {
+  right: -3%;
+  top: 18%;
+  width: 340px;
+  height: 340px;
+  background: rgba(95, 139, 255, 0.26);
+  animation-duration: 21s;
+}
+
+.signin-topbar,
+.signin-shell,
+.confirm-state--futuristic {
+  position: relative;
+  z-index: 1;
+}
+
+.signin-topbar {
+  padding: 16px 20px 6px;
+}
+
+.signin-back-btn {
+  background: rgba(255, 255, 255, 0.88);
+  color: #1f2b3f;
+  border-color: #d4dfeb;
+  backdrop-filter: blur(12px);
+}
+
+.signin-topbar-copy {
+  flex: 1;
+  text-align: center;
+  color: #50637f;
+}
+
+.signin-topbar-kicker {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #00857f;
+  margin-bottom: 2px;
+}
+
+.signin-topbar-copy strong {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signin-brand-mini {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #d4dfeb;
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  backdrop-filter: blur(12px);
+}
+
+.signin-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 18px 0 30px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.signin-visual {
+  padding: 14px 0 0;
+}
+
+.signin-badge-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.signin-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2b3f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid #d8e3ef;
+}
+
+.signin-chip--alt {
+  background: #eafaf7;
+  color: #00857f;
+}
+
+.signin-title {
+  margin: 0;
+  font-size: clamp(34px, 4.8vw, 56px);
+  line-height: 1;
+  letter-spacing: -1.3px;
+  color: #18263b;
+  font-weight: 650;
+  max-width: 12ch;
+  font-family: inherit;
+}
+
+.signin-sub {
+  margin: 14px 0 0;
+  max-width: 50ch;
+  color: #586a83;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.signin-image-stack {
+  margin-top: 18px;
+  position: relative;
+  min-height: 312px;
+}
+
+.signin-image-card {
+  position: absolute;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid #d8e3ee;
+  box-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.signin-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.signin-image-card--large {
+  left: 0;
+  top: 0;
+  width: min(100%, 460px);
+  height: 296px;
+}
+
+.signin-image-card--small {
+  width: 160px;
+  height: 160px;
+  right: 8px;
+  bottom: -4px;
+}
+
+.signin-image-overlay {
+  position: absolute;
+  inset: auto 16px 16px 16px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(24, 38, 59, 0.16), rgba(24, 38, 59, 0.72));
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.signin-image-overlay span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9beee9;
+  font-weight: 800;
+}
+
+.signin-image-overlay strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  font-weight: 700;
+}
+
+.signin-float-a {
+  animation: float 8s ease-in-out infinite;
+}
+
+.signin-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.signin-metrics > div {
+  padding: 13px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid #d9e4ee;
+  backdrop-filter: blur(12px);
+}
+
+.signin-metrics strong {
+  display: block;
+  font-size: 23px;
+  line-height: 1;
+  letter-spacing: -0.7px;
+  color: #18293f;
+}
+
+.signin-metrics span {
+  display: block;
+  margin-top: 6px;
+  color: #60728c;
+  font-size: 11px;
+}
+
+.signin-panel-wrap {
+  position: relative;
+  padding-top: 8px;
+}
+
+.signin-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d8e3ef;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 20px 34px rgba(32, 60, 96, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.signin-panel .form-label,
+.signin-panel .btn-text,
+.signin-panel .reset-helper-text,
+.signin-panel .password-strength p,
+.signin-panel .terms-text,
+.signin-panel .auth-footer {
+  color: #586a83;
+}
+
+.signin-panel .form-label {
+  color: #18263b;
+}
+
+.signin-panel .form-input {
+  background: #ffffff;
+  border-color: #d2dcea;
+  color: #1f2b3f;
+}
+
+.signin-panel .form-input::placeholder {
+  color: #8ea3bc;
+}
+
+.signin-panel .form-input:focus {
+  border-color: #8ab4db;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+}
+
+.signin-panel .form-input-icon,
+.signin-panel .form-input-action {
+  color: #60728c;
+}
+
+.signin-panel .btn-primary--futuristic {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #00a19a, #1a79c8);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
+.signin-panel .btn-primary--futuristic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.16) 50%, transparent 100%);
+  transform: translateX(-120%);
+  animation: sheen 4.8s ease-in-out infinite;
+}
+
+.signin-panel .btn-primary--futuristic:hover {
+  background: linear-gradient(135deg, #00aba4, #2384d8);
+}
+
+.signin-panel .btn-text:hover {
+  color: #1e2b41;
+}
+
+.signin-panel .error-banner {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.signin-panel .logged-out-toast--teal {
+  background: #eafaf7;
+  color: #00857f;
+}
+
+.signin-footer {
+  padding-top: 14px;
+}
+
+.signin-panel .auth-footer a {
+  color: #00a19a;
+}
+
+.confirm-state--futuristic {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
+}
+
+.confirm-state--futuristic .confirm-icon {
+  background: #ffffff;
+  border-color: #d8e3ef;
+  color: #00a19a;
+}
+
+.confirm-state--futuristic .confirm-h,
+.confirm-state--futuristic .confirm-sub strong {
+  color: #18263b;
+}
+
+.confirm-state--futuristic .confirm-sub {
+  color: #586a83;
+}
+
+@keyframes sheen {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  80%,
+  100% {
+    transform: translateX(120%);
+  }
 }
 
 /* Topbar */
@@ -815,4 +1245,74 @@ const onPrimary = () => {
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes drift {
+  0%,
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(18px, -20px, 0) scale(1.08); }
+}
+
+@keyframes float {
+  0%,
+  100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 1040px) {
+  .signin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .signin-image-stack {
+    min-height: 320px;
+  }
+
+  .signin-image-card--large {
+    width: min(100%, 520px);
+  }
+}
+
+@media (max-width: 760px) {
+  .signin-topbar {
+    padding: 14px 16px 6px;
+  }
+
+  .signin-shell {
+    width: calc(100% - 24px);
+    padding-bottom: 20px;
+  }
+
+  .signin-visual {
+    padding-top: 10px;
+  }
+
+  .signin-title {
+    font-size: 38px;
+  }
+
+  .signin-image-stack {
+    min-height: 230px;
+  }
+
+  .signin-image-card--large {
+    width: 100%;
+    height: 220px;
+  }
+
+  .signin-image-card--small {
+    width: 102px;
+    height: 102px;
+    right: 0;
+    bottom: -4px;
+  }
+
+  .signin-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .signin-panel {
+    padding: 18px;
+    border-radius: 24px;
+  }
+}
 </style>

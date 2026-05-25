@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-container explore-root">
+  <div class="mobile-container explore-root explore-webview">
     <div class="explore-hero">
       <div class="hero-row1">
         <div>
@@ -168,6 +168,25 @@
           >×</span>
         </span>
         <button class="fs-clear" @click="clearAllFilters">Clear all</button>
+      </div>
+
+      <div class="explore-kpi-strip" aria-label="Explore performance highlights">
+        <div class="kpi-item">
+          <span class="kpi-label">Live matches</span>
+          <strong class="kpi-value">{{ properties.length }}</strong>
+        </div>
+        <div class="kpi-item">
+          <span class="kpi-label">Passports</span>
+          <strong class="kpi-value">{{ passports.length }}</strong>
+        </div>
+        <div class="kpi-item">
+          <span class="kpi-label">Market area</span>
+          <strong class="kpi-value">{{ pulseArea || 'UK' }}</strong>
+        </div>
+        <div class="kpi-item">
+          <span class="kpi-label">Filters on</span>
+          <strong class="kpi-value">{{ committedChips.length }}</strong>
+        </div>
       </div>
     </div>
 
@@ -1531,7 +1550,9 @@
       </template>
     </div>
 
-    <BottomNav />
+    <div class="explore-bottom-nav-wrap">
+      <BottomNav />
+    </div>
 
     <!-- First-visit guided tour — replays from the "?" button in the hero -->
     <OnboardingTour
@@ -2175,7 +2196,11 @@ function formatBudget(n?: number | null): string {
   return '£' + n
 }
 
-const userPostcode = computed(() => profile.value?.postcode?.trim() || '')
+const userPostcode = computed(() => {
+  const profileAny = profile.value as unknown as Record<string, any> | null | undefined
+  const postcode = profileAny?.postcode
+  return typeof postcode === 'string' ? postcode.trim() : ''
+})
 
 // Market pulse — aggregate stats for the user's postcode sector. Backend
 // returns null for any figure it can't derive; the template hides those cells.
@@ -2554,22 +2579,36 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background: #f8f7fc;
+  background:
+    radial-gradient(circle at 8% -5%, rgba(34, 197, 94, 0.14), transparent 42%),
+    radial-gradient(circle at 100% 0%, rgba(15, 23, 42, 0.09), transparent 45%),
+    linear-gradient(180deg, #f7f8fc 0%, #f2f5fb 52%, #eef2f7 100%);
+  color: #121826;
+  font-family: 'Manrope', 'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+}
+
+.explore-webview {
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
 /* ── Hero header ── */
 .explore-hero {
-  background: #fff;
-  padding: 16px 20px 0;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 250, 255, 0.96) 100%);
+  padding: 20px 22px 12px;
   flex-shrink: 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .hero-row1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .greeting-text {
@@ -2585,12 +2624,12 @@ onMounted(async () => {
 }
 
 .explore-tour-btn {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: #f1f9f4;
-  border: 1px solid #e2f1ea;
-  color: #00a19a;
+  background: linear-gradient(135deg, #f2fff9 0%, #ddfaf1 100%);
+  border: 1px solid rgba(0, 161, 154, 0.26);
+  color: #007d78;
   font-size: 14px;
   font-weight: 800;
   display: grid;
@@ -2601,7 +2640,7 @@ onMounted(async () => {
 }
 .explore-tour-btn:hover,
 .explore-tour-btn:active {
-  background: #ccfbf1;
+  background: linear-gradient(135deg, #dcfce7 0%, #ccfbf1 100%);
 }
 
 /* ── Search bar ── */
@@ -2625,18 +2664,21 @@ onMounted(async () => {
   /* right padding holds the absolutely-positioned dist-btn (~78 px wide)
      + search-btn (~62 px) + 18 px gap. Tweak together if either changes. */
   padding: 13px 158px 13px 40px;
-  border-radius: 14px;
-  border: 1.5px solid #e5e7eb;
-  background: #f8f7fc;
+  border-radius: 15px;
+  border: 1.5px solid #d9e2ef;
+  background: #fbfdff;
   font-size: 14px;
   color: #1f2024;
   outline: none;
   font-family: inherit;
   box-sizing: border-box;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
 
 .search-input:focus {
   border-color: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+  background: #fff;
 }
 
 .search-btn {
@@ -2644,23 +2686,57 @@ onMounted(async () => {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  background: #00a19a;
+  background: linear-gradient(135deg, #059669 0%, #00a19a 55%, #0284c7 100%);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: 9px;
   border: none;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: 0 5px 16px rgba(2, 132, 199, 0.25);
 }
 
 /* ── Scrollable area ── */
 .explore-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 100px;
-  background: #f8f7fc;
+  padding: 22px 24px 110px;
+  background: transparent;
+}
+
+.explore-kpi-strip {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kpi-item {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.kpi-label {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 3px;
+  letter-spacing: 0.02em;
+}
+
+.kpi-value {
+  display: block;
+  font-size: 15px;
+  color: #0f172a;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 /* ── HomeScore free card ── */
@@ -2874,14 +2950,20 @@ onMounted(async () => {
 }
 
 .prop-card {
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #dce5f0;
   border-radius: 18px;
   overflow: hidden;
   margin-bottom: 12px;
   cursor: pointer;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.15s;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.prop-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+  border-color: #c5d5e8;
 }
 
 .prop-card:active {
@@ -2910,7 +2992,7 @@ onMounted(async () => {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: #231d45;
+  background: linear-gradient(135deg, #1f1b3a 0%, #2f265a 100%);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -2959,7 +3041,7 @@ onMounted(async () => {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(15, 23, 42, 0.76);
   color: #fff;
   font-size: 15px;
   font-weight: 800;
@@ -3041,7 +3123,7 @@ onMounted(async () => {
 }
 
 .prop-passport-btn {
-  background: #231d45;
+  background: linear-gradient(135deg, #1f1b3a 0%, #372f69 100%);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -3051,7 +3133,7 @@ onMounted(async () => {
 
 /* ── Returning user: Passport status card ── */
 .passport-status-card {
-  background: linear-gradient(135deg, #00a19a, #00a19a);
+  background: linear-gradient(135deg, #059669 0%, #00a19a 40%, #0ea5e9 100%);
   border-radius: 18px;
   padding: 16px 18px;
   margin-bottom: 14px;
@@ -3216,8 +3298,8 @@ onMounted(async () => {
 
 /* ── Next action nudge ── */
 .next-action-card {
-  background: #fffbeb;
-  border: 1.5px solid #fef3c7;
+  background: linear-gradient(140deg, #fff8e8 0%, #fff4cc 100%);
+  border: 1px solid #f9d88a;
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 14px;
@@ -3300,7 +3382,7 @@ onMounted(async () => {
 
 /* ── Find a Pro dark card ── */
 .pro-dark-card {
-  background: #1e1842;
+  background: linear-gradient(135deg, #161233 0%, #242052 55%, #1d2a55 100%);
   border-radius: 16px;
   padding: 14px 18px;
   margin-bottom: 14px;
@@ -3374,8 +3456,8 @@ onMounted(async () => {
   font-size: 12px;
   font-weight: 800;
   color: #231d45;
-  background: #f4f4f6;
-  border: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc 0%, #eff5fb 100%);
+  border: 1px solid #d7e1ef;
   border-radius: 999px;
   padding: 6px 10px;
   cursor: pointer;
@@ -3384,8 +3466,8 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 .exp-dist-btn:hover {
-  background: #f2faf8;
-  border-color: #c8eae6;
+  background: linear-gradient(135deg, #f2faf8 0%, #ecfeff 100%);
+  border-color: #bae6fd;
   color: #00514d;
 }
 .exp-dist-btn .arrow {
@@ -3394,8 +3476,8 @@ onMounted(async () => {
   transition: transform 0.2s;
 }
 .exp-dist-btn.has-filters {
-  background: #00a19a;
-  border-color: #00a19a;
+  background: linear-gradient(135deg, #059669 0%, #00a19a 55%, #0284c7 100%);
+  border-color: transparent;
   color: #fff;
 }
 .exp-dist-btn.has-filters .arrow {
@@ -3785,11 +3867,12 @@ onMounted(async () => {
 }
 
 .market-pulse-card {
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
+  background: linear-gradient(145deg, #ffffff 0%, #f7fbff 100%);
+  border: 1px solid #dce5f0;
   border-radius: 16px;
   padding: 14px 16px;
   margin-bottom: 14px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
 }
 
 /* My Buyer Profile entry card (buy role) */
@@ -3861,9 +3944,132 @@ onMounted(async () => {
 }
 
 .pulse-cell {
-  background: #fff;
+  background: #fcfdff;
   padding: 10px 8px;
   text-align: center;
+}
+
+.explore-bottom-nav-wrap {
+  display: block;
+}
+
+@media (min-width: 900px) {
+  .explore-root {
+    min-height: 100vh;
+  }
+
+  .explore-hero {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    padding: 20px 28px 14px;
+  }
+
+  .explore-scroll {
+    padding: 28px 28px 36px;
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-row1 {
+    margin-bottom: 18px;
+  }
+
+  .explore-title {
+    font-size: 30px;
+    letter-spacing: -0.03em;
+  }
+
+  .explore-greeting-sub {
+    font-size: 14px;
+  }
+
+  .search-wrap {
+    max-width: 980px;
+  }
+
+  .search-input {
+    font-size: 15px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .explore-kpi-strip {
+    max-width: 980px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .horiz-feed {
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .prop-card-horiz {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .skeletons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .prop-card {
+    margin-bottom: 0;
+  }
+
+  .saved-search-card,
+  .my-passport-card,
+  .market-pulse-card,
+  .next-action-card,
+  .pro-dark-card,
+  .passport-status-card,
+  .saved-search-compact,
+  .portfolio-card,
+  .claim-banner,
+  .verified-empty,
+  .foryou-empty {
+    border-radius: 18px;
+    margin-bottom: 18px;
+  }
+
+  .pulse-grid {
+    gap: 8px;
+    background: transparent;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pulse-cell {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  .explore-bottom-nav-wrap {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .horiz-feed {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .search-wrap,
+  .explore-kpi-strip {
+    max-width: 1100px;
+  }
+}
+
+@media (max-width: 899px) {
+  .explore-kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .pulse-val {
