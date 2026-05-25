@@ -669,10 +669,14 @@ const handleSubmit = async () => {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .auth-screen.signup-futuristic {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
+  --fx-panel-border: #d8e3ef;
   background:
-    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
-    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
-    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
+    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #1f2b3f;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   position: relative;
@@ -850,6 +854,37 @@ const handleSubmit = async () => {
   border: 1px solid #d8e3ee;
   box-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
   backdrop-filter: blur(8px);
+  transition:
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.signup-image-card::before {
+  content: '';
+  position: absolute;
+  inset: -150% auto auto -42%;
+  width: 54%;
+  height: 320%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.38) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(16deg);
+  transition: transform 0.78s ease;
+  pointer-events: none;
+}
+
+.signup-image-card:hover {
+  transform: translateY(-8px) scale(1.012);
+  border-color: #b9d5ea;
+  box-shadow: 0 26px 40px rgba(31, 64, 102, 0.18);
+}
+
+.signup-image-card:hover::before {
+  transform: translateX(220%) rotate(16deg);
 }
 
 .signup-image-card img {
@@ -857,6 +892,11 @@ const handleSubmit = async () => {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.signup-image-card:hover img {
+  transform: scale(1.05);
 }
 
 .signup-image-card--large {
@@ -931,6 +971,16 @@ const handleSubmit = async () => {
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid #d9e4ee;
   backdrop-filter: blur(12px);
+  transition:
+    transform 0.26s ease,
+    border-color 0.26s ease,
+    box-shadow 0.26s ease;
+}
+
+.signup-metrics > div:hover {
+  transform: translateY(-3px);
+  border-color: #c4dbef;
+  box-shadow: 0 14px 24px rgba(35, 64, 102, 0.14);
 }
 
 .signup-metrics strong {
@@ -950,11 +1000,21 @@ const handleSubmit = async () => {
 
 .signup-panel {
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #d8e3ef;
+  border: 1px solid var(--fx-panel-border);
   border-radius: 28px;
   padding: 24px;
   box-shadow: 0 20px 34px rgba(32, 60, 96, 0.08);
   backdrop-filter: blur(18px);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.signup-panel:hover {
+  transform: translateY(-4px);
+  border-color: #bdd6ea;
+  box-shadow: 0 24px 38px rgba(32, 60, 96, 0.14);
 }
 
 .signup-panel .btn-primary {
@@ -1029,7 +1089,7 @@ const handleSubmit = async () => {
 .btn-primary--futuristic {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #00a19a, #1a79c8);
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
   box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
 }
 
