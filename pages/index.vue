@@ -573,14 +573,20 @@ onUnmounted(() => {
 
 <style scoped>
 .landing-v2 {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
+  --fx-text: #1f2b3f;
+  --fx-card-border: #d8e3ee;
+  --fx-card-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
   position: relative;
   min-height: 100dvh;
-  color: #1f2b3f;
+  color: var(--fx-text);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
-    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
-    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
+    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   overflow-x: hidden;
 }
 
@@ -704,7 +710,7 @@ onUnmounted(() => {
 
 .btn.solid {
   color: #fff;
-  background: linear-gradient(135deg, #00a19a, #1a79c8);
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
   box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
   background-size: 150% 150%;
   animation: ctaPulse 5.6s ease-in-out infinite;
@@ -825,6 +831,13 @@ onUnmounted(() => {
   border: 1px solid #d9e4ee;
   background: rgba(255, 255, 255, 0.88);
   padding: 12px;
+  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease;
+}
+
+.stat-row article:hover {
+  transform: translateY(-3px);
+  border-color: #c5dcef;
+  box-shadow: 0 14px 24px rgba(35, 64, 102, 0.12);
 }
 
 .stat-row strong {
@@ -850,16 +863,42 @@ onUnmounted(() => {
 
 .panel {
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #d8e3ee;
+  border: 1px solid var(--fx-card-border);
   border-radius: 20px;
-  box-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
-  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+  box-shadow: var(--fx-card-shadow);
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .panel:hover {
-  transform: translateY(-3px);
-  border-color: #c6d9ea;
-  box-shadow: 0 22px 34px rgba(33, 61, 98, 0.12);
+  transform: translateY(-6px) scale(1.01);
+  border-color: #b9d5ea;
+  box-shadow: 0 24px 38px rgba(33, 61, 98, 0.16);
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: -140% auto auto -40%;
+  width: 52%;
+  height: 300%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.42) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(16deg);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+
+.panel:hover::before {
+  transform: translateX(210%) rotate(16deg);
 }
 
 .score-panel {
@@ -1254,6 +1293,13 @@ onUnmounted(() => {
   padding: 11px;
   font-weight: 650;
   font-size: 14px;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.passport-list div:hover {
+  transform: translateY(-2px);
+  border-color: #c5dcef;
+  box-shadow: 0 10px 18px rgba(34, 65, 103, 0.12);
 }
 
 blockquote {

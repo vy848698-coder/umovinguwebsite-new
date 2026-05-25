@@ -1,143 +1,155 @@
 <template>
-  <div class="mobile-container min-h-screen bg-umu-gradient pb-8">
-    <header class="flex items-center justify-between px-4 pt-5">
-      <button
-        type="button"
-        class="w-10 h-10 flex items-center justify-center"
-        @click="goBack"
-      >
-        <Icon
-          name="i-heroicons-chevron-left"
-          class="w-[15px] h-[15px] text-black"
-        />
-      </button>
-      <h1
-        class="w-[82.85px] h-[22px] font-sf-pro text-[17px] leading-[22px] tracking-[-0.43px] font-[20px]t-center text-black"
-      >
-        My Profile
-      </h1>
+  <div class="profile-shell min-h-screen pb-10">
+    <div class="profile-aurora" aria-hidden="true" />
 
-      <!-- Empty spacer matching the back button's footprint so the title
-           stays visually centered. The old purple "More" 3-dot button was
-           a dummy with no handler; sign-out + settings are already in the
-           list below, so it had nothing to surface. -->
-      <div class="w-10 h-10" aria-hidden="true" />
-    </header>
-
-    <main class="px-5 pb-8">
-      <section class="pt-6 text-center">
-        <div class="relative w-fit mx-auto">
-          <UserAvatar
-            :src="profile?.avatarUrl"
-            :firstName="profile?.firstName"
-            :lastName="profile?.lastName"
-            :size="112"
-          />
-        </div>
-
-        <h2 class="mt-8 text-22-emphasized text-center text-[#000000]">
-          {{ fullName || 'Your Profile' }}
-        </h2>
-        <p
-          class="mt-1 font-sf-pro text-[15px] leading-[20px] tracking-[-0.23px] radius font-normal text-center text-[#3C3C43] opacity-60%"
-        >
-          {{ profile?.email || '' }}
-        </p>
-
+    <main class="profile-content mx-auto px-4 sm:px-5 lg:px-6">
+      <header class="profile-header">
         <button
           type="button"
-          class="mt-6 py-2 px-4 rounded-full border border-brand-aqua text-brand-aqua inline-flex items-center justify-center font-sf-pro text-[15px] leading-[20px] tracking-[-0.4px] font-[590] border-color-[#00A19A] text-[#00A19A]"
+          class="action-orb"
+          aria-label="Go back"
+          @click="goBack"
         >
-          Member since {{ memberSince }}
+          <Icon
+            name="i-heroicons-chevron-left"
+            class="w-[18px] h-[18px] text-[#143047]"
+          />
         </button>
-      </section>
+        <h1 class="profile-title">My Profile</h1>
+        <div class="w-11 h-11" aria-hidden="true" />
+      </header>
 
-      <!-- Role Switcher -->
-      <section class="mt-8">
-        <p
-          class="font-sf-pro text-[13px] font-semibold text-[#8f9094] uppercase tracking-wider mb-3"
-        >
-          Your Role
-        </p>
-        <div class="flex gap-2 flex-wrap">
-          <button
-            v-for="r in roleOptions"
-            :key="r.key"
-            type="button"
-            :class="[
-              'px-4 py-2 rounded-full text-[14px] font-medium font-sf-pro border transition',
-              currentRole === r.key
-                ? 'bg-[#00A19A] text-white border-[#00A19A]'
-                : 'bg-white text-[#1f2024] border-[#d9dae0]',
-            ]"
-            :disabled="savingRole"
-            @click="setRole(r.key)"
-          >
-            {{ r.label }}
-          </button>
+      <section class="hero-panel">
+        <div class="hero-top-row">
+          <div class="relative">
+            <div class="avatar-ring" />
+            <UserAvatar
+              :src="profile?.avatarUrl"
+              :firstName="profile?.firstName"
+              :lastName="profile?.lastName"
+              :size="112"
+            />
+          </div>
+
+          <div class="hero-copy">
+            <p class="hero-kicker">Account Overview</p>
+            <h2 class="hero-name">{{ fullName || 'Your Profile' }}</h2>
+            <p class="hero-email">{{ profile?.email || '' }}</p>
+            <span class="member-pill">Member since {{ memberSince }}</span>
+          </div>
         </div>
-        <p v-if="roleSaved" class="mt-2 text-[13px] text-[#1f7a66] font-sf-pro">
-          ✓ Role updated
-        </p>
-        <p v-if="roleError" class="mt-2 text-[13px] text-red-500 font-sf-pro">
-          {{ roleError }}
-        </p>
+
+        <div class="mt-7">
+          <div class="role-label-wrap">
+            <p class="role-label">Your Role</p>
+            <span class="role-subtle">Choose your active mode</span>
+          </div>
+          <div class="role-grid">
+            <button
+              v-for="r in roleOptions"
+              :key="r.key"
+              type="button"
+              class="role-chip"
+              :class="{ 'role-chip--active': currentRole === r.key }"
+              :disabled="savingRole"
+              @click="setRole(r.key)"
+            >
+              <span class="role-chip-icon">{{ r.emoji }}</span>
+              <span>{{ r.label }}</span>
+            </button>
+          </div>
+          <p v-if="roleSaved" class="role-feedback role-feedback--ok">Role updated</p>
+          <p v-if="roleError" class="role-feedback role-feedback--error">
+            {{ roleError }}
+          </p>
+        </div>
       </section>
 
-      <div class="mt-6">
-        <div class="bg-white rounded-2xl h-11 px-4 flex items-center">
+      <section class="surface-panel mt-5">
+        <div class="search-panel">
           <Icon
             name="i-heroicons-magnifying-glass"
-            class="w-4 h-4 text-gray-400"
+            class="w-[18px] h-[18px] text-[#7f8fa5]"
           />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Find a setting"
-            class="ml-2 w-full bg-transparent outline-none text-lg placeholder:text-[#8f9094]"
+            class="search-input"
           />
           <button
             v-if="searchQuery"
             type="button"
-            class="w-4 h-4 rounded-full bg-[#f0f2f1] text-[#4a5868] flex items-center justify-center shrink-0"
+            class="clear-search"
             aria-label="Clear search"
             @click="searchQuery = ''"
           >
             <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
           </button>
         </div>
-      </div>
 
-      <ProfileSectionHead label="Account" />
-      <div class="profile-row-list">
-        <ProfileRow
-          v-for="item in filteredItems"
-          :key="item.title"
-          :title="item.title"
-          :meta="item.description"
-          @click="onPreferenceClick(item)"
-        >
-          <template #icon>
-            <OPIcon :name="item.icon" class="w-[18px] h-[18px]" />
-          </template>
-        </ProfileRow>
-      </div>
+        <div class="account-meta">
+          <span>{{ filteredItems.length }} modules</span>
+          <span class="account-meta-dot" aria-hidden="true" />
+          <span>Secure workspace</span>
+        </div>
 
-      <button
-        type="button"
-        class="mt-4 w-full h-[50px] rounded-[12px] pt-[14px] pr-[20px] pb-[14px] pl-[20px] bg-red-50 border border-red-200 text-red-500 inline-flex items-center justify-center gap-[4px] text-[15px] font-medium"
-        @click="showDeleteModal = true"
-      >
-        Delete my Account
-      </button>
+        <ProfileSectionHead label="Account" />
+        <div v-if="filteredItems.length" class="profile-row-list">
+          <ProfileRow
+            v-for="item in filteredPrimaryItems"
+            :key="item.title"
+            :title="item.title"
+            :meta="item.description"
+            :iconTone="rowToneFor(item.title)"
+            @click="onPreferenceClick(item)"
+          >
+            <template #icon>
+              <OPIcon :name="item.icon" class="w-[18px] h-[18px]" />
+            </template>
+          </ProfileRow>
+        </div>
+        <div v-if="filteredLearnAskAiItem" class="learn-card-wrap">
+          <ProfileRow
+            class="learn-card"
+            :title="filteredLearnAskAiItem.title"
+            :meta="filteredLearnAskAiItem.description"
+            :iconTone="rowToneFor(filteredLearnAskAiItem.title)"
+            @click="onPreferenceClick(filteredLearnAskAiItem)"
+          >
+            <template #icon>
+              <OPIcon :name="filteredLearnAskAiItem.icon" class="w-[18px] h-[18px]" />
+            </template>
+          </ProfileRow>
+        </div>
+        <div v-else class="no-results-card" role="status" aria-live="polite">
+          <Icon name="i-heroicons-face-frown" class="w-6 h-6 text-[#8aa0b9]" />
+          <p class="no-results-title">No settings found</p>
+          <p class="no-results-text">
+            Try another keyword like profile, document, or support.
+          </p>
+        </div>
 
-      <button
-        type="button"
-        class="mt-3 w-full h-[50px] rounded-[12px] pt-[14px] pr-[20px] pb-[14px] pl-[20px] bg-brand-aqua text-white inline-flex items-center justify-center gap-[4px] text-[17px] leading-[38px] font-medium"
-        @click="showLogoutModal = true"
-      >
-        Log Out
-      </button>
+        <div class="action-stack">
+          <button
+            type="button"
+            class="danger-ghost"
+            @click="showDeleteModal = true"
+          >
+            <Icon name="i-heroicons-trash" class="w-4 h-4" />
+            Delete my Account
+          </button>
+
+          <button
+            type="button"
+            class="logout-button"
+            @click="showLogoutModal = true"
+          >
+            <Icon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
+            Log Out
+          </button>
+        </div>
+      </section>
     </main>
 
     <!-- Logout confirmation modal -->
@@ -256,10 +268,10 @@ const config = useRuntimeConfig()
 const searchQuery = ref('')
 
 const roleOptions = [
-  { key: 'buy', label: '🏠 Buying' },
-  { key: 'sell', label: '🏷️ Selling' },
-  { key: 'landlord', label: '🔑 Landlord' },
-  { key: 'both', label: '↔️ Both' },
+  { key: 'buy', label: 'Buying', emoji: '🏠' },
+  { key: 'sell', label: 'Selling', emoji: '🏷️' },
+  { key: 'landlord', label: 'Landlord', emoji: '🔑' },
+  { key: 'both', label: 'Both', emoji: '↔️' },
 ]
 const currentRole = ref('buy')
 const savingRole = ref(false)
@@ -414,21 +426,13 @@ const filteredItems = computed(() => {
   )
 })
 
-const getPreferenceItemClass = (item) => {
-  if (item.title === 'Your Personal Information') {
-    return 'w-full h-[84px] bg-[#f6f6f7] rounded-[16px] border border-[0.33px] border-[#d9dae0] pt-[14px] pr-[12px] pb-[14px] pl-[20px] flex items-center gap-[8px] line-height-[20px]'
-  }
+const filteredPrimaryItems = computed(() =>
+  filteredItems.value.filter((item) => item.title !== 'Learn & Ask AI'),
+)
 
-  return 'w-full h-[84px] bg-[#f6f6f7] rounded-[16px] border border-[0.33px] border-[#d9dae0] pt-[14px] pr-[12px] pb-[14px] pl-[20px] flex items-center gap-[8px] line-height-[20px]'
-}
-
-const getPreferenceTitleClass = (item) => {
-  if (item.title === 'Your Personal Information') {
-    return 'font-sf-pro text-start text-[15px] leading-[20px] tracking-[-0.23px] font-normal text-[#1f2024] align-middle'
-  }
-
-  return 'font-sf-pro text-start text-[15px] leading-[20px] tracking-[-0.23px] font-normal text-[#1f2024] align-middle'
-}
+const filteredLearnAskAiItem = computed(
+  () => filteredItems.value.find((item) => item.title === 'Learn & Ask AI') || null,
+)
 
 const goBack = () => {
   // if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -443,6 +447,13 @@ const onPreferenceClick = async (item) => {
   if (item.route) {
     await navigateTo(item.route)
   }
+}
+
+const rowToneFor = (title) => {
+  if (title === 'Settings') return 'neutral'
+  if (title === 'Help & Support') return 'warn'
+  if (title === 'Saved Properties') return 'good'
+  return 'brand'
 }
 
 const showLogoutModal = ref(false)
@@ -499,10 +510,609 @@ const deleteAccount = async () => {
 </script>
 
 <style scoped>
-.profile-row-list {
+.profile-shell {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
+  --fx-text: #1f2b3f;
+  --fx-panel-border: rgba(193, 215, 237, 0.7);
+  position: relative;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  color: var(--fx-text);
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.profile-aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 16% 24%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 36%),
+    radial-gradient(circle at 84% 74%, rgba(208, 236, 255, 0.55) 0%, rgba(208, 236, 255, 0) 48%);
+}
+
+.profile-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1080px;
+  padding-top: 18px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-title {
+  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+  color: #10263d;
+}
+
+.action-orb {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
+  box-shadow:
+    0 8px 22px rgba(19, 48, 71, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.action-orb:hover {
+  transform: translateY(-2px);
+  border-color: rgba(183, 209, 236, 0.9);
+  box-shadow:
+    0 12px 24px rgba(19, 48, 71, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.hero-panel {
+  margin-top: 16px;
+  border-radius: 28px;
+  padding: 24px 18px 20px;
+  border: 1px solid rgba(173, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 42px rgba(18, 55, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-panel::before {
+  content: '';
+  position: absolute;
+  inset: -145% auto auto -40%;
+  width: 54%;
+  height: 320%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.42) 46%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(16deg);
+  transition: transform 0.78s ease;
+  pointer-events: none;
+}
+
+.hero-panel:hover {
+  transform: translateY(-4px);
+  border-color: rgba(172, 203, 233, 0.7);
+  box-shadow:
+    0 20px 44px rgba(18, 55, 88, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.hero-panel:hover::before {
+  transform: translateX(220%) rotate(16deg);
+}
+
+.hero-top-row {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  background: linear-gradient(145deg, rgba(0, 161, 154, 0.4), rgba(74, 106, 255, 0.45));
+  filter: blur(5px);
+  opacity: 0.65;
+  z-index: -1;
+}
+
+.hero-copy {
+  text-align: center;
+}
+
+.hero-kicker {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #70839c;
+  font-weight: 700;
+}
+
+.hero-name {
+  margin-top: 8px;
+  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-size: 30px;
+  line-height: 1.08;
+  letter-spacing: -0.85px;
+  font-weight: 750;
+  color: #10263d;
+}
+
+.hero-email {
+  margin-top: 6px;
+  color: #50637a;
+  font-size: 14px;
+}
+
+.member-pill {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #047b75;
+  background: rgba(229, 255, 248, 0.92);
+  border: 1px solid rgba(0, 161, 154, 0.35);
+}
+
+.role-label-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
+}
+
+.role-label {
+  color: #71849b;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.role-subtle {
+  color: #8da0b6;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.role-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  border: 1px solid #d5e1ee;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #203248;
+  font-weight: 700;
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.role-chip:hover {
+  border-color: #b5d9ea;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px rgba(30, 63, 103, 0.12);
+}
+
+.role-chip:disabled {
+  opacity: 0.68;
+}
+
+.role-chip--active {
+  border-color: transparent;
+  color: #ffffff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 10px 20px rgba(48, 98, 214, 0.26);
+}
+
+.role-chip-icon {
+  font-size: 15px;
+}
+
+.role-feedback {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.role-feedback--ok {
+  color: #067a74;
+}
+
+.role-feedback--error {
+  color: #dc2626;
+}
+
+.surface-panel {
+  border-radius: 24px;
+  padding: 16px 12px 14px;
+  border: 1px solid var(--fx-panel-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
+  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.08);
+  animation: panel-rise 360ms ease both;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.surface-panel:hover {
+  transform: translateY(-3px);
+  border-color: #bdd6ea;
+  box-shadow: 0 18px 34px rgba(15, 44, 76, 0.12);
+}
+
+.account-meta {
+  margin-top: 10px;
   padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #8296ae;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.account-meta-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #a8bad0;
+}
+
+.search-panel {
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid #d9e4f0;
+  background: #f8fbff;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.15s ease;
+}
+
+.search-panel:focus-within {
+  border-color: #7da7cf;
+}
+
+.search-input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: #15273d;
+}
+
+.search-input::placeholder {
+  color: #8c9cb2;
+}
+
+.clear-search {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #e8edf3;
+  color: #4d5d72;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-row-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 0 4px 4px;
+}
+
+.learn-card-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0 4px 4px;
+}
+
+.learn-card {
+  width: 100%;
+  max-width: 560px;
+}
+
+.no-results-card {
+  margin: 4px 4px 2px;
+  border: 1px dashed #c7d8ea;
+  border-radius: 16px;
+  background: rgba(248, 252, 255, 0.9);
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 16px;
+}
+
+.no-results-title {
+  color: #1d344c;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.no-results-text {
+  color: #7388a1;
+  font-size: 13px;
+  max-width: 270px;
+}
+
+.action-stack {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.danger-ghost {
+  width: 100%;
+  height: 50px;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  background: #fff5f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.danger-ghost:hover {
+  transform: translateY(-2px);
+  border-color: #fca5a5;
+  box-shadow: 0 10px 18px rgba(239, 68, 68, 0.16);
+}
+
+.logout-button {
+  width: 100%;
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 14px 24px rgba(58, 87, 206, 0.28);
+  transition:
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.logout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 30px rgba(58, 87, 206, 0.34);
+  filter: saturate(1.04);
+}
+
+:deep(.psh) {
+  padding: 18px 8px 10px;
+  color: #7d8ea5;
+}
+
+:deep(.prow) {
+  border: 1px solid #dfe8f3;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:deep(.prow::before) {
+  content: '';
+  position: absolute;
+  inset: -150% auto auto -45%;
+  width: 50%;
+  height: 320%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(16deg);
+  transition: transform 0.72s ease;
+  pointer-events: none;
+}
+
+:deep(.prow:hover) {
+  transform: translateY(-3px);
+  border-color: #b9d5ea;
+  box-shadow: 0 14px 24px rgba(21, 58, 95, 0.12);
+}
+
+:deep(.prow:hover::before) {
+  transform: translateX(220%) rotate(16deg);
+}
+
+:deep(.prow-title) {
+  font-size: 15px;
+}
+
+:deep(.prow-meta) {
+  font-size: 12.5px;
+}
+
+:deep(.prow-right) {
+  color: #5e7190;
+}
+
+:deep(.prow-chev) {
+  color: #8fa2bc;
+}
+
+.profile-row-list :deep(.prow) {
+  animation: row-rise 380ms ease both;
+}
+
+.profile-row-list :deep(.prow:nth-child(2)) {
+  animation-delay: 40ms;
+}
+
+.profile-row-list :deep(.prow:nth-child(3)) {
+  animation-delay: 80ms;
+}
+
+.profile-row-list :deep(.prow:nth-child(4)) {
+  animation-delay: 120ms;
+}
+
+@keyframes panel-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes row-rise {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-panel,
+  .surface-panel,
+  .action-orb,
+  .role-chip,
+  .danger-ghost,
+  .logout-button,
+  :deep(.prow) {
+    transition: none;
+    animation: none;
+  }
+
+  .hero-panel::before,
+  :deep(.prow::before) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .profile-content {
+    padding-top: 26px;
+  }
+
+  .hero-panel {
+    padding: 28px 24px 22px;
+  }
+
+  .hero-top-row {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 20px;
+  }
+
+  .hero-copy {
+    text-align: left;
+  }
+
+  .role-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .surface-panel {
+    padding: 20px 18px 18px;
+  }
+
+  .profile-row-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .action-stack {
+    flex-direction: row;
+  }
+
+  .danger-ghost,
+  .logout-button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 430px) {
+  .hero-name {
+    font-size: 26px;
+  }
+
+  .role-subtle {
+    display: none;
+  }
 }
 </style>
