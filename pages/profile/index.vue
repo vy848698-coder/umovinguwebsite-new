@@ -97,7 +97,7 @@
         <ProfileSectionHead label="Account" />
         <div v-if="filteredItems.length" class="profile-row-list">
           <ProfileRow
-            v-for="item in filteredPrimaryItems"
+            v-for="item in filteredItems"
             :key="item.title"
             :title="item.title"
             :meta="item.description"
@@ -106,19 +106,6 @@
           >
             <template #icon>
               <OPIcon :name="item.icon" class="w-[18px] h-[18px]" />
-            </template>
-          </ProfileRow>
-        </div>
-        <div v-if="filteredLearnAskAiItem" class="learn-card-wrap">
-          <ProfileRow
-            class="learn-card"
-            :title="filteredLearnAskAiItem.title"
-            :meta="filteredLearnAskAiItem.description"
-            :iconTone="rowToneFor(filteredLearnAskAiItem.title)"
-            @click="onPreferenceClick(filteredLearnAskAiItem)"
-          >
-            <template #icon>
-              <OPIcon :name="filteredLearnAskAiItem.icon" class="w-[18px] h-[18px]" />
             </template>
           </ProfileRow>
         </div>
@@ -425,14 +412,6 @@ const filteredItems = computed(() => {
       item.description.toLowerCase().includes(query),
   )
 })
-
-const filteredPrimaryItems = computed(() =>
-  filteredItems.value.filter((item) => item.title !== 'Learn & Ask AI'),
-)
-
-const filteredLearnAskAiItem = computed(
-  () => filteredItems.value.find((item) => item.title === 'Learn & Ask AI') || null,
-)
 
 const goBack = () => {
   // if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -849,19 +828,8 @@ const deleteAccount = async () => {
 .profile-row-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+  gap: 12px;
   padding: 0 4px 4px;
-}
-
-.learn-card-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 0 4px 4px;
-}
-
-.learn-card {
-  width: 100%;
-  max-width: 560px;
 }
 
 .no-results-card {
@@ -956,14 +924,33 @@ const deleteAccount = async () => {
 :deep(.prow) {
   border: 1px solid #dfe8f3;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border-radius: 16px;
-  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
+  border-radius: 20px;
+  min-height: 104px;
+  padding: 18px 18px;
+  box-shadow:
+    0 12px 24px rgba(19, 51, 82, 0.08),
+    0 2px 8px rgba(19, 51, 82, 0.04);
   position: relative;
   overflow: hidden;
   transition:
     transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:deep(.prow-icon) {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 16px rgba(0, 161, 154, 0.08);
+}
+
+:deep(.prow-body) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 :deep(.prow::before) {
@@ -985,8 +972,10 @@ const deleteAccount = async () => {
 
 :deep(.prow:hover) {
   transform: translateY(-3px);
-  border-color: #b9d5ea;
-  box-shadow: 0 14px 24px rgba(21, 58, 95, 0.12);
+  border-color: #afcfe8;
+  box-shadow:
+    0 18px 32px rgba(21, 58, 95, 0.14),
+    0 4px 12px rgba(21, 58, 95, 0.06);
 }
 
 :deep(.prow:hover::before) {
@@ -994,11 +983,14 @@ const deleteAccount = async () => {
 }
 
 :deep(.prow-title) {
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.3;
 }
 
 :deep(.prow-meta) {
-  font-size: 12.5px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 :deep(.prow-right) {
@@ -1007,6 +999,7 @@ const deleteAccount = async () => {
 
 :deep(.prow-chev) {
   color: #8fa2bc;
+  font-size: 20px;
 }
 
 .profile-row-list :deep(.prow) {
@@ -1094,6 +1087,12 @@ const deleteAccount = async () => {
 
   .profile-row-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  :deep(.prow) {
+    min-height: 112px;
+    padding: 20px 20px;
   }
 
   .action-stack {
