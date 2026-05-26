@@ -1,6 +1,62 @@
 <template>
   <div class="mobile-container explore-root">
-    <div class="explore-hero">
+    <div class="ambient ambient-a" />
+    <div class="ambient ambient-b" />
+    <div class="mesh" />
+
+    <header class="explore-web-nav">
+      <div class="explore-web-shell nav-inner">
+        <button class="brand" type="button" @click="navigateTo('/')">
+          <span class="brand-dot" />
+          <span>umovingu</span>
+        </button>
+
+        <nav class="web-links" aria-label="Explore navigation">
+          <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+
+        <div class="web-actions">
+          <button class="web-btn ghost" :class="{ active: navIsActive('/profile') }" type="button" @click="navigateTo('/profile')">Profile</button>
+          <button class="web-btn solid" type="button" @click="startClaimFlow">Claim Passport</button>
+        </div>
+
+        <button
+          class="web-mobile-toggle"
+          type="button"
+          aria-label="Toggle navigation menu"
+          :aria-expanded="mobileNavOpen ? 'true' : 'false'"
+          @click="mobileNavOpen = !mobileNavOpen"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
+
+      <div class="explore-web-shell">
+        <div
+          class="web-mobile-backdrop"
+          :class="{ open: mobileNavOpen }"
+          @click="mobileNavOpen = false"
+        />
+        <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
+          <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
+          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
+          <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Passport</button>
+          <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="goMobile('/marketplace')">Marketplace</button>
+          <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="goMobile('/profile/learn')">Learn</button>
+          <button type="button" :class="{ active: navIsActive('/profile') }" @click="goMobile('/profile')">Profile</button>
+          <button type="button" class="claim" @click="goMobileClaim">Claim Passport</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="explore-web-shell explore-stage" :class="{ 'is-ready': pageReady }">
+      <div class="explore-hero">
       <div class="hero-row1">
         <div>
           <div class="explore-greeting-sub">{{ greeting }}</div>
@@ -171,7 +227,7 @@
       </div>
     </div>
 
-    <div class="explore-scroll">
+      <div class="explore-scroll">
       <!-- ── Search Results Mode ── -->
       <template v-if="searchMode">
         <div class="search-back-row">
@@ -1529,9 +1585,52 @@
           </div>
         </template>
       </template>
+      </div>
     </div>
 
-    <BottomNav />
+    <footer class="explore-footer">
+      <div class="explore-web-shell explore-footer-grid">
+        <div class="footer-intro">
+          <div class="footer-brand">
+            <span class="brand-dot" />
+            <strong>umovingu</strong>
+          </div>
+          <span class="footer-chip">Built for UK property journeys</span>
+          <p>
+            Professional property intelligence for sellers, buyers, and landlords.
+            Start with HomeScore and progress with confidence.
+          </p>
+          <button type="button" class="footer-cta" @click="navigateTo('/homescore')">Run a HomeScore check</button>
+        </div>
+
+        <div>
+          <h3><span class="footer-hicon footer-hicon--product" aria-hidden="true" />Product</h3>
+          <ul>
+            <li><button type="button" @click="navigateTo('/homescore')">HomeScore</button></li>
+            <li><button type="button" @click="navigateTo('/passport/collections')">Property Passport</button></li>
+            <li><button type="button" @click="navigateTo('/marketplace')">Marketplace</button></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3><span class="footer-hicon footer-hicon--legal" aria-hidden="true" />Legal</h3>
+          <ul>
+            <li><button type="button" @click="navigateTo('/legal/privacy')">Privacy</button></li>
+            <li><button type="button" @click="navigateTo('/legal/terms')">Terms</button></li>
+            <li><button type="button" @click="navigateTo('/legal/cookies')">Cookies</button></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3><span class="footer-hicon footer-hicon--account" aria-hidden="true" />Account</h3>
+          <ul>
+            <li><button type="button" @click="navigateTo('/profile')">Profile</button></li>
+            <li><button type="button" @click="navigateTo('/onboarding/signin')">Sign in</button></li>
+          </ul>
+        </div>
+      </div>
+      <div class="explore-web-shell explore-footer-bottom">© 2026 UMU. All rights reserved.</div>
+    </footer>
 
     <!-- First-visit guided tour — replays from the "?" button in the hero -->
     <OnboardingTour
@@ -1710,7 +1809,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import UserAvatar from '~/components/ui/UserAvatar.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 
 // Guided tour wiring — replays via the "?" button in the hero, auto-runs
@@ -1808,6 +1906,29 @@ definePageMeta({ title: 'Explore - UmovingU', middleware: 'auth' })
 
 const config = useRuntimeConfig()
 const { profile, fetchProfile } = useProfile()
+const route = useRoute()
+const pageReady = ref(false)
+const mobileNavOpen = ref(false)
+
+const navIsActive = (basePath: string) =>
+  route.path === basePath || route.path.startsWith(`${basePath}/`)
+
+const goMobile = (path: string) => {
+  mobileNavOpen.value = false
+  navigateTo(path)
+}
+
+const goMobileClaim = () => {
+  mobileNavOpen.value = false
+  startClaimFlow()
+}
+
+watch(
+  () => route.path,
+  () => {
+    mobileNavOpen.value = false
+  },
+)
 
 // First-visit detection: the "New" view is shown ONLY on the user's first
 // ever arrival at /explore (right after sign-up). Subsequent visits — even
@@ -2175,7 +2296,7 @@ function formatBudget(n?: number | null): string {
   return '£' + n
 }
 
-const userPostcode = computed(() => profile.value?.postcode?.trim() || '')
+const userPostcode = computed(() => (profile.value as any)?.postcode?.trim() || '')
 
 // Market pulse — aggregate stats for the user's postcode sector. Backend
 // returns null for any figure it can't derive; the template hides those cells.
@@ -2471,6 +2592,10 @@ onBeforeUnmount(() => {
 })
 
 onMounted(async () => {
+  requestAnimationFrame(() => {
+    pageReady.value = true
+  })
+
   if (!profile.value) await fetchProfile()
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -4592,5 +4717,648 @@ onMounted(async () => {
   border-radius: 999px;
   font-weight: 800;
   font-feature-settings: 'tnum';
+}
+
+/* Landing-style web shell overrides */
+.explore-root {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
+  --fx-text: #1f2b3f;
+  --fx-card-border: #d8e3ee;
+  --fx-card-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
+  color: var(--fx-text);
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+}
+
+.mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
+}
+
+.ambient {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(36px);
+  pointer-events: none;
+  opacity: 0.32;
+  animation: drift 20s ease-in-out infinite;
+}
+
+.ambient-a {
+  width: 260px;
+  height: 260px;
+  top: 120px;
+  left: -60px;
+  background: rgba(0, 161, 154, 0.3);
+}
+
+.ambient-b {
+  width: 280px;
+  height: 280px;
+  top: 160px;
+  right: -80px;
+  background: rgba(95, 139, 255, 0.26);
+  animation-duration: 30s;
+}
+
+@keyframes drift {
+  0%,
+  100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
+}
+
+.explore-web-shell {
+  width: min(1240px, calc(100% - 40px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.explore-web-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.nav-inner {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #1e2b41;
+  cursor: pointer;
+}
+
+.brand-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 55%, var(--fx-indigo) 100%);
+  box-shadow: 0 0 0 5px rgba(0, 161, 154, 0.16);
+}
+
+.web-links {
+  display: flex;
+  gap: 8px;
+}
+
+.web-links button {
+  border: 0;
+  background: transparent;
+  color: #52627e;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.web-links button:hover {
+  background: rgba(20, 53, 98, 0.06);
+  color: #1e2b41;
+}
+
+.web-links button.active {
+  background: linear-gradient(120deg, rgba(0, 161, 154, 0.14) 0%, rgba(47, 155, 223, 0.14) 100%);
+  color: #153457;
+  box-shadow: inset 0 0 0 1px rgba(44, 125, 203, 0.18);
+}
+
+.web-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.web-mobile-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.web-mobile-toggle span {
+  width: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: #2b3c56;
+}
+
+.web-mobile-panel {
+  display: none;
+}
+
+.web-mobile-backdrop {
+  display: none;
+}
+
+.web-btn {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.web-btn:hover {
+  transform: translateY(-1px);
+}
+
+.web-btn.solid {
+  color: #fff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
+.web-btn.ghost {
+  background: #fff;
+  color: #1f2b3f;
+  border-color: #d4dfeb;
+}
+
+.web-btn.ghost.active {
+  border-color: rgba(44, 125, 203, 0.34);
+  background: linear-gradient(120deg, rgba(0, 161, 154, 0.08) 0%, rgba(47, 155, 223, 0.08) 100%);
+  color: #163252;
+}
+
+.explore-stage > .explore-hero,
+.explore-stage > .explore-scroll {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.explore-stage.is-ready > .explore-hero,
+.explore-stage.is-ready > .explore-scroll {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.explore-stage.is-ready > .explore-scroll {
+  transition-delay: 0.08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explore-stage > .explore-hero,
+  .explore-stage > .explore-scroll,
+  .explore-stage.is-ready > .explore-hero,
+  .explore-stage.is-ready > .explore-scroll {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.explore-hero {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--fx-card-border);
+  box-shadow: var(--fx-card-shadow);
+  border-radius: 22px;
+  margin-top: 16px;
+  padding: 18px 20px 10px;
+}
+
+.explore-scroll {
+  overflow: visible;
+  padding: 20px 0 44px;
+  background: transparent;
+}
+
+.explore-footer {
+  margin-top: 14px;
+  padding: 34px 0 0;
+  border-top: 1px solid rgba(30, 47, 71, 0.12);
+  background:
+    radial-gradient(circle at 86% 18%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 46%),
+    linear-gradient(180deg, rgba(247, 252, 255, 0.96), rgba(236, 246, 252, 0.98));
+  backdrop-filter: blur(10px);
+}
+
+.explore-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(182, 203, 228, 0.55);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 20px 36px rgba(30, 58, 92, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.footer-intro {
+  display: grid;
+  gap: 10px;
+}
+
+.explore-footer-grid .footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.explore-footer-grid .footer-brand strong {
+  font-size: 20px;
+  color: #1c2d44;
+  letter-spacing: -0.4px;
+}
+
+.footer-chip {
+  justify-self: start;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #0f756f;
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  background: rgba(230, 252, 249, 0.95);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-weight: 800;
+}
+
+.explore-footer-grid p {
+  margin: 0;
+  color: #5b7192;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.explore-footer-grid h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+  color: #1f3450;
+}
+
+.footer-hicon {
+  width: 18px;
+  height: 18px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: rgba(227, 240, 255, 0.9);
+  color: #2a4a70;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.footer-hicon::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.footer-hicon--product {
+  background: rgba(223, 241, 255, 0.95);
+  border-color: rgba(87, 156, 217, 0.35);
+  color: #2f5f89;
+}
+
+.footer-hicon--product::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  box-shadow:
+    5px 0 0 currentColor,
+    0 5px 0 currentColor,
+    5px 5px 0 currentColor;
+  transform: translate(-2px, -2px);
+}
+
+.footer-hicon--legal {
+  background: rgba(229, 248, 241, 0.95);
+  border-color: rgba(45, 154, 120, 0.35);
+  color: #1f7f5b;
+}
+
+.footer-hicon--legal::before {
+  width: 9px;
+  height: 10px;
+  border-radius: 2px 2px 5px 5px;
+  clip-path: polygon(50% 0%, 95% 18%, 82% 100%, 18% 100%, 5% 18%);
+}
+
+.footer-hicon--account {
+  background: rgba(248, 238, 255, 0.95);
+  border-color: rgba(145, 111, 203, 0.35);
+  color: #6c4fb0;
+}
+
+.footer-hicon--account::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  transform: translateY(-3px);
+}
+
+.footer-hicon--account::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 6px;
+  border-radius: 6px 6px 4px 4px;
+  background: currentColor;
+  transform: translateY(4px);
+}
+
+.explore-footer-grid ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.explore-footer-grid button {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #50637f;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.explore-footer-grid button:hover {
+  color: #113352;
+}
+
+.footer-cta {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  border-radius: 999px;
+  padding: 10px 14px !important;
+  font-size: 13px;
+  font-weight: 700 !important;
+  color: #fff !important;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%) !important;
+  box-shadow: 0 10px 18px rgba(30, 128, 196, 0.24);
+}
+
+.explore-footer-bottom {
+  margin-top: 14px;
+  padding: 12px 0 20px;
+  border-top: 1px solid rgba(30, 47, 71, 0.11);
+  color: #60748f;
+  font-size: 12px;
+}
+
+.search-input {
+  background: rgba(245, 250, 255, 0.9);
+  border-color: #d8e3ee;
+}
+
+.search-btn {
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  box-shadow: 0 10px 18px rgba(30, 128, 196, 0.24);
+}
+
+.prop-card,
+.saved-search-card,
+.saved-search-compact,
+.market-pulse-card,
+.my-passport-card,
+.foryou-empty,
+.verified-empty,
+.no-passport-card,
+.next-action-card,
+.add-property-card {
+  border: 1px solid var(--fx-card-border);
+  box-shadow: var(--fx-card-shadow);
+}
+
+.prop-card {
+  border-radius: 20px;
+}
+
+.prop-card:hover {
+  box-shadow: 0 22px 38px rgba(26, 60, 102, 0.14);
+}
+
+.prop-passport-btn,
+.feed-see-all,
+.my-passport-arrow {
+  background-image: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  color: #fff;
+  border: 0;
+}
+
+.feed-see-all {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.explore-greeting-sub {
+  color: #5b7192;
+  font-weight: 600;
+}
+
+.explore-title {
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.8px;
+  color: #152942;
+}
+
+.claim-banner,
+.passport-status-card,
+.portfolio-card,
+.pro-dark-card {
+  border: 1px solid rgba(120, 160, 205, 0.28);
+  box-shadow: 0 20px 34px rgba(26, 54, 93, 0.16);
+}
+
+@media (max-width: 980px) {
+  .explore-web-shell {
+    width: calc(100% - 20px);
+  }
+
+  .web-links,
+  .web-actions {
+    display: none;
+  }
+
+  .web-mobile-toggle {
+    display: inline-flex;
+  }
+
+  .web-mobile-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border-radius: 14px;
+    border: 0;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: none;
+    transform-origin: top;
+    transform: scaleY(0.92);
+    opacity: 0;
+    pointer-events: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.2s ease;
+    position: relative;
+    z-index: 2;
+  }
+
+  .web-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 27, 43, 0.26);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+  }
+
+  .web-mobile-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .web-mobile-panel.open {
+    transform: scaleY(1);
+    opacity: 1;
+    pointer-events: auto;
+    max-height: 420px;
+    margin: 8px 0 12px;
+    padding: 10px;
+    border: 1px solid #dbe7f3;
+    box-shadow: 0 14px 24px rgba(21, 58, 95, 0.1);
+  }
+
+  .web-mobile-panel button {
+    border: 1px solid #dde8f3;
+    background: #fff;
+    color: #22405f;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .web-mobile-panel button.active {
+    border-color: rgba(44, 125, 203, 0.34);
+    background: linear-gradient(120deg, rgba(0, 161, 154, 0.1) 0%, rgba(47, 155, 223, 0.1) 100%);
+    color: #17365a;
+  }
+
+  .web-mobile-panel button.claim {
+    border: 0;
+    color: #fff;
+    background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  }
+
+  .explore-hero {
+    margin-top: 10px;
+    border-radius: 18px;
+    padding: 14px 14px 8px;
+  }
+
+  .nav-inner {
+    min-height: 56px;
+    gap: 12px;
+  }
+
+  .brand {
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .brand-dot {
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+  }
+
+  .explore-title {
+    font-size: 22px;
+  }
+
+  .explore-footer {
+    margin-top: 10px;
+    padding-top: 22px;
+  }
+
+  .explore-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .explore-footer-grid .footer-brand strong {
+    font-size: 18px;
+  }
+
+  .footer-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .explore-footer-bottom {
+    margin-top: 14px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
 }
 </style>
