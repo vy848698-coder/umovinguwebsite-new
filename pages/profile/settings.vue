@@ -18,7 +18,7 @@
     </div>
 
     <main class="st-body">
-      <div class="atm-bg teal" />
+      <div class="atm-bg atm-bg-teal" />
 
       <!-- Hero h1 -->
       <div class="st-hero">
@@ -401,7 +401,7 @@ function showToast(msg: string) {
 const securityScore = computed(() => {
   let score = 60 // baseline for having an account
   if (profile.value?.phone) score += 15
-  if (profile.value?.isVerified) score += 25
+  if ((profile.value as any)?.isVerified) score += 25
   return Math.min(100, score)
 })
 const securityLabel = computed(() => {
@@ -415,38 +415,50 @@ const securityLabel = computed(() => {
 
 <style scoped>
 .st-page {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
+  --fx-text: #1f2b3f;
+  --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background: #fafaf8;
-  color: #0e2840;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  color: var(--fx-text);
   position: relative;
-  padding-bottom: 32px;
+  padding-bottom: 34px;
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .st-nav-bar {
   display: flex;
   align-items: center;
-  padding: 10px 22px 8px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 12px 18px 10px;
   padding-top: calc(10px + env(safe-area-inset-top));
   gap: 8px;
   position: relative;
   z-index: 2;
 }
 .st-nav-icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  display: flex;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #0e2840;
+  color: #143047;
   flex-shrink: 0;
-  transition: background 0.2s;
+  box-shadow:
+    0 8px 22px rgba(19, 48, 71, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .st-nav-icon-btn:hover {
-  background: #f0f2f1;
+  transform: translateY(-2px);
 }
 .st-nav-icon-btn svg {
   width: 18px;
@@ -455,14 +467,20 @@ const securityLabel = computed(() => {
 .st-nav-title {
   flex: 1;
   text-align: center;
-  font-size: 16px;
-  font-weight: 800;
-  color: #0e2840;
-  letter-spacing: -0.4px;
+  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+  color: #10263d;
 }
 
 .st-body {
   position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 14px;
 }
 .atm-bg {
   position: absolute;
@@ -473,60 +491,60 @@ const securityLabel = computed(() => {
   pointer-events: none;
   z-index: 0;
 }
-.atm-bg.teal {
-  background: radial-gradient(
-    ellipse 60% 80% at 50% 0%,
-    rgba(61, 189, 163, 0.14),
-    transparent 65%
-  );
+.atm-bg.atm-bg-teal {
+  background: radial-gradient(circle at 92% 8%, rgba(208, 236, 255, 0.32) 0%, rgba(208, 236, 255, 0) 48%);
 }
 
-/* Hero */
 .st-hero {
-  padding: 8px 22px 14px;
+  margin-top: 8px;
+  border-radius: 28px;
+  padding: 24px 18px 20px;
+  border: 1px solid rgba(173, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 42px rgba(18, 55, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   position: relative;
   z-index: 1;
 }
 .hero-greeting {
-  font-family: 'Instrument Serif', 'Times New Roman', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 16px;
-  letter-spacing: 0.2px;
-  color: #1f7a66;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #70839c;
+  font-weight: 700;
   margin-bottom: 4px;
-  text-transform: none;
 }
 .st-h1 {
-  font-size: 32px;
-  font-weight: 800;
-  color: #0e2840;
-  letter-spacing: -1.2px;
-  line-height: 1;
+  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-size: 34px;
+  font-weight: 750;
+  color: #10263d;
+  letter-spacing: -0.9px;
+  line-height: 1.06;
 }
 
-/* Section heading */
 .st-section-heading {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1.6px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #8a95a0;
-  padding: 22px 22px 8px;
+  color: #71849b;
+  padding: 18px 4px 10px;
   position: relative;
   z-index: 1;
 }
 
-/* Group / row */
 .st-section {
-  padding: 0 22px;
+  padding: 0;
   position: relative;
   z-index: 1;
 }
 .st-group {
-  background: #fff;
-  border: 1px solid #e8eceb;
-  border-radius: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--fx-panel-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
+  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.08);
   overflow: hidden;
   margin-bottom: 14px;
 }
@@ -534,12 +552,11 @@ const securityLabel = computed(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 13px 16px;
+  padding: 14px 16px;
   border: none;
   background: transparent;
-  border-bottom: 1px solid #f0f2f1;
+  border-bottom: 1px solid rgba(216, 230, 244, 0.72);
   cursor: pointer;
-  transition: background 0.15s;
   width: 100%;
   text-align: left;
   font-family: inherit;
@@ -550,73 +567,65 @@ const securityLabel = computed(() => {
   border-bottom: none;
 }
 .st-row:hover {
-  background: #f5f4f0;
+  background: rgba(245, 250, 255, 0.78);
 }
 .st-row.danger .st-row-label {
-  color: #b85b36;
+  color: #c35a47;
 }
 .st-row-content {
   flex: 1;
   min-width: 0;
 }
 .st-row-label {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
-  color: #0e2840;
+  color: #17314a;
   letter-spacing: -0.2px;
-  line-height: 1.3;
 }
 .st-row-meta {
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #4a5868;
+  color: #627891;
   margin-top: 2px;
-  line-height: 1.3;
 }
 .st-row-chev {
-  color: #8a95a0;
+  color: #8fa2bc;
   font-size: 18px;
   font-weight: 600;
-  flex-shrink: 0;
 }
 
-/* Toggle */
 .st-toggle {
-  width: 38px;
-  height: 22px;
-  background: #e8eceb;
+  width: 44px;
+  height: 24px;
   border-radius: 100px;
+  background: #dce8f2;
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s;
 }
 .st-toggle::after {
   content: '';
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: #fff;
   border-radius: 50%;
-  transition: transform 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .st-toggle.on {
-  background: #3dbda3;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
 }
 .st-toggle.on::after {
-  transform: translateX(16px);
+  transform: translateX(20px);
 }
 
-/* Theme segmented */
 .st-segment {
   display: inline-flex;
-  background: #f0f2f1;
+  background: #edf2f8;
   border-radius: 100px;
   padding: 3px;
-  flex-shrink: 0;
 }
 .st-segment-btn {
   border: none;
@@ -624,23 +633,23 @@ const securityLabel = computed(() => {
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
-  color: #4a5868;
+  color: #57708b;
   padding: 5px 10px;
   border-radius: 100px;
   cursor: pointer;
-  letter-spacing: -0.1px;
 }
 .st-segment-btn.active {
   background: #fff;
-  color: #0e2840;
-  box-shadow: 0 1px 2px rgba(14, 40, 64, 0.06);
+  color: #17314a;
 }
 
-/* Security strength card */
 .st-strength-card {
-  background: linear-gradient(135deg, #f1f9f4, #e2f1ea);
-  border: 1px solid rgba(61, 189, 163, 0.25);
-  border-radius: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(173, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 32px rgba(18, 55, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   padding: 16px;
 }
 .st-strength-row {
@@ -653,7 +662,7 @@ const securityLabel = computed(() => {
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  background: #3dbda3;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
   color: #fff;
   display: grid;
   place-items: center;
@@ -662,56 +671,49 @@ const securityLabel = computed(() => {
   width: 18px;
   height: 18px;
 }
-.st-strength-body {
-  flex: 1;
-  min-width: 0;
-}
 .st-strength-title {
   font-size: 14px;
   font-weight: 800;
-  color: #0e2840;
-  letter-spacing: -0.2px;
+  color: #17314a;
 }
 .st-strength-sub {
-  font-size: 11.5px;
-  color: #4a5868;
+  font-size: 12px;
+  color: #627891;
   font-weight: 600;
   margin-top: 2px;
 }
 .st-strength-bar {
   height: 6px;
-  background: #fff;
+  background: rgba(131, 228, 213, 0.35);
   border-radius: 100px;
   overflow: hidden;
   margin-bottom: 6px;
 }
 .st-strength-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3dbda3, #1f7a66);
+  background: linear-gradient(90deg, var(--fx-aqua), var(--fx-blue));
   border-radius: 100px;
-  transition: width 0.4s ease;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .st-strength-meter {
   font-size: 11px;
   font-weight: 700;
-  color: #4a5868;
-  font-feature-settings: 'tnum';
+  color: #627891;
   display: flex;
   gap: 6px;
 }
 .st-strength-pct {
-  color: #1f7a66;
+  color: #067a74;
   font-weight: 800;
 }
 
-/* Toast */
 .st-toast {
   position: fixed;
   left: 50%;
   bottom: 80px;
   transform: translateX(-50%);
   z-index: 40;
-  background: #0e2840;
+  background: #17314a;
   color: #fff;
   font-size: 12.5px;
   font-weight: 700;
@@ -722,8 +724,8 @@ const securityLabel = computed(() => {
 .st-toast-enter-active,
 .st-toast-leave-active {
   transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
+    opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .st-toast-enter-from,
 .st-toast-leave-to {
@@ -731,12 +733,10 @@ const securityLabel = computed(() => {
   transform: translateX(-50%) translateY(8px);
 }
 
-/* ── Change password modal ─────────────────────────────────── */
 .st-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(14, 40, 64, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(14, 40, 64, 0.42);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -745,24 +745,25 @@ const securityLabel = computed(() => {
 .st-modal {
   width: 100%;
   max-width: 28rem;
-  background: #fafaf8;
+  background: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
   border-radius: 24px 24px 0 0;
   display: flex;
   flex-direction: column;
   max-height: 92vh;
   overflow: hidden;
-  animation: st-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: st-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes st-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.st-modal-handle { width: 36px; height: 4px; background: #d9dae0; border-radius: 100px; margin: 8px auto 0; }
+.st-modal-handle { width: 36px; height: 4px; background: #ccd7e6; border-radius: 100px; margin: 8px auto 0; }
 .st-modal-header { display: flex; align-items: center; padding: 12px 18px 10px; }
-.st-modal-title { flex: 1; font-size: 16px; font-weight: 800; color: #0e2840; letter-spacing: -0.4px; }
+.st-modal-title { flex: 1; font-size: 18px; font-weight: 800; color: #17314a; letter-spacing: -0.4px; }
 .st-modal-close {
-  width: 30px; height: 30px;
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
   border: none;
-  background: #f0f2f1;
-  color: #4a5868;
+  background: rgba(228, 247, 243, 0.96);
+  color: #067a74;
   font-size: 20px;
   cursor: pointer;
   font-family: inherit;
@@ -773,20 +774,20 @@ const securityLabel = computed(() => {
 .st-modal-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
 .st-modal-footer {
   padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
-  border-top: 1px solid #e8eceb;
-  background: #fafaf8;
+  border-top: 1px solid #dfe8f3;
+  background: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
   display: flex;
   gap: 8px;
 }
 .st-modal-intro {
   font-size: 12.5px;
   font-weight: 600;
-  color: #4a5868;
+  color: #627891;
   line-height: 1.5;
   margin-bottom: 14px;
 }
 .st-modal-error {
-  color: #b85b36;
+  color: #c35a47;
   font-size: 12px;
   font-weight: 700;
   text-align: center;
@@ -795,35 +796,33 @@ const securityLabel = computed(() => {
 .st-field { margin-bottom: 12px; }
 .st-field-label {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1.6px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #8a95a0;
+  color: #71849b;
   margin-bottom: 6px;
 }
 .st-field-input {
   width: 100%;
   background: #fff;
-  border: 1px solid #e8eceb;
-  border-radius: 10px;
+  border: 1px solid #d9e4f0;
+  border-radius: 12px;
   padding: 11px 12px;
   font-family: inherit;
   font-size: 14px;
-  color: #0e2840;
+  color: #17314a;
   outline: none;
-  transition: all 0.18s;
 }
 .st-field-input:focus {
-  border-color: #00a19a;
-  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.18);
+  border-color: #7da7cf;
 }
 .st-btn-secondary {
   flex: 1;
-  background: #f0f2f1;
-  color: #0e2840;
-  border: none;
-  border-radius: 10px;
+  background: #fff;
+  color: #17314a;
+  border: 1px solid #d6e3f0;
+  border-radius: 12px;
   padding: 11px 14px;
   font-family: inherit;
   font-size: 13px;
@@ -834,17 +833,58 @@ const securityLabel = computed(() => {
 .st-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
 .st-btn-primary {
   flex: 2;
-  background: #00a19a;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 11px 14px;
   font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   letter-spacing: -0.2px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.32);
+  box-shadow: 0 14px 24px rgba(58, 87, 206, 0.28);
 }
 .st-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+@media (min-width: 768px) {
+  .st-nav-bar {
+    padding: 14px 22px 12px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  .st-body {
+    padding: 0 18px;
+  }
+
+  .st-hero {
+    padding: 28px 24px 24px;
+  }
+
+  .st-h1 {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 430px) {
+  .st-nav-title {
+    font-size: 18px;
+  }
+
+  .st-h1 {
+    font-size: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-nav-icon-btn,
+  .st-row,
+  .st-toggle::after,
+  .st-segment-btn,
+  .st-strength-fill,
+  .st-modal {
+    transition: none;
+    animation: none;
+  }
+}
 </style>

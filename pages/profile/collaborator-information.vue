@@ -543,7 +543,7 @@ const goBack = useGoBack('/profile')
   height: 320%;
   background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 46%, rgba(255, 255, 255, 0) 100%);
   transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.78s ease;
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .cl-hero:hover {
@@ -640,7 +640,7 @@ const goBack = useGoBack('/profile')
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  transition: all 0.2s;
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   letter-spacing: -0.1px;
 }
 .cl-chip.active {
@@ -683,7 +683,7 @@ const goBack = useGoBack('/profile')
   height: 320%;
   background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.38) 45%, rgba(255, 255, 255, 0) 100%);
   transform: rotate(16deg);
-  transition: transform 0.72s ease;
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .collaborator-card:hover {

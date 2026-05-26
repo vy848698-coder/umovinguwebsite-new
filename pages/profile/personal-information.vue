@@ -1070,7 +1070,7 @@ const goBack = useGoBack('/profile')
   height: 320%;
   background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 46%, rgba(255, 255, 255, 0) 100%);
   transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.78s ease;
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .pi-hero:hover {
@@ -1177,7 +1177,7 @@ const goBack = useGoBack('/profile')
   height: 100%;
   background: linear-gradient(90deg, var(--fx-aqua), var(--fx-blue));
   border-radius: 100px;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pic-pct {
   color: #067a74;
@@ -1309,8 +1309,8 @@ const goBack = useGoBack('/profile')
   cursor: pointer;
   font-family: inherit;
   transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pir-edit:hover {
   transform: translateY(-1px);
@@ -1337,7 +1337,7 @@ const goBack = useGoBack('/profile')
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s;
+  transition: background 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pir-toggle::after {
   content: '';
@@ -1349,7 +1349,7 @@ const goBack = useGoBack('/profile')
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pir-toggle.on {
   background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
