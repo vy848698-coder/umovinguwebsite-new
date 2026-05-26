@@ -285,19 +285,21 @@
 
       <footer class="footer">
         <div class="shell footer-grid">
-          <div>
+          <div class="footer-intro">
             <div class="footer-brand">
               <OPIcon name="logo" class="brand-logo" />
               <strong>umovingu</strong>
             </div>
+            <span class="footer-chip">Built for UK property journeys</span>
             <p>
               Professional property intelligence for sellers, buyers, and landlords.
               Start with HomeScore and progress with confidence.
             </p>
+            <a class="footer-cta" href="/homescore">Run a HomeScore check</a>
           </div>
 
-          <div>
-            <h3>Product</h3>
+          <div class="footer-col">
+            <h3><span class="footer-hicon footer-hicon--product" aria-hidden="true" />Product</h3>
             <ul>
               <li><a href="/homescore">HomeScore</a></li>
               <li><a href="/passport/collections">Property Passport</a></li>
@@ -305,8 +307,8 @@
             </ul>
           </div>
 
-          <div>
-            <h3>Legal</h3>
+          <div class="footer-col">
+            <h3><span class="footer-hicon footer-hicon--legal" aria-hidden="true" />Legal</h3>
             <ul>
               <li><a href="/legal/privacy">Privacy</a></li>
               <li><a href="/legal/terms">Terms</a></li>
@@ -314,8 +316,8 @@
             </ul>
           </div>
 
-          <div>
-            <h3>Account</h3>
+          <div class="footer-col">
+            <h3><span class="footer-hicon footer-hicon--account" aria-hidden="true" />Account</h3>
             <ul>
               <li><a href="/onboarding/signin">Sign in</a></li>
               <li><a href="/onboarding/signup">Create account</a></li>
@@ -345,7 +347,7 @@ import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 
-definePageMeta({ middleware: 'guest' })
+definePageMeta({})
 
 const gaugeScore = 74
 const showStickyCta = ref(false)
@@ -1395,16 +1397,30 @@ blockquote {
 }
 
 .footer {
-  margin-top: 34px;
-  padding: 26px 0 16px;
-  background: linear-gradient(180deg, rgba(246, 251, 255, 0.88), rgba(235, 243, 249, 0.95));
-  border-top: 1px solid rgba(30, 47, 71, 0.11);
+  margin-top: 40px;
+  padding: 34px 0 18px;
+  background:
+    radial-gradient(circle at 86% 18%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 46%),
+    linear-gradient(180deg, rgba(247, 252, 255, 0.96), rgba(236, 246, 252, 0.98));
+  border-top: 1px solid rgba(30, 47, 71, 0.12);
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(182, 203, 228, 0.55);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 20px 36px rgba(30, 58, 92, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.footer-intro {
+  display: grid;
+  gap: 10px;
 }
 
 .footer-brand {
@@ -1415,14 +1431,111 @@ blockquote {
 
 .footer-brand strong {
   color: #1f3049;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.footer-chip {
+  justify-self: start;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #0f756f;
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  background: rgba(230, 252, 249, 0.95);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-weight: 800;
 }
 
 .footer h3 {
-  margin: 2px 0 8px;
-  color: #21354f;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 9px;
+  color: #1f3551;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+}
+
+.footer-hicon {
+  width: 18px;
+  height: 18px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: rgba(227, 240, 255, 0.9);
+  color: #2a4a70;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.footer-hicon::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.footer-hicon--product {
+  background: rgba(223, 241, 255, 0.95);
+  border-color: rgba(87, 156, 217, 0.35);
+  color: #2f5f89;
+}
+
+.footer-hicon--product::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  box-shadow:
+    5px 0 0 currentColor,
+    0 5px 0 currentColor,
+    5px 5px 0 currentColor;
+  transform: translate(-2px, -2px);
+}
+
+.footer-hicon--legal {
+  background: rgba(229, 248, 241, 0.95);
+  border-color: rgba(45, 154, 120, 0.35);
+  color: #1f7f5b;
+}
+
+.footer-hicon--legal::before {
+  width: 9px;
+  height: 10px;
+  border-radius: 2px 2px 5px 5px;
+  clip-path: polygon(50% 0%, 95% 18%, 82% 100%, 18% 100%, 5% 18%);
+}
+
+.footer-hicon--account {
+  background: rgba(248, 238, 255, 0.95);
+  border-color: rgba(145, 111, 203, 0.35);
+  color: #6c4fb0;
+}
+
+.footer-hicon--account::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  transform: translateY(-3px);
+}
+
+.footer-hicon--account::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 6px;
+  border-radius: 6px 6px 4px 4px;
+  background: currentColor;
+  transform: translateY(4px);
 }
 
 .footer ul {
@@ -1430,22 +1543,39 @@ blockquote {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 7px;
+  gap: 8px;
 }
 
 .footer a {
   text-decoration: none;
+  color: #546b87;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .footer a:hover {
-  color: #21354f;
+  color: #15314f;
+}
+
+.footer-cta {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff !important;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
+  box-shadow: 0 10px 18px rgba(30, 128, 196, 0.24);
 }
 
 .footer-bottom {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid rgba(30, 47, 71, 0.1);
-  font-size: 13px;
+  border-top: 1px solid rgba(30, 47, 71, 0.11);
+  font-size: 12px;
+  color: #60748f;
 }
 
 .sticky-cta {
@@ -1566,6 +1696,14 @@ blockquote {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .footer-grid {
+    gap: 14px;
+  }
+
+  .footer-intro {
+    grid-column: 1 / -1;
+  }
+
   .reverse > :first-child,
   .reverse > :last-child {
     order: initial;
@@ -1597,6 +1735,25 @@ blockquote {
   .review-grid,
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .footer {
+    margin-top: 28px;
+    padding-top: 22px;
+  }
+
+  .footer-grid {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .footer-brand strong {
+    font-size: 18px;
+  }
+
+  .footer-cta {
+    width: 100%;
+    justify-content: center;
   }
 
   .score-ring-wrap { margin: 0 auto; }
