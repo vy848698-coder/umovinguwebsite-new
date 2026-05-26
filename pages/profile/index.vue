@@ -591,7 +591,7 @@ const deleteAccount = async () => {
     rgba(255, 255, 255, 0) 100%
   );
   transform: rotate(16deg);
-  transition: transform 0.78s ease;
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
@@ -754,7 +754,7 @@ const deleteAccount = async () => {
   border: 1px solid var(--fx-panel-border);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
   box-shadow: 0 10px 26px rgba(15, 44, 76, 0.08);
-  animation: panel-rise 360ms ease both;
+  animation: panel-rise 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
   transition:
     transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -966,7 +966,7 @@ const deleteAccount = async () => {
     rgba(255, 255, 255, 0) 100%
   );
   transform: rotate(16deg);
-  transition: transform 0.72s ease;
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
@@ -1003,7 +1003,7 @@ const deleteAccount = async () => {
 }
 
 .profile-row-list :deep(.prow) {
-  animation: row-rise 380ms ease both;
+  animation: row-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .profile-row-list :deep(.prow:nth-child(2)) {

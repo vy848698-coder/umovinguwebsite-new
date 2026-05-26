@@ -634,7 +634,7 @@ const goBack = useGoBack('/profile')
   height: 320%;
   background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 46%, rgba(255, 255, 255, 0) 100%);
   transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.78s ease;
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .dc-hero:hover {
@@ -922,7 +922,7 @@ const goBack = useGoBack('/profile')
   flex-direction: column;
   max-height: 92vh;
   overflow: hidden;
-  animation: modal-up 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: modal-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
 @keyframes modal-up {
