@@ -893,7 +893,7 @@
     >
       <RegisterInterestContent
         :property-id="propertyId"
-        :property-address="property?.addressLine1 || ''"
+        :address="property?.addressLine1 || ''"
         @submit="showRegisterInterest = false"
       />
     </BaseDrawer>
@@ -6093,14 +6093,17 @@ function formatSaleDate(dateStr: string): string {
 <style scoped>
 .pps-page {
   min-height: 100dvh;
-  background: #f5f5f7;
-  max-width: 28rem;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   color: #231d45;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-  padding-bottom: 24px;
+  overflow-x: clip;
+  padding: 8px 12px 24px;
 }
 
 .pps-loading-state {
@@ -6141,6 +6144,8 @@ function formatSaleDate(dateStr: string): string {
 /* ─── Hero ──────────────────────────────────────────────────── */
 .pps-hero {
   height: 260px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
   background: linear-gradient(
     180deg,
     #b8cfc4 0%,
@@ -6151,6 +6156,10 @@ function formatSaleDate(dateStr: string): string {
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
+  border-radius: 24px;
+  box-shadow:
+    0 16px 36px rgba(17, 52, 88, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .pps-hero-btn {
   position: absolute;
@@ -6169,17 +6178,17 @@ function formatSaleDate(dateStr: string): string {
   color: white;
 }
 .pps-hero-btn-back {
-  top: 16px;
+  top: 18px;
   left: 16px;
   padding-top: env(safe-area-inset-top);
 }
 .pps-hero-btn-fav {
-  top: 16px;
+  top: 18px;
   right: 60px;
   padding-top: env(safe-area-inset-top);
 }
 .pps-hero-btn-share {
-  top: 16px;
+  top: 18px;
   right: 16px;
   padding-top: env(safe-area-inset-top);
 }
@@ -6203,9 +6212,9 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-hero-badges {
   position: absolute;
-  bottom: 14px;
-  left: 14px;
-  right: 14px;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -6255,19 +6264,27 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Identity ──────────────────────────────────────────────── */
 .pps-identity {
+  width: min(100%, 1080px);
+  margin: 10px auto 0;
   background: white;
-  padding: 18px 18px 14px;
+  border: 1px solid rgba(174, 201, 231, 0.52);
+  border-radius: 20px;
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 20px 20px 16px;
 }
 .pps-identity-address {
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 800;
   color: #1a1535;
-  line-height: 1.1;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
 }
 .pps-identity-suburb {
-  font-size: 15px;
-  color: #888;
-  margin-top: 3px;
+  font-size: 16px;
+  color: #7f7b96;
+  margin-top: 5px;
 }
 .pps-price-row {
   margin-top: 12px;
@@ -6307,11 +6324,15 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Action bar ────────────────────────────────────────────── */
 .pps-action-bar {
-  margin: 0;
+  width: min(100%, 1080px);
+  margin: 10px auto 0;
   padding: 14px 16px;
   background: white;
-  border-top: 1px solid #f0f0f2;
-  border-bottom: 1px solid #f0f0f2;
+  border: 1px solid rgba(174, 201, 231, 0.52);
+  border-radius: 18px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 .pps-passport-cta-unlock {
   width: 100%;
@@ -6357,6 +6378,7 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-passport-cta-unlock:hover {
   transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(35, 29, 69, 0.28);
 }
 .pps-passport-cta-unlock-left {
   flex: 1;
@@ -6412,6 +6434,7 @@ function formatSaleDate(dateStr: string): string {
 .pps-secondary-btn:hover {
   border-color: #231d45;
   box-shadow: 0 4px 12px rgba(35, 29, 69, 0.1);
+  transform: translateY(-1px);
 }
 .pps-secondary-btn-label {
   font-size: 15px;
@@ -6428,6 +6451,8 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Signal bar ────────────────────────────────────────────── */
 .pps-signal-bar {
+  width: min(100%, 1080px);
+  margin: 10px auto 0;
   background: #f2faf8;
   border-top: 1px solid #e5f4f2;
   border-bottom: 1px solid #e5f4f2;
@@ -6435,6 +6460,7 @@ function formatSaleDate(dateStr: string): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-radius: 14px;
 }
 .pps-signal-left {
   display: flex;
@@ -6473,7 +6499,8 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Score card ────────────────────────────────────────────── */
 .pps-score-card {
-  margin: 14px 14px 0;
+  margin: 14px auto 0;
+  width: min(100%, 1080px);
   border-radius: 20px;
   overflow: hidden;
   border: 2px solid #231d45;
@@ -6669,6 +6696,8 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Explore grid ──────────────────────────────────────────── */
 .pps-explore-header {
+  width: min(100%, 1080px);
+  margin: 0 auto;
   padding: 20px 16px 12px;
   display: flex;
   justify-content: space-between;
@@ -6685,26 +6714,57 @@ function formatSaleDate(dateStr: string): string {
   font-weight: 700;
 }
 .pps-explore-grid {
+  width: min(100%, 1080px);
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding: 0 14px;
+  padding: 0;
+}
+
+@media (max-width: 700px) {
+  .pps-page {
+    padding: 0 10px 24px;
+  }
+
+  .pps-hero {
+    border-radius: 18px;
+  }
+
+  .pps-identity {
+    border-radius: 16px;
+    padding: 16px 14px 12px;
+  }
+
+  .pps-identity-address {
+    font-size: 40px;
+  }
+
+  .pps-action-bar,
+  .pps-signal-bar {
+    border-radius: 14px;
+  }
+
+  .pps-explore-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
 .pps-tile {
   background: white;
   border-radius: 16px;
   padding: 16px 14px;
   cursor: pointer;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
-  border: 1.5px solid transparent;
+  box-shadow: 0 4px 14px rgba(17, 52, 88, 0.08);
+  border: 1.5px solid rgba(174, 201, 231, 0.4);
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
 }
 .pps-tile:hover {
   transform: scale(1.03);
-  border-color: #231d45;
-  box-shadow: 0 8px 24px rgba(35, 29, 69, 0.12);
+  border-color: rgba(35, 29, 69, 0.44);
+  box-shadow: 0 12px 28px rgba(17, 52, 88, 0.15);
 }
 .pps-tile:active {
   transform: scale(0.97);
@@ -6764,14 +6824,17 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Passport card ─────────────────────────────────────────── */
 .pps-passport-card {
-  margin: 16px 14px 0;
+  width: min(100%, 1080px);
+  margin: 16px auto 0;
   background: white;
   border-radius: 20px;
   padding: 22px;
   position: relative;
   overflow: hidden;
-  border: 2px solid #231d45;
-  box-shadow: 0 4px 20px rgba(35, 29, 69, 0.1);
+  border: 1px solid rgba(174, 201, 231, 0.52);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 .pps-passport-card--clickable {
   cursor: pointer;
@@ -6781,7 +6844,7 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-passport-card--clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(35, 29, 69, 0.16);
+  box-shadow: 0 14px 32px rgba(17, 52, 88, 0.16);
 }
 .pps-passport-eyebrow-row {
   display: flex;
@@ -7016,11 +7079,14 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Costs card ────────────────────────────────────────────── */
 .pps-costs-card {
-  margin: 14px 14px 0;
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
   border-radius: 16px;
   overflow: hidden;
-  border: 2px solid #231d45;
-  box-shadow: 0 4px 20px rgba(35, 29, 69, 0.08);
+  border: 1px solid rgba(174, 201, 231, 0.52);
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   background: white;
 }
 .pps-costs-header {
@@ -7129,10 +7195,14 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Details card ──────────────────────────────────────────── */
 .pps-details-card {
-  margin: 14px 14px 0;
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(174, 201, 231, 0.46);
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   background: white;
 }
 .pps-details-header {
@@ -7162,21 +7232,21 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
 .pps-details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding: 10px 14px 14px;
+  gap: 10px;
+  padding: 12px 14px 14px;
 }
 .pps-detail-tile {
-  padding: 12px;
+  padding: 13px;
   border-radius: 10px;
-  background: #f9f9fb;
-  border: 1.5px solid transparent;
+  background: linear-gradient(170deg, #fbfdff 0%, #f6f9ff 100%);
+  border: 1.5px solid rgba(174, 201, 231, 0.34);
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .pps-detail-tile:hover {
   transform: translateY(-3px) scale(1.02);
-  border-color: #231d45;
+  border-color: rgba(35, 29, 69, 0.42);
   background: white;
-  box-shadow: 0 6px 18px rgba(35, 29, 69, 0.1);
+  box-shadow: 0 8px 22px rgba(17, 52, 88, 0.12);
 }
 .pps-detail-tile-icon {
   font-size: 16px;

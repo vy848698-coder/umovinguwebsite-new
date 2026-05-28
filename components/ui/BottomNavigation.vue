@@ -42,7 +42,7 @@ const navigationItems: NavigationItem[] = [
     id: 'passport',
     label: 'Passport',
     icon: '/icons/Passport.png',
-    route: '/passport',
+    route: '/passport/collections',
   },
   {
     id: 'explore',

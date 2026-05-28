@@ -323,19 +323,30 @@ function downloadPdf() {
 <style scoped>
 .pv-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 16px;
+  padding: 0 14px 20px;
 }
 
 .pv-top-nav {
   display: flex; align-items: center; justify-content: space-between;
+  width: min(100%, 1080px);
+  margin: 8px auto 0;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
@@ -347,7 +358,7 @@ function downloadPdf() {
 }
 .pv-nav-centre {
   flex: 1; text-align: center;
-  font-size: 14px; font-weight: 800; color: #231d45;
+  font-size: 15px; font-weight: 800; color: #231d45;
 }
 .pv-nav-right {
   font-size: 13px; font-weight: 700; color: #00a19a;
@@ -356,6 +367,8 @@ function downloadPdf() {
 
 /* PDF doc */
 .pv-doc-wrap {
+  width: min(100%, 1080px);
+  margin: 0 auto;
   padding: 10px 0 0;
   animation: pv-fadeUp 0.4s 0.05s both;
 }
@@ -366,10 +379,10 @@ function downloadPdf() {
 .pdf-doc {
   position: relative;
   background: white;
-  margin: 0 14px;
-  border-radius: 14px;
+  margin: 0;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 14px 30px rgba(17, 52, 88, 0.11);
   isolation: isolate;
 }
 
@@ -583,7 +596,9 @@ function downloadPdf() {
 
 /* Action buttons */
 .pv-actions {
-  padding: 14px 22px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 14px 0;
   display: flex; flex-direction: column;
   gap: 8px;
   animation: pv-fadeUp 0.4s 0.15s both;
@@ -594,15 +609,48 @@ function downloadPdf() {
   border-radius: 14px; padding: 16px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover { background: #00b6ae; }
+.cta-btn:hover {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
 .cta-btn:disabled { opacity: 0.6; cursor: progress; }
 .cta-btn.outline {
   background: white; color: #231d45;
   border: 1.5px solid #231d45;
   box-shadow: none;
   font-size: 13px; padding: 13px;
+}
+
+@media (min-width: 1024px) {
+  .pv-page {
+    padding: 0 20px 24px;
+  }
+
+  .pv-top-nav,
+  .pv-doc-wrap,
+  .pv-actions {
+    width: min(100%, 1180px);
+  }
+
+  .pdf-doc {
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 700px) {
+  .pv-page {
+    padding: 0 10px 16px;
+  }
+
+  .pv-top-nav {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
 }
 
 /* Print styles — when user prints to PDF, hide the chrome and keep the

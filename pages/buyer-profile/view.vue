@@ -239,7 +239,7 @@
           </div>
           <span class="doc-chev">›</span>
         </div>
-        <div class="doc-row" @click="goShare('pdf-add-aip' as any)">
+        <div class="doc-row" @click="goShare()">
           <div class="doc-icon">🏦</div>
           <div class="doc-body">
             <div class="doc-title">Mortgage in Principle</div>
@@ -555,7 +555,7 @@ function formatSignedAt(iso: string) {
 }
 
 // ── Navigation ───────────────────────────────────────────────
-function goShare() { router.push('/buyer-profile/share') }
+function goShare(_e?: MouseEvent) { router.push('/buyer-profile/share') }
 function goPdf() { router.push('/buyer-profile/pdf') }
 function goSign() { router.push('/buyer-profile/sign') }
 function goEdit() { router.push('/buyer-profile/build') }
@@ -565,20 +565,31 @@ function goEdit() { router.push('/buyer-profile/build') }
 /* Plus Jakarta Sans across this page to match the prototype. */
 .bp-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 16px;
+  padding: 0 14px 28px;
 }
 
 /* ── Top nav ── */
 .bp-top-nav {
   display: flex; align-items: center; justify-content: space-between;
+  width: min(100%, 1080px);
+  margin: 8px auto 0;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
@@ -599,10 +610,20 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Loading / empty ── */
 .bp-loading {
+  width: min(100%, 1080px);
+  margin: 0 auto;
   padding: 80px 22px; text-align: center;
   color: #6b6783; font-size: 13px; font-weight: 600;
 }
 .bp-empty {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  border-radius: 22px;
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   padding: 60px 22px; text-align: center;
 }
 .bp-empty-ic { font-size: 48px; margin-bottom: 12px; }
@@ -616,8 +637,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Pending access request banner ── */
 .bp-access-banner {
-  margin: 8px 22px 0;
-  width: calc(100% - 44px);
+  margin: 10px auto 0;
+  width: min(100%, 1080px);
   background: linear-gradient(135deg, #fef3c7, #fffaf0);
   border: 1.5px solid #f0b460;
   border-radius: 14px;
@@ -650,7 +671,9 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Eyebrow pill with pulse ── */
 .bp-eyebrow-wrap {
-  text-align: center; padding: 6px 22px 0;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  text-align: center; padding: 8px 0 0;
 }
 .eyebrow-pill {
   display: inline-flex; align-items: center; gap: 7px;
@@ -675,7 +698,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Hero card ── */
 .bp-hero-wrap {
-  margin: 14px 22px 0;
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
   animation: bp-fadeUp 0.4s 0.1s both;
 }
 @keyframes bp-fadeUp {
@@ -736,7 +760,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Profile completion bar ── */
 .bp-pb-wrap {
-  margin: 14px 22px 0;
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
   animation: bp-fadeUp 0.4s 0.15s both;
 }
 .bp-pb-row {
@@ -761,10 +786,11 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── DVS strip ── */
 .dvs-strip {
-  margin: 12px 0 0;
+  width: min(100%, 1080px);
+  margin: 12px auto 0;
   background: linear-gradient(90deg, #f6f5fb, #f2faf8);
-  border-top: 1px solid #e5f4f2;
-  border-bottom: 1px solid #e5f4f2;
+  border: 1px solid #e5f4f2;
+  border-radius: 14px;
   padding: 10px 22px;
   display: flex; align-items: center; gap: 10px;
   animation: bp-fadeUp 0.4s 0.18s both;
@@ -782,7 +808,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Permanence banner ── */
 .persist-banner-wrap {
-  margin: 10px 22px 0;
+  width: min(100%, 1080px);
+  margin: 10px auto 0;
   animation: bp-fadeUp 0.4s 0.19s both;
 }
 .persist-banner {
@@ -801,7 +828,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Tier upgrade nudge ── */
 .upgrade-nudge-wrap {
-  margin: 10px 22px 0;
+  width: min(100%, 1080px);
+  margin: 10px auto 0;
   animation: bp-fadeUp 0.4s 0.195s both;
 }
 .upgrade-nudge {
@@ -831,7 +859,9 @@ function goEdit() { router.push('/buyer-profile/build') }
 /* ── Section header ── */
 .section-header {
   display: flex; align-items: center; gap: 12px;
-  padding: 22px 22px 10px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 22px 0 10px;
 }
 .sec-icon {
   width: 34px; height: 34px; border-radius: 10px;
@@ -845,9 +875,11 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Tile grid ── */
 .tile-grid {
+  width: min(100%, 1080px);
+  margin: 0 auto;
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding: 0 22px;
+  padding: 0;
 }
 .tile {
   background: white; border-radius: 16px;
@@ -893,7 +925,8 @@ function goEdit() { router.push('/buyer-profile/build') }
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.08);
 }
 .bp-docs-card {
-  margin: 0 22px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
   overflow: hidden;
   animation: bp-fadeUp 0.4s 0.3s both;
 }
@@ -950,7 +983,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Share section card with action rows ── */
 .bp-share-card {
-  margin: 0 22px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
   background: white;
   border: 1.5px solid #ececef;
   border-radius: 16px;
@@ -986,6 +1020,80 @@ function goEdit() { router.push('/buyer-profile/build') }
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
   cursor: pointer;
   margin-top: 12px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover { background: #00b6ae; }
+.cta-btn:hover {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
+
+@media (min-width: 1024px) {
+  .bp-page {
+    padding: 0 20px 34px;
+  }
+
+  .bp-hero-wrap,
+  .bp-pb-wrap,
+  .dvs-strip,
+  .persist-banner-wrap,
+  .upgrade-nudge-wrap,
+  .section-header,
+  .tile-grid,
+  .bp-docs-card,
+  .bp-share-card,
+  .bp-empty,
+  .bp-loading,
+  .bp-access-banner,
+  .bp-eyebrow-wrap,
+  .bp-top-nav {
+    width: min(100%, 1180px);
+  }
+
+  .tile-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .hero-card {
+    border-radius: 24px;
+    padding: 22px 24px;
+  }
+
+  .bp-hero-name {
+    font-size: 20px;
+  }
+
+  .bp-share-card,
+  .bp-docs-card,
+  .bp-empty {
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .bp-page {
+    padding: 0 10px 20px;
+  }
+
+  .bp-top-nav {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  .bp-hero-body {
+    gap: 12px;
+  }
+
+  .dvs-strip {
+    padding: 10px 12px;
+  }
+
+  .doc-row,
+  .action-row {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
 </style>

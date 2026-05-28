@@ -416,19 +416,30 @@ function goSign() { router.push('/buyer-profile/sign') }
 <style scoped>
 .sh-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 32px;
+  padding: 0 14px 32px;
 }
 
 .sh-top-nav {
   display: flex; align-items: center; justify-content: space-between;
+  width: min(100%, 1080px);
+  margin: 8px auto 0;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
@@ -450,7 +461,8 @@ function goSign() { router.push('/buyer-profile/sign') }
 /* Tab switcher */
 .sh-tabs-wrap {
   display: flex; justify-content: center;
-  margin: 14px 22px 0;
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
   animation: sh-fadeDown 0.4s 0.05s both;
 }
 @keyframes sh-fadeDown {
@@ -484,11 +496,12 @@ function goSign() { router.push('/buyer-profile/sign') }
 
 /* Scope panel */
 .scope-panel {
+  width: min(100%, 1080px);
   background: #f2faf8;
   border: 1.5px solid #e5f4f2;
   border-radius: 14px;
   padding: 12px 14px;
-  margin: 14px 22px 0;
+  margin: 14px auto 0;
 }
 .scope-title {
   font-size: 11px; font-weight: 800;
@@ -519,15 +532,18 @@ function goSign() { router.push('/buyer-profile/sign') }
   font-size: 11px; font-weight: 800;
   color: #6b6783; letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 16px 22px 8px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 16px 0 8px;
   display: block;
 }
 
 /* Recipient card */
 .recipient-card {
+  width: min(100%, 1080px);
   background: white; border: 2px solid #00a19a;
   border-radius: 14px; overflow: hidden;
-  margin: 0 22px;
+  margin: 0 auto;
 }
 .recipient-empty {
   padding: 22px 18px 18px;
@@ -593,7 +609,8 @@ function goSign() { router.push('/buyer-profile/sign') }
 
 .sh-link-instead {
   display: block; text-align: center;
-  margin: 14px auto;
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
   background: none; border: none;
   font-family: inherit;
   font-size: 12px; font-weight: 700;
@@ -609,7 +626,8 @@ function goSign() { router.push('/buyer-profile/sign') }
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.08);
 }
 .sh-list {
-  margin: 0 22px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
   overflow: hidden;
 }
 .share-entry {
@@ -642,19 +660,33 @@ function goSign() { router.push('/buyer-profile/sign') }
   padding: 0 8px;
 }
 .sh-empty {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  border-radius: 20px;
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   padding: 28px 22px; text-align: center;
   color: #6b6783; font-size: 12.5px; font-weight: 600;
 }
 .sh-expires-note {
-  padding: 14px 22px 0;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 14px 0 0;
   font-size: 11px; color: #9c98ad;
   text-align: center; line-height: 1.5;
 }
-.sh-cta-wrap { margin: 14px 22px 0; }
+.sh-cta-wrap {
+  width: min(100%, 1080px);
+  margin: 14px auto 0;
+}
 
 /* Link tab */
 .sh-link-card {
-  margin: 0 22px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
   overflow: hidden;
   display: flex; align-items: center; gap: 12px;
   padding: 14px 16px;
@@ -679,7 +711,8 @@ function goSign() { router.push('/buyer-profile/sign') }
   box-shadow: 0 4px 16px rgba(35, 29, 69, 0.08);
 }
 .sh-qr-card {
-  margin: 16px 22px 0;
+  width: min(100%, 1080px);
+  margin: 16px auto 0;
   padding: 20px; text-align: center;
 }
 .sh-qr-frame {
@@ -732,7 +765,8 @@ function goSign() { router.push('/buyer-profile/sign') }
 
 /* PDF tab */
 .sh-pdf-preview {
-  margin: 0 22px;
+  width: min(100%, 1080px);
+  margin: 0 auto;
   background: #231d45; border-radius: 16px;
   padding: 20px; color: white;
 }
@@ -768,9 +802,11 @@ function goSign() { router.push('/buyer-profile/sign') }
   cursor: pointer; padding: 8px 22px; width: 100%;
 }
 .sh-pdf-note {
+  width: min(100%, 1080px);
+  margin: 0 auto;
   text-align: center;
   font-size: 11px; color: #9c98ad;
-  padding: 10px 22px;
+  padding: 10px 0;
 }
 
 /* CTA buttons */
@@ -780,12 +816,74 @@ function goSign() { router.push('/buyer-profile/sign') }
   border-radius: 14px; padding: 16px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover { background: #00b6ae; }
+.cta-btn:hover {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
 .cta-btn.outline {
   background: white; color: #231d45;
   border: 1.5px solid #231d45;
   box-shadow: none;
+}
+
+@media (min-width: 1024px) {
+  .sh-page {
+    padding: 0 20px 34px;
+  }
+
+  .sh-top-nav,
+  .sh-tabs-wrap,
+  .scope-panel,
+  .sec-label,
+  .recipient-card,
+  .sh-link-instead,
+  .sh-list,
+  .sh-empty,
+  .sh-expires-note,
+  .sh-cta-wrap,
+  .sh-link-card,
+  .sh-qr-card,
+  .sh-pdf-preview,
+  .sh-pdf-note {
+    width: min(100%, 1180px);
+  }
+
+  .sh-link-card {
+    padding: 16px 18px;
+    border-radius: 18px;
+  }
+
+  .sh-list,
+  .recipient-card,
+  .sh-qr-card,
+  .sh-pdf-preview,
+  .sh-empty {
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sh-page {
+    padding: 0 10px 24px;
+  }
+
+  .sh-top-nav {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  .sh-link-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sh-link-copy {
+    width: 100%;
+  }
 }
 </style>

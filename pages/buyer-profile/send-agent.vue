@@ -188,19 +188,30 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sa-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 32px;
+  padding: 0 14px 32px;
 }
 
 .sa-top-nav {
   display: flex; align-items: center; justify-content: space-between;
+  width: min(100%, 980px);
+  margin: 8px auto 0;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
@@ -212,7 +223,7 @@ function goView() { router.push('/buyer-profile/view') }
 }
 .sa-nav-centre {
   flex: 1; text-align: center;
-  font-size: 14px; font-weight: 800; color: #231d45;
+  font-size: 15px; font-weight: 800; color: #231d45;
 }
 .sa-nav-right {
   font-size: 13px; font-weight: 700; color: #00a19a;
@@ -221,11 +232,12 @@ function goView() { router.push('/buyer-profile/view') }
 
 /* Scope panel — same as share */
 .scope-panel {
+  width: min(100%, 980px);
   background: #f2faf8;
   border: 1.5px solid #e5f4f2;
   border-radius: 14px;
   padding: 12px 14px;
-  margin: 10px 22px 0;
+  margin: 10px auto 0;
 }
 .scope-title {
   font-size: 11px; font-weight: 800;
@@ -255,17 +267,20 @@ function goView() { router.push('/buyer-profile/view') }
   font-size: 11px; font-weight: 800;
   color: #6b6783; letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 16px 22px 8px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 16px 0 8px;
   display: block;
 }
 
 /* Recipient form (free-text) */
 .recipient-card {
+  width: min(100%, 980px);
   background: white;
   border: 2px solid #00a19a;
   border-radius: 14px;
   overflow: hidden;
-  margin: 0 22px;
+  margin: 0 auto;
 }
 .recipient-form {
   padding: 14px;
@@ -361,7 +376,8 @@ function goView() { router.push('/buyer-profile/view') }
   border: 1.5px solid #b8e8c8;
   border-radius: 16px;
   padding: 18px 22px;
-  margin: 0 22px;
+  width: min(100%, 980px);
+  margin: 0 auto;
   text-align: center;
 }
 .sent-emoji { font-size: 36px; margin-bottom: 8px; }
@@ -377,15 +393,18 @@ function goView() { router.push('/buyer-profile/view') }
   margin-top: 4px;
 }
 .sa-back-cta-wrap {
-  padding: 12px 22px 0;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 12px 0 0;
 }
 .sa-add-another {
   display: block; text-align: center;
+  width: min(100%, 980px);
   margin: 12px auto 0;
   background: none; border: none;
   font-family: inherit;
   font-size: 12px; font-weight: 700; color: #007e78;
-  cursor: pointer; padding: 8px 22px; width: 100%;
+  cursor: pointer; padding: 8px 0;
 }
 
 .cta-btn {
@@ -394,9 +413,50 @@ function goView() { router.push('/buyer-profile/view') }
   border-radius: 14px; padding: 13px;
   font-family: inherit; font-size: 13px; font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.cta-btn:hover {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
 }
 .cta-btn.outline {
   background: white; color: #231d45;
   border: 1.5px solid #231d45;
+  box-shadow: none;
+}
+
+@media (min-width: 1024px) {
+  .sa-page {
+    padding: 0 20px 34px;
+  }
+
+  .sa-top-nav,
+  .scope-panel,
+  .sec-label,
+  .recipient-card,
+  .sent-confirm,
+  .sa-back-cta-wrap,
+  .sa-add-another {
+    width: min(100%, 1080px);
+  }
+
+  .recipient-card,
+  .sent-confirm {
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sa-page {
+    padding: 0 10px 24px;
+  }
+
+  .sa-top-nav {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
 }
 </style>

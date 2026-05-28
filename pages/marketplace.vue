@@ -58,6 +58,42 @@
         </div>
       </div>
 
+      <div class="mp-preview">
+        <div class="mp-preview-head">
+          <div>
+            <div class="mp-preview-eyebrow">Launching soon</div>
+            <div class="mp-preview-title">Trusted service categories</div>
+          </div>
+          <div class="mp-preview-pill">Preview</div>
+        </div>
+
+        <div class="mp-chip-row">
+          <span class="mp-chip">Conveyancing</span>
+          <span class="mp-chip">Surveying</span>
+          <span class="mp-chip">Inspections</span>
+          <span class="mp-chip">Energy</span>
+          <span class="mp-chip">Removal</span>
+        </div>
+
+        <div class="mp-preview-grid">
+          <div class="mp-preview-card">
+            <div class="mp-preview-ic">⚖️</div>
+            <div class="mp-preview-card-title">Conveyancing</div>
+            <div class="mp-preview-card-sub">Fixed-fee quotes matched to your Passport data.</div>
+          </div>
+          <div class="mp-preview-card">
+            <div class="mp-preview-ic">🏗️</div>
+            <div class="mp-preview-card-title">Surveyors</div>
+            <div class="mp-preview-card-sub">Get to the right expert faster with verified property info.</div>
+          </div>
+          <div class="mp-preview-card">
+            <div class="mp-preview-ic">🌡️</div>
+            <div class="mp-preview-card-title">Energy upgrades</div>
+            <div class="mp-preview-card-sub">Installers can see the EPC clues before they quote.</div>
+          </div>
+        </div>
+      </div>
+
       <div class="mp-notify">
         <div class="mp-notify-eyebrow">Get early access</div>
         <p class="mp-notify-body">
@@ -131,15 +167,34 @@ async function submitNotify() {
 
 <style scoped>
 .mp-page {
-  min-height: 100vh;
-  background: #fafafa;
-  padding-bottom: 24px;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  padding: 8px 12px 28px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  color: #231d45;
+  -webkit-font-smoothing: antialiased;
 }
 .mp-topbar {
   display: flex;
   align-items: center;
-  padding: 14px 18px;
-  background: #fff;
+  gap: 10px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 14px 18px 8px;
+  padding-top: calc(14px + env(safe-area-inset-top));
+  background: rgba(249, 252, 255, 0.92);
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 8px;
+  z-index: 20;
 }
 .mp-back {
   width: 36px;
@@ -150,11 +205,16 @@ async function submitNotify() {
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .mp-back svg {
   width: 16px;
   height: 16px;
   color: #231d45;
+}
+.mp-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.12);
 }
 .mp-top-title {
   flex: 1;
@@ -169,28 +229,60 @@ async function submitNotify() {
 }
 
 .mp-hero {
+  width: min(100%, 980px);
+  margin: 12px auto 0;
   padding: 28px 22px 32px;
   text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(242, 250, 255, 0.94) 52%,
+    rgba(236, 255, 249, 0.96) 100%
+  );
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  border-radius: 24px;
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  position: relative;
+  overflow: hidden;
+}
+.mp-hero::before {
+  content: '';
+  position: absolute;
+  top: -28px;
+  right: -18px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.12) 0%, transparent 72%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 .mp-emoji {
   font-size: 48px;
   margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
 }
 .mp-h1 {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   color: #231d45;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
   line-height: 1.2;
   margin: 0 0 10px;
+  position: relative;
+  z-index: 1;
 }
 .mp-sub {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #6b6783;
   line-height: 1.5;
   max-width: 320px;
   margin: 0 auto 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .mp-feat {
@@ -198,11 +290,16 @@ async function submitNotify() {
   flex-direction: column;
   gap: 14px;
   text-align: left;
-  background: #fff;
-  border: 1px solid #ececef;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(174, 201, 231, 0.44);
+  border-radius: 18px;
   padding: 18px 18px 16px;
   margin: 0 4px 24px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 1;
 }
 .mp-feat-row {
   display: flex;
@@ -237,10 +334,106 @@ async function submitNotify() {
 .mp-notify {
   text-align: left;
   background: linear-gradient(135deg, #f2faf8 0%, #fff 70%);
-  border: 1.5px solid #e5f4f2;
-  border-radius: 16px;
+  border: 1px solid #e5f4f2;
+  border-radius: 18px;
   padding: 18px;
   margin: 0 4px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+.mp-preview {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(174, 201, 231, 0.44);
+  border-radius: 18px;
+  padding: 18px;
+  margin: 0 4px 24px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+.mp-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.mp-preview-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9c98ad;
+  margin-bottom: 4px;
+}
+.mp-preview-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.2px;
+}
+.mp-preview-pill {
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  color: #007e78;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.mp-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.mp-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #f6f8fc;
+  border: 1px solid rgba(174, 201, 231, 0.5);
+  color: #4a4566;
+  font-size: 12px;
+  font-weight: 700;
+}
+.mp-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.mp-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(170deg, #fbfdff 0%, #f6f9ff 100%);
+  border: 1px solid rgba(174, 201, 231, 0.36);
+}
+.mp-preview-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  font-size: 17px;
+}
+.mp-preview-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #231d45;
+}
+.mp-preview-card-sub {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b6783;
 }
 .mp-notify-eyebrow {
   font-size: 11px;
@@ -268,13 +461,15 @@ async function submitNotify() {
   font-size: 14px;
   font-family: inherit;
   background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .mp-notify-input:focus {
   outline: none;
   border-color: #00a19a;
+  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12);
 }
 .mp-notify-btn {
-  background: #00a19a;
+  background: linear-gradient(135deg, #00a19a 0%, #00b6ae 60%, #0f8f88 100%);
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -287,10 +482,16 @@ async function submitNotify() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 8px 22px rgba(0, 161, 154, 0.3);
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 .mp-notify-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+.mp-notify-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
 }
 .mp-notify-err {
   font-size: 12px;
@@ -308,6 +509,59 @@ async function submitNotify() {
 @keyframes mp-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .mp-page {
+    padding: 0 10px 24px;
+  }
+
+  .mp-topbar {
+    width: 100%;
+    border-radius: 16px;
+    top: 0;
+  }
+
+  .mp-hero {
+    width: 100%;
+    padding: 24px 16px 24px;
+    border-radius: 20px;
+  }
+
+  .mp-h1 {
+    font-size: 24px;
+  }
+
+  .mp-sub {
+    max-width: none;
+  }
+
+  .mp-feat,
+  .mp-preview,
+  .mp-notify {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .mp-notify-form {
+    flex-direction: column;
+  }
+
+  .mp-notify-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-back,
+  .mp-notify-input,
+  .mp-notify-btn,
+  .mp-spinner {
+    transition: none !important;
+    animation: none !important;
   }
 }
 </style>
