@@ -1032,55 +1032,82 @@ async function issuePassport() {
 
 <style scoped>
 .claim-root {
-  min-height: 100vh;
-  background: #faf9fd;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   display: flex;
   flex-direction: column;
   padding-bottom: 96px;
+  color: #231d45;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-top: 8px;
 }
 
 /* ── Topbar ─────────────────────────────────────────── */
 .cl-topbar {
   position: sticky;
-  top: 0;
+  top: 8px;
   z-index: 20;
   display: flex;
   align-items: center;
-  padding: 12px 14px 10px;
-  background: #fff;
-  border-bottom: 1px solid #eee;
+  gap: 10px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  padding: 14px 18px 8px;
+  padding-top: calc(14px + env(safe-area-inset-top));
   gap: 8px;
 }
 .cl-back {
-  font-size: 26px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #ececef;
+  background: #fff;
+  font-size: 22px;
   line-height: 1;
   color: #231d45;
-  background: none;
-  border: none;
-  width: 32px;
-  height: 32px;
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cl-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.12);
 }
 .cl-top-text { flex: 1; text-align: center; }
 .cl-top-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: #231d45;
+  letter-spacing: -0.01em;
 }
 .cl-top-sub {
   font-size: 11px;
-  color: #64748b;
+  color: #6b6783;
+  font-weight: 700;
   margin-top: 2px;
 }
 .cl-spacer { width: 32px; }
 
 .cl-prog-strip {
-  height: 3px;
-  background: #eef2f7;
+  width: min(100%, 980px);
+  margin: 8px auto 0;
+  border-radius: 100px;
+  height: 4px;
+  background: #ececef;
   position: sticky;
-  top: 55px;
+  top: 80px;
   z-index: 20;
   overflow: hidden;
 }
@@ -1093,8 +1120,44 @@ async function issuePassport() {
 
 /* ── Screen ─────────────────────────────────────────── */
 .cl-screen {
-  padding: 20px 18px 24px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 22px 18px 24px;
   flex: 1;
+  animation: cl-step-enter 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cl-screen > * {
+  animation: cl-rise-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cl-screen > *:nth-child(1) { animation-delay: 0.03s; }
+.cl-screen > *:nth-child(2) { animation-delay: 0.06s; }
+.cl-screen > *:nth-child(3) { animation-delay: 0.09s; }
+.cl-screen > *:nth-child(4) { animation-delay: 0.12s; }
+.cl-screen > *:nth-child(5) { animation-delay: 0.15s; }
+.cl-screen > *:nth-child(6) { animation-delay: 0.18s; }
+
+@keyframes cl-step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cl-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .cl-center-col {
   display: flex;
@@ -1115,13 +1178,16 @@ async function issuePassport() {
 .cl-icon-square {
   width: 64px;
   height: 64px;
-  background: #f1f9f4;
-  border: 2px solid #cff4f2;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
   border-radius: 20px;
   display: grid;
   place-items: center;
   margin: 0 auto 18px;
   font-size: 30px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .cl-icon-square.cl-icon-lg {
   width: 72px;
@@ -1132,22 +1198,22 @@ async function issuePassport() {
 }
 
 .cl-h1 {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #231d45;
   margin: 0 0 8px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 .cl-h2 {
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 800;
   color: #231d45;
   margin: 0 0 6px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 .cl-body {
-  font-size: 13.5px;
-  color: #475569;
+  font-size: 14px;
+  color: #6b6783;
   line-height: 1.55;
   margin: 0 0 14px;
 }
@@ -1172,11 +1238,21 @@ async function issuePassport() {
 
 /* ── Selected address card ─────────────────────────── */
 .cl-sel-card {
-  background: #f1f9f4;
-  border: 1.5px solid #cff4f2;
-  border-radius: 14px;
+  background: linear-gradient(170deg, #fbfdff 0%, #f6f9ff 100%);
+  border: 1px solid rgba(174, 201, 231, 0.52);
+  border-radius: 16px;
   padding: 12px 16px;
   margin-bottom: 14px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cl-sel-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 .cl-sel-eyebrow {
   font-size: 10px;
@@ -1209,9 +1285,9 @@ async function issuePassport() {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: #f1f9f4;
-  border: 1px solid #cff4f2;
-  border-radius: 12px;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  border-radius: 14px;
 }
 .cl-lock-ic { font-size: 18px; }
 .cl-lock-body {
@@ -1224,11 +1300,12 @@ async function issuePassport() {
 /* ── Confirm navy card ─────────────────────────────── */
 .cl-navy-card {
   background: linear-gradient(135deg, #231d45, #2d2560);
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 20px;
   margin-bottom: 16px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 14px 32px rgba(35, 29, 69, 0.28);
 }
 .cl-navy-glow {
   position: absolute;
@@ -1285,8 +1362,8 @@ async function issuePassport() {
 
 /* ── Info pale ─────────────────────────────────────── */
 .cl-info-pale {
-  background: #f1f9f4;
-  border: 1.5px solid #cff4f2;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
   border-radius: 14px;
   padding: 13px 16px;
   margin-bottom: 8px;
@@ -1309,21 +1386,40 @@ async function issuePassport() {
   font-weight: 700;
   cursor: pointer;
   padding: 10px;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.cl-link-center:hover {
+  color: #0f8f88;
+  transform: translateY(-1px);
 }
 
 /* ── Card ──────────────────────────────────────────── */
 .cl-card {
   background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 16px;
+  border: 1px solid rgba(174, 201, 231, 0.52);
+  border-radius: 18px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cl-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 .cl-card-pale {
-  background: #f1f9f4;
-  border: 1.5px solid #cff4f2;
+  background: linear-gradient(140deg, #f2faf8 0%, #edf8ff 100%);
+  border: 1px solid #e5f4f2;
   border-radius: 14px;
   padding: 14px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cl-card-pale:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(17, 52, 88, 0.1);
 }
 .cl-eyebrow {
   font-size: 11px;
@@ -1618,11 +1714,12 @@ async function issuePassport() {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
+  padding: 16px;
   background: linear-gradient(135deg, #1f7a66, #00a19a);
   border-radius: 16px;
   margin-bottom: 18px;
   color: #fff;
+  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.28);
 }
 .cl-lrf-banner-ic {
   width: 40px;
@@ -1695,6 +1792,11 @@ async function issuePassport() {
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.cl-err-retry:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
 }
 .cl-err-link {
   background: #00a19a;
@@ -1717,15 +1819,18 @@ async function issuePassport() {
   left: 0;
   right: 0;
   bottom: 0;
+  display: flex;
+  justify-content: center;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  background: #fff;
-  border-top: 1px solid #eef2f7;
+  background: rgba(249, 252, 255, 0.92);
+  border-top: 1px solid rgba(174, 201, 231, 0.45);
+  backdrop-filter: blur(8px);
   z-index: 30;
 }
 .cl-btn-brand {
-  width: 100%;
+  width: min(100%, 980px);
   padding: 14px 18px;
-  background: #00a19a;
+  background: linear-gradient(135deg, #00a19a 0%, #00b6ae 60%, #0f8f88 100%);
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -1736,9 +1841,13 @@ async function issuePassport() {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.15s, filter 0.15s;
+  box-shadow: 0 8px 22px rgba(0, 161, 154, 0.3);
+  transition: opacity 0.15s, filter 0.15s, transform 0.15s;
 }
-.cl-btn-brand:hover:not(:disabled) { filter: brightness(1.05); }
+.cl-btn-brand:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
 .cl-btn-brand:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -1752,4 +1861,53 @@ async function issuePassport() {
   animation: cl-spin 0.7s linear infinite;
 }
 @keyframes cl-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cl-screen,
+  .cl-screen > *,
+  .cl-card,
+  .cl-card-pale,
+  .cl-sel-card,
+  .cl-link-center,
+  .cl-err-retry,
+  .cl-btn-brand {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .claim-root {
+    padding-top: 0;
+  }
+
+  .cl-topbar {
+    border-radius: 16px;
+    top: 0;
+    padding: 12px 14px 8px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  .cl-prog-strip {
+    top: 66px;
+    border-radius: 100px;
+  }
+
+  .cl-screen {
+    padding: 18px 12px 22px;
+  }
+
+  .cl-h1 {
+    font-size: 22px;
+  }
+
+  .cl-h2 {
+    font-size: 19px;
+  }
+
+  .cl-btn-brand {
+    width: 100%;
+  }
+}
 </style>

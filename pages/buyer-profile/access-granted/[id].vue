@@ -156,20 +156,26 @@ function goShare() { router.push('/buyer-profile/share') }
 <style scoped>
 .ag-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   padding-top: calc(20px + env(safe-area-inset-top));
+  padding-left: 14px;
+  padding-right: 14px;
   padding-bottom: 32px;
 }
 
 .ag-hero {
-  padding: 40px 22px 0; text-align: center;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 40px 0 0; text-align: center;
 }
 .ag-emoji {
   font-size: 56px; line-height: 1; margin-bottom: 14px;
@@ -198,7 +204,8 @@ function goShare() { router.push('/buyer-profile/share') }
 
 /* Navy token card */
 .ag-token-card {
-  margin: 24px 22px 0;
+  width: min(100%, 980px);
+  margin: 24px auto 0;
   background: #231d45;
   border-radius: 16px;
   padding: 16px;
@@ -232,7 +239,9 @@ function goShare() { router.push('/buyer-profile/share') }
   font-size: 11px; font-weight: 800;
   color: #6b6783; letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 16px 22px 8px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 16px 0 8px;
   display: block;
   animation: ag-fadeDown 0.4s 0.3s both;
 }
@@ -243,7 +252,8 @@ function goShare() { router.push('/buyer-profile/share') }
 
 /* Shared-data card */
 .ag-shared-card {
-  margin: 0 22px;
+  width: min(100%, 980px);
+  margin: 0 auto;
   background: white;
   border: 1.5px solid #ececef;
   border-radius: 14px;
@@ -280,7 +290,9 @@ function goShare() { router.push('/buyer-profile/share') }
 
 /* Actions */
 .ag-actions {
-  padding: 14px 22px 0;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 14px 0 0;
   display: flex; flex-direction: column; gap: 8px;
   animation: ag-fadeUp 0.4s 0.35s both;
 }
@@ -290,13 +302,55 @@ function goShare() { router.push('/buyer-profile/share') }
   border-radius: 14px; padding: 16px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover { background: #00b6ae; }
+.cta-btn:hover {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
 .cta-btn.outline {
   background: white; color: #231d45;
   border: 1.5px solid #231d45;
   box-shadow: none;
   font-size: 13px; padding: 13px;
+}
+
+@media (min-width: 1024px) {
+  .ag-page {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 34px;
+  }
+
+  .ag-hero,
+  .ag-token-card,
+  .sec-label,
+  .ag-shared-card,
+  .ag-actions {
+    width: min(100%, 1080px);
+  }
+
+  .ag-token-card,
+  .ag-shared-card {
+    border-radius: 18px;
+  }
+
+  .ag-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 700px) {
+  .ag-page {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 24px;
+  }
+
+  .ag-hero {
+    padding-top: 32px;
+  }
 }
 </style>

@@ -109,20 +109,26 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sn-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   padding-top: calc(20px + env(safe-area-inset-top));
+  padding-left: 14px;
+  padding-right: 14px;
   padding-bottom: 32px;
 }
 
 .sn-hero {
-  padding: 48px 22px 0;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 48px 0 0;
   text-align: center;
 }
 .sn-emoji {
@@ -154,10 +160,14 @@ function goView() { router.push('/buyer-profile/view') }
 
 /* Signed document card — teal border, white bg */
 .sn-doc-card {
-  margin: 24px 22px 0;
+  width: min(100%, 980px);
+  margin: 24px auto 0;
   background: white;
   border: 2px solid #00a19a;
-  border-radius: 16px;
+  border-radius: 18px;
+  box-shadow:
+    0 14px 30px rgba(17, 52, 88, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   padding: 16px;
   animation: sn-fadeUp 0.4s 0.25s both;
 }
@@ -208,7 +218,9 @@ function goView() { router.push('/buyer-profile/view') }
 
 /* Actions */
 .sn-actions {
-  padding: 16px 22px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 16px 0 0;
   display: flex; flex-direction: column;
   gap: 8px;
   animation: sn-fadeUp 0.4s 0.3s both;
@@ -220,9 +232,14 @@ function goView() { router.push('/buyer-profile/view') }
   padding: 16px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover { background: #00b6ae; }
+.cta-btn:hover {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
 .cta-btn.outline {
   background: white; color: #231d45;
   border: 1.5px solid #231d45;
@@ -236,5 +253,54 @@ function goView() { router.push('/buyer-profile/view') }
   color: #6b6783;
   cursor: pointer;
   padding: 8px;
+}
+
+@media (min-width: 1024px) {
+  .sn-page {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 34px;
+  }
+
+  .sn-hero,
+  .sn-doc-card,
+  .sn-actions {
+    width: min(100%, 1080px);
+  }
+
+  .sn-title {
+    font-size: 28px;
+  }
+
+  .sn-sub {
+    font-size: 14px;
+  }
+
+  .sn-doc-card {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .sn-sig-img {
+    max-width: 320px;
+    max-height: 92px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sn-page {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 24px;
+  }
+
+  .sn-hero {
+    padding-top: 34px;
+  }
+
+  .sn-doc-card {
+    margin-top: 18px;
+    border-radius: 14px;
+  }
 }
 </style>

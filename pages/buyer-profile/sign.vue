@@ -264,19 +264,30 @@ const goBack = useGoBack('/buyer-profile/pdf')
 <style scoped>
 .sd-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 32px;
+  padding: 0 14px 32px;
 }
 
 .sd-top-nav {
   display: flex; align-items: center; justify-content: space-between;
+  width: min(100%, 980px);
+  margin: 8px auto 0;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
@@ -288,7 +299,7 @@ const goBack = useGoBack('/buyer-profile/pdf')
 }
 .sd-nav-centre {
   flex: 1; text-align: center;
-  font-size: 14px; font-weight: 800; color: #231d45;
+  font-size: 15px; font-weight: 800; color: #231d45;
 }
 .sd-nav-right {
   font-size: 13px; font-weight: 700; color: #c73e36;
@@ -298,7 +309,9 @@ const goBack = useGoBack('/buyer-profile/pdf')
 .sd-nav-right.disabled { opacity: 0.35; pointer-events: none; }
 
 .sd-intro {
-  padding: 10px 22px 0;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 12px 0 0;
   text-align: center;
   animation: sd-fadeUp 0.4s 0.05s both;
 }
@@ -311,10 +324,14 @@ const goBack = useGoBack('/buyer-profile/pdf')
 }
 
 .sd-doc-summary {
-  margin: 12px 22px 0;
-  background: #fafafa;
-  border: 1px solid #ececef;
-  border-radius: 12px;
+  width: min(100%, 980px);
+  margin: 12px auto 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  border-radius: 16px;
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   padding: 12px 14px;
   animation: sd-fadeUp 0.4s 0.08s both;
 }
@@ -334,7 +351,9 @@ const goBack = useGoBack('/buyer-profile/pdf')
   font-size: 11px; font-weight: 800;
   color: #6b6783; letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 16px 22px 8px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 16px 0 8px;
   display: block;
   animation: sd-fadeDown 0.4s 0.1s both;
 }
@@ -346,7 +365,8 @@ const goBack = useGoBack('/buyer-profile/pdf')
 /* Signature pad — dashed when empty, solid teal when signed (prototype). */
 .sig-pad {
   position: relative;
-  margin: 0 22px;
+  width: min(100%, 980px);
+  margin: 0 auto;
   background: white;
   border: 2px dashed #ececef;
   border-radius: 14px;
@@ -377,7 +397,8 @@ const goBack = useGoBack('/buyer-profile/pdf')
 }
 
 .sd-type-wrap {
-  margin: 12px 22px 0;
+  width: min(100%, 980px);
+  margin: 12px auto 0;
   animation: sd-fadeUp 0.4s 0.15s both;
 }
 .sd-type-divider {
@@ -400,7 +421,8 @@ const goBack = useGoBack('/buyer-profile/pdf')
 .sd-type-input:focus { border-color: #00a19a; }
 
 .sd-legal {
-  margin: 10px 22px 0;
+  width: min(100%, 980px);
+  margin: 10px auto 0;
   padding: 10px 12px;
   background: #f6f5fb;
   border-radius: 10px;
@@ -409,7 +431,9 @@ const goBack = useGoBack('/buyer-profile/pdf')
 }
 
 .sd-cta-wrap {
-  padding: 12px 22px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 12px 0 0;
   animation: sd-fadeUp 0.4s 0.22s both;
 }
 .cta-btn {
@@ -418,9 +442,14 @@ const goBack = useGoBack('/buyer-profile/pdf')
   border-radius: 14px; padding: 16px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover:not(:disabled) { background: #00b6ae; }
+.cta-btn:hover:not(:disabled) {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
 .cta-btn:disabled {
   opacity: 0.5; cursor: not-allowed; pointer-events: none;
 }
@@ -428,5 +457,44 @@ const goBack = useGoBack('/buyer-profile/pdf')
   margin-top: 8px;
   font-size: 12px; font-weight: 600; color: #c73e36;
   text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .sd-page {
+    padding: 0 20px 34px;
+  }
+
+  .sd-top-nav,
+  .sd-intro,
+  .sd-doc-summary,
+  .sec-label,
+  .sig-pad,
+  .sd-type-wrap,
+  .sd-legal,
+  .sd-cta-wrap {
+    width: min(100%, 1080px);
+  }
+
+  .sig-pad {
+    height: 220px;
+    border-radius: 18px;
+  }
+
+  .sd-doc-summary {
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sd-page {
+    padding: 0 10px 24px;
+  }
+
+  .sd-top-nav {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
 }
 </style>

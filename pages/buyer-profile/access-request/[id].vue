@@ -292,19 +292,30 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .ar-page {
   min-height: 100dvh;
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: 28rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 32px;
+  padding: 0 14px 32px;
 }
 
 .ar-top-nav {
   display: flex; align-items: center; justify-content: space-between;
+  width: min(100%, 980px);
+  margin: 8px auto 0;
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
@@ -316,11 +327,13 @@ function goView() { router.push('/buyer-profile/view') }
 }
 .ar-nav-centre {
   flex: 1; text-align: center;
-  font-size: 14px; font-weight: 800; color: #231d45;
+  font-size: 15px; font-weight: 800; color: #231d45;
 }
 .ar-nav-right { width: 36px; }
 
 .ar-loading, .ar-error {
+  width: min(100%, 980px);
+  margin: 0 auto;
   padding: 60px 22px; text-align: center;
   font-size: 13px; color: #6b6783; font-weight: 600;
 }
@@ -328,7 +341,9 @@ function goView() { router.push('/buyer-profile/view') }
 
 /* Notification card */
 .ar-notif-wrap {
-  padding: 8px 22px 0;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 8px 0 0;
   animation: ar-fadeUp 0.4s 0.05s both;
 }
 @keyframes ar-fadeUp {
@@ -394,7 +409,8 @@ function goView() { router.push('/buyer-profile/view') }
 /* Status banner — when not pending */
 .ar-status-banner {
   display: flex; align-items: center; gap: 10px;
-  margin: 12px 22px 0;
+  width: min(100%, 980px);
+  margin: 12px auto 0;
   padding: 12px 14px;
   border-radius: 12px;
   font-size: 12.5px; font-weight: 700;
@@ -422,13 +438,16 @@ function goView() { router.push('/buyer-profile/view') }
   font-size: 11px; font-weight: 800;
   color: #6b6783; letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 16px 22px 8px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 16px 0 8px;
   display: block;
 }
 
 /* Scope toggle card */
 .ar-scope-card {
-  margin: 0 22px;
+  width: min(100%, 980px);
+  margin: 0 auto;
   background: white;
   border: 2px solid #231d45;
   border-radius: 14px;
@@ -468,14 +487,17 @@ function goView() { router.push('/buyer-profile/view') }
 .scope-toggle.on .scope-toggle-knob { transform: translateX(18px); }
 
 .ar-revoke-note {
-  margin: 10px 22px 0;
+  width: min(100%, 980px);
+  margin: 10px auto 0;
   font-size: 11px; color: #9c98ad;
   text-align: center;
 }
 
 /* Actions */
 .ar-actions {
-  padding: 12px 22px 0;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 12px 0 0;
   display: flex; flex-direction: column; gap: 8px;
   animation: ar-fadeUp 0.4s 0.2s both;
 }
@@ -485,14 +507,54 @@ function goView() { router.push('/buyer-profile/view') }
   border-radius: 14px; padding: 16px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.cta-btn:hover:not(:disabled) { background: #00b6ae; }
+.cta-btn:hover:not(:disabled) {
+  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+}
 .cta-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .cta-btn.outline {
   background: white; color: #231d45;
   border: 1.5px solid #231d45;
   box-shadow: none;
   font-size: 13px; padding: 13px;
+}
+
+@media (min-width: 1024px) {
+  .ar-page {
+    padding: 0 20px 34px;
+  }
+
+  .ar-top-nav,
+  .ar-loading,
+  .ar-error,
+  .ar-notif-wrap,
+  .ar-status-banner,
+  .sec-label,
+  .ar-scope-card,
+  .ar-revoke-note,
+  .ar-actions {
+    width: min(100%, 1080px);
+  }
+
+  .ar-scope-card,
+  .notif-card {
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .ar-page {
+    padding: 0 10px 24px;
+  }
+
+  .ar-top-nav {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
 }
 </style>

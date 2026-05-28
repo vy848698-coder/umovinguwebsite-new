@@ -221,6 +221,30 @@
       />
     </div>
 
+    <!-- Error state -->
+    <div v-else-if="loadError" class="coll-state-wrap px-4 pb-24">
+      <div class="coll-state-card coll-state-card--error">
+        <div class="coll-state-ic">⚠️</div>
+        <div class="coll-state-title">We couldn't load your Passports</div>
+        <div class="coll-state-sub">{{ loadError }}</div>
+        <button class="coll-state-btn" @click="load">Try again</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div v-else-if="!hasAnyItems" class="coll-state-wrap px-4 pb-24">
+      <div class="coll-state-card">
+        <div class="coll-state-ic">📘</div>
+        <div class="coll-state-title">No Passports yet</div>
+        <div class="coll-state-sub">
+          Start by claiming a property from Explore, then your Passports will appear here.
+        </div>
+        <button class="coll-state-btn" @click="router.push('/explore')">
+          Go to Explore
+        </button>
+      </div>
+    </div>
+
     <!-- Grid -->
     <div v-else class="passport-grid px-4 pb-24">
       <!-- Collections first -->
@@ -486,6 +510,7 @@ const router = useRouter()
 const config = useRuntimeConfig()
 
 const loading = ref(true)
+const loadError = ref('')
 const collections = ref([])
 const uncollectedPassports = ref([])
 const watchingList = ref([])
@@ -544,9 +569,9 @@ function passportMatchesCity(p) {
 }
 
 const filteredCollections = computed(() => {
-  let list = [...collections.value]
+  let list = Array.isArray(collections.value) ? [...collections.value] : []
   const q = query.value.trim().toLowerCase()
-  if (q) list = list.filter((c) => c.name.toLowerCase().includes(q))
+  if (q) list = list.filter((c) => (c?.name || '').toLowerCase().includes(q))
   // A collection is visible if any of its passports match the city filter.
   if (cityFilter.value !== 'all') {
     list = list.filter((c) =>
@@ -562,14 +587,27 @@ const filteredPassports = computed(() => {
   if (q) {
     list = list.filter(
       (p) =>
-        p.addressLine1.toLowerCase().includes(q) ||
-        p.postcode.toLowerCase().includes(q),
+        (p?.addressLine1 || '').toLowerCase().includes(q) ||
+        (p?.postcode || '').toLowerCase().includes(q),
     )
   }
   if (cityFilter.value !== 'all') {
     list = list.filter(passportMatchesCity)
   }
   return list
+})
+
+const hasAnyItems = computed(() => {
+  const inCollections = Array.isArray(collections.value)
+    ? collections.value.some((c) => Array.isArray(c?.items) && c.items.length > 0)
+    : false
+  const hasUncollected = Array.isArray(uncollectedPassports.value)
+    ? uncollectedPassports.value.length > 0
+    : false
+  const hasWatching = Array.isArray(watchingList.value)
+    ? watchingList.value.length > 0
+    : false
+  return inCollections || hasUncollected || hasWatching
 })
 
 // Build the list of city chips from the data already loaded — labelled
@@ -709,6 +747,7 @@ const collectionsTourSteps = [
 
 const load = async () => {
   loading.value = true
+  loadError.value = ''
   try {
     const token = localStorage.getItem('token')
     const headers = { Authorization: `Bearer ${token}` }
@@ -718,11 +757,17 @@ const load = async () => {
         headers,
       }).catch(() => []),
     ])
-    collections.value = data.collections
-    uncollectedPassports.value = data.uncollectedPassports
+    collections.value = Array.isArray(data?.collections) ? data.collections : []
+    uncollectedPassports.value = Array.isArray(data?.uncollectedPassports)
+      ? data.uncollectedPassports
+      : []
     watchingList.value = Array.isArray(watching) ? watching : []
   } catch (e) {
     console.error('Failed to load collections', e)
+    loadError.value = 'Please check your connection and try again.'
+    collections.value = []
+    uncollectedPassports.value = []
+    watchingList.value = []
   } finally {
     loading.value = false
   }
@@ -808,10 +853,69 @@ const executeDelete = async () => {
      min-h-dvh; we just need to make sure the page can grow naturally and
      scrolls with the document, not inside a clipped container. */
   width: 100%;
-  background: #eef3f3;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   display: flex;
   flex-direction: column;
   overflow: visible;
+  color: #231d45;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 8px 12px 28px;
+}
+
+.coll-state-wrap {
+  width: 100%;
+}
+
+.coll-state-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(174, 201, 231, 0.44);
+  border-radius: 18px;
+  box-shadow:
+    0 10px 24px rgba(17, 52, 88, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  text-align: center;
+}
+
+.coll-state-card--error {
+  border-color: rgba(199, 62, 54, 0.32);
+  background: linear-gradient(180deg, #fff8f7 0%, #ffffff 100%);
+}
+
+.coll-state-ic {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.coll-state-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.2px;
+}
+
+.coll-state-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b6783;
+}
+
+.coll-state-btn {
+  margin-top: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 14px;
+  background: linear-gradient(135deg, #00a19a 0%, #00b6ae 60%, #0f8f88 100%);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 /* Header */
@@ -819,20 +923,41 @@ const executeDelete = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 8px;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 14px 18px 8px;
+  padding-top: calc(14px + env(safe-area-inset-top));
+  background: rgba(249, 252, 255, 0.92);
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 8px;
+  z-index: 20;
 }
 
 .back-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: none;
-  border: none;
-  color: #00a19a;
-  font-size: 16px;
-  font-weight: 600;
+  background: #fff;
+  border: 1px solid #ececef;
+  color: #231d45;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 0;
+  padding: 0 12px 0 10px;
+  height: 36px;
+  border-radius: 999px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.back-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.12);
 }
 
 /* Title block */
@@ -875,7 +1000,7 @@ const executeDelete = async () => {
   display: inline-flex;
   align-items: center;
   background: #fff;
-  border: 1.5px solid #eef0f6;
+  border: 1px solid rgba(174, 201, 231, 0.5);
   border-radius: 999px;
   height: 32px;
   overflow: hidden;
@@ -888,8 +1013,8 @@ const executeDelete = async () => {
 .coll-nav-search.open {
   width: 220px;
   background: #fff;
-  border-color: #e2f1ea;
-  box-shadow: 0 2px 8px rgba(0, 161, 154, 0.12);
+  border-color: #e5f4f2;
+  box-shadow: 0 8px 18px rgba(17, 52, 88, 0.12);
 }
 .coll-nav-search-btn {
   width: 30px;
@@ -944,7 +1069,7 @@ const executeDelete = async () => {
   height: 32px;
   border-radius: 50%;
   background: #fff;
-  border: 1.5px solid #eef0f6;
+  border: 1px solid rgba(174, 201, 231, 0.5);
   color: #4a5568;
   font-size: 15px;
   font-weight: 800;
@@ -952,44 +1077,79 @@ const executeDelete = async () => {
   place-items: center;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s;
 }
 .coll-tour-btn:hover,
 .coll-tour-btn:active {
-  background: #f1f5f9;
+  background: #f7fbff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.1);
 }
 
 /* ── Hero block (greeting + Passports + inline stats) ───── */
 .coll-hero {
-  padding: 4px 16px 12px;
+  width: min(100%, 980px);
+  margin: 12px auto 0;
+  padding: 26px 24px 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(242, 250, 255, 0.94) 52%,
+    rgba(236, 255, 249, 0.96) 100%
+  );
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  border-radius: 24px;
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  position: relative;
+  overflow: hidden;
+}
+
+.coll-hero::before {
+  content: '';
+  position: absolute;
+  top: -26px;
+  right: -18px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.12) 0%, transparent 72%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 .coll-hero-eyebrow {
-  font-size: 17px;
-  font-style: italic;
-  color: #1f7a66;
-  letter-spacing: 0.01em;
+  font-size: 12px;
+  font-weight: 800;
+  color: #007e78;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   margin-bottom: 6px;
-  font-family: Georgia, 'Times New Roman', serif;
+  position: relative;
+  z-index: 1;
 }
 .coll-hero-title {
-  font-size: 44px;
+  font-size: 42px;
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  color: #0e2840;
+  color: #1a1535;
   margin: 0 0 10px;
+  position: relative;
+  z-index: 1;
 }
 .coll-hero-stats {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
   font-size: 13px;
-  font-weight: 600;
-  color: #4a5568;
+  font-weight: 700;
+  color: #6b6783;
   letter-spacing: -0.01em;
+  position: relative;
+  z-index: 1;
 }
 .coll-hero-stats .stat-num {
-  color: #0e2840;
+  color: #1a1535;
   font-weight: 800;
   font-feature-settings: 'tnum';
   margin-right: 4px;
@@ -1001,8 +1161,34 @@ const executeDelete = async () => {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #cbd5e1;
+  background: #c0bdcc;
   margin: 0 8px;
+}
+
+@media (max-width: 700px) {
+  .collections-page {
+    padding: 0 10px 24px;
+  }
+
+  .coll-header {
+    width: 100%;
+    border-radius: 16px;
+    top: 0;
+  }
+
+  .coll-hero {
+    width: 100%;
+    padding: 22px 18px 18px;
+    border-radius: 20px;
+  }
+
+  .coll-hero-title {
+    font-size: 34px;
+  }
+
+  .coll-nav-search.open {
+    width: 180px;
+  }
 }
 
 /* ── Resume card ─────────────────────────────────────────── */

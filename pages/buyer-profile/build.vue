@@ -30,263 +30,269 @@
 
     <div class="bp-scroll">
       <!-- ── STEP 1: KYC — Photo ID / Selfie / AML ── -->
-      <div v-if="step === 1" class="bp-step">
-        <div class="bp-step-hero">
-          <div class="bp-step-ic bp-ic-teal">🪪</div>
-          <div class="bp-step-title">Verify your identity</div>
-          <div class="bp-step-body">
-            Show sellers we've checked who you are. Takes about 2 minutes — done once only.
-          </div>
-        </div>
-
-        <!-- ID type picker (prototype-aligned: 3 options before KYC begins) -->
-        <div class="bp-field-label">Which ID will you use?</div>
-        <div class="bp-option-list bp-idtype-list">
-          <div
-            v-for="opt in idTypeOptions"
-            :key="opt.value"
-            class="bp-option-card"
-            :class="{ selected: idDocumentType === opt.value }"
-            @click="idDocumentType = opt.value"
-          >
-            <span class="bp-option-emoji">{{ opt.emoji }}</span>
-            <div class="bp-option-body">
-              <div class="bp-option-title">{{ opt.title }}</div>
-              <div v-if="opt.sub" class="bp-option-sub">{{ opt.sub }}</div>
-            </div>
-            <span v-if="opt.recommended" class="bp-rec-pill">RECOMMENDED</span>
-            <div class="bp-option-check" :class="{ filled: idDocumentType === opt.value }" />
-          </div>
-        </div>
-
-        <!-- Trust strip (DVS-styled, matches prototype dvs-strip) -->
-        <div class="bp-trust">
-          <div class="bp-trust-ic">UK DVS</div>
-          <div>
-            Powered by <strong>Onfido</strong> · Certified under the UK Digital
-            Verification Services Trust Framework · Bank-grade · Data deleted
-            after 90 days.
-          </div>
-        </div>
-
-        <!-- Task 1: Photo ID -->
-        <div
-          class="bp-task"
-          :class="{ active: kycActive === 'id' && !kycIdDone, done: kycIdDone }"
-        >
-          <div class="bp-task-row" @click="setKycActive('id')">
-            <div class="bp-task-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2.5" y="5" width="19" height="14" rx="2" />
-                <circle cx="8" cy="11" r="2.5" />
-                <line x1="13" y1="9" x2="18" y2="9" />
-                <line x1="13" y1="13" x2="18" y2="13" />
-              </svg>
-            </div>
-            <div class="bp-task-body">
-              <div class="bp-task-title">Photo ID</div>
-              <div class="bp-task-meta">
-                {{ kycIdDone ? 'ID matched · ready' : 'Passport or driving licence — front & back' }}
+      <div v-if="step === 1" class="bp-step bp-step--kyc">
+        <div class="bp-kyc-layout">
+          <div class="bp-kyc-left">
+            <div class="bp-step-hero">
+              <div class="bp-step-ic bp-ic-teal">🪪</div>
+              <div class="bp-step-title">Verify your identity</div>
+              <div class="bp-step-body">
+                Show sellers we've checked who you are. Takes about 2 minutes — done once only.
               </div>
             </div>
-            <span class="bp-task-status" :class="kycIdStatusClass">{{ kycIdStatus }}</span>
-          </div>
-          <div v-if="kycActive === 'id' && !kycIdDone" class="bp-task-extras">
-            <div class="bp-id-grid">
+
+            <!-- ID type picker (prototype-aligned: 3 options before KYC begins) -->
+            <div class="bp-field-label">Which ID will you use?</div>
+            <div class="bp-option-list bp-idtype-list">
               <div
-                class="bp-id-tile"
-                :class="{ captured: kycIdFront }"
-                @click.stop="openKycSheet('id-front')"
+                v-for="opt in idTypeOptions"
+                :key="opt.value"
+                class="bp-option-card"
+                :class="{ selected: idDocumentType === opt.value }"
+                @click="idDocumentType = opt.value"
               >
-                <template v-if="!kycIdFront">
-                  <div class="bp-id-side">Front</div>
-                  <div class="bp-id-iconbig">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                      <circle cx="12" cy="13" r="4" />
-                    </svg>
-                  </div>
-                  <div class="bp-id-prompt">Tap to capture front</div>
-                </template>
-                <template v-else>
-                  <div class="bp-id-iconbig bp-id-iconbig--small">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <div class="bp-id-text">
-                    <div class="bp-id-name">Front captured</div>
-                    <div class="bp-id-status">✓ Clear &amp; readable</div>
-                  </div>
-                </template>
-              </div>
-              <div
-                class="bp-id-tile"
-                :class="{ captured: kycIdBack }"
-                @click.stop="openKycSheet('id-back')"
-              >
-                <template v-if="!kycIdBack">
-                  <div class="bp-id-side">Back</div>
-                  <div class="bp-id-iconbig">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                      <circle cx="12" cy="13" r="4" />
-                    </svg>
-                  </div>
-                  <div class="bp-id-prompt">Tap to capture back</div>
-                </template>
-                <template v-else>
-                  <div class="bp-id-iconbig bp-id-iconbig--small">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <div class="bp-id-text">
-                    <div class="bp-id-name">Back captured</div>
-                    <div class="bp-id-status">✓ Clear &amp; readable</div>
-                  </div>
-                </template>
-              </div>
-            </div>
-            <div class="bp-id-pills">
-              <span class="bp-id-pill">🇬🇧 UK Passport</span>
-              <span class="bp-id-pill">🪪 Driving Licence</span>
-              <span class="bp-id-pill">🌍 EU Passport</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Task 2: Selfie -->
-        <div
-          class="bp-task"
-          :class="{ active: kycActive === 'selfie' && !kycSelfieDone, done: kycSelfieDone }"
-        >
-          <div class="bp-task-row" @click="setKycActive('selfie')">
-            <div class="bp-task-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="9" r="4" />
-                <path d="M5 21c0-4 3-7 7-7s7 3 7 7" />
-              </svg>
-            </div>
-            <div class="bp-task-body">
-              <div class="bp-task-title">Selfie · liveness check</div>
-              <div class="bp-task-meta">
-                {{ kycSelfieDone ? 'Liveness confirmed' : '20-second face scan to confirm it\'s you' }}
-              </div>
-            </div>
-            <span class="bp-task-status" :class="kycSelfieStatusClass">{{ kycSelfieStatus }}</span>
-          </div>
-          <div
-            v-if="kycActive === 'selfie' && !kycSelfieDone"
-            class="bp-task-extras"
-          >
-            <div class="bp-selfie-box" @click.stop="runLiveness">
-              <div class="bp-selfie-iconbig">🤳</div>
-              <div class="bp-selfie-prompt">Tap to start face scan</div>
-              <div class="bp-selfie-meta">
-                Look at the camera and follow the on-screen prompts
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Task 3: AML screening -->
-        <div
-          class="bp-task"
-          :class="{ active: kycActive === 'aml' && !kycAmlDone, done: kycAmlDone }"
-        >
-          <div class="bp-task-row" @click="setKycActive('aml')">
-            <div class="bp-task-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-            </div>
-            <div class="bp-task-body">
-              <div class="bp-task-title">AML screening</div>
-              <div class="bp-task-meta">
-                {{ kycAmlDone ? 'Sanctions · PEP · adverse media — all clear' : 'Sanctions, PEP & adverse media — runs automatically' }}
-              </div>
-            </div>
-            <span class="bp-task-status" :class="kycAmlStatusClass">{{ kycAmlStatus }}</span>
-          </div>
-          <div
-            v-if="kycActive === 'aml' && !kycAmlDone"
-            class="bp-task-extras"
-          >
-            <div class="bp-aml-list">
-              <div
-                v-for="(row, i) in amlRows"
-                :key="row.label"
-                class="bp-aml-row"
-                :class="{ checking: amlStep === i, clear: amlStep > i }"
-              >
-                <div class="bp-aml-dot">
-                  <template v-if="amlStep > i">✓</template>
-                  <template v-else>{{ i + 1 }}</template>
+                <span class="bp-option-emoji">{{ opt.emoji }}</span>
+                <div class="bp-option-body">
+                  <div class="bp-option-title">{{ opt.title }}</div>
+                  <div v-if="opt.sub" class="bp-option-sub">{{ opt.sub }}</div>
                 </div>
-                <strong>{{ row.label }}</strong>
+                <span v-if="opt.recommended" class="bp-rec-pill">RECOMMENDED</span>
+                <div class="bp-option-check" :class="{ filled: idDocumentType === opt.value }" />
+              </div>
+            </div>
+
+            <!-- Trust strip (DVS-styled, matches prototype dvs-strip) -->
+            <div class="bp-trust">
+              <div class="bp-trust-ic">UK DVS</div>
+              <div>
+                Powered by <strong>Onfido</strong> · Certified under the UK Digital
+                Verification Services Trust Framework · Bank-grade · Data deleted
+                after 90 days.
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Persona-in-progress banner: shown while the user is in the
-             other tab. Reassures them not to close this tab and offers a
-             manual recheck if polling times out. -->
-        <div v-if="kycPolling && !kycAllDone" class="bp-kyc-pending">
-          <span class="bp-kyc-pending-spinner" />
-          <div class="bp-kyc-pending-body">
-            <div class="bp-kyc-pending-title">
-              Verifying with Persona…
+          <div class="bp-kyc-right">
+            <!-- Task 1: Photo ID -->
+            <div
+              class="bp-task"
+              :class="{ active: kycActive === 'id' && !kycIdDone, done: kycIdDone }"
+            >
+              <div class="bp-task-row" @click="setKycActive('id')">
+                <div class="bp-task-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2.5" y="5" width="19" height="14" rx="2" />
+                    <circle cx="8" cy="11" r="2.5" />
+                    <line x1="13" y1="9" x2="18" y2="9" />
+                    <line x1="13" y1="13" x2="18" y2="13" />
+                  </svg>
+                </div>
+                <div class="bp-task-body">
+                  <div class="bp-task-title">Photo ID</div>
+                  <div class="bp-task-meta">
+                    {{ kycIdDone ? 'ID matched · ready' : 'Passport or driving licence — front & back' }}
+                  </div>
+                </div>
+                <span class="bp-task-status" :class="kycIdStatusClass">{{ kycIdStatus }}</span>
+              </div>
+              <div v-if="kycActive === 'id' && !kycIdDone" class="bp-task-extras">
+                <div class="bp-id-grid">
+                  <div
+                    class="bp-id-tile"
+                    :class="{ captured: kycIdFront }"
+                    @click.stop="openKycSheet('id-front')"
+                  >
+                    <template v-if="!kycIdFront">
+                      <div class="bp-id-side">Front</div>
+                      <div class="bp-id-iconbig">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                      </div>
+                      <div class="bp-id-prompt">Tap to capture front</div>
+                    </template>
+                    <template v-else>
+                      <div class="bp-id-iconbig bp-id-iconbig--small">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <div class="bp-id-text">
+                        <div class="bp-id-name">Front captured</div>
+                        <div class="bp-id-status">✓ Clear &amp; readable</div>
+                      </div>
+                    </template>
+                  </div>
+                  <div
+                    class="bp-id-tile"
+                    :class="{ captured: kycIdBack }"
+                    @click.stop="openKycSheet('id-back')"
+                  >
+                    <template v-if="!kycIdBack">
+                      <div class="bp-id-side">Back</div>
+                      <div class="bp-id-iconbig">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                      </div>
+                      <div class="bp-id-prompt">Tap to capture back</div>
+                    </template>
+                    <template v-else>
+                      <div class="bp-id-iconbig bp-id-iconbig--small">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <div class="bp-id-text">
+                        <div class="bp-id-name">Back captured</div>
+                        <div class="bp-id-status">✓ Clear &amp; readable</div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+                <div class="bp-id-pills">
+                  <span class="bp-id-pill">🇬🇧 UK Passport</span>
+                  <span class="bp-id-pill">🪪 Driving Licence</span>
+                  <span class="bp-id-pill">🌍 EU Passport</span>
+                </div>
+              </div>
             </div>
-            <div class="bp-kyc-pending-sub">
-              Finish the steps in the new tab. We'll pick up the result
-              automatically — keep this tab open.
+
+            <!-- Task 2: Selfie -->
+            <div
+              class="bp-task"
+              :class="{ active: kycActive === 'selfie' && !kycSelfieDone, done: kycSelfieDone }"
+            >
+              <div class="bp-task-row" @click="setKycActive('selfie')">
+                <div class="bp-task-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="9" r="4" />
+                    <path d="M5 21c0-4 3-7 7-7s7 3 7 7" />
+                  </svg>
+                </div>
+                <div class="bp-task-body">
+                  <div class="bp-task-title">Selfie · liveness check</div>
+                  <div class="bp-task-meta">
+                    {{ kycSelfieDone ? 'Liveness confirmed' : '20-second face scan to confirm it\'s you' }}
+                  </div>
+                </div>
+                <span class="bp-task-status" :class="kycSelfieStatusClass">{{ kycSelfieStatus }}</span>
+              </div>
+              <div
+                v-if="kycActive === 'selfie' && !kycSelfieDone"
+                class="bp-task-extras"
+              >
+                <div class="bp-selfie-box" @click.stop="runLiveness">
+                  <div class="bp-selfie-iconbig">🤳</div>
+                  <div class="bp-selfie-prompt">Tap to start face scan</div>
+                  <div class="bp-selfie-meta">
+                    Look at the camera and follow the on-screen prompts
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- Task 3: AML screening -->
+            <div
+              class="bp-task"
+              :class="{ active: kycActive === 'aml' && !kycAmlDone, done: kycAmlDone }"
+            >
+              <div class="bp-task-row" @click="setKycActive('aml')">
+                <div class="bp-task-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                </div>
+                <div class="bp-task-body">
+                  <div class="bp-task-title">AML screening</div>
+                  <div class="bp-task-meta">
+                    {{ kycAmlDone ? 'Sanctions · PEP · adverse media — all clear' : 'Sanctions, PEP & adverse media — runs automatically' }}
+                  </div>
+                </div>
+                <span class="bp-task-status" :class="kycAmlStatusClass">{{ kycAmlStatus }}</span>
+              </div>
+              <div
+                v-if="kycActive === 'aml' && !kycAmlDone"
+                class="bp-task-extras"
+              >
+                <div class="bp-aml-list">
+                  <div
+                    v-for="(row, i) in amlRows"
+                    :key="row.label"
+                    class="bp-aml-row"
+                    :class="{ checking: amlStep === i, clear: amlStep > i }"
+                  >
+                    <div class="bp-aml-dot">
+                      <template v-if="amlStep > i">✓</template>
+                      <template v-else>{{ i + 1 }}</template>
+                    </div>
+                    <strong>{{ row.label }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Persona-in-progress banner: shown while the user is in the
+                 other tab. Reassures them not to close this tab and offers a
+                 manual recheck if polling times out. -->
+            <div v-if="kycPolling && !kycAllDone" class="bp-kyc-pending">
+              <span class="bp-kyc-pending-spinner" />
+              <div class="bp-kyc-pending-body">
+                <div class="bp-kyc-pending-title">
+                  Verifying with Persona…
+                </div>
+                <div class="bp-kyc-pending-sub">
+                  Finish the steps in the new tab. We'll pick up the result
+                  automatically — keep this tab open.
+                </div>
+              </div>
+              <button
+                class="bp-kyc-pending-btn"
+                type="button"
+                :disabled="kycCheckingNow"
+                @click="recheckKycNow"
+              >
+                <span v-if="kycCheckingNow" class="bp-kyc-mini-spinner" />
+                {{ kycCheckingNow ? 'Checking…' : "I've finished" }}
+              </button>
+            </div>
+
+            <!-- Error / decline / needs-review message -->
+            <div v-if="kycError && !kycAllDone" class="bp-kyc-err">
+              <div class="bp-kyc-err-ic">!</div>
+              <div class="bp-kyc-err-body">{{ kycError }}</div>
+              <button
+                v-if="!kycPolling"
+                class="bp-kyc-err-retry"
+                type="button"
+                @click="startBuyerKyc"
+              >
+                Retry
+              </button>
+            </div>
+
+            <!-- KYC verified panel — appears once all 3 tasks pass -->
+            <div v-if="kycAllDone" class="bp-kyc-success">
+              <div class="bp-kyc-success-ic">✓</div>
+              <div class="bp-kyc-success-title">Identity verified</div>
+              <div class="bp-kyc-success-sub">
+                All three checks passed. Auto-continuing in {{ kycCountdown }}s…
+              </div>
+            </div>
+
+            <button
+              class="bp-next"
+              :class="{ disabled: !kycAllDone, ready: kycAllDone }"
+              :disabled="!kycAllDone"
+              @click="goNext"
+            >
+              {{ saving ? 'Saving…' : 'Continue →' }}
+            </button>
           </div>
-          <button
-            class="bp-kyc-pending-btn"
-            type="button"
-            :disabled="kycCheckingNow"
-            @click="recheckKycNow"
-          >
-            <span v-if="kycCheckingNow" class="bp-kyc-mini-spinner" />
-            {{ kycCheckingNow ? 'Checking…' : "I've finished" }}
-          </button>
         </div>
-
-        <!-- Error / decline / needs-review message -->
-        <div v-if="kycError && !kycAllDone" class="bp-kyc-err">
-          <div class="bp-kyc-err-ic">!</div>
-          <div class="bp-kyc-err-body">{{ kycError }}</div>
-          <button
-            v-if="!kycPolling"
-            class="bp-kyc-err-retry"
-            type="button"
-            @click="startBuyerKyc"
-          >
-            Retry
-          </button>
-        </div>
-
-        <!-- KYC verified panel — appears once all 3 tasks pass -->
-        <div v-if="kycAllDone" class="bp-kyc-success">
-          <div class="bp-kyc-success-ic">✓</div>
-          <div class="bp-kyc-success-title">Identity verified</div>
-          <div class="bp-kyc-success-sub">
-            All three checks passed. Auto-continuing in {{ kycCountdown }}s…
-          </div>
-        </div>
-
-        <button
-          class="bp-next"
-          :class="{ disabled: !kycAllDone, ready: kycAllDone }"
-          :disabled="!kycAllDone"
-          @click="goNext"
-        >
-          {{ saving ? 'Saving…' : 'Continue →' }}
-        </button>
 
         <!-- Capture method bottom sheet (ID front/back) -->
         <Teleport to="body">
@@ -354,166 +360,172 @@
       </div>
 
       <!-- ── STEP 2: Tier picker (and funds for Verified/Premium) ── -->
-      <div v-if="step === 2" class="bp-step">
-        <div class="bp-step-hero">
-          <div class="bp-step-ic bp-ic-purple">⭐</div>
-          <div class="bp-step-title">Choose your tier</div>
-          <div class="bp-step-body">
-            Higher tiers add verified credentials sellers and agents look for.
-            One-off payment — no subscription.
-          </div>
-        </div>
-
-        <!-- Tier cards -->
-        <div class="bp-tier-list">
-          <button
-            v-for="t in tierOptions"
-            :key="t.id"
-            type="button"
-            class="bp-tier-card"
-            :class="[
-              t.id.toLowerCase(),
-              {
-                selected: selectedTier === t.id,
-                paid: tierPaidFor === t.id,
-              },
-            ]"
-            @click="selectedTier = t.id"
-          >
-            <span class="bp-tier-corner">{{ t.corner }}</span>
-            <div class="bp-tier-badge" :class="`bp-tier-badge--${t.id.toLowerCase()}`">
-              {{ t.badge }}
+      <div v-if="step === 2" class="bp-step bp-step--tier">
+        <div class="bp-tier-layout">
+          <div class="bp-tier-left">
+            <div class="bp-step-hero">
+              <div class="bp-step-ic bp-ic-purple">⭐</div>
+              <div class="bp-step-title">Choose your tier</div>
+              <div class="bp-step-body">
+                Higher tiers add verified credentials sellers and agents look for.
+                One-off payment — no subscription.
+              </div>
             </div>
-            <div class="bp-tier-title">{{ t.title }}</div>
-            <div class="bp-tier-sub">{{ t.sub }}</div>
-            <div class="bp-tier-price-row">
-              <span class="bp-tier-price">{{ t.priceLabel }}</span>
-              <span v-if="tierPaidFor === t.id" class="bp-tier-paid-pill">✓ Paid</span>
-            </div>
-            <ul class="bp-tier-features">
-              <li v-for="f in t.features" :key="f.text">
-                <span :class="f.included ? 'bp-tier-tick' : 'bp-tier-dash'">
-                  {{ f.included ? '✓' : '○' }}
-                </span>
-                {{ f.text }}
-              </li>
-            </ul>
-          </button>
-        </div>
 
-        <!-- ── Funds verification (only after a paid tier has been confirmed) ── -->
-        <template v-if="needsFundsCapture">
-          <div class="bp-field-label">
-            <span class="bp-funds-step-pill">Next</span>
-            Verify your funds
+            <!-- Tier cards -->
+            <div class="bp-tier-list">
+              <button
+                v-for="t in tierOptions"
+                :key="t.id"
+                type="button"
+                class="bp-tier-card"
+                :class="[
+                  t.id.toLowerCase(),
+                  {
+                    selected: selectedTier === t.id,
+                    paid: tierPaidFor === t.id,
+                  },
+                ]"
+                @click="selectedTier = t.id"
+              >
+                <span class="bp-tier-corner">{{ t.corner }}</span>
+                <div class="bp-tier-badge" :class="`bp-tier-badge--${t.id.toLowerCase()}`">
+                  {{ t.badge }}
+                </div>
+                <div class="bp-tier-title">{{ t.title }}</div>
+                <div class="bp-tier-sub">{{ t.sub }}</div>
+                <div class="bp-tier-price-row">
+                  <span class="bp-tier-price">{{ t.priceLabel }}</span>
+                  <span v-if="tierPaidFor === t.id" class="bp-tier-paid-pill">✓ Paid</span>
+                </div>
+                <ul class="bp-tier-features">
+                  <li v-for="f in t.features" :key="f.text">
+                    <span :class="f.included ? 'bp-tier-tick' : 'bp-tier-dash'">
+                      {{ f.included ? '✓' : '○' }}
+                    </span>
+                    {{ f.text }}
+                  </li>
+                </ul>
+              </button>
+            </div>
           </div>
-          <div class="bp-funds-intro">
-            Pick the source that matches your situation. We use this to confirm
-            your maximum budget with the seller.
-          </div>
-          <div class="bp-option-list">
-            <div
-              v-for="opt in fundsOptions"
-              :key="opt.value"
-              class="bp-funds-card"
-              :class="{ selected: fundsType === opt.value }"
-              @click="selectFunds(opt.value)"
+
+          <div class="bp-tier-right">
+            <!-- ── Funds verification (only after a paid tier has been confirmed) ── -->
+            <template v-if="needsFundsCapture">
+              <div class="bp-field-label">
+                <span class="bp-funds-step-pill">Next</span>
+                Verify your funds
+              </div>
+              <div class="bp-funds-intro">
+                Pick the source that matches your situation. We use this to confirm
+                your maximum budget with the seller.
+              </div>
+              <div class="bp-option-list">
+                <div
+                  v-for="opt in fundsOptions"
+                  :key="opt.value"
+                  class="bp-funds-card"
+                  :class="{ selected: fundsType === opt.value }"
+                  @click="selectFunds(opt.value)"
+                >
+                <div class="bp-funds-row">
+                  <div class="bp-funds-ic">
+                    <span style="font-size: 20px">{{ opt.emoji }}</span>
+                  </div>
+                  <div class="bp-funds-body">
+                    <div class="bp-funds-title">{{ opt.title }}</div>
+                    <div class="bp-funds-meta">{{ opt.sub }}</div>
+                  </div>
+                  <div class="bp-funds-radio" :class="{ filled: fundsType === opt.value }" />
+                </div>
+                <div v-if="fundsType === opt.value" class="bp-funds-extras">
+                  <!-- Uploaded chip -->
+                  <div v-if="fundsUpload" class="bp-uploaded-chip">
+                    <div class="bp-uploaded-ic">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                    </div>
+                    <div class="bp-uploaded-body">
+                      <div class="bp-uploaded-name">{{ fundsUpload.name }}</div>
+                      <div class="bp-uploaded-meta">
+                        <span class="bp-uploaded-check">✓</span> Uploaded · {{ fundsUpload.size }}
+                      </div>
+                    </div>
+                    <div class="bp-uploaded-actions">
+                      <button class="bp-uploaded-btn" title="Replace" @click.stop="openFundsSheet">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="23 4 23 10 17 10" />
+                          <polyline points="1 20 1 14 7 14" />
+                          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                        </svg>
+                      </button>
+                      <button class="bp-uploaded-btn remove" title="Remove" @click.stop="removeFundsUpload">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Uploading progress -->
+                  <div v-else-if="fundsUploading" class="bp-up-progress">
+                    <div class="bp-up-row">
+                      <div class="bp-up-ic">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                          <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                        </svg>
+                      </div>
+                      <div class="bp-up-body">
+                        <div class="bp-up-name">{{ currentFundsLabel }}</div>
+                        <div class="bp-up-meta">Uploading…</div>
+                      </div>
+                    </div>
+                    <div class="bp-up-bar"><div class="bp-up-bar-fill" :style="{ width: fundsUploadPct + '%' }" /></div>
+                  </div>
+                  <!-- Upload zone -->
+                  <div v-else class="bp-upload-zone" @click.stop="openFundsSheet">
+                    <div class="bp-upload-ic">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    </div>
+                    <div class="bp-upload-title">Tap to upload your document</div>
+                    <div class="bp-upload-meta">PDF, JPG or PNG · max 10MB · encrypted</div>
+                  </div>
+                </div>
+              </div>
+              </div>
+
+              <div class="bp-field-label">Maximum budget</div>
+              <div class="bp-budget-wrap">
+                <span class="bp-budget-sign">£</span>
+                <input
+                  type="number"
+                  v-model.number="fundsAmount"
+                  placeholder="350,000"
+                  class="bp-budget-input"
+                  inputmode="numeric"
+                />
+              </div>
+            </template>
+
+            <!-- Dynamic CTA: pay (paid tier, not yet paid) / continue (basic or after payment + funds) -->
+            <button
+              class="bp-next"
+              :class="{ disabled: !step2CanContinue }"
+              :disabled="!step2CanContinue"
+              @click="onStep2Continue"
             >
-            <div class="bp-funds-row">
-              <div class="bp-funds-ic">
-                <span style="font-size: 20px">{{ opt.emoji }}</span>
-              </div>
-              <div class="bp-funds-body">
-                <div class="bp-funds-title">{{ opt.title }}</div>
-                <div class="bp-funds-meta">{{ opt.sub }}</div>
-              </div>
-              <div class="bp-funds-radio" :class="{ filled: fundsType === opt.value }" />
-            </div>
-            <div v-if="fundsType === opt.value" class="bp-funds-extras">
-              <!-- Uploaded chip -->
-              <div v-if="fundsUpload" class="bp-uploaded-chip">
-                <div class="bp-uploaded-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                </div>
-                <div class="bp-uploaded-body">
-                  <div class="bp-uploaded-name">{{ fundsUpload.name }}</div>
-                  <div class="bp-uploaded-meta">
-                    <span class="bp-uploaded-check">✓</span> Uploaded · {{ fundsUpload.size }}
-                  </div>
-                </div>
-                <div class="bp-uploaded-actions">
-                  <button class="bp-uploaded-btn" title="Replace" @click.stop="openFundsSheet">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="23 4 23 10 17 10" />
-                      <polyline points="1 20 1 14 7 14" />
-                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                    </svg>
-                  </button>
-                  <button class="bp-uploaded-btn remove" title="Remove" @click.stop="removeFundsUpload">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                      <path d="M10 11v6M14 11v6" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <!-- Uploading progress -->
-              <div v-else-if="fundsUploading" class="bp-up-progress">
-                <div class="bp-up-row">
-                  <div class="bp-up-ic">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                      <path d="M21 12a9 9 0 1 1-6.2-8.55" />
-                    </svg>
-                  </div>
-                  <div class="bp-up-body">
-                    <div class="bp-up-name">{{ currentFundsLabel }}</div>
-                    <div class="bp-up-meta">Uploading…</div>
-                  </div>
-                </div>
-                <div class="bp-up-bar"><div class="bp-up-bar-fill" :style="{ width: fundsUploadPct + '%' }" /></div>
-              </div>
-              <!-- Upload zone -->
-              <div v-else class="bp-upload-zone" @click.stop="openFundsSheet">
-                <div class="bp-upload-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </div>
-                <div class="bp-upload-title">Tap to upload your document</div>
-                <div class="bp-upload-meta">PDF, JPG or PNG · max 10MB · encrypted</div>
-              </div>
-            </div>
+              {{ step2CtaLabel }}
+            </button>
           </div>
-          </div>
-
-          <div class="bp-field-label">Maximum budget</div>
-          <div class="bp-budget-wrap">
-            <span class="bp-budget-sign">£</span>
-            <input
-              type="number"
-              v-model.number="fundsAmount"
-              placeholder="350,000"
-              class="bp-budget-input"
-              inputmode="numeric"
-            />
-          </div>
-        </template>
-
-        <!-- Dynamic CTA: pay (paid tier, not yet paid) / continue (basic or after payment + funds) -->
-        <button
-          class="bp-next"
-          :class="{ disabled: !step2CanContinue }"
-          :disabled="!step2CanContinue"
-          @click="onStep2Continue"
-        >
-          {{ step2CtaLabel }}
-        </button>
+        </div>
 
         <!-- Funds upload bottom sheet -->
         <Teleport to="body">
@@ -582,192 +594,211 @@
       </div>
 
       <!-- ── STEP 3: Chain position ── -->
-      <div v-if="step === 3" class="bp-step">
-        <div class="bp-step-hero">
-          <div class="bp-step-ic">🔗</div>
-          <div class="bp-step-title">Your chain position</div>
-          <div class="bp-step-body">
-            Chain-free buyers are preferred by 78% of sellers.
-          </div>
-        </div>
-        <div class="bp-option-list">
-          <button
-            v-for="opt in chainOptions"
-            :key="opt.value"
-            class="bp-option-card"
-            :class="{ selected: chainPosition === opt.value }"
-            @click="chainPosition = opt.value"
-          >
-            <div class="bp-option-body">
-              <div class="bp-option-title-row">
-                <span class="bp-option-title">{{ opt.title }}</span>
-                <span v-if="opt.badge" class="bp-best-pill">{{ opt.badge }}</span>
+      <div v-if="step === 3" class="bp-step bp-step--chain">
+        <div class="bp-chain-layout">
+          <div class="bp-chain-left">
+            <div class="bp-step-hero">
+              <div class="bp-step-ic">🔗</div>
+              <div class="bp-step-title">Your chain position</div>
+              <div class="bp-step-body">
+                Chain-free buyers are preferred by 78% of sellers.
               </div>
-              <div class="bp-option-sub">{{ opt.sub }}</div>
             </div>
-            <div class="bp-option-check" :class="{ filled: chainPosition === opt.value }" />
-          </button>
-        </div>
 
-        <!-- Amber context card -->
-        <div class="bp-amber-card">
-          <div class="bp-amber-ic">💡</div>
-          <div>
-            <div class="bp-amber-title">Chain-free buyers</div>
-            <div class="bp-amber-body">
-              Sellers receive 78% fewer complications from chain-free buyers
-              and often prefer them even at a lower offer price.
+            <!-- Amber context card -->
+            <div class="bp-amber-card">
+              <div class="bp-amber-ic">💡</div>
+              <div>
+                <div class="bp-amber-title">Chain-free buyers</div>
+                <div class="bp-amber-body">
+                  Sellers receive 78% fewer complications from chain-free buyers
+                  and often prefer them even at a lower offer price.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <button
-          class="bp-next"
-          :class="{ disabled: !canContinue }"
-          :disabled="!canContinue"
-          @click="goNext"
-        >
-          {{ saving ? 'Saving…' : 'Confirm my position →' }}
-        </button>
+          <div class="bp-chain-right">
+            <div class="bp-option-list">
+              <button
+                v-for="opt in chainOptions"
+                :key="opt.value"
+                class="bp-option-card"
+                :class="{ selected: chainPosition === opt.value }"
+                @click="chainPosition = opt.value"
+              >
+                <div class="bp-option-body">
+                  <div class="bp-option-title-row">
+                    <span class="bp-option-title">{{ opt.title }}</span>
+                    <span v-if="opt.badge" class="bp-best-pill">{{ opt.badge }}</span>
+                  </div>
+                  <div class="bp-option-sub">{{ opt.sub }}</div>
+                </div>
+                <div class="bp-option-check" :class="{ filled: chainPosition === opt.value }" />
+              </button>
+            </div>
+
+            <button
+              class="bp-next"
+              :class="{ disabled: !canContinue }"
+              :disabled="!canContinue"
+              @click="goNext"
+            >
+              {{ saving ? 'Saving…' : 'Confirm my position →' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ── STEP 4: Quick questions (Timeline / Property type / Solicitor) ── -->
-      <div v-if="step === 4" class="bp-step">
-        <div class="bp-step-hero bp-step-hero--narrow">
-          <div class="bp-step-title">A few quick questions</div>
-          <div class="bp-step-body">Helps sellers understand your situation</div>
-        </div>
+      <div v-if="step === 4" class="bp-step bp-step--quick">
+        <div class="bp-quick-layout">
+          <div class="bp-quick-left">
+            <div class="bp-step-hero bp-step-hero--narrow">
+              <div class="bp-step-title">A few quick questions</div>
+              <div class="bp-step-body">Helps sellers understand your situation</div>
+            </div>
 
-        <!-- Timeline -->
-        <div class="bp-sec-label">TIMELINE</div>
-        <div class="bp-chip-row">
-          <button
-            v-for="opt in timelineOptions"
-            :key="opt.value"
-            class="bp-chip"
-            :class="{ active: timeline === opt.value }"
-            @click="timeline = opt.value"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-
-        <!-- Property type -->
-        <div class="bp-sec-label">PROPERTY TYPE</div>
-        <div class="bp-chip-row">
-          <button
-            v-for="opt in propertyTypeOptions"
-            :key="opt.value"
-            class="bp-chip"
-            :class="{ active: propertyType === opt.value }"
-            @click="propertyType = opt.value"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-
-        <!-- Solicitor -->
-        <div class="bp-sec-label">SOLICITOR</div>
-        <div
-          v-if="solicitorStatus === 'yes'"
-          class="bp-sol-card"
-          @click="solicitorStatus = null"
-        >
-          <div class="bp-sol-ic">🏛️</div>
-          <div class="bp-sol-body">
-            <div class="bp-sol-name">Solicitor instructed</div>
-            <div class="bp-sol-sub">Ready to proceed — tap to change</div>
+            <!-- Tip -->
+            <div class="bp-tip">
+              💡 Having a solicitor instructed tells sellers you're serious and
+              legally ready to proceed.
+            </div>
           </div>
-          <span class="bp-sol-pill">✓ INSTRUCTED</span>
-        </div>
-        <div v-else class="bp-sol-options">
-          <button
-            v-for="opt in solicitorOptions"
-            :key="opt.value"
-            class="bp-chip"
-            :class="{ active: solicitorStatus === opt.value }"
-            @click="solicitorStatus = opt.value"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
 
-        <!-- Tip -->
-        <div class="bp-tip">
-          💡 Having a solicitor instructed tells sellers you're serious and
-          legally ready to proceed.
-        </div>
+          <div class="bp-quick-right">
+            <!-- Timeline -->
+            <div class="bp-sec-label">TIMELINE</div>
+            <div class="bp-chip-row">
+              <button
+                v-for="opt in timelineOptions"
+                :key="opt.value"
+                class="bp-chip"
+                :class="{ active: timeline === opt.value }"
+                @click="timeline = opt.value"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
 
-        <button
-          class="bp-next"
-          :class="{ disabled: !canContinue }"
-          :disabled="!canContinue"
-          @click="goNext"
-        >
-          {{ saving ? 'Saving…' : 'Next step →' }}
-        </button>
+            <!-- Property type -->
+            <div class="bp-sec-label">PROPERTY TYPE</div>
+            <div class="bp-chip-row">
+              <button
+                v-for="opt in propertyTypeOptions"
+                :key="opt.value"
+                class="bp-chip"
+                :class="{ active: propertyType === opt.value }"
+                @click="propertyType = opt.value"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+
+            <!-- Solicitor -->
+            <div class="bp-sec-label">SOLICITOR</div>
+            <div
+              v-if="solicitorStatus === 'yes'"
+              class="bp-sol-card"
+              @click="solicitorStatus = null"
+            >
+              <div class="bp-sol-ic">🏛️</div>
+              <div class="bp-sol-body">
+                <div class="bp-sol-name">Solicitor instructed</div>
+                <div class="bp-sol-sub">Ready to proceed — tap to change</div>
+              </div>
+              <span class="bp-sol-pill">✓ INSTRUCTED</span>
+            </div>
+            <div v-else class="bp-sol-options">
+              <button
+                v-for="opt in solicitorOptions"
+                :key="opt.value"
+                class="bp-chip"
+                :class="{ active: solicitorStatus === opt.value }"
+                @click="solicitorStatus = opt.value"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+
+            <button
+              class="bp-next"
+              :class="{ disabled: !canContinue }"
+              :disabled="!canContinue"
+              @click="goNext"
+            >
+              {{ saving ? 'Saving…' : 'Next step →' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ── STEP 5: Your story ── -->
-      <div v-if="step === 5" class="bp-step">
-        <div class="bp-step-hero">
-          <div class="bp-step-ic bp-step-ic--amber">✍️</div>
-          <div class="bp-step-title">
-            Tell your story
-            <span class="bp-optional">(optional)</span>
+      <div v-if="step === 5" class="bp-step bp-step--story">
+        <div class="bp-story-layout">
+          <div class="bp-story-left">
+            <div class="bp-step-hero">
+              <div class="bp-step-ic bp-step-ic--amber">✍️</div>
+              <div class="bp-step-title">
+                Tell your story
+                <span class="bp-optional">(optional)</span>
+              </div>
+              <div class="bp-step-body">
+                A short personal note makes a real difference — sellers often
+                choose buyers they connect with.
+              </div>
+            </div>
+
+            <!-- Prompt chips -->
+            <div class="bp-prompt-row">
+              <button
+                v-for="p in prompts"
+                :key="p"
+                type="button"
+                class="bp-prompt-chip"
+                @click="appendPrompt(p)"
+              >
+                + {{ p }}
+              </button>
+            </div>
           </div>
-          <div class="bp-step-body">
-            A short personal note makes a real difference — sellers often
-            choose buyers they connect with.
+
+          <div class="bp-story-right">
+            <!-- Textarea -->
+            <textarea
+              v-model="statement"
+              class="bp-story-ta"
+              rows="6"
+              placeholder="Write something that shows sellers who you are and why you'd be the perfect owner of their home…"
+            />
+
+            <!-- AI draft card -->
+            <button
+              type="button"
+              class="bp-ai-card"
+              :disabled="aiDrafting"
+              @click="onAiDraft"
+            >
+              <span class="bp-ai-pill">✨ AI</span>
+              <span class="bp-ai-text">
+                {{
+                  aiDrafting
+                    ? 'Drafting…'
+                    : statement.trim()
+                      ? 'Rewrite my story to be warmer and clearer'
+                      : 'Let AI write a compelling story based on your profile'
+                }}
+              </span>
+              <span class="bp-ai-try">Try it ›</span>
+            </button>
+            <div v-if="aiError" class="bp-ai-err">{{ aiError }}</div>
+
+            <button class="bp-generate" :disabled="publishing" @click="submit">
+              {{ publishing ? 'Generating…' : '✓ Generate my Passport' }}
+            </button>
+            <button class="bp-skip-ghost" @click="submit">Skip this step →</button>
           </div>
         </div>
-
-        <!-- Prompt chips -->
-        <div class="bp-prompt-row">
-          <button
-            v-for="p in prompts"
-            :key="p"
-            type="button"
-            class="bp-prompt-chip"
-            @click="appendPrompt(p)"
-          >
-            + {{ p }}
-          </button>
-        </div>
-
-        <!-- Textarea -->
-        <textarea
-          v-model="statement"
-          class="bp-story-ta"
-          rows="6"
-          placeholder="Write something that shows sellers who you are and why you'd be the perfect owner of their home…"
-        />
-
-        <!-- AI draft card -->
-        <button
-          type="button"
-          class="bp-ai-card"
-          :disabled="aiDrafting"
-          @click="onAiDraft"
-        >
-          <span class="bp-ai-pill">✨ AI</span>
-          <span class="bp-ai-text">
-            {{
-              aiDrafting
-                ? 'Drafting…'
-                : statement.trim()
-                  ? 'Rewrite my story to be warmer and clearer'
-                  : 'Let AI write a compelling story based on your profile'
-            }}
-          </span>
-          <span class="bp-ai-try">Try it ›</span>
-        </button>
-        <div v-if="aiError" class="bp-ai-err">{{ aiError }}</div>
-
-        <button class="bp-generate" :disabled="publishing" @click="submit">
-          {{ publishing ? 'Generating…' : '✓ Generate my Passport' }}
-        </button>
-        <button class="bp-skip-ghost" @click="submit">Skip this step →</button>
       </div>
 
       <!-- ── DONE: Celebration screen (prototype `complete`) ── -->
@@ -2724,19 +2755,32 @@ onBeforeUnmount(() => {
  * ════════════════════════════════════════════════════════════════════════ */
 
 .bp-page {
-  background: #fafafa;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   color: #231d45;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 14px 34px;
 }
 
 /* ── Top header → prototype top-nav + eyebrow pill ── */
 .bp-header {
-  background: transparent;
-  border-bottom: none;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  background: rgba(249, 252, 255, 0.92);
+  border: 1px solid rgba(187, 211, 235, 0.58);
+  border-radius: 20px;
   padding: 14px 18px 6px;
   padding-top: calc(14px + env(safe-area-inset-top));
   align-items: center;
+  box-shadow:
+    0 12px 28px rgba(17, 52, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
 }
 .bp-header-body {
   flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -2761,6 +2805,8 @@ onBeforeUnmount(() => {
 
 /* ── 5-segment progress bar → prototype step-bar ── */
 .bp-progress {
+  width: min(100%, 980px);
+  margin: 0 auto;
   background: transparent;
   padding: 10px 22px 4px;
   gap: 4px;
@@ -2776,9 +2822,23 @@ onBeforeUnmount(() => {
   background: linear-gradient(90deg, #00a19a 0%, #E6A23C 100%);
 }
 
+.bp-scroll {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 0 0 42px;
+  overflow-y: auto;
+}
+
 /* ── Step hero → centered, step-icon-box + h2 + p ── */
 .bp-step {
+  margin-top: 10px;
   padding: 22px 22px 32px;
+  border-radius: 24px;
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   animation: bp-fadeSlideUp 0.4s 0.05s both;
 }
 @keyframes bp-fadeSlideUp {
@@ -3296,7 +3356,14 @@ onBeforeUnmount(() => {
 
 /* ── DONE screen (prototype `complete`) ──────────────────────── */
 .bp-complete {
-  padding: 16px 22px 32px;
+  margin-top: 10px;
+  padding: 18px 22px 34px;
+  border-radius: 24px;
+  border: 1px solid rgba(174, 201, 231, 0.48);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
+  box-shadow:
+    0 14px 34px rgba(17, 52, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 .bp-complete-hero {
   text-align: center; padding: 12px 0 16px;
@@ -3454,5 +3521,250 @@ onBeforeUnmount(() => {
   flex: 1; border: none; outline: none; background: transparent;
   padding: 14px 0;
   font-family: inherit; font-size: 16px; font-weight: 700; color: #231d45;
+}
+
+.bp-kyc-layout {
+  display: grid;
+  gap: 14px;
+}
+
+.bp-tier-layout {
+  display: grid;
+  gap: 14px;
+}
+
+.bp-chain-layout,
+.bp-quick-layout,
+.bp-story-layout {
+  display: grid;
+  gap: 14px;
+}
+
+.bp-kyc-left,
+.bp-kyc-right,
+.bp-tier-left,
+.bp-tier-right,
+.bp-chain-left,
+.bp-chain-right,
+.bp-quick-left,
+.bp-quick-right,
+.bp-story-left,
+.bp-story-right {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .bp-step--kyc {
+    padding: 24px;
+  }
+
+  .bp-step--kyc .bp-kyc-layout {
+    grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .bp-step--kyc .bp-kyc-left {
+    position: sticky;
+    top: 122px;
+    border-radius: 18px;
+    border: 1px solid rgba(185, 210, 236, 0.52);
+    background: linear-gradient(170deg, rgba(255, 255, 255, 0.92), rgba(245, 252, 255, 0.9));
+    padding: 16px;
+    box-shadow:
+      0 12px 24px rgba(18, 55, 88, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  .bp-step--kyc .bp-step-hero {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+
+  .bp-step--kyc .bp-step-title {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .bp-step--kyc .bp-step-body {
+    font-size: 13.5px;
+  }
+
+  .bp-step--kyc .bp-trust {
+    margin-bottom: 0;
+  }
+
+  .bp-step--kyc .bp-next {
+    margin-top: 14px;
+  }
+
+  .bp-step--tier {
+    padding: 24px;
+  }
+
+  .bp-step--tier .bp-tier-layout {
+    grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .bp-step--tier .bp-tier-left {
+    position: sticky;
+    top: 122px;
+  }
+
+  .bp-step--tier .bp-step-hero {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+
+  .bp-step--tier .bp-step-title {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .bp-step--tier .bp-step-body {
+    font-size: 13.5px;
+  }
+
+  .bp-step--tier .bp-next {
+    margin-top: 14px;
+  }
+
+  .bp-step--chain,
+  .bp-step--quick {
+    padding: 24px;
+  }
+
+  .bp-step--chain .bp-chain-layout,
+  .bp-step--quick .bp-quick-layout {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .bp-step--chain .bp-chain-left,
+  .bp-step--quick .bp-quick-left {
+    position: sticky;
+    top: 122px;
+  }
+
+  .bp-step--chain .bp-step-hero,
+  .bp-step--quick .bp-step-hero {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+
+  .bp-step--chain .bp-step-title,
+  .bp-step--quick .bp-step-title {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .bp-step--chain .bp-step-body,
+  .bp-step--quick .bp-step-body {
+    font-size: 13.5px;
+  }
+
+  .bp-step--chain .bp-next,
+  .bp-step--quick .bp-next {
+    margin-top: 14px;
+  }
+
+  .bp-step--quick .bp-tip {
+    margin-top: 0;
+  }
+
+  .bp-step--story {
+    padding: 24px;
+  }
+
+  .bp-step--story .bp-story-layout {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .bp-step--story .bp-story-left {
+    position: sticky;
+    top: 122px;
+  }
+
+  .bp-step--story .bp-step-hero {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+
+  .bp-step--story .bp-step-title {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .bp-step--story .bp-step-body {
+    font-size: 13.5px;
+  }
+
+  .bp-step--story .bp-story-ta {
+    min-height: 220px;
+  }
+}
+
+@media (min-width: 900px) {
+  .bp-page {
+    padding: 0 20px 42px;
+  }
+
+  .bp-header {
+    margin-top: 10px;
+    padding: 16px 22px 8px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+  }
+
+  .bp-progress {
+    padding-top: 12px;
+    padding-bottom: 6px;
+  }
+
+  .bp-step,
+  .bp-complete {
+    border-radius: 28px;
+    padding: 26px 28px 36px;
+  }
+
+  .bp-step-title {
+    font-size: 28px;
+    letter-spacing: -0.7px;
+  }
+
+  .bp-step-body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 700px) {
+  .bp-page {
+    padding: 0 10px 28px;
+  }
+
+  .bp-header {
+    border-radius: 16px;
+    padding: 12px 12px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  .bp-progress {
+    padding: 8px 14px 2px;
+  }
+
+  .bp-step,
+  .bp-complete {
+    margin-top: 8px;
+    border-radius: 18px;
+    padding: 18px 14px 24px;
+  }
 }
 </style>
