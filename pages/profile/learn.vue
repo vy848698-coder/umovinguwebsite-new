@@ -15,6 +15,11 @@
     </WebTopNav>
 
     <main class="learn-shell learn-main">
+      <button class="learn-back-btn" type="button" @click="goBack">
+        <span aria-hidden="true">&larr;</span>
+        Back
+      </button>
+
       <section class="learn-hero">
         <div class="learn-hero-copy">
           <p class="learn-eyebrow">Learn and Ask AI</p>
@@ -214,6 +219,8 @@ function askWith(text: string) {
   if (!q) return
   navigateTo(`/profile/chat?prefill=${encodeURIComponent(q)}`)
 }
+
+const goBack = useGoBack('/profile')
 </script>
 
 <style scoped>
@@ -306,6 +313,22 @@ function askWith(text: string) {
 
 .learn-main {
   padding: 22px 0 36px;
+}
+
+.learn-back-btn {
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 14px;
 }
 
 .learn-hero {

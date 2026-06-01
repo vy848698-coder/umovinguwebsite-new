@@ -7,7 +7,7 @@
     <header class="mp-web-nav">
       <div class="mp-shell mp-nav-inner">
         <button class="mp-brand" type="button" @click="navigateTo('/')">
-          <span class="mp-brand-dot" />
+          <img src="/logo.png" alt="" class="mp-brand-logo" />
           <span>umovingu</span>
         </button>
 
@@ -237,7 +237,7 @@ async function submitNotify() {
 </script>
 
 <style scoped>
-:root {
+.mp-page {
   --mp-aqua: #00a19a;
   --mp-blue: #2f9bdf;
   --mp-ink: #1f2b3f;
@@ -328,12 +328,10 @@ async function submitNotify() {
   letter-spacing: -0.4px;
 }
 
-.mp-brand-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(120deg, var(--mp-aqua) 0%, var(--mp-blue) 55%, #4f4ff2 100%);
-  box-shadow: 0 0 0 5px rgba(0, 161, 154, 0.16);
+.mp-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .mp-links {
@@ -880,10 +878,9 @@ async function submitNotify() {
     gap: 8px;
   }
 
-  .mp-brand-dot {
-    width: 14px;
-    height: 14px;
-    box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+  .mp-brand-logo {
+    width: 24px;
+    height: 24px;
   }
 
   .mp-hero-copy {

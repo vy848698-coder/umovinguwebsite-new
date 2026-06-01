@@ -2,7 +2,7 @@
   <header class="webtop-nav">
     <div class="webtop-shell webtop-inner">
       <button class="webtop-brand" type="button" @click="navigateTo('/')">
-        <span class="webtop-brand-dot" />
+        <img src="/logo.png" alt="" class="webtop-brand-logo" />
         <span>umovingu</span>
       </button>
 
@@ -120,12 +120,10 @@ watch(
   letter-spacing: -0.4px;
 }
 
-.webtop-brand-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 55%, #4f4ff2 100%);
-  box-shadow: 0 0 0 5px rgba(0, 161, 154, 0.16);
+.webtop-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .webtop-links {
@@ -277,10 +275,9 @@ watch(
     gap: 8px;
   }
 
-  .webtop-brand-dot {
-    width: 14px;
-    height: 14px;
-    box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+  .webtop-brand-logo {
+    width: 24px;
+    height: 24px;
   }
 }
 </style>

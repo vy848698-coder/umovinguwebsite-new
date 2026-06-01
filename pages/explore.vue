@@ -7,21 +7,36 @@
     <header class="explore-web-nav">
       <div class="explore-web-shell nav-inner">
         <button class="brand" type="button" @click="navigateTo('/')">
-          <span class="brand-dot" />
+          <img src="/logo.png" alt="" class="brand-logo" />
           <span>umovingu</span>
         </button>
 
         <nav class="web-links" aria-label="Explore navigation">
           <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
-          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Properties</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
           <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
+          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">Insights</button>
         </nav>
 
         <div class="web-actions">
-          <button class="web-btn ghost" :class="{ active: navIsActive('/profile') }" type="button" @click="navigateTo('/profile')">Profile</button>
-          <button class="web-btn solid" type="button" @click="startClaimFlow">Claim Passport</button>
+          <button class="web-icon-btn" type="button" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .53-.21 1.04-.59 1.41L4 17h5" />
+              <path d="M10 17a2 2 0 0 0 4 0" />
+            </svg>
+          </button>
+          <button class="web-profile-chip" :class="{ active: navIsActive('/profile') }" type="button" @click="navigateTo('/profile')">
+            <span class="web-profile-avatar">{{ (profile?.firstName?.[0] || 'V') + (profile?.lastName?.[0] || 'K') }}</span>
+            <span class="web-profile-meta">
+              <strong>{{ profile?.firstName || 'Vivek Kumar' }}</strong>
+              <small>Seller Mode</small>
+            </span>
+          </button>
+          <button class="web-btn solid add-property" type="button" @click="startClaimFlow">
+            <span>+</span>
+            <span>Add Property</span>
+          </button>
         </div>
 
         <button
@@ -45,18 +60,251 @@
         />
         <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
           <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
-          <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Passport</button>
+          <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Properties</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="goMobile('/marketplace')">Marketplace</button>
           <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="goMobile('/profile/learn')">Learn</button>
+          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">Insights</button>
           <button type="button" :class="{ active: navIsActive('/profile') }" @click="goMobile('/profile')">Profile</button>
-          <button type="button" class="claim" @click="goMobileClaim">Claim Passport</button>
+          <button type="button" class="claim" @click="goMobileClaim">Add Property</button>
         </div>
       </div>
     </header>
 
     <div class="explore-web-shell explore-stage" :class="{ 'is-ready': pageReady }">
-      <div class="explore-hero">
+      <section class="web-dashboard-top" aria-label="Explore dashboard overview">
+        <div class="web-dashboard-main">
+          <article class="web-property-spotlight">
+            <div class="web-spotlight-media">
+              <PropertyImage
+                :src="passports[0]?.imageUrl || properties[0]?.imageUrl || properties[0]?.image || '/images/uk-houses/house-1.jpg'"
+                :alt="passports[0]?.address || passports[0]?.addressLine1 || 'Property image'"
+                :show-caption="false"
+                class="web-spotlight-img"
+              />
+              <button class="web-media-btn" type="button" @click="passports.length ? navigateTo('/passportview/' + passports[0].id) : navigateTo('/explore')">
+                View Property Details
+              </button>
+            </div>
+
+            <div class="web-spotlight-body">
+              <p class="web-tag">Property Passport</p>
+              <h1>{{ passports[0]?.address || passports[0]?.addressLine1 || 'Your Property Hub' }}</h1>
+              <p class="web-address-sub">{{ passports[0]?.postcode || userPostcode || 'Set your postcode to personalize results' }}</p>
+              <p class="web-spotlight-copy">
+                Complete your Property Passport to unlock insights, boost trust, and showcase your property with confidence.
+              </p>
+
+              <div class="web-progress-row">
+                <span>{{ passports[0]?.completionPercentage ?? 0 }}% complete</span>
+                <span>{{ passports.length ? 'Passport active' : 'No passport yet' }}</span>
+              </div>
+              <div class="web-progress-track">
+                <div class="web-progress-fill" :style="{ width: `${passports[0]?.completionPercentage ?? 0}%` }" />
+              </div>
+
+              <div class="web-spotlight-actions">
+                <button class="web-primary" type="button" @click="startClaimFlow">Continue Passport</button>
+                <button class="web-secondary" type="button" @click="navigateTo('/homescore')">Run HomeScore</button>
+              </div>
+            </div>
+          </article>
+
+          <div class="web-kpi-row" aria-label="Portfolio summary">
+            <article>
+              <div class="web-kpi-top"><i>📁</i><strong>{{ activePassportCount }}</strong></div>
+              <span>Active Passports</span>
+            </article>
+            <article>
+              <div class="web-kpi-top"><i>🏘️</i><strong>{{ availableFeedCount }}</strong></div>
+              <span>Properties in Feed</span>
+            </article>
+            <article>
+              <div class="web-kpi-top"><i>🟢</i><strong>{{ passportScore }}</strong></div>
+              <span>Avg. HomeScore</span>
+            </article>
+            <article>
+              <div class="web-kpi-top"><i>💷</i><strong>£425,000</strong></div>
+              <span>Est. Property Value</span>
+            </article>
+          </div>
+
+          <div class="web-feature-grid" aria-label="Service cards">
+            <article class="web-feature-card homescore">
+              <div class="web-feature-head">
+                <h3><img src="/op-icons/search.svg" alt="" class="web-feature-icon" />HomeScore</h3>
+                <span>Free</span>
+              </div>
+              <p>Get a comprehensive score for your property.</p>
+              <div class="web-feature-body homescore-layout">
+                <div class="web-score-ring" :style="{ '--score': `${dashboardHomeScore}` }">
+                  <div class="web-score-ring-inner">
+                    <strong>{{ dashboardHomeScore }}</strong>
+                    <span>/100</span>
+                  </div>
+                </div>
+                <ul class="web-feature-points hs">
+                  <li>Energy & running costs</li>
+                  <li>Sold history & estimate</li>
+                  <li>Area comparison</li>
+                </ul>
+              </div>
+              <button type="button" @click="navigateTo('/homescore')">Run a HomeScore <span>→</span></button>
+            </article>
+
+            <article class="web-feature-card passport">
+              <div class="web-feature-head">
+                <h3><img src="/op-icons/passportview/umu-passport.png" alt="" class="web-feature-icon" />Property Passport</h3>
+                <span>Solicitor-grade</span>
+              </div>
+              <p>Build trust with verified, organised property data.</p>
+              <div class="web-feature-body passport-layout">
+                <div class="web-passport-book">
+                  <img src="/op-icons/passportview/umu-passport.png" alt="Property passport" />
+                </div>
+                <ul class="web-feature-points pp">
+                  <li>Sells 12 weeks faster on average</li>
+                  <li>No survey shocks</li>
+                  <li>No title surprises</li>
+                  <li>No 12-week wait</li>
+                </ul>
+              </div>
+              <button type="button" @click="startClaimFlow">See a sample Passport <span>→</span></button>
+            </article>
+          </div>
+
+          <div class="web-recommended" aria-label="Recommended services">
+            <div class="web-reco-head">
+              <h4>Recommended for you</h4>
+            </div>
+            <div class="web-reco-grid">
+              <button type="button" @click="navigateTo('/marketplace')">
+                <span class="web-reco-icon"><img src="/op-icons/goodEnergy.svg" alt="" /></span>
+                <span class="web-reco-copy">
+                  <strong>Book a Gas Safety Check</strong>
+                  <small>From £79</small>
+                  <em>Cert lands in your Passport</em>
+                </span>
+                <span class="web-reco-arrow">›</span>
+              </button>
+              <button type="button" @click="navigateTo('/marketplace')">
+                <span class="web-reco-icon"><img src="/op-icons/house.svg" alt="" /></span>
+                <span class="web-reco-copy">
+                  <strong>Property Survey</strong>
+                  <small>From £299</small>
+                  <em>RICS certified surveyors</em>
+                </span>
+                <span class="web-reco-arrow">›</span>
+              </button>
+              <button type="button" @click="navigateTo('/marketplace')">
+                <span class="web-reco-icon"><img src="/op-icons/User-Code.svg" alt="" /></span>
+                <span class="web-reco-copy">
+                  <strong>Solicitor Quote</strong>
+                  <small>From £250</small>
+                  <em>Fixed-fee conveyancing</em>
+                </span>
+                <span class="web-reco-arrow">›</span>
+              </button>
+              <button type="button" @click="navigateTo('/marketplace')">
+                <span class="web-reco-icon"><img src="/op-icons/Home-Search.svg" alt="" /></span>
+                <span class="web-reco-copy">
+                  <strong>Mortgage Advice</strong>
+                  <small>Free</small>
+                  <em>Compare trusted advisors</em>
+                </span>
+                <span class="web-reco-plus">+</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="web-dashboard-side">
+          <article class="web-quick-actions">
+            <h3>Quick actions</h3>
+            <button type="button" @click="navigateTo('/homescore')"><span><img src="/op-icons/search.svg" alt="" /><span><strong>Run HomeScore</strong><small>Get instant property score</small></span></span><span>→</span></button>
+            <button type="button" @click="navigateTo('/passport/collections')"><span><img src="/op-icons/passportview/umu-passport.png" alt="" /><span><strong>Upload Documents</strong><small>Add or manage property docs</small></span></span><span>→</span></button>
+            <button type="button" @click="navigateTo('/explore')"><span><img src="/op-icons/Home-Search.svg" alt="" /><span><strong>Compare Area</strong><small>Explore local insights</small></span></span><span>→</span></button>
+            <button type="button" @click="navigateTo('/marketplace')"><span><img src="/op-icons/Building-Community.svg" alt="" /><span><strong>Book a Service</strong><small>Find trusted professionals</small></span></span><span>→</span></button>
+          </article>
+
+          <article class="web-progress-panel">
+            <p>Your progress</p>
+            <div class="web-progress-score">
+              <strong>{{ passports[0]?.completionPercentage ?? 0 }}%</strong>
+              <span>Complete</span>
+            </div>
+            <button type="button" @click="startClaimFlow">Continue Passport</button>
+          </article>
+
+          <article class="web-activity-panel">
+            <div class="web-activity-head">
+              <h4>Activity</h4>
+              <button type="button" @click="navigateTo('/passport/collections')">View all</button>
+            </div>
+            <div class="web-activity-list">
+              <div>
+                <strong>Property added</strong>
+                <span>{{ passports[0]?.addressLine1 || passports[0]?.address || 'No property yet' }}</span>
+                <em>2 days ago</em>
+              </div>
+              <div>
+                <strong>HomeScore pending</strong>
+                <span>Run your first score to unlock insights</span>
+                <em>Pending</em>
+              </div>
+              <div>
+                <strong>Passport incomplete</strong>
+                <span>{{ passports[0]?.completionPercentage ?? 0 }}% completed</span>
+                <em>{{ passports[0]?.completionPercentage ?? 0 }}%</em>
+              </div>
+              <div>
+                <strong>Documents</strong>
+                <span>Add docs to strengthen trust</span>
+                <em>Pending</em>
+              </div>
+            </div>
+          </article>
+        </aside>
+      </section>
+
+      <footer class="web-dashboard-footer">
+        <div class="web-footer-grid">
+          <div class="web-footer-intro">
+            <div class="web-footer-brand">
+              <img src="/logo.png" alt="" />
+              <strong>umovingu</strong>
+            </div>
+            <span class="web-footer-chip">Built for UK property journeys</span>
+            <p>
+              Professional property intelligence for sellers, buyers, and landlords.
+              Start with HomeScore and progress with confidence.
+            </p>
+            <button type="button" class="web-footer-cta" @click="navigateTo('/homescore')">Run a HomeScore check</button>
+          </div>
+
+          <div class="web-footer-col">
+            <h5><span class="footer-hicon footer-hicon--product" aria-hidden="true" />Product</h5>
+            <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport/collections')">Property Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          </div>
+
+          <div class="web-footer-col">
+            <h5><span class="footer-hicon footer-hicon--legal" aria-hidden="true" />Legal</h5>
+            <button type="button" @click="navigateTo('/legal/privacy')">Privacy</button>
+            <button type="button" @click="navigateTo('/legal/terms')">Terms</button>
+            <button type="button" @click="navigateTo('/legal/cookies')">Cookies</button>
+          </div>
+
+          <div class="web-footer-col">
+            <h5><span class="footer-hicon footer-hicon--account" aria-hidden="true" />Account</h5>
+            <button type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+            <button type="button" @click="navigateTo('/onboarding/signup')">Create account</button>
+          </div>
+        </div>
+        <div class="web-footer-bottom">© 2026 UMU. All rights reserved.</div>
+      </footer>
+
+      <div v-if="showLegacyExploreLayout" class="explore-hero">
       <div class="hero-row1">
         <div class="hero-copy-stack">
           <div class="explore-greeting-sub">{{ greeting }}</div>
@@ -255,7 +503,7 @@
       </div>
     </div>
 
-      <div class="explore-scroll" :class="{ 'search-mode': searchMode }">
+      <div v-if="showLegacyExploreLayout" class="explore-scroll" :class="{ 'search-mode': searchMode }">
       <!-- ── Search Results Mode ── -->
       <template v-if="searchMode">
         <div class="search-back-row">
@@ -1616,7 +1864,7 @@
       </div>
     </div>
 
-    <footer class="explore-footer">
+    <footer v-if="showLegacyExploreLayout" class="explore-footer">
       <div class="explore-web-shell explore-footer-grid">
         <div class="footer-intro">
           <div class="footer-brand">
@@ -1937,6 +2185,7 @@ const { profile, fetchProfile } = useProfile()
 const route = useRoute()
 const pageReady = ref(false)
 const mobileNavOpen = ref(false)
+const showLegacyExploreLayout = ref(false)
 
 const navIsActive = (basePath: string) =>
   route.path === basePath || route.path.startsWith(`${basePath}/`)
@@ -2285,6 +2534,17 @@ const greeting = computed(() => {
 const passportScore = computed(() => {
   const pct = passports.value[0]?.completionPercentage
   return typeof pct === 'number' ? pct : 0
+})
+
+const dashboardHomeScore = computed(() => {
+  const primary = properties.value[0] as any
+  const score =
+    primary?.HomeScore ??
+    primary?.homeScore ??
+    primary?.epcScore ??
+    passports.value[0]?.homeScore
+  if (typeof score === 'number') return Math.max(0, Math.min(100, Math.round(score)))
+  return 74
 })
 
 const passportDashoffset = computed(() =>
@@ -4944,7 +5204,7 @@ onMounted(async () => {
   top: 0;
   z-index: 40;
   backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.9);
   border-bottom: 1px solid rgba(28, 43, 65, 0.08);
 }
 
@@ -4969,12 +5229,10 @@ onMounted(async () => {
   cursor: pointer;
 }
 
-.brand-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 55%, var(--fx-indigo) 100%);
-  box-shadow: 0 0 0 5px rgba(0, 161, 154, 0.16);
+.brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .web-links {
@@ -4999,14 +5257,944 @@ onMounted(async () => {
 }
 
 .web-links button.active {
-  background: linear-gradient(120deg, rgba(0, 161, 154, 0.14) 0%, rgba(47, 155, 223, 0.14) 100%);
-  color: #153457;
-  box-shadow: inset 0 0 0 1px rgba(44, 125, 203, 0.18);
+  background: rgba(0, 161, 154, 0.1);
+  color: #00857f;
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.web-dashboard-top {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 338px;
+  gap: 12px;
+}
+
+.web-dashboard-main {
+  display: grid;
+  gap: 14px;
+}
+
+.web-property-spotlight {
+  border: 1px solid #d8e3ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(19, 45, 78, 0.08);
+  display: grid;
+  grid-template-columns: 308px minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.web-spotlight-media {
+    background: #f4f8fc;
+    position: relative;
+    min-height: 240px;
+  }
+
+  .web-spotlight-img {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    min-width: 100%;
+  }
+
+.web-media-btn {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(3, 13, 33, 0.62);
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.web-spotlight-body {
+  padding: 18px 20px;
+}
+
+.web-tag {
+  margin: 0;
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #dff6f2;
+  color: #0f756f;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.web-spotlight-body h1 {
+  margin: 8px 0 0;
+  font-size: 46px;
+  line-height: 1.05;
+  letter-spacing: -0.6px;
+  color: #152942;
+}
+
+.web-address-sub {
+  margin: 6px 0 0;
+  color: #526784;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.web-spotlight-copy {
+  margin: 12px 0;
+  color: #5f7391;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 62ch;
+}
+
+.web-progress-row {
+  display: flex;
+  justify-content: space-between;
+  color: #41506b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.web-progress-track {
+  margin-top: 8px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #e8f2fb;
+  overflow: hidden;
+}
+
+.web-progress-fill {
+  height: 100%;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
+  transition: width 0.24s ease;
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.web-primary,
+.web-secondary {
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.web-primary {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
+}
+
+.web-secondary {
+  border: 1px solid #d3deea;
+  color: #1f2b3f;
+  background: #fff;
+}
+
+.web-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.web-kpi-row article {
+  border: 1px solid #d8e3ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.web-kpi-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.web-kpi-top i {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef5ff;
+  font-style: normal;
+  font-size: 15px;
+}
+
+.web-kpi-row strong {
+  display: block;
+  font-size: 34px;
+  line-height: 1;
+  color: #172f4c;
+}
+
+.web-kpi-row span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #627791;
+  font-weight: 700;
+}
+
+.web-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.web-feature-card {
+  border: 1px solid #d8e3ee;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+}
+
+.web-feature-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.web-feature-head h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 17px;
+  color: #172f4c;
+}
+
+.web-feature-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+}
+
+.web-feature-card.homescore .web-feature-head span {
+  color: #087e78;
+  background: #e5f6f3;
+}
+
+.web-feature-card.passport .web-feature-head span {
+  color: #6d47b2;
+  background: #efe7ff;
+}
+
+.web-feature-card p {
+  margin: 10px 0;
+  color: #617690;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.web-feature-body {
+  margin: 10px 0 12px;
+}
+
+.homescore-layout {
+  display: grid;
+  grid-template-columns: 142px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.web-score-ring {
+  --score: 74;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: conic-gradient(#27a86b calc(var(--score) * 1%), #e4edf6 0);
+  display: grid;
+  place-items: center;
+  margin-left: 6px;
+}
+
+.web-score-ring-inner {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px #e1eaf3;
+}
+
+.web-score-ring-inner strong {
+  font-size: 38px;
+  line-height: 0.9;
+  color: #0f2440;
+  letter-spacing: -0.8px;
+}
+
+.web-score-ring-inner span {
+  margin-top: 2px;
+  font-size: 22px;
+  line-height: 0.95;
+  color: #324a68;
+  font-weight: 700;
+}
+
+.passport-layout {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.web-passport-book {
+  width: 96px;
+  height: 112px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #1d3760 0%, #192c4f 100%);
+  border: 1px solid #38547e;
+  display: grid;
+  place-items: center;
+  transform: rotate(-9deg);
+  box-shadow: 0 14px 20px rgba(15, 34, 62, 0.22);
+  margin-left: 10px;
+}
+
+.web-passport-book img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+}
+
+.web-feature-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.web-feature-points li {
+  font-size: 14px;
+  color: #1f3351;
+  font-weight: 600;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.web-feature-points li::before {
+  content: '✓';
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.web-feature-points.hs li::before {
+  background: #27a86b;
+  color: #fff;
+}
+
+.web-feature-points.pp li::before {
+  background: #4f2f92;
+  color: #fff;
+}
+
+.web-feature-card button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.web-feature-card button span {
+  line-height: 1;
+}
+
+.web-feature-card.homescore button {
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
+  color: #fff;
+}
+
+.web-feature-card.passport button {
+  background: linear-gradient(120deg, #6034b6 0%, #42258b 100%);
+  color: #fff;
+}
+
+.web-recommended {
+  border: 1px solid #d8e3ee;
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+}
+
+.web-reco-head h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #172f4c;
+}
+
+.web-reco-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.web-reco-grid button {
+  border: 1px solid #dbe7f3;
+  border-radius: 10px;
+  background: #fff;
+  padding: 12px;
+  color: #233a5a;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 72px;
+}
+
+.web-reco-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b37a3, #159a99);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 12px rgba(28, 53, 96, 0.16);
+}
+
+.web-reco-grid button:nth-child(1) .web-reco-icon {
+  background: linear-gradient(135deg, #4c46b6, #2f53cc);
+}
+
+.web-reco-grid button:nth-child(2) .web-reco-icon {
+  background: linear-gradient(135deg, #5a4dd8, #2f55cc);
+}
+
+.web-reco-grid button:nth-child(3) .web-reco-icon,
+.web-reco-grid button:nth-child(4) .web-reco-icon {
+  background: linear-gradient(135deg, #3aa5a3, #0f8887);
+}
+
+.web-reco-icon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.web-reco-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.web-reco-copy strong {
+  font-size: 13px;
+  color: #132745;
+  line-height: 1.25;
+}
+
+.web-reco-copy small {
+  color: #4f6482;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.web-reco-copy em {
+  color: #60748f;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.web-reco-arrow,
+.web-reco-plus {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #d9e4ef;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2e4666;
+  margin-top: 0;
+  font-size: 14px;
+  line-height: 1;
+  align-self: center;
+}
+
+.web-quick-actions,
+.web-progress-panel {
+  border: 1px solid #d8e3ee;
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+}
+
+.web-quick-actions h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #172f4c;
+}
+
+.web-quick-actions button {
+  width: 100%;
+  border: 1px solid #e1e9f2;
+  background: #fbfdff;
+  color: #1f2b3f;
+  border-radius: 10px;
+  padding: 10px 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.web-quick-actions button > span:first-child {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 8px;
+  gap: 2px;
+  text-align: left;
+}
+
+.web-quick-actions button > span:first-child > span {
+  display: grid;
+  gap: 2px;
+}
+
+.web-quick-actions button img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.web-quick-actions button strong {
+  font-size: 13px;
+  color: #1c3251;
+}
+
+.web-quick-actions button small {
+  font-size: 11px;
+  color: #6c7f98;
+  font-weight: 600;
+}
+
+.web-progress-panel {
+  background: linear-gradient(135deg, #051733 0%, #083260 100%);
+  color: #e9f5ff;
+}
+
+.web-progress-panel p {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.web-progress-score {
+  margin: 10px 0 12px;
+}
+
+.web-progress-score strong {
+  display: block;
+  font-size: 38px;
+  line-height: 1;
+}
+
+.web-progress-score span {
+  font-size: 12px;
+  opacity: 0.86;
+}
+
+.web-progress-panel button {
+  width: 100%;
+  border: 1px solid rgba(198, 220, 244, 0.24);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.web-activity-panel {
+  border: 1px solid #d8e3ee;
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+}
+
+.web-activity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.web-activity-head h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #172f4c;
+}
+
+.web-activity-head button {
+  border: 0;
+  background: transparent;
+  color: #0d7f79;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.web-activity-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+.web-activity-list div {
+  border: 1px solid #e2ebf4;
+  border-radius: 10px;
+  padding: 9px 10px;
+  position: relative;
+}
+
+.web-activity-list strong {
+  display: block;
+  font-size: 13px;
+  color: #1f2b3f;
+}
+
+.web-activity-list span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: #617690;
+}
+
+.web-activity-list em {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-style: normal;
+  font-size: 10px;
+  color: #8ea0b8;
+  font-weight: 700;
 }
 
 .web-actions {
   display: inline-flex;
   gap: 8px;
+  align-items: center;
+}
+
+.web-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #3c516e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.web-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.web-profile-chip {
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  border-radius: 999px;
+  height: 38px;
+  padding: 0 12px 0 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e2b41;
+  cursor: pointer;
+}
+
+.web-profile-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(138, 169, 216, 0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #2c496a;
+}
+
+.web-profile-meta {
+  display: grid;
+  text-align: left;
+  line-height: 1.05;
+}
+
+.web-profile-meta strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.web-profile-meta small {
+  font-size: 10px;
+  color: #6e8099;
+  font-weight: 600;
+}
+
+.web-btn.add-property {
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
+.web-dashboard-footer {
+  margin-top: 20px;
+  padding: 40px 0 0;
+  border-top: 1px solid rgba(30, 47, 71, 0.12);
+  background:
+    radial-gradient(circle at 86% 18%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 46%),
+    linear-gradient(180deg, rgba(247, 252, 255, 0.96), rgba(236, 246, 252, 0.98));
+  backdrop-filter: blur(10px);
+}
+
+.web-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.web-footer-brand img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.web-footer-brand strong {
+  font-size: 20px;
+  color: #1c2d44;
+  letter-spacing: -0.4px;
+}
+
+.web-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(182, 203, 228, 0.55);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 20px 36px rgba(30, 58, 92, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.web-footer-intro {
+  display: grid;
+  gap: 10px;
+}
+
+.web-footer-chip {
+  justify-self: start;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #0f756f;
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  background: rgba(230, 252, 249, 0.95);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-weight: 800;
+}
+
+.web-footer-intro p {
+  margin: 0;
+  color: #5b7192;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.web-footer-col {
+  display: grid;
+  align-content: start;
+}
+
+.web-footer-col h5 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.web-footer-grid h5 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #1f3450;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+}
+
+.web-footer-grid button {
+  appearance: none;
+  border: 0;
+  display: block;
+  background: transparent;
+  color: #50637f;
+  padding: 0;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.web-footer-grid button:hover {
+  color: #113352;
+}
+
+.web-footer-cta {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
+  box-shadow: 0 10px 18px rgba(30, 128, 196, 0.24);
+  cursor: pointer;
+}
+
+.web-footer-bottom {
+  margin-top: 14px;
+  padding: 12px 0 20px;
+  border-top: 1px solid rgba(30, 47, 71, 0.11);
+  color: #60748f;
+  font-size: 12px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .web-footer-grid button:hover {
+    transform: translateX(1px);
+  }
+
+  .web-footer-cta:hover {
+    box-shadow: 0 10px 18px rgba(30, 128, 196, 0.22);
+    transform: translateY(-1px);
+  }
+}
+
+.web-footer-cta:focus-visible {
+  outline: 2px solid rgba(29, 137, 197, 0.5);
+  outline-offset: 2px;
+}
+
+.web-profile-chip.active {
+  border-color: rgba(0, 161, 154, 0.34);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.12);
+}
+
+.web-icon-btn:hover,
+.web-profile-chip:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.web-icon-btn:focus-visible,
+.web-profile-chip:focus-visible,
+.web-links button:focus-visible {
+  outline: 2px solid rgba(29, 137, 197, 0.5);
+  outline-offset: 2px;
+}
+
+.web-icon-btn,
+.web-profile-chip,
+.web-links button {
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.web-footer-cta,
+.web-footer-grid button,
+.web-icon-btn,
+.web-profile-chip,
+.web-links button {
+  font-family: inherit;
+}
+
+.web-footer-bottom,
+.web-footer-intro p,
+.web-footer-grid button {
+  color: #586a83;
+}
+
+.web-footer-grid h5,
+.web-footer-brand strong,
+.brand,
+.web-profile-chip {
+  color: #1e2b41;
+}
+
+.web-links button.active {
+  color: #00857f;
 }
 
 .web-mobile-toggle {
@@ -5705,6 +6893,64 @@ onMounted(async () => {
     display: none;
   }
 
+  .web-dashboard-top {
+    grid-template-columns: 1fr;
+  }
+
+  .web-dashboard-footer {
+    margin-top: 12px;
+    padding-top: 24px;
+  }
+
+  .web-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .web-footer-brand strong {
+    font-size: 18px;
+  }
+
+  .web-footer-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .web-footer-bottom {
+    margin-top: 14px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .web-property-spotlight {
+    grid-template-columns: 1fr;
+  }
+
+  .web-spotlight-media {
+    min-height: 190px;
+  }
+
+  .web-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .web-feature-grid,
+  .web-reco-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .homescore-layout,
+  .passport-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .web-score-ring,
+  .web-passport-book {
+    margin-left: 0;
+    justify-self: center;
+  }
+
   .web-mobile-toggle {
     display: inline-flex;
   }
@@ -5795,12 +7041,12 @@ onMounted(async () => {
   .brand {
     font-size: 14px;
     gap: 8px;
+    color: #fff;
   }
 
-  .brand-dot {
-    width: 14px;
-    height: 14px;
-    box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+  .brand-logo {
+    width: 24px;
+    height: 24px;
   }
 
   .explore-title {
@@ -5856,6 +7102,23 @@ onMounted(async () => {
 }
 
 @media (max-width: 640px) {
+  .web-kpi-row {
+    grid-template-columns: 1fr;
+  }
+
+  .web-spotlight-body h1 {
+    font-size: 30px;
+  }
+
+  .web-spotlight-actions {
+    flex-direction: column;
+  }
+
+  .web-primary,
+  .web-secondary {
+    width: 100%;
+  }
+
   .hero-row1 {
     align-items: flex-start;
   }
