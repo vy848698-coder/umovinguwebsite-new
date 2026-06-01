@@ -58,15 +58,14 @@
     <div class="explore-web-shell explore-stage" :class="{ 'is-ready': pageReady }">
       <div class="explore-hero">
       <div class="hero-row1">
-        <div>
+        <div class="hero-copy-stack">
           <div class="explore-greeting-sub">{{ greeting }}</div>
           <div class="explore-title">Explore</div>
+          <p class="explore-lede">
+            A web-first property workspace to search, compare, and move from interest to verified Passport.
+          </p>
         </div>
         <div style="display: flex; align-items: center; gap: 10px">
-          <!-- The New / Returning toggle was removed. The "New" view is now
-               shown automatically on the user's first ever visit to Explore
-               (gated by the `umu_explore_visited_v1` flag set in onMounted);
-               every visit after that lands them on the Returning view. -->
           <button
             class="explore-tour-btn"
             aria-label="Take a quick tour"
@@ -109,8 +108,6 @@
           @keyup.enter="doSearch"
           @blur="showDropdown = false"
         />
-        <!-- Unified distance + filters pill (prototype's .exp-dist-btn).
-             Replaces the old radius-pill row + separate Filters button. -->
         <button
           class="exp-dist-btn"
           :class="{ 'has-filters': hasAnyFilters }"
@@ -225,9 +222,40 @@
         </span>
         <button class="fs-clear" @click="clearAllFilters">Clear all</button>
       </div>
+
+      <div class="hero-meta-grid">
+        <article class="hero-meta-card">
+          <p class="hero-meta-eyebrow">Explore Workspace</p>
+          <h2>Built for desktop decision-making</h2>
+          <p>
+            Move from search to readiness with side-by-side cards, clearer market context,
+            and quick paths into HomeScore, Passport, and matched properties.
+          </p>
+          <div class="hero-quick-links">
+            <button type="button" @click="navigateTo('/homescore')">Run HomeScore</button>
+            <button type="button" @click="navigateTo('/passport/collections')">Open Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Browse Marketplace</button>
+          </div>
+        </article>
+
+        <aside class="hero-kpi-grid" aria-label="Explore highlights">
+          <article class="hero-kpi">
+            <strong>{{ activePassportCount }}</strong>
+            <span>Active Passports</span>
+          </article>
+          <article class="hero-kpi">
+            <strong>{{ availableFeedCount }}</strong>
+            <span>Properties In Feed</span>
+          </article>
+          <article class="hero-kpi">
+            <strong>{{ roleLabel }}</strong>
+            <span>Your Journey Mode</span>
+          </article>
+        </aside>
+      </div>
     </div>
 
-      <div class="explore-scroll">
+      <div class="explore-scroll" :class="{ 'search-mode': searchMode }">
       <!-- ── Search Results Mode ── -->
       <template v-if="searchMode">
         <div class="search-back-row">
@@ -2226,6 +2254,21 @@ const buyerProfilePublished = ref(false)
 // Always initialize to 'buy' so SSR and client match — updated in onMounted
 const role = ref<string>('buy')
 
+const roleLabel = computed(() => {
+  if (role.value === 'sell') return 'Seller'
+  if (role.value === 'landlord') return 'Landlord'
+  if (role.value === 'both') return 'Buyer + Seller'
+  return 'Buyer'
+})
+
+const activePassportCount = computed(() => passports.value.length)
+
+const availableFeedCount = computed(() => {
+  if (searchMode.value) return searchTotal.value
+  if (verifiedPassportProperties.value.length) return verifiedPassportProperties.value.length
+  return properties.value.length
+})
+
 const greeting = computed(() => {
   const h = new Date().getHours()
   const timeOfDay =
@@ -2695,6 +2738,10 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
+}
+
+.hero-copy-stack {
+  min-width: 0;
 }
 
 .greeting-text {
@@ -3481,6 +3528,112 @@ onMounted(async () => {
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.02em;
+}
+
+.explore-lede {
+  margin: 7px 0 0;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #667b98;
+  font-weight: 500;
+}
+
+.hero-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 10px 0 2px;
+}
+
+.hero-meta-card {
+  border: 1px solid #dce8f4;
+  background: linear-gradient(145deg, rgba(251, 254, 255, 0.96), rgba(239, 248, 255, 0.92));
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.hero-meta-eyebrow {
+  margin: 0 0 7px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.25px;
+  color: #0d7f79;
+  font-weight: 800;
+}
+
+.hero-meta-card h2 {
+  margin: 0;
+  font-size: 19px;
+  color: #153457;
+  letter-spacing: -0.35px;
+  line-height: 1.2;
+}
+
+.hero-meta-card > p {
+  margin: 9px 0 0;
+  color: #5a6f8e;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.hero-quick-links {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-quick-links button {
+  border: 1px solid #cfe0f1;
+  background: #fff;
+  color: #1e486f;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+
+.hero-quick-links button:hover {
+  transform: translateY(-1px);
+  border-color: #b7d0e8;
+  box-shadow: 0 8px 14px rgba(30, 81, 130, 0.12);
+}
+
+.hero-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hero-kpi {
+  border: 1px solid #dbe7f3;
+  border-radius: 14px;
+  padding: 11px 10px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 18px rgba(25, 64, 104, 0.09);
+  text-align: left;
+}
+
+.hero-kpi strong {
+  display: block;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+  color: #17385d;
+}
+
+.hero-kpi span {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: #5f7594;
+  font-weight: 700;
 }
 
 /* ── New unified Distance + Filters pill (prototype .exp-dist-btn) ──
@@ -4725,21 +4878,21 @@ onMounted(async () => {
   --fx-blue: #2f9bdf;
   --fx-indigo: #4f4ff2;
   --fx-text: #1f2b3f;
-  --fx-card-border: #d8e3ee;
-  --fx-card-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
+  --fx-card-border: #d7e2ee;
+  --fx-card-shadow: 0 14px 26px rgba(36, 66, 102, 0.08);
   color: var(--fx-text);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.14) 0%, rgba(13, 191, 181, 0) 32%),
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.13) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f8fbff 0%, #f0f5ff 48%, #effaf8 100%);
 }
 
 .mesh {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.025;
   background-image:
     linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
     linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
@@ -4750,9 +4903,9 @@ onMounted(async () => {
 .ambient {
   position: fixed;
   border-radius: 999px;
-  filter: blur(36px);
+  filter: blur(44px);
   pointer-events: none;
-  opacity: 0.32;
+  opacity: 0.24;
   animation: drift 20s ease-in-out infinite;
 }
 
@@ -4780,7 +4933,7 @@ onMounted(async () => {
 }
 
 .explore-web-shell {
-  width: min(1240px, calc(100% - 40px));
+  width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
   position: relative;
   z-index: 1;
@@ -4791,16 +4944,16 @@ onMounted(async () => {
   top: 0;
   z-index: 40;
   backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid rgba(28, 43, 65, 0.08);
 }
 
 .nav-inner {
-  min-height: 64px;
+  min-height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 20px;
 }
 
 .brand {
@@ -4947,23 +5100,27 @@ onMounted(async () => {
 }
 
 .explore-hero {
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(152deg, rgba(255, 255, 255, 0.96), rgba(239, 247, 255, 0.92));
   border: 1px solid var(--fx-card-border);
   box-shadow: var(--fx-card-shadow);
-  border-radius: 22px;
-  margin-top: 16px;
-  padding: 18px 20px 10px;
+  border-radius: 24px;
+  margin-top: 20px;
+  padding: 22px 24px 14px;
 }
 
 .explore-scroll {
   overflow: visible;
-  padding: 20px 0 44px;
+  padding: 24px 0 50px;
   background: transparent;
 }
 
+.explore-scroll.search-mode {
+  display: block;
+}
+
 .explore-footer {
-  margin-top: 14px;
-  padding: 34px 0 0;
+  margin-top: 20px;
+  padding: 40px 0 0;
   border-top: 1px solid rgba(30, 47, 71, 0.12);
   background:
     radial-gradient(circle at 86% 18%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 46%),
@@ -5160,11 +5317,79 @@ onMounted(async () => {
 .search-input {
   background: rgba(245, 250, 255, 0.9);
   border-color: #d8e3ee;
+  min-height: 48px;
+  border-radius: 15px;
 }
 
 .search-btn {
   background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
   box-shadow: 0 10px 18px rgba(30, 128, 196, 0.24);
+  min-height: 34px;
+  padding: 7px 13px;
+}
+
+.web-btn,
+.search-btn,
+.btn-claim,
+.hero-quick-links button,
+.search-back-btn,
+.load-more-btn,
+.foryou-empty-btn,
+.verified-empty-btn,
+.footer-cta,
+.prop-passport-btn,
+.feed-see-all {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .search-btn:hover,
+  .btn-claim:hover,
+  .hero-quick-links button:hover,
+  .search-back-btn:hover,
+  .load-more-btn:hover,
+  .foryou-empty-btn:hover,
+  .verified-empty-btn:hover,
+  .footer-cta:hover,
+  .prop-passport-btn:hover,
+  .feed-see-all:hover {
+    transform: translateY(-1px);
+  }
+
+  .search-btn:hover,
+  .btn-claim:hover,
+  .foryou-empty-btn:hover,
+  .verified-empty-btn:hover,
+  .footer-cta:hover,
+  .prop-passport-btn:hover,
+  .feed-see-all:hover {
+    box-shadow: 0 10px 18px rgba(30, 128, 196, 0.22);
+  }
+
+  .search-back-btn:hover,
+  .load-more-btn:hover {
+    box-shadow: 0 8px 14px rgba(30, 58, 96, 0.14);
+  }
+}
+
+.search-input:focus-visible,
+.web-btn:focus-visible,
+.search-btn:focus-visible,
+.btn-claim:focus-visible,
+.hero-quick-links button:focus-visible,
+.search-back-btn:focus-visible,
+.load-more-btn:focus-visible,
+.foryou-empty-btn:focus-visible,
+.verified-empty-btn:focus-visible,
+.footer-cta:focus-visible,
+.exp-dist-btn:focus-visible {
+  outline: 2px solid rgba(29, 137, 197, 0.5);
+  outline-offset: 2px;
 }
 
 .prop-card,
@@ -5186,7 +5411,15 @@ onMounted(async () => {
 }
 
 .prop-card:hover {
-  box-shadow: 0 22px 38px rgba(26, 60, 102, 0.14);
+  box-shadow: 0 18px 30px rgba(26, 60, 102, 0.13);
+}
+
+.prop-body {
+  padding: 13px 15px 12px;
+}
+
+.prop-footer {
+  padding-top: 10px;
 }
 
 .prop-passport-btn,
@@ -5198,9 +5431,37 @@ onMounted(async () => {
 }
 
 .feed-see-all {
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
   font-size: 12px;
+  font-weight: 700;
+}
+
+.prop-passport-btn {
+  padding: 6px 12px;
+}
+
+.feed-header {
+  margin-bottom: 11px;
+}
+
+.feed-sub {
+  margin-bottom: 18px;
+}
+
+.explore-footer-grid {
+  gap: 20px;
+  padding: 20px;
+}
+
+.explore-footer-grid button {
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .explore-footer-grid button:hover {
+    transform: translateX(1px);
+  }
 }
 
 .explore-greeting-sub {
@@ -5220,12 +5481,223 @@ onMounted(async () => {
 .portfolio-card,
 .pro-dark-card {
   border: 1px solid rgba(120, 160, 205, 0.28);
-  box-shadow: 0 20px 34px rgba(26, 54, 93, 0.16);
+  box-shadow: 0 16px 28px rgba(26, 54, 93, 0.15);
+}
+
+@media (min-width: 981px) and (max-width: 1099px) {
+  .hero-row1 {
+    align-items: flex-start;
+  }
+
+  .hero-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .explore-scroll:not(.search-mode) {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .explore-scroll:not(.search-mode) > * {
+    grid-column: span 4;
+    margin-bottom: 0;
+  }
+
+  .explore-scroll:not(.search-mode) > .claim-banner,
+  .explore-scroll:not(.search-mode) > .passport-status-card,
+  .explore-scroll:not(.search-mode) > .portfolio-card,
+  .explore-scroll:not(.search-mode) > .feed-header,
+  .explore-scroll:not(.search-mode) > .feed-sub,
+  .explore-scroll:not(.search-mode) > .horiz-feed,
+  .explore-scroll:not(.search-mode) > .skeletons,
+  .explore-scroll:not(.search-mode) > .verified-empty,
+  .explore-scroll:not(.search-mode) > .foryou-empty,
+  .explore-scroll:not(.search-mode) > .market-pulse-card {
+    grid-column: 1 / -1;
+  }
+
+  .explore-scroll:not(.search-mode) > .horiz-feed {
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .explore-scroll:not(.search-mode) .prop-card-horiz {
+    min-width: 0;
+  }
+
+  .explore-scroll.search-mode {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .explore-scroll.search-mode > .search-back-row,
+  .explore-scroll.search-mode > .skeletons,
+  .explore-scroll.search-mode > .no-results-msg,
+  .explore-scroll.search-mode > .load-more-sentinel,
+  .explore-scroll.search-mode > .load-more-end {
+    grid-column: 1 / -1;
+  }
+
+  .explore-scroll.search-mode > .prop-card {
+    grid-column: span 4;
+    margin-bottom: 0;
+  }
+
+  .explore-scroll.search-mode > .skeletons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .explore-scroll.search-mode > .skeletons .skeleton-card {
+    height: 228px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .hero-row1 {
+    align-items: flex-start;
+  }
+
+  .search-wrap {
+    max-width: 920px;
+  }
+
+  .hero-meta-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 12px;
+    padding-top: 12px;
+  }
+
+  .hero-meta-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .hero-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-kpi {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 16px;
+  }
+
+  .hero-kpi strong {
+    font-size: 22px;
+    margin-top: -1px;
+  }
+
+  .hero-kpi span {
+    margin-top: 0;
+  }
+
+  .explore-scroll:not(.search-mode) {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+
+  .explore-scroll:not(.search-mode) > * {
+    margin-bottom: 0;
+    grid-column: span 6;
+  }
+
+  .explore-scroll:not(.search-mode) > .claim-banner,
+  .explore-scroll:not(.search-mode) > .passport-status-card,
+  .explore-scroll:not(.search-mode) > .portfolio-card,
+  .explore-scroll:not(.search-mode) > .search-back-row,
+  .explore-scroll:not(.search-mode) > .feed-header,
+  .explore-scroll:not(.search-mode) > .feed-sub,
+  .explore-scroll:not(.search-mode) > .horiz-feed,
+  .explore-scroll:not(.search-mode) > .skeletons,
+  .explore-scroll:not(.search-mode) > .verified-empty,
+  .explore-scroll:not(.search-mode) > .foryou-empty,
+  .explore-scroll:not(.search-mode) > .no-results-msg,
+  .explore-scroll:not(.search-mode) > .market-pulse-card {
+    grid-column: 1 / -1;
+  }
+
+  .explore-scroll:not(.search-mode) > .horiz-feed {
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .prop-card {
+    border-radius: 22px;
+  }
+
+  .prop-img-wrap {
+    height: 164px;
+  }
+
+  .explore-scroll:not(.search-mode) .prop-card-horiz {
+    min-width: 0;
+  }
+
+  .explore-scroll.search-mode {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+
+  .explore-scroll.search-mode > .search-back-row,
+  .explore-scroll.search-mode > .skeletons,
+  .explore-scroll.search-mode > .no-results-msg,
+  .explore-scroll.search-mode > .load-more-sentinel,
+  .explore-scroll.search-mode > .load-more-end {
+    grid-column: 1 / -1;
+  }
+
+  .explore-scroll.search-mode > .prop-card {
+    grid-column: span 4;
+    margin-bottom: 0;
+  }
+
+  .explore-scroll.search-mode > .skeletons {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .explore-scroll.search-mode > .skeletons .skeleton-card {
+    height: 240px;
+  }
 }
 
 @media (max-width: 980px) {
   .explore-web-shell {
-    width: calc(100% - 20px);
+    width: calc(100% - 18px);
+  }
+
+  .mesh {
+    display: none;
+  }
+
+  .ambient {
+    opacity: 0.15;
   }
 
   .web-links,
@@ -5312,7 +5784,7 @@ onMounted(async () => {
   .explore-hero {
     margin-top: 10px;
     border-radius: 18px;
-    padding: 14px 14px 8px;
+    padding: 14px 14px 10px;
   }
 
   .nav-inner {
@@ -5335,9 +5807,30 @@ onMounted(async () => {
     font-size: 22px;
   }
 
+  .explore-lede {
+    font-size: 12px;
+  }
+
+  .hero-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hero-kpi {
+    padding: 10px 9px;
+  }
+
+  .hero-kpi strong {
+    font-size: 16px;
+  }
+
+  .hero-kpi span {
+    font-size: 10px;
+    letter-spacing: 0.25px;
+  }
+
   .explore-footer {
-    margin-top: 10px;
-    padding-top: 22px;
+    margin-top: 12px;
+    padding-top: 24px;
   }
 
   .explore-footer-grid {
@@ -5359,6 +5852,105 @@ onMounted(async () => {
   .explore-footer-bottom {
     margin-top: 14px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-row1 {
+    align-items: flex-start;
+  }
+
+  .hero-copy-stack {
+    max-width: calc(100% - 56px);
+  }
+
+  .explore-title {
+    font-size: 24px;
+  }
+
+  .hero-meta-card h2 {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .hero-meta-card {
+    padding: 13px;
+  }
+
+  .hero-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-kpi {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .hero-kpi span {
+    margin-top: 0;
+  }
+
+  .hero-quick-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .hero-quick-links button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .search-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      'input input input'
+      'filter search search';
+    gap: 8px;
+    align-items: center;
+  }
+
+  .search-icon {
+    top: 24px;
+  }
+
+  .search-input {
+    grid-area: input;
+    padding: 12px 14px 12px 40px;
+    min-height: 46px;
+  }
+
+  .exp-dist-btn {
+    grid-area: filter;
+    position: static;
+    transform: none;
+    right: auto;
+    top: auto;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .search-btn {
+    grid-area: search;
+    position: static;
+    transform: none;
+    right: auto;
+    top: auto;
+    min-height: 36px;
+  }
+
+  .explore-scroll {
+    padding-top: 16px;
+  }
+
+  .prop-body {
+    padding: 12px 13px 11px;
+  }
+
+  .prop-price-tag {
+    font-size: 14px;
   }
 }
 </style>
