@@ -1,15 +1,25 @@
 <template>
-  <div class="sp-page mobile-container">
-    <!-- Nav bar -->
-    <div class="sp-nav-bar">
-      <button class="sp-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
+  <div class="sp-page">
+    <div class="ambient ambient-a" />
+    <div class="ambient ambient-b" />
+    <div class="mesh" />
+
+    <WebTopNav>
+      <template #actions>
+        <button class="sp-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
+        <button class="sp-quick-btn solid" type="button" @click="navigateTo('/explore')">Explore</button>
+      </template>
+    </WebTopNav>
+
+    <!-- Inline expanding search (navbar-style) -->
+    <div class="sp-shell sp-top-controls">
+      <button class="sp-back-btn" type="button" @click="goBack">
+        <span aria-hidden="true">&larr;</span>
+        Back
       </button>
-      <div class="sp-nav-title">Saved Properties</div>
+      <h1 class="sp-title">Saved Properties</h1>
       <button
-        class="sp-nav-icon-btn"
+        class="sp-search-btn"
         aria-label="Search"
         @click="onToggleSearch"
       >
@@ -20,8 +30,7 @@
       </button>
     </div>
 
-    <!-- Inline expanding search (navbar-style) -->
-    <div v-if="searchOpen" class="sp-nav-search">
+    <div v-if="searchOpen" class="sp-shell sp-nav-search">
       <input
         ref="searchInputRef"
         v-model="search"
@@ -40,7 +49,7 @@
       </button>
     </div>
 
-    <main class="sp-body">
+    <main class="sp-shell sp-body">
       <div class="atm-bg atm-bg-coral" />
 
       <!-- Hero -->
@@ -282,18 +291,100 @@ const filteredProperties = computed(() => {
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.sp-nav-bar {
-  display: flex;
-  align-items: center;
-  max-width: 1080px;
+.mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
+}
+
+.ambient {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(44px);
+  pointer-events: none;
+  opacity: 0.24;
+}
+
+.ambient-a {
+  width: 260px;
+  height: 260px;
+  top: 120px;
+  left: -60px;
+  background: rgba(0, 161, 154, 0.3);
+}
+
+.ambient-b {
+  width: 280px;
+  height: 280px;
+  top: 160px;
+  right: -80px;
+  background: rgba(95, 139, 255, 0.26);
+}
+
+.sp-shell {
+  width: min(1260px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 12px 18px 10px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
   position: relative;
   z-index: 2;
 }
-.sp-nav-icon-btn {
+
+.sp-quick-btn {
+  border-radius: 12px;
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.sp-quick-btn.solid {
+  border: 1px solid transparent;
+  color: #fff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
+.sp-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.sp-back-btn {
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.sp-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #10263d;
+  letter-spacing: -0.4px;
+  flex: 1;
+}
+
+.sp-search-btn {
   width: 44px;
   height: 44px;
   border-radius: 14px;
@@ -305,36 +396,16 @@ const filteredProperties = computed(() => {
   cursor: pointer;
   color: #143047;
   flex-shrink: 0;
-  box-shadow:
-    0 8px 22px rgba(19, 48, 71, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transition:
-    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.sp-nav-icon-btn:hover {
-  transform: translateY(-2px);
-  border-color: rgba(183, 209, 236, 0.9);
-  box-shadow:
-    0 12px 24px rgba(19, 48, 71, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-.sp-nav-icon-btn svg { width: 18px; height: 18px; }
-.sp-nav-title {
-  flex: 1;
-  text-align: center;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.35px;
-  color: #10263d;
+
+.sp-search-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .sp-nav-search {
-  max-width: 1080px;
-  margin: 0 auto 10px;
-  padding: 0 14px;
+  margin: 8px auto 10px;
+  padding: 0;
   position: relative;
   z-index: 2;
 }
@@ -373,9 +444,9 @@ const filteredProperties = computed(() => {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 14px;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .atm-bg {
@@ -627,19 +698,6 @@ const filteredProperties = computed(() => {
 }
 
 @media (min-width: 768px) {
-  .sp-nav-bar {
-    padding: 14px 22px 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .sp-nav-search {
-    padding: 0 18px;
-  }
-
-  .sp-body {
-    padding: 0 18px;
-  }
-
   .sp-hero {
     padding: 28px 24px 24px;
   }
@@ -650,7 +708,7 @@ const filteredProperties = computed(() => {
 }
 
 @media (max-width: 430px) {
-  .sp-nav-title {
+  .sp-title {
     font-size: 18px;
   }
 
@@ -660,7 +718,7 @@ const filteredProperties = computed(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sp-nav-icon-btn,
+  .sp-search-btn,
   .sp-tile,
   .sp-chip {
     transition: none;

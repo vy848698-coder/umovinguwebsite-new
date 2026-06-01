@@ -1,24 +1,23 @@
 <template>
-  <div class="st-page mobile-container">
-    <!-- Nav bar -->
-    <div class="st-nav-bar">
-      <button class="st-nav-icon-btn" aria-label="Back" @click="$router.back()">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="st-nav-title">Settings</div>
-      <div style="width: 38px" />
-    </div>
+  <div class="st-page">
+    <div class="ambient ambient-a" />
+    <div class="ambient ambient-b" />
+    <div class="mesh" />
+
+    <WebTopNav>
+      <template #actions>
+        <button class="st-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
+        <button class="st-quick-btn solid" type="button" @click="navigateTo('/profile/support')">Support</button>
+      </template>
+    </WebTopNav>
 
     <main class="st-body">
       <div class="atm-bg atm-bg-teal" />
+
+      <button class="st-back-btn" type="button" @click="goBack">
+        <span aria-hidden="true">&larr;</span>
+        Back
+      </button>
 
       <!-- Hero h1 -->
       <div class="st-hero">
@@ -294,6 +293,7 @@ definePageMeta({ title: 'Settings - UmovingU', middleware: 'auth' })
 const config = useRuntimeConfig()
 const { profile, fetchProfile } = useProfile()
 const { theme, setTheme: applyTheme } = useTheme()
+const goBack = useGoBack('/profile')
 
 const themeOptions = [
   { value: 'light', label: 'Light' },
@@ -430,6 +430,61 @@ const securityLabel = computed(() => {
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+.mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
+}
+
+.ambient {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(44px);
+  pointer-events: none;
+  opacity: 0.24;
+}
+
+.ambient-a {
+  width: 260px;
+  height: 260px;
+  top: 120px;
+  left: -60px;
+  background: rgba(0, 161, 154, 0.3);
+}
+
+.ambient-b {
+  width: 280px;
+  height: 280px;
+  top: 160px;
+  right: -80px;
+  background: rgba(95, 139, 255, 0.26);
+}
+
+.st-quick-btn {
+  border-radius: 12px;
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.st-quick-btn.solid {
+  border: 1px solid transparent;
+  color: #fff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
 .st-nav-bar {
   display: flex;
   align-items: center;
@@ -480,7 +535,23 @@ const securityLabel = computed(() => {
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 0 14px;
+  padding: 18px 14px 0;
+}
+
+.st-back-btn {
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 14px;
 }
 .atm-bg {
   position: absolute;
