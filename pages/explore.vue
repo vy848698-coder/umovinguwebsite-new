@@ -5448,35 +5448,67 @@ onMounted(async () => {
 .web-feature-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 24px;
 }
 
 .web-feature-card {
-  border: 1px solid #d8e3ee;
-  border-radius: 14px;
+  border: 1.5px solid #e8f0f8;
+  border-radius: 20px;
   background: #fff;
-  padding: 14px;
+  padding: 36px 32px;
+  box-shadow: 0 8px 24px rgba(15, 36, 62, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.web-feature-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transition: all 0.6s ease;
+}
+
+.web-feature-card:hover {
+  box-shadow: 0 16px 40px rgba(15, 36, 62, 0.15);
+  border-color: #d0e2f0;
+  transform: translateY(-4px);
+}
+
+.web-feature-card:hover::before {
+  top: -30%;
+  right: -30%;
 }
 
 .web-feature-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .web-feature-head h3 {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
-  font-size: 17px;
-  color: #172f4c;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f2440;
+  letter-spacing: -0.3px;
 }
 
 .web-feature-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -5485,95 +5517,134 @@ onMounted(async () => {
 }
 
 .web-feature-card.homescore .web-feature-head span {
-  color: #087e78;
-  background: #e5f6f3;
+  color: #0d9488;
+  background: linear-gradient(135deg, #e8fcfb 0%, #dff9f7 100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.15);
 }
 
 .web-feature-card.passport .web-feature-head span {
-  color: #6d47b2;
-  background: #efe7ff;
+  color: #7c3aed;
+  background: linear-gradient(135deg, #f8f4ff 0%, #f3e8ff 100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
 }
 
 .web-feature-card p {
-  margin: 10px 0;
-  color: #617690;
-  font-size: 13px;
-  line-height: 1.5;
+  margin: 0 0 20px 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
 .web-feature-body {
-  margin: 10px 0 12px;
+  margin: 18px 0 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .homescore-layout {
   display: grid;
-  grid-template-columns: 142px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 24px;
   align-items: center;
 }
 
 .web-score-ring {
   --score: 74;
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  background: conic-gradient(#27a86b calc(var(--score) * 1%), #e4edf6 0);
+  background: conic-gradient(#16a34a calc(var(--score) * 1%), #f0fdf4 0);
   display: grid;
   place-items: center;
-  margin-left: 6px;
+  box-shadow: 0 12px 32px rgba(22, 163, 74, 0.2);
+  transition: all 0.4s ease;
 }
 
 .web-score-ring-inner {
-  width: 96px;
-  height: 96px;
+  width: 124px;
+  height: 124px;
   border-radius: 50%;
   background: #fff;
   display: grid;
   place-items: center;
   text-align: center;
-  box-shadow: inset 0 0 0 1px #e1eaf3;
+  box-shadow: inset 0 0 0 2px #dcfce7;
 }
 
 .web-score-ring-inner strong {
-  font-size: 38px;
+  font-size: 48px;
   line-height: 0.9;
-  color: #0f2440;
-  letter-spacing: -0.8px;
+  color: #16a34a;
+  letter-spacing: -1.5px;
+  font-weight: 800;
+  display: block;
 }
 
 .web-score-ring-inner span {
-  margin-top: 2px;
-  font-size: 22px;
-  line-height: 0.95;
-  color: #324a68;
+  margin-top: 6px;
+  font-size: 16px;
+  line-height: 1;
+  color: #64748b;
   font-weight: 700;
+  display: block;
 }
 
 .passport-layout {
   display: grid;
-  grid-template-columns: 130px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 24px;
   align-items: center;
 }
 
 .web-passport-book {
-  width: 96px;
-  height: 112px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #1d3760 0%, #192c4f 100%);
-  border: 1px solid #38547e;
+  width: 110px;
+  height: 145px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3f2c70 100%);
+  border: 2.5px solid #6d28d9;
   display: grid;
   place-items: center;
-  transform: rotate(-9deg);
-  box-shadow: 0 14px 20px rgba(15, 34, 62, 0.22);
-  margin-left: 10px;
+  transform: perspective(800px) rotateY(-12deg) rotateX(4deg) rotateZ(-2deg);
+  box-shadow: 
+    0 20px 40px rgba(79, 70, 229, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease;
+}
+
+.web-passport-book:hover {
+  transform: perspective(800px) rotateY(-8deg) rotateX(2deg) rotateZ(-1deg);
+  box-shadow: 
+    0 24px 48px rgba(79, 70, 229, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .web-passport-book img {
-  width: 52px;
-  height: 52px;
+  width: 68px;
+  height: 68px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+  transition: transform 0.4s ease;
+}
+
+.web-passport-book:hover img {
+  transform: scale(1.08);
 }
 
 .web-feature-points {
@@ -5581,75 +5652,121 @@ onMounted(async () => {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .web-feature-points li {
-  font-size: 14px;
-  color: #1f3351;
-  font-weight: 600;
+  font-size: 15px;
+  color: #1f2937;
+  font-weight: 700;
   display: grid;
-  grid-template-columns: 20px 1fr;
+  grid-template-columns: 28px 1fr;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  line-height: 1.6;
+  letter-spacing: -0.2px;
 }
 
 .web-feature-points li::before {
   content: '✓';
-  width: 17px;
-  height: 17px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.web-feature-points li:hover::before {
+  transform: scale(1.15);
 }
 
 .web-feature-points.hs li::before {
-  background: #27a86b;
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
   color: #fff;
 }
 
 .web-feature-points.pp li::before {
-  background: #4f2f92;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   color: #fff;
 }
 
 .web-feature-card button {
   width: 100%;
   border: 0;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: 14px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 800;
   font-family: inherit;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: -0.2px;
+  z-index: 1;
+}
+
+.web-feature-card button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.4s ease;
+  z-index: -1;
+}
+
+.web-feature-card button:hover::before {
+  left: 100%;
 }
 
 .web-feature-card button span {
   line-height: 1;
 }
 
+.web-feature-card button:hover {
+  transform: translateY(-3px);
+}
+
 .web-feature-card.homescore button {
-  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
   color: #fff;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+}
+
+.web-feature-card.homescore button:hover {
+  box-shadow: 0 12px 28px rgba(22, 163, 74, 0.45);
 }
 
 .web-feature-card.passport button {
-  background: linear-gradient(120deg, #6034b6 0%, #42258b 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   color: #fff;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+}
+
+.web-feature-card.passport button:hover {
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.45);
 }
 
 .web-recommended {
-  border: 1px solid #d8e3ee;
-  border-radius: 14px;
+  border: 1.5px solid #e8f0f8;
+  border-radius: 20px;
   background: #fff;
-  padding: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 24px rgba(15, 36, 62, 0.08);
+  margin-top: 8px;
 }
 
 .web-reco-head h4 {
