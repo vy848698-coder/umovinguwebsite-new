@@ -19,6 +19,7 @@ export const usePassportClaim = () => {
     isCollaborator: boolean
     isBuyer?: boolean
     canAccess?: boolean
+    isPublished?: boolean
   }
 
   const getPassportStatus = async (
