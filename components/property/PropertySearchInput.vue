@@ -3,7 +3,7 @@
     class="psi-wrap"
     :class="[
       `psi-wrap--${variant}`,
-      { 'psi-wrap--open': showDropdown && results.length > 0 },
+      { 'psi-wrap--open': showDropdown && (results.length > 0 || postcodeResults.length > 0) },
     ]"
   >
     <div class="psi-input-wrap">
@@ -54,11 +54,29 @@
     <!-- Dropdown -->
     <Transition name="psi-drop">
       <div
-        v-if="showDropdown && results.length > 0"
+        v-if="showDropdown && (results.length > 0 || postcodeResults.length > 0)"
         ref="dropdownEl"
         class="psi-drop"
         @scroll="onDropdownScroll"
       >
+        <!-- Postcode-only suggestions (postcodes.io fallback) -->
+        <template v-if="results.length === 0 && postcodeResults.length > 0">
+          <div
+            v-for="pc in postcodeResults"
+            :key="pc"
+            class="psi-drop-item psi-drop-item--pc"
+            @mousedown.prevent="selectPostcode(pc)"
+          >
+            <div class="psi-drop-ic psi-drop-ic--pc">📍</div>
+            <div class="psi-drop-body">
+              <div class="psi-drop-title">{{ pc }}</div>
+              <div class="psi-drop-sub">Use this postcode</div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Property results -->
+        <template v-else>
         <div
           v-for="r in results"
           :key="r.id"
@@ -147,6 +165,7 @@
         <div v-else-if="!hasMore && results.length > 0" class="psi-drop-end">
           {{ results.length }} of {{ total }} · all results shown
         </div>
+        </template>
       </div>
     </Transition>
   </div>
@@ -162,6 +181,12 @@ interface Props {
   preferPassport?: boolean
   /** Show a labelled "Published" / "In progress" pill instead of the tiny circular icon */
   showPassportStatus?: boolean
+  /**
+   * When the property database has no match, fall back to live UK postcode
+   * suggestions (postcodes.io — free, no key). Lets users pick a valid
+   * postcode even if their home isn't in our dataset yet (e.g. signup).
+   */
+  postcodeFallback?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -169,6 +194,7 @@ const props = withDefaults(defineProps<Props>(), {
   variant: 'light',
   preferPassport: false,
   showPassportStatus: false,
+  postcodeFallback: false,
 })
 
 const emit = defineEmits<{
@@ -182,6 +208,7 @@ const PAGE_SIZE = 10
 
 const query = ref('')
 const results = ref<any[]>([])
+const postcodeResults = ref<string[]>([])
 const showDropdown = ref(false)
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -209,11 +236,30 @@ async function fetchPage(q: string, offset: number) {
   return { items, total: res?.total ?? items.length }
 }
 
+// Loose check for "this looks like (the start of) a UK postcode" so we only
+// hit the postcode service for plausible queries.
+function looksLikePostcode(q: string): boolean {
+  return /^[a-z]{1,2}\d/i.test(q.replace(/\s+/g, ''))
+}
+
+async function fetchPostcodes(q: string): Promise<string[]> {
+  try {
+    const clean = q.replace(/\s+/g, '')
+    const res = await $fetch<any>(
+      `https://api.postcodes.io/postcodes/${encodeURIComponent(clean)}/autocomplete`,
+    )
+    return Array.isArray(res?.result) ? res.result : []
+  } catch {
+    return []
+  }
+}
+
 function handleInput(val: string) {
   query.value = val
   if (debounceTimer) clearTimeout(debounceTimer)
   if (val.trim().length < 2) {
     results.value = []
+    postcodeResults.value = []
     total.value = 0
     showDropdown.value = false
     loading.value = false
@@ -225,15 +271,35 @@ function handleInput(val: string) {
       const { items, total: t } = await fetchPage(val, 0)
       results.value = items
       total.value = t
-      showDropdown.value = items.length > 0
+      // Fall back to live UK postcode suggestions when no property matched.
+      if (
+        items.length === 0 &&
+        props.postcodeFallback &&
+        looksLikePostcode(val)
+      ) {
+        postcodeResults.value = await fetchPostcodes(val)
+      } else {
+        postcodeResults.value = []
+      }
+      showDropdown.value =
+        items.length > 0 || postcodeResults.value.length > 0
     } catch {
       results.value = []
+      postcodeResults.value = []
       total.value = 0
       showDropdown.value = false
     } finally {
       loading.value = false
     }
   }, 300)
+}
+
+function selectPostcode(pc: string) {
+  query.value = pc
+  showDropdown.value = false
+  postcodeResults.value = []
+  // Emit a postcode-only "property" — no id, since it isn't in our dataset.
+  emit('select', { id: null, addressLine1: '', postcode: pc, postcodeOnly: true })
 }
 
 async function loadMore() {
@@ -266,7 +332,8 @@ function onDropdownScroll() {
 }
 
 function onFocus() {
-  if (results.value.length > 0) showDropdown.value = true
+  if (results.value.length > 0 || postcodeResults.value.length > 0)
+    showDropdown.value = true
 }
 
 function onEnter() {
@@ -286,6 +353,7 @@ function select(property: any) {
 function clearQuery() {
   query.value = ''
   results.value = []
+  postcodeResults.value = []
   total.value = 0
   showDropdown.value = false
 }
@@ -454,6 +522,13 @@ defineExpose({ clearQuery })
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+.psi-drop-ic--pc {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #eef4ff;
+  font-size: 14px;
 }
 
 .psi-drop-body {
