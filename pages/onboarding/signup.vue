@@ -153,6 +153,7 @@
               v-else
               placeholder="CV5 6AJ"
               variant="light"
+              :postcode-fallback="true"
               @select="onAddressSelect"
             />
             <div class="postcode-prompt">
@@ -233,13 +234,25 @@ const showTermsModal = ref(false)
 const selectedAddress = ref<{ id: number; line1: string; line2: string; postcode?: string } | null>(null)
 
 const onAddressSelect = (property: any) => {
+  const pc = property.postcode?.toUpperCase()
+  // Postcode-only pick (postcodes.io fallback — no property in our dataset).
+  if (property.postcodeOnly || !property.addressLine1) {
+    selectedAddress.value = {
+      id: 1,
+      line1: pc ?? '',
+      line2: 'Postcode',
+      postcode: pc,
+    }
+    form.postcode = pc ?? ''
+    return
+  }
   selectedAddress.value = {
     id: 1,
     line1: toTitleCase(property.addressLine1 ?? ''),
-    line2: [property.city ? toTitleCase(property.city) : null, property.postcode?.toUpperCase()]
+    line2: [property.city ? toTitleCase(property.city) : null, pc]
       .filter(Boolean)
       .join(', '),
-    postcode: property.postcode?.toUpperCase(),
+    postcode: pc,
   }
   form.postcode = selectedAddress.value.postcode ?? selectedAddress.value.line1
 }
