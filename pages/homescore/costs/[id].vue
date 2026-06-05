@@ -1,103 +1,46 @@
 <template>
   <div class="rc-screen">
-    <!-- Top nav -->
-    <div class="rc-topnav">
-      <button class="rc-back" @click="router.back()" aria-label="Back">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="rc-eyebrow-pill"><span class="dot" />HomeScore</div>
-      <div style="width: 32px" />
-    </div>
+    <div class="rc-ambient rc-ambient-a" />
+    <div class="rc-ambient rc-ambient-b" />
 
-    <!-- Amber address card — consistent with ResultDetail -->
-    <div v-if="property" class="rc-addr-card">
-      <div class="rc-addr-top">
-        <div class="rc-addr-pin" />
-        <div class="rc-addr-block">
-          <div class="rc-addr-line">
-            {{ property.addressLine1 || 'This property' }}
-          </div>
-          <div class="rc-addr-meta">
-            {{ property.postcode || '' }}
-            <template v-if="property.propertyType">
-              · {{ property.propertyType }}</template
-            >
-          </div>
+    <!-- ── Web nav ──────────────────────────────────────────────── -->
+    <header class="rc-nav">
+      <div class="rc-nav-shell rc-nav-inner">
+        <button class="rc-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="rc-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="rc-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="rc-nav-actions">
+          <button class="rc-nav-back" type="button" @click="router.back()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+          <button class="rc-nav-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
         </div>
       </div>
-      <div class="rc-addr-pills">
-        <span v-if="property.epcRating" class="rc-addr-pill epc">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
-            <path d="M13 2 L4 14 L11 14 L9 22 L20 9 L13 9 Z" />
-          </svg>
-          <span class="rc-epc-letter" :style="{ background: epcColor }">{{
-            property.epcRating
-          }}</span>
-          EPC
-        </span>
-        <span
-          v-if="passportState === 'unclaimed'"
-          class="rc-addr-pill rc-state-unclaimed"
-          >Unclaimed</span
-        >
-        <span
-          v-else-if="passportState === 'inProgress'"
-          class="rc-addr-pill rc-state-progress"
-          >In progress</span
-        >
-        <span v-else class="rc-addr-pill rc-state-published">✓ Published</span>
-      </div>
-      <div class="rc-addr-stats">
-        <div v-if="passportState === 'unclaimed'" class="rc-stat-row">
-          <span class="rc-pulse-dot" />
-          <span class="rc-stat-count">{{ randomSearches }} searches today</span>
-          <span class="rc-sep">·</span>
-          <span>No verified Passport on this address yet</span>
-          <span class="rc-sep">·</span>
-          <span>Public EPC data only</span>
-        </div>
-        <div v-else-if="passportState === 'inProgress'" class="rc-stat-row">
-          <span class="rc-pulse-dot" />
-          <span class="rc-stat-count"
-            >{{ randomSearches + 1 }} searches today</span
-          >
-          <span class="rc-sep">·</span>
-          <span>Owner is building a Passport</span>
-          <span class="rc-sep">·</span>
-          <span>Public EPC data only for now</span>
-        </div>
-        <div v-else class="rc-stat-row">
-          <span class="rc-pulse-dot rc-pulse-green" />
-          <span class="rc-stat-count"
-            >{{ randomSearches * 6 }} searches this month</span
-          >
-          <span class="rc-sep">·</span>
-          <span>Verified Passport live</span>
-          <span class="rc-sep">·</span>
-          <span>Owner's real data</span>
-        </div>
-      </div>
-    </div>
+    </header>
 
-    <!-- Page title -->
-    <div v-if="data" class="rc-title-block">
-      <div class="rc-title">Full running costs</div>
-      <div class="rc-sub">
+    <main class="rc-main">
+    <!-- Page head -->
+    <div v-if="data" class="rc-head">
+      <p class="rc-kicker"><span class="rc-kicker-dot" />Running costs</p>
+      <h1>Full running costs</h1>
+      <p class="rc-lede">
         Everything it costs to run
         {{ property?.addressLine1 || 'this property' }} — energy from the
         <template v-if="data.epcYear">{{ data.epcYear }} EPC</template>
         <template v-else>EPC data</template>, other costs estimated for
         {{ property?.postcode?.split(' ')[0] || 'this area' }}.
-      </div>
+      </p>
     </div>
 
     <!-- Loading / error states -->
@@ -105,6 +48,8 @@
     <div v-else-if="error" class="rc-error">{{ error }}</div>
 
     <template v-else-if="data">
+      <div class="rc-top">
+      <div class="rc-hero-col">
       <!-- ═══ HERO ═══ -->
       <div class="cost-hero">
         <div class="cost-hero-eyebrow">
@@ -128,7 +73,115 @@
           </div>
         </div>
       </div>
+      <!-- /cost-hero -->
+      </div>
+      <!-- /rc-hero-col -->
 
+      <div class="rc-summary-col">
+      <!-- Amber address card — consistent with ResultDetail -->
+      <div v-if="property" class="rc-addr-card">
+        <div class="rc-addr-top">
+          <div class="rc-addr-pin" />
+          <div class="rc-addr-block">
+            <div class="rc-addr-line">
+              {{ property.addressLine1 || 'This property' }}
+            </div>
+            <div class="rc-addr-meta">
+              {{ property.postcode || '' }}
+              <template v-if="property.propertyType">
+                · {{ property.propertyType }}</template
+              >
+            </div>
+          </div>
+        </div>
+        <div class="rc-addr-pills">
+          <span v-if="property.epcRating" class="rc-addr-pill epc">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
+              <path d="M13 2 L4 14 L11 14 L9 22 L20 9 L13 9 Z" />
+            </svg>
+            <span class="rc-epc-letter" :style="{ background: epcColor }">{{
+              property.epcRating
+            }}</span>
+            EPC
+          </span>
+          <span
+            v-if="passportState === 'unclaimed'"
+            class="rc-addr-pill rc-state-unclaimed"
+            >Unclaimed</span
+          >
+          <span
+            v-else-if="passportState === 'inProgress'"
+            class="rc-addr-pill rc-state-progress"
+            >In progress</span
+          >
+          <span v-else class="rc-addr-pill rc-state-published">✓ Published</span>
+        </div>
+        <div class="rc-addr-stats">
+          <div v-if="passportState === 'unclaimed'" class="rc-stat-row">
+            <span class="rc-pulse-dot" />
+            <span class="rc-stat-count">{{ randomSearches }} searches today</span>
+            <span class="rc-sep">·</span>
+            <span>No verified Passport on this address yet</span>
+            <span class="rc-sep">·</span>
+            <span>Public EPC data only</span>
+          </div>
+          <div v-else-if="passportState === 'inProgress'" class="rc-stat-row">
+            <span class="rc-pulse-dot" />
+            <span class="rc-stat-count"
+              >{{ randomSearches + 1 }} searches today</span
+            >
+            <span class="rc-sep">·</span>
+            <span>Owner is building a Passport</span>
+            <span class="rc-sep">·</span>
+            <span>Public EPC data only for now</span>
+          </div>
+          <div v-else class="rc-stat-row">
+            <span class="rc-pulse-dot rc-pulse-green" />
+            <span class="rc-stat-count"
+              >{{ randomSearches * 6 }} searches this month</span
+            >
+            <span class="rc-sep">·</span>
+            <span>Verified Passport live</span>
+            <span class="rc-sep">·</span>
+            <span>Owner's real data</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confidence note -->
+      <div class="rc-confidence">
+        <template v-if="data.confidence === 'epc'">
+          Based on
+          <template v-if="data.epcYear">{{ data.epcYear }} </template>
+          EPC data · {{ data.tariffs.source }} tariffs · estimates only
+        </template>
+        <template v-else>
+          Based on EPC rating averages · {{ data.tariffs.source }} tariffs ·
+          estimates only
+        </template>
+      </div>
+
+      <!-- Upload bill CTA -->
+      <div class="rc-upload">
+        <div class="rc-upload-emoji">📄</div>
+        <div class="rc-upload-body">
+          <div class="rc-upload-title">Are these numbers accurate?</div>
+          <div class="rc-upload-sub">
+            Upload an actual bill and we'll replace these estimates with your
+            real figures.
+          </div>
+        </div>
+        <button type="button" class="rc-upload-btn" @click="onUpload">
+          Upload →
+        </button>
+      </div>
+      </div>
+      <!-- /rc-summary-col -->
+      </div>
+      <!-- /rc-top -->
+
+      <div class="rc-grid">
+      <section class="rc-block">
       <!-- ═══ ENERGY ═══ -->
       <div class="costs-section-h">
         <div class="costs-section-h-icon">
@@ -253,6 +306,8 @@
         </div>
       </div>
 
+      </section>
+      <section class="rc-block">
       <!-- ═══ WATER ═══ -->
       <div class="costs-section-h">
         <div class="costs-section-h-icon">
@@ -297,6 +352,8 @@
         </div>
       </div>
 
+      </section>
+      <section class="rc-block">
       <!-- ═══ COUNCIL TAX ═══ -->
       <div class="costs-section-h">
         <div class="costs-section-h-icon">
@@ -345,6 +402,8 @@
         </div>
       </div>
 
+      </section>
+      <section class="rc-block">
       <!-- ═══ ENERGY DETAIL ═══ -->
       <div class="costs-section-h">
         <div class="costs-section-h-icon costs-section-h-icon--teal-tint">
@@ -431,29 +490,8 @@
         </div>
       </div>
 
-      <!-- Confidence banner -->
-      <div class="rc-confidence">
-        <template v-if="data.confidence === 'epc'">
-          Based on
-          <template v-if="data.epcYear">{{ data.epcYear }} </template>
-          EPC data · {{ data.tariffs.source }} tariffs · estimates only
-        </template>
-        <template v-else>
-          Based on EPC rating averages · {{ data.tariffs.source }} tariffs ·
-          estimates only
-        </template>
-      </div>
-
-      <!-- Upload bill CTA -->
-      <!-- <div class="rc-upload">
-        <div class="rc-upload-emoji">📄</div>
-        <div class="rc-upload-body">
-          <div class="rc-upload-title">Are these numbers accurate?</div>
-          <div class="rc-upload-sub">Upload an actual bill and we'll replace these estimates with your real figures.</div>
-        </div>
-        <button type="button" class="rc-upload-btn" @click="onUpload">Upload →</button>
-      </div> -->
-
+      </section>
+      <section class="rc-block">
       <!-- ═══ RISKS ═══ -->
       <div class="costs-section-h">
         <div class="costs-section-h-icon costs-section-h-icon--red">
@@ -563,6 +601,8 @@
         </div>
       </div>
 
+      </section>
+      <section class="rc-block">
       <!-- ═══ ENVIRONMENTAL IMPACT ═══ -->
       <div class="costs-section-h">
         <div class="costs-section-h-icon costs-section-h-icon--teal-tint">
@@ -620,14 +660,21 @@
           </div>
         </div>
       </div>
+      </section>
+      </div>
+      <!-- /rc-grid -->
 
       <div style="height: 24px" />
     </template>
+    </main>
+
+    <SiteFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 interface RunningCosts {
   energy: {
@@ -845,60 +892,244 @@ function onUpload() {
   --line-soft: #f5f5f7;
 
   min-height: 100dvh;
-  background: var(--bg);
   color: var(--navy);
-  max-width: 28rem;
-  width: 100%;
-  margin: 0 auto;
-  padding-bottom: 24px;
+  background:
+    radial-gradient(circle at 80% 6%, rgba(0, 161, 154, 0.1), transparent 32%),
+    radial-gradient(circle at 6% 12%, rgba(90, 76, 240, 0.07), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f6fbfa 48%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  position: relative;
+  /* `clip` keeps the sticky nav/sidebar working (vs `hidden`). */
+  overflow: clip;
 }
 
-/* ── Top nav ───────────────────────────────────────────────── */
-.rc-topnav {
+.rc-ambient {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+.rc-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+.rc-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+/* ── Web nav ───────────────────────────────────────────────── */
+.rc-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.07);
+}
+.rc-nav-shell {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+}
+.rc-nav-inner {
+  min-height: 66px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 22px 8px;
-  padding-top: calc(14px + env(safe-area-inset-top));
+  gap: 24px;
 }
-.rc-back {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--teal-paler);
-  border: 1px solid var(--teal-pale);
-  color: var(--teal);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  font-family: inherit;
-}
-.rc-back svg {
-  width: 14px;
-  height: 14px;
-}
-.rc-eyebrow-pill {
+.rc-brand {
+  border: 0;
+  background: transparent;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: var(--teal-paler);
-  border: 1px solid var(--teal-pale);
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-size: 10.5px;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--teal);
+  flex-shrink: 0;
+}
+.rc-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.rc-links {
+  display: flex;
+  gap: 18px;
+}
+.rc-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 13px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.rc-links button:hover,
+.rc-links button.active {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+.rc-nav-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.rc-nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.18s, background 0.18s;
+}
+.rc-nav-back:hover {
+  border-color: #bcd0e4;
+  background: #f8fbff;
+}
+.rc-nav-back svg {
+  width: 15px;
+  height: 15px;
+}
+.rc-nav-cta {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 52%, #5a4cf0 100%);
+  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.rc-nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(47, 93, 223, 0.26);
+}
+
+/* ── Main shell ────────────────────────────────────────────── */
+.rc-main {
+  position: relative;
+  z-index: 2;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 30px 0 60px;
+}
+
+/* ── Page head ─────────────────────────────────────────────── */
+.rc-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.rc-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-.rc-eyebrow-pill .dot {
-  width: 6px;
-  height: 6px;
+.rc-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
   background: var(--teal);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px var(--teal-pale);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.rc-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.rc-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* ── Two-column layout: summary sidebar + detail content ───── */
+/* ── Hero + summary top row ───────────────────────────────── */
+.rc-top {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  align-items: stretch;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.rc-hero-col,
+.rc-summary-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+/* Reset the cards' 28rem-era gutters — spacing is the flex gap now. */
+.rc-top .rc-hero-col > *,
+.rc-top .rc-summary-col > * {
+  margin: 0;
+}
+.rc-hero-col .cost-hero {
+  flex: 1;
+  padding: 26px 26px 24px;
+}
+.rc-hero-col .cost-hero-num {
+  font-size: 48px;
+}
+
+/* ── Detail sections — balanced 2-column masonry ──────────── */
+.rc-grid {
+  columns: 2;
+  column-gap: 22px;
+}
+.rc-block {
+  display: block;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin: 0 0 22px;
+}
+.rc-block .costs-section-h {
+  padding: 2px 2px 12px;
+}
+.rc-block .cost-card {
+  margin: 0;
 }
 
 /* ── Amber address card (consistent with ResultDetail) ────── */
@@ -1599,5 +1830,40 @@ function onUpload() {
 }
 .rc-upload-btn:hover {
   background: var(--teal-bright);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .rc-top {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .rc-grid {
+    columns: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .rc-nav-shell {
+    width: calc(100% - 28px);
+  }
+  .rc-links,
+  .rc-nav-cta {
+    display: none;
+  }
+  .rc-main {
+    width: calc(100% - 24px);
+    padding-top: 18px;
+  }
+  .rc-aside .cost-hero-num {
+    font-size: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-nav-back,
+  .rc-nav-cta {
+    transition: none;
+  }
 }
 </style>

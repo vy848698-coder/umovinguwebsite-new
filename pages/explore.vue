@@ -171,59 +171,47 @@
               <button type="button" @click="startClaimFlow">See a sample Passport <span>→</span></button>
             </article>
           </div>
-
-          <div class="web-recommended" aria-label="Recommended services">
-            <div class="web-reco-head">
-              <h4>Recommended for you</h4>
-            </div>
-            <div class="web-reco-grid">
-              <button type="button" @click="navigateTo('/marketplace')">
-                <span class="web-reco-icon"><img src="/op-icons/goodEnergy.svg" alt="" /></span>
-                <span class="web-reco-copy">
-                  <strong>Book a Gas Safety Check</strong>
-                  <small>From £79</small>
-                  <em>Cert lands in your Passport</em>
-                </span>
-                <span class="web-reco-arrow">›</span>
-              </button>
-              <button type="button" @click="navigateTo('/marketplace')">
-                <span class="web-reco-icon"><img src="/op-icons/house.svg" alt="" /></span>
-                <span class="web-reco-copy">
-                  <strong>Property Survey</strong>
-                  <small>From £299</small>
-                  <em>RICS certified surveyors</em>
-                </span>
-                <span class="web-reco-arrow">›</span>
-              </button>
-              <button type="button" @click="navigateTo('/marketplace')">
-                <span class="web-reco-icon"><img src="/op-icons/User-Code.svg" alt="" /></span>
-                <span class="web-reco-copy">
-                  <strong>Solicitor Quote</strong>
-                  <small>From £250</small>
-                  <em>Fixed-fee conveyancing</em>
-                </span>
-                <span class="web-reco-arrow">›</span>
-              </button>
-              <button type="button" @click="navigateTo('/marketplace')">
-                <span class="web-reco-icon"><img src="/op-icons/Home-Search.svg" alt="" /></span>
-                <span class="web-reco-copy">
-                  <strong>Mortgage Advice</strong>
-                  <small>Free</small>
-                  <em>Compare trusted advisors</em>
-                </span>
-                <span class="web-reco-plus">+</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         <aside class="web-dashboard-side">
           <article class="web-quick-actions">
             <h3>Quick actions</h3>
-            <button type="button" @click="navigateTo('/homescore')"><span><img src="/op-icons/search.svg" alt="" /><span><strong>Run HomeScore</strong><small>Get instant property score</small></span></span><span>→</span></button>
-            <button type="button" @click="navigateTo('/passport/collections')"><span><img src="/op-icons/passportview/umu-passport.png" alt="" /><span><strong>Upload Documents</strong><small>Add or manage property docs</small></span></span><span>→</span></button>
-            <button type="button" @click="navigateTo('/explore')"><span><img src="/op-icons/Home-Search.svg" alt="" /><span><strong>Compare Area</strong><small>Explore local insights</small></span></span><span>→</span></button>
-            <button type="button" @click="navigateTo('/marketplace')"><span><img src="/op-icons/Building-Community.svg" alt="" /><span><strong>Book a Service</strong><small>Find trusted professionals</small></span></span><span>→</span></button>
+            <button type="button" @click="navigateTo('/homescore')">
+              <span>
+                <span class="qa-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" /></svg>
+                </span>
+                <span><strong>Run HomeScore</strong><small>Get instant property score</small></span>
+              </span>
+              <span class="qa-arrow" aria-hidden="true">→</span>
+            </button>
+            <button type="button" @click="navigateTo('/passport/collections')">
+              <span>
+                <span class="qa-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5" /><path d="m8 9 4-4 4 4" /><path d="M5 19h14" /></svg>
+                </span>
+                <span><strong>Upload Documents</strong><small>Add or manage property docs</small></span>
+              </span>
+              <span class="qa-arrow" aria-hidden="true">→</span>
+            </button>
+            <button type="button" @click="navigateTo('/explore')">
+              <span>
+                <span class="qa-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z" /><path d="M9 3v16" /><path d="M15 5v16" /></svg>
+                </span>
+                <span><strong>Compare Area</strong><small>Explore local insights</small></span>
+              </span>
+              <span class="qa-arrow" aria-hidden="true">→</span>
+            </button>
+            <button type="button" @click="navigateTo('/marketplace')">
+              <span>
+                <span class="qa-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M3 12h18" /></svg>
+                </span>
+                <span><strong>Book a Service</strong><small>Find trusted professionals</small></span>
+              </span>
+              <span class="qa-arrow" aria-hidden="true">→</span>
+            </button>
           </article>
 
           <article class="web-progress-panel">
@@ -264,6 +252,67 @@
             </div>
           </article>
         </aside>
+
+        <div class="web-recommended" aria-label="Recommended services">
+          <div class="web-reco-head">
+            <h4>Recommended for you</h4>
+            <small>Trusted services to support your property journey</small>
+          </div>
+          <div class="web-reco-grid">
+            <button type="button" @click="navigateTo('/marketplace')">
+              <span class="web-reco-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2c1.5 3.5-1.5 5-1.5 7.5A3.5 3.5 0 0 0 14 13c0-2 1-3 1-3 1 1.5 2.5 3 2.5 5.5A5.5 5.5 0 0 1 12 21a5.5 5.5 0 0 1-5.5-5.5C6.5 11 9 9 9 6c0-1.5 1.5-3 3-4Z" />
+                </svg>
+              </span>
+              <span class="web-reco-copy">
+                <strong>Book a Gas Safety Check</strong>
+                <small>From £79</small>
+                <em>Cert lands in your Passport</em>
+              </span>
+              <span class="web-reco-arrow" aria-hidden="true">›</span>
+            </button>
+            <button type="button" @click="navigateTo('/marketplace')">
+              <span class="web-reco-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v9h14v-9" /><path d="M9 19v-5h6v5" />
+                </svg>
+              </span>
+              <span class="web-reco-copy">
+                <strong>Property Survey</strong>
+                <small>From £299</small>
+                <em>RICS certified surveyors</em>
+              </span>
+              <span class="web-reco-arrow" aria-hidden="true">›</span>
+            </button>
+            <button type="button" @click="navigateTo('/marketplace')">
+              <span class="web-reco-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v18" /><path d="M6 7h12" /><path d="M7 7 4 14a3 3 0 0 0 6 0L7 7Z" /><path d="M17 7l-3 7a3 3 0 0 0 6 0l-3-7Z" /><path d="M8 21h8" />
+                </svg>
+              </span>
+              <span class="web-reco-copy">
+                <strong>Solicitor Quote</strong>
+                <small>From £250</small>
+                <em>Fixed-fee conveyancing</em>
+              </span>
+              <span class="web-reco-arrow" aria-hidden="true">›</span>
+            </button>
+            <button type="button" @click="navigateTo('/marketplace')">
+              <span class="web-reco-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20h14V9.5" /><path d="m9.5 14.5 5-5" /><circle cx="10" cy="13" r="1" /><circle cx="14" cy="16" r="1" />
+                </svg>
+              </span>
+              <span class="web-reco-copy">
+                <strong>Mortgage Advice</strong>
+                <small>Free</small>
+                <em>Compare trusted advisors</em>
+              </span>
+              <span class="web-reco-plus" aria-hidden="true">+</span>
+            </button>
+          </div>
+        </div>
       </section>
 
       <footer class="web-dashboard-footer">
@@ -5370,10 +5419,15 @@ onMounted(async () => {
 
 .web-progress-fill {
   height: 100%;
+  border-radius: 999px;
   background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
-  transition: width 0.24s ease;
-  margin-top: 14px;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.web-spotlight-actions {
+  margin-top: 16px;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -5407,9 +5461,17 @@ onMounted(async () => {
 
 .web-kpi-row article {
   border: 1px solid #d8e3ee;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #fff;
-  padding: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(19, 45, 78, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.web-kpi-row article:hover {
+  transform: translateY(-2px);
+  border-color: #c7dcef;
+  box-shadow: 0 12px 26px rgba(19, 45, 78, 0.1);
 }
 
 .web-kpi-top {
@@ -5419,20 +5481,21 @@ onMounted(async () => {
 }
 
 .web-kpi-top i {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #eef5ff;
+  background: linear-gradient(150deg, #eef5ff, #e3eefc);
   font-style: normal;
-  font-size: 15px;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .web-kpi-row strong {
   display: block;
-  font-size: 34px;
+  font-size: 30px;
   line-height: 1;
   color: #172f4c;
 }
@@ -5507,13 +5570,10 @@ onMounted(async () => {
 }
 
 .web-feature-icon {
-  width: 28px;
-  height: 28px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 4px 8px;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .web-feature-card.homescore .web-feature-head span {
@@ -5568,11 +5628,16 @@ onMounted(async () => {
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: conic-gradient(#16a34a calc(var(--score) * 1%), #f0fdf4 0);
+  background: conic-gradient(from 0deg, #00a19a, #2f9bdf calc(var(--score) * 1%), #e8f5f4 0);
   display: grid;
   place-items: center;
-  box-shadow: 0 12px 32px rgba(22, 163, 74, 0.2);
-  transition: all 0.4s ease;
+  box-shadow: 0 12px 32px rgba(0, 161, 154, 0.22);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.web-feature-card.homescore:hover .web-score-ring {
+  transform: scale(1.04);
+  box-shadow: 0 16px 38px rgba(0, 161, 154, 0.3);
 }
 
 .web-score-ring-inner {
@@ -5583,13 +5648,13 @@ onMounted(async () => {
   display: grid;
   place-items: center;
   text-align: center;
-  box-shadow: inset 0 0 0 2px #dcfce7;
+  box-shadow: inset 0 0 0 2px #d6f1ef;
 }
 
 .web-score-ring-inner strong {
   font-size: 48px;
   line-height: 0.9;
-  color: #16a34a;
+  color: #00857f;
   letter-spacing: -1.5px;
   font-weight: 800;
   display: block;
@@ -5687,7 +5752,7 @@ onMounted(async () => {
 }
 
 .web-feature-points.hs li::before {
-  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  background: linear-gradient(135deg, #00a19a 0%, #2fb6ac 100%);
   color: #fff;
 }
 
@@ -5741,13 +5806,13 @@ onMounted(async () => {
 }
 
 .web-feature-card.homescore button {
-  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  background: linear-gradient(135deg, #00a19a 0%, #2f9bdf 100%);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.35);
 }
 
 .web-feature-card.homescore button:hover {
-  box-shadow: 0 12px 28px rgba(22, 163, 74, 0.45);
+  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.45);
 }
 
 .web-feature-card.passport button {
@@ -5761,67 +5826,109 @@ onMounted(async () => {
 }
 
 .web-recommended {
-  border: 1.5px solid #e8f0f8;
-  border-radius: 20px;
-  background: #fff;
-  padding: 24px 28px;
-  box-shadow: 0 8px 24px rgba(15, 36, 62, 0.08);
-  margin-top: 8px;
+  grid-column: 1 / -1;
+  border: 2px solid #e5f0f8;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #fafbfc 0%, #f5f9fc 100%);
+  padding: 32px 36px;
+  box-shadow: 0 16px 48px rgba(15, 36, 62, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  margin-top: 12px;
+}
+
+.web-reco-head {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .web-reco-head h4 {
   margin: 0;
-  font-size: 16px;
-  color: #172f4c;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0a1929;
+  letter-spacing: -0.3px;
+}
+
+.web-reco-head small {
+  color: #5a7089;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
 .web-reco-grid {
-  margin-top: 10px;
+  margin-top: 22px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 16px;
 }
 
 .web-reco-grid button {
-  border: 1px solid #dbe7f3;
-  border-radius: 10px;
-  background: #fff;
-  padding: 12px;
-  color: #233a5a;
+  border: 1.5px solid #dde8f4;
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 16px 18px;
+  color: #1f2b3f;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
   text-align: left;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 10px;
-  min-height: 72px;
+  gap: 14px;
+  min-height: 100px;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease;
+  box-shadow: 0 8px 16px rgba(28, 53, 96, 0.08);
+}
+
+.web-reco-grid button:hover {
+  transform: translateY(-4px);
+  border-color: #b8cce0;
+  box-shadow: 0 20px 40px rgba(15, 36, 62, 0.15);
+  background: #ffffff;
 }
 
 .web-reco-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #3b37a3, #159a99);
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  max-width: 52px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #4a53c4, #1ca3a0);
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 12px rgba(28, 53, 96, 0.16);
+  box-shadow: 0 12px 24px rgba(28, 53, 96, 0.16);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, filter 0.24s ease;
+  flex-shrink: 0;
+}
+
+.web-reco-grid button:hover .web-reco-icon {
+  transform: scale(1.12);
+  box-shadow: 0 16px 32px rgba(28, 53, 96, 0.24);
+}
+
+.web-reco-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .web-reco-grid button:nth-child(1) .web-reco-icon {
-  background: linear-gradient(135deg, #4c46b6, #2f53cc);
+  background: linear-gradient(135deg, #5556d4, #2f63dd);
 }
 
 .web-reco-grid button:nth-child(2) .web-reco-icon {
-  background: linear-gradient(135deg, #5a4dd8, #2f55cc);
+  background: linear-gradient(135deg, #6b5ae6, #3a68e8);
 }
 
 .web-reco-grid button:nth-child(3) .web-reco-icon,
 .web-reco-grid button:nth-child(4) .web-reco-icon {
-  background: linear-gradient(135deg, #3aa5a3, #0f8887);
+  background: linear-gradient(135deg, #4ab8b6, #1a9a98);
 }
 
 .web-reco-icon img {
@@ -5832,45 +5939,63 @@ onMounted(async () => {
 }
 
 .web-reco-copy {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  line-height: 1.3;
+  justify-content: center;
 }
 
 .web-reco-copy strong {
   font-size: 13px;
-  color: #132745;
-  line-height: 1.25;
+  font-weight: 800;
+  color: #0f1e32;
+  line-height: 1.3;
+  letter-spacing: -0.2px;
 }
 
 .web-reco-copy small {
-  color: #4f6482;
-  font-size: 10px;
-  font-weight: 600;
+  color: #4a6280;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.2;
+  letter-spacing: 0.1px;
 }
 
 .web-reco-copy em {
-  color: #60748f;
+  color: #667a8f;
   font-size: 10px;
   font-style: normal;
-  font-weight: 500;
-  line-height: 1.25;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.1px;
 }
 
 .web-reco-arrow,
 .web-reco-plus {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  flex-shrink: 0;
   border-radius: 50%;
-  border: 1px solid #d9e4ef;
+  border: 1.5px solid #d0dce8;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #2e4666;
-  margin-top: 0;
-  font-size: 14px;
+  color: #3a5073;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1;
-  align-self: center;
+  transition: background 0.24s ease, color 0.24s ease, border-color 0.24s ease, transform 0.24s ease;
+}
+
+.web-reco-grid button:hover .web-reco-arrow,
+.web-reco-grid button:hover .web-reco-plus {
+  background: linear-gradient(135deg, #00a19a 0%, #2f9bdf 100%);
+  border-color: transparent;
+  color: #fff;
+  transform: translateX(3px);
 }
 
 .web-quick-actions,
@@ -5892,47 +6017,87 @@ onMounted(async () => {
   border: 1px solid #e1e9f2;
   background: #fbfdff;
   color: #1f2b3f;
-  border-radius: 10px;
-  padding: 10px 11px;
+  border-radius: 12px;
+  padding: 11px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   font-family: inherit;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   margin-top: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.web-quick-actions button:hover {
+  transform: translateY(-2px);
+  background: #fff;
+  border-color: #c7dcef;
+  box-shadow: 0 10px 22px rgba(15, 36, 62, 0.1);
 }
 
 .web-quick-actions button > span:first-child {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  column-gap: 8px;
+  column-gap: 10px;
   gap: 2px;
   text-align: left;
+  min-width: 0;
 }
 
 .web-quick-actions button > span:first-child > span {
   display: grid;
   gap: 2px;
+  min-width: 0;
 }
 
-.web-quick-actions button img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
+.qa-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #00857f;
+  background: linear-gradient(150deg, #e4faf3, #cdf0ea);
+  flex-shrink: 0;
+}
+
+.qa-ic svg {
+  width: 17px;
+  height: 17px;
+}
+
+.qa-arrow {
+  color: #9fb1c8;
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.web-quick-actions button:hover .qa-arrow {
+  color: #00a19a;
+  transform: translateX(2px);
 }
 
 .web-quick-actions button strong {
   font-size: 13px;
   color: #1c3251;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .web-quick-actions button small {
   font-size: 11px;
   color: #6c7f98;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .web-progress-panel {
@@ -6992,6 +7157,18 @@ onMounted(async () => {
   }
 }
 
+/* Tablet / narrow desktop: ease the column counts so cards don't crowd
+   before the full single-column stack kicks in at 980px. */
+@media (max-width: 1200px) {
+  .web-dashboard-top {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .web-reco-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 980px) {
   .explore-web-shell {
     width: calc(100% - 18px);
@@ -7054,7 +7231,7 @@ onMounted(async () => {
 
   .web-feature-grid,
   .web-reco-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .homescore-layout,
@@ -7331,6 +7508,18 @@ onMounted(async () => {
 
   .prop-price-tag {
     font-size: 14px;
+  }
+
+  .web-reco-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .web-reco-head h4 {
+    font-size: 18px;
+  }
+
+  .web-reco-head small {
+    font-size: 12px;
   }
 }
 </style>

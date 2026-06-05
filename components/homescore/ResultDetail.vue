@@ -1,5 +1,7 @@
 <template>
   <div class="rd-page">
+   <div class="rd-shell">
+    <div class="rd-col rd-col-main">
     <!-- ── Teal address card ───────────────────────────────────── -->
     <div class="rd-addr-card" data-tour="addr">
       <div class="rd-addr-top">
@@ -227,6 +229,8 @@
       </button>
     </div>
 
+    </div>
+    <div class="rd-col rd-col-side">
     <!-- ── EPC & breakdown card ───────────────────────────────── -->
     <div class="rd-breakdown" data-tour="breakdown">
       <!-- EPC rating row -->
@@ -409,6 +413,9 @@
         <template v-else>3 buyers are watching this property</template>
       </div>
     </div>
+
+    </div>
+   </div>
 
     <div style="height: 28px" />
   </div>
@@ -746,6 +753,50 @@ function formatNum(n: number): string {
   /* No horizontal padding here — each card sets its own 22px side margin
      to match the prototype's per-card spacing rhythm. */
   padding: 4px 0 0;
+}
+
+/* On mobile the shell/columns are transparent passthroughs, so the cards keep
+   their original 22px side margins and single-column stacking — no visual
+   change. On wider screens the shell becomes a centered two-column dashboard. */
+@media (min-width: 900px) {
+  .rd-page {
+    background: transparent;
+    padding: 8px 0 0;
+  }
+  .rd-shell {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .rd-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  /* Cards flow inside the grid columns now — drop the per-card side margins
+     and let the grid gap + shell padding handle spacing. */
+  .rd-shell .rd-addr-card,
+  .rd-shell .rd-score-card,
+  .rd-shell .rd-overpay,
+  .rd-shell .rd-breakdown,
+  .rd-shell .rd-intent {
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 18px;
+  }
+  .rd-shell .rd-addr-card {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .rd-shell {
+    gap: 26px;
+  }
 }
 
 /* ── Amber address card (prototype-exact: margins, pin size, spacing) ── */

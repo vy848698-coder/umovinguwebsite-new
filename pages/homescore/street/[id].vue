@@ -1,183 +1,218 @@
 <template>
-  <div class="hs-street-screen">
-    <!-- ── Top nav ──────────────────────────────────────────────── -->
-    <div class="hs-topnav">
-      <button class="back-btn" @click="router.back()" aria-label="Back">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="eyebrow-pill"><span class="dot" />HomeScore</div>
-      <button
-        class="tour-btn"
-        type="button"
-        @click="tour.restart()"
-        title="How does this work?"
-      >
-        ?
-      </button>
-    </div>
+  <div class="hss-root">
+    <div class="hss-ambient hss-ambient-a" />
+    <div class="hss-ambient hss-ambient-b" />
 
-    <!-- ── Address card — amber gradient ─────────────────────────── -->
-    <div class="hs-addr-card" data-tour="addr">
-      <div class="hs-addr-top">
-        <div class="hs-addr-pin" />
-        <div class="hs-addr-block">
-          <div ref="addrLineEl" class="hs-addr-line">
-            <span class="cursor" />
-          </div>
-          <div class="hs-addr-meta">
-            {{ property?.postcode || '—' }}
-            <template v-if="property?.propertyType">
-              · {{ property.propertyType }}</template
-            >
-          </div>
-        </div>
-      </div>
-      <div class="hs-addr-stats">
-        <div class="hs-addr-stat-row">
-          <span class="pulse-dot" />
-          <span class="hs-addr-stat-count"
-            >{{ searchesToday }} searches today</span
+    <!-- ── Web nav ──────────────────────────────────────────────── -->
+    <header class="hss-nav">
+      <div class="hss-shell hss-nav-inner">
+        <button class="hss-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hss-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hss-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hss-actions">
+          <button
+            class="hss-tour"
+            type="button"
+            title="How does this work?"
+            aria-label="How does this work?"
+            @click="tour.restart()"
           >
-          <span class="hs-addr-stat-sep">·</span>
-          <span>{{ passportStatusLine }}</span>
+            ?
+          </button>
+          <button class="hss-back" type="button" @click="router.back()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back to results
+          </button>
+          <button class="hss-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- ── Saving hero — the big number ─────────────────────────── -->
-    <div class="hs-saving-wrap" data-tour="hero">
-      <div class="hs-saving-head">
-        <div ref="heroTitleEl" class="hs-hero-title">
-          <span class="cursor" />
-        </div>
-        <div class="hs-hero-sub">
-          Based on EPC data from {{ comparedCount }} similar homes on this
-          street.
-        </div>
+    <main class="hss-shell hss-main">
+      <div class="hss-head">
+        <p class="hss-kicker"><span class="hss-kicker-dot" />Street comparison</p>
+        <h1>How this property compares to its street</h1>
+        <p class="hss-lede">
+          Estimated running costs against {{ comparedCount }} similar homes nearby, based on public EPC data.
+        </p>
       </div>
 
-      <div ref="saveWrapEl" class="hs-save-wrap">
-        <div class="hs-save-eyebrow">
-          {{
-            savingDirection === 'more'
-              ? '✦ Potential annual saving on this property'
-              : '✓ Below the street average by'
-          }}
-        </div>
-        <div ref="saveNumEl" class="hs-save-num">£0</div>
-        <div class="hs-save-foot">
-          {{
-            savingDirection === 'more'
-              ? 'per year · if this property matched the street average'
-              : 'per year · cheaper than the typical home on this street'
-          }}
-        </div>
-      </div>
-
-      <div class="hs-save-split">
-        <div class="hs-save-cell hs-save-cell--you">
-          <div class="hs-save-cell-eyebrow">Estimated cost</div>
-          <div ref="youNumEl" class="hs-save-cell-num">£0</div>
-          <div class="hs-save-cell-meta">per year</div>
-        </div>
-        <div class="hs-save-cell hs-save-cell--avg">
-          <div class="hs-save-cell-eyebrow">Street average</div>
-          <div ref="avgNumEl" class="hs-save-cell-num">£0</div>
-          <div class="hs-save-cell-meta">per year</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Street card — ranked list ────────────────────────────── -->
-    <div class="street-card fomo expanded" data-tour="street">
-      <div class="street-card-top">
-        <div class="street-card-text">
-          <div class="street-card-title">
-            Your street, ranked by energy cost
-          </div>
-          <div class="street-card-sub">
-            This property ranks
-            <b>{{ rankOrdinal(youRank) }} of {{ ranked.length }}</b> on this
-            street by estimated energy cost.
-          </div>
-        </div>
-      </div>
-
-      <div class="street-rank-list">
-        <div class="street-rank-header">
-          <span>{{ streetName }} · energy cost</span>
-          <span class="street-rank-badge"
-            >{{ rankOrdinal(youRank) }} of {{ ranked.length }}</span
-          >
-        </div>
-        <div class="street-rank-sub">
-          Estimated from EPC data · updated quarterly
-        </div>
-        <div class="street-rank-rows">
-          <div
-            v-for="(r, i) in ranked"
-            :key="i"
-            class="street-rank-row"
-            :class="{ you: r.you }"
-          >
-            <div class="street-rank-pos" :class="{ you: r.you }">
-              {{ i + 1 }}
-            </div>
-            <div class="street-rank-body">
-              <div class="street-rank-addr">
-                {{ r.addr }}<template v-if="r.you"> — this property</template>
+      <div class="hss-grid">
+        <div class="hss-col">
+          <!-- ── Address card — amber gradient ─────────────────────── -->
+          <div class="hs-addr-card" data-tour="addr">
+            <div class="hs-addr-top">
+              <div class="hs-addr-pin" />
+              <div class="hs-addr-block">
+                <div ref="addrLineEl" class="hs-addr-line">
+                  <span class="cursor" />
+                </div>
+                <div class="hs-addr-meta">
+                  {{ property?.postcode || '—' }}
+                  <template v-if="property?.propertyType">
+                    · {{ property.propertyType }}</template
+                  >
+                </div>
               </div>
-              <div class="street-rank-meta">{{ r.meta }}</div>
             </div>
-            <div class="street-rank-cost" :class="r.tone">
-              £{{ formatNum(r.cost) }}
+            <div class="hs-addr-stats">
+              <div class="hs-addr-stat-row">
+                <span class="pulse-dot" />
+                <span class="hs-addr-stat-count"
+                  >{{ searchesToday }} searches today</span
+                >
+                <span class="hs-addr-stat-sep">·</span>
+                <span>{{ passportStatusLine }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Saving hero — the big number ───────────────────────── -->
+          <div class="hs-saving-wrap" data-tour="hero">
+            <div class="hs-saving-head">
+              <div ref="heroTitleEl" class="hs-hero-title">
+                <span class="cursor" />
+              </div>
+              <div class="hs-hero-sub">
+                Based on EPC data from {{ comparedCount }} similar homes on this
+                street.
+              </div>
+            </div>
+
+            <div ref="saveWrapEl" class="hs-save-wrap">
+              <div class="hs-save-eyebrow">
+                {{
+                  savingDirection === 'more'
+                    ? '✦ Potential annual saving on this property'
+                    : '✓ Below the street average by'
+                }}
+              </div>
+              <div ref="saveNumEl" class="hs-save-num">£0</div>
+              <div class="hs-save-foot">
+                {{
+                  savingDirection === 'more'
+                    ? 'per year · if this property matched the street average'
+                    : 'per year · cheaper than the typical home on this street'
+                }}
+              </div>
+            </div>
+
+            <div class="hs-save-split">
+              <div class="hs-save-cell hs-save-cell--you">
+                <div class="hs-save-cell-eyebrow">Estimated cost</div>
+                <div ref="youNumEl" class="hs-save-cell-num">£0</div>
+                <div class="hs-save-cell-meta">per year</div>
+              </div>
+              <div class="hs-save-cell hs-save-cell--avg">
+                <div class="hs-save-cell-eyebrow">Street average</div>
+                <div ref="avgNumEl" class="hs-save-cell-num">£0</div>
+                <div class="hs-save-cell-meta">per year</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Renters note ─────────────────────────────────────── -->
+          <div class="renters-note">
+            <div class="renters-icon">🏠</div>
+            <div class="renters-text">
+              <b>Renting?</b> You can still check your street and challenge your
+              supplier. You don't need to own the property — just know your address.
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="street-illust">
-        <div class="street-legend">
-          <span class="street-legend-item"
-            ><span class="street-legend-dot" style="background: #00a19a" />Under
-            £1,500/yr</span
-          >
-          <span class="street-legend-item"
-            ><span
-              class="street-legend-dot"
-              style="background: #e6a23c"
-            />£1,500–£2,000</span
-          >
-          <span class="street-legend-item"
-            ><span class="street-legend-dot" style="background: #c73e36" />Over
-            £2,000/yr</span
-          >
+        <div class="hss-col">
+          <!-- ── Street card — ranked list ──────────────────────────── -->
+          <div class="street-card fomo expanded" data-tour="street">
+            <div class="street-card-top">
+              <div class="street-card-text">
+                <div class="street-card-title">
+                  Your street, ranked by energy cost
+                </div>
+                <div class="street-card-sub">
+                  This property ranks
+                  <b>{{ rankOrdinal(youRank) }} of {{ ranked.length }}</b> on this
+                  street by estimated energy cost.
+                </div>
+              </div>
+            </div>
+
+            <div class="street-rank-list">
+              <div class="street-rank-header">
+                <span>{{ streetName }} · energy cost</span>
+                <span class="street-rank-badge"
+                  >{{ rankOrdinal(youRank) }} of {{ ranked.length }}</span
+                >
+              </div>
+              <div class="street-rank-sub">
+                Estimated from EPC data · updated quarterly
+              </div>
+              <div class="street-rank-rows">
+                <div
+                  v-for="(r, i) in ranked"
+                  :key="i"
+                  class="street-rank-row"
+                  :class="{ you: r.you }"
+                >
+                  <div class="street-rank-pos" :class="{ you: r.you }">
+                    {{ i + 1 }}
+                  </div>
+                  <div class="street-rank-body">
+                    <div class="street-rank-addr">
+                      {{ r.addr }}<template v-if="r.you"> — this property</template>
+                    </div>
+                    <div class="street-rank-meta">{{ r.meta }}</div>
+                  </div>
+                  <div class="street-rank-cost" :class="r.tone">
+                    £{{ formatNum(r.cost) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="street-illust">
+              <div class="street-legend">
+                <span class="street-legend-item"
+                  ><span class="street-legend-dot" style="background: #00a19a" />Under
+                  £1,500/yr</span
+                >
+                <span class="street-legend-item"
+                  ><span
+                    class="street-legend-dot"
+                    style="background: #e6a23c"
+                  />£1,500–£2,000</span
+                >
+                <span class="street-legend-item"
+                  ><span class="street-legend-dot" style="background: #c73e36" />Over
+                  £2,000/yr</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- ── CTA — continue to full HomeScore ───────────────────── -->
+          <div class="cta-wrap">
+            <button class="cta-stop" type="button" data-tour="cta" @click="goToResult">
+              <span class="cta-head">See your full HomeScore</span>
+              <span class="cta-sub">Category breakdown + what could improve it</span>
+            </button>
+            <div class="cta-foot">Free · no account needed</div>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
 
-    <!-- ── Renters note ────────────────────────────────────────── -->
-    <div class="renters-note">
-      <div class="renters-icon">🏠</div>
-      <div class="renters-text">
-        <b>Renting?</b> You can still check your street and challenge your
-        supplier. You don't need to own the property — just know your address.
-      </div>
-    </div>
-
-    <button class="back-link" type="button" @click="router.back()">
-      ← Back to results
-    </button>
-    <div style="height: 24px" />
+    <SiteFooter />
 
     <!-- ── Tour overlay ────────────────────────────────────────── -->
     <TourCoach :tour="tour" />
@@ -187,6 +222,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
 
 const router = useRouter()
@@ -501,71 +537,238 @@ const tour = useHomescoreTour({
 </script>
 
 <style scoped>
-.hs-street-screen {
+.hss-root {
   min-height: 100dvh;
-  background: #fafafa;
   color: #231d45;
-  max-width: 28rem;
-  width: 100%;
-  margin: 0 auto;
+  background:
+    radial-gradient(circle at 80% 6%, rgba(0, 161, 154, 0.1), transparent 32%),
+    radial-gradient(circle at 6% 12%, rgba(90, 76, 240, 0.07), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f6fbfa 48%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-  padding-bottom: 24px;
+  position: relative;
+  /* `clip` keeps the sticky nav/sidebar working (vs `hidden`). */
+  overflow: clip;
 }
 
-/* Top nav */
-.hs-topnav {
+.hss-ambient {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+.hss-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+.hss-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+.hss-shell {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Web nav ───────────────────────────────────────────────────────── */
+.hss-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.07);
+}
+.hss-nav-inner {
+  min-height: 66px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 22px 8px;
-  padding-top: calc(14px + env(safe-area-inset-top));
+  gap: 24px;
 }
-.back-btn,
-.tour-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f1f9f4;
-  border: 1px solid #e2f1ea;
-  color: #00a19a;
-  display: grid;
-  place-items: center;
+.hss-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.hss-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.hss-links {
+  display: flex;
+  gap: 18px;
+}
+.hss-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 13px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.hss-links button:hover,
+.hss-links button.active {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+.hss-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.hss-tour {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e2f1ea;
+  background: #f1f9f4;
+  color: #00a19a;
   font-family: inherit;
   font-size: 16px;
   font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
 }
-.back-btn:hover,
-.tour-btn:hover {
+.hss-tour:hover {
   background: #f2faf8;
   border-color: #b2e4e1;
   color: #007e78;
 }
-.back-btn svg {
-  width: 14px;
-  height: 14px;
-}
-.eyebrow-pill {
+.hss-back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #f1f9f4;
-  border: 1px solid #e2f1ea;
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-size: 10.5px;
+  gap: 7px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.18s, background 0.18s;
+}
+.hss-back:hover {
+  border-color: #bcd0e4;
+  background: #f8fbff;
+}
+.hss-back svg {
+  width: 15px;
+  height: 15px;
+}
+.hss-cta {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #00a19a;
+  cursor: pointer;
+  white-space: nowrap;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 52%, #5a4cf0 100%);
+  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.hss-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(47, 93, 223, 0.26);
+}
+
+/* ── Page head ─────────────────────────────────────────────────────── */
+.hss-main {
+  padding: 38px 0 60px;
+}
+.hss-head {
+  max-width: 640px;
+  margin-bottom: 26px;
+}
+.hss-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-.eyebrow-pill .dot {
-  width: 6px;
-  height: 6px;
+.hss-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
   background: #00a19a;
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px #e2f1ea;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.hss-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.hss-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* ── Two-column grid ───────────────────────────────────────────────── */
+.hss-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  align-items: start;
+  gap: 24px;
+}
+.hss-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+/* Neutralise the cards' original mobile margins — spacing is now the column
+   gap; widths are full inside each grid column. Specificity (0,2,0) so it
+   wins over each card's own single-class margin rule regardless of order. */
+.hss-grid .hss-col > * {
+  margin: 0;
+  width: auto;
 }
 
 /* Amber/orange address card — prototype-exact */
@@ -1084,22 +1287,41 @@ const tour = useHomescoreTour({
   color: #231d45;
 }
 
-.back-link {
-  display: block;
-  margin: 14px 16px 0;
-  padding: 10px 14px;
-  background: transparent;
-  border: 1px solid #ececef;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #6b6783;
-  cursor: pointer;
-  text-align: left;
-  width: calc(100% - 32px);
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .hss-grid {
+    grid-template-columns: 1fr;
+  }
 }
-.back-link:hover {
-  background: #fafafa;
+
+@media (max-width: 760px) {
+  .hss-shell {
+    width: calc(100% - 28px);
+  }
+  .hss-links,
+  .hss-cta {
+    display: none;
+  }
+  .hss-main {
+    padding-top: 24px;
+    padding-bottom: 40px;
+  }
+  .hss-head h1 {
+    font-size: 26px;
+  }
+  .hss-lede {
+    font-size: 15px;
+  }
+  .hs-save-num {
+    font-size: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hss-cta,
+  .hss-back,
+  .hss-tour {
+    transition: none;
+  }
 }
 </style>

@@ -231,42 +231,7 @@
       </section>
     </main>
 
-    <footer class="marketplace-footer">
-      <div class="footer-grid">
-        <div class="footer-intro">
-          <div class="footer-brand">
-            <img src="/logo.png" alt="" />
-            <strong>umovingu</strong>
-          </div>
-          <span class="footer-chip">Professional property services</span>
-          <p>Find trusted professionals, compare quotes, and book property services with confidence. Powered by your Property Passport.</p>
-          <button class="footer-cta" type="button" @click="scrollToServices">Explore Services</button>
-        </div>
-
-        <div class="footer-col">
-          <h5>Services</h5>
-          <button type="button" @click="scrollToServices">Conveyancing</button>
-          <button type="button" @click="scrollToServices">Surveying</button>
-          <button type="button" @click="scrollToServices">Energy</button>
-          <button type="button" @click="scrollToServices">Removal</button>
-        </div>
-
-        <div class="footer-col">
-          <h5>Product</h5>
-          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
-          <button type="button" @click="navigateTo('/passport')">Passport</button>
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
-        </div>
-
-        <div class="footer-col">
-          <h5>Company</h5>
-          <button type="button" @click="navigateTo('/legal/privacy')">Privacy</button>
-          <button type="button" @click="navigateTo('/legal/terms')">Terms</button>
-          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
-        </div>
-      </div>
-      <div class="footer-bottom">(c) 2026 UMU. All rights reserved.</div>
-    </footer>
+    <SiteFooter />
 
     <div class="marketplace-mobile-nav">
       <BottomNav active="marketplace" />
@@ -277,6 +242,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import BottomNav from '~/components/core/BottomNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -771,34 +737,43 @@ async function submitNotify() {
   height: 54px;
   font-size: 15px;
   letter-spacing: 0.02em;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    0 8px 18px rgba(24, 52, 88, 0.1);
 }
 
 .round-icon.large {
-  width: 64px;
-  height: 64px;
+  width: 66px;
+  height: 66px;
   margin-bottom: 22px;
   font-size: 17px;
+  border-radius: 20px;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.service-card:hover .round-icon.large {
+  transform: scale(1.06) rotate(-3deg);
 }
 
 .mini-icon.teal,
 .round-icon.teal {
   color: #00857f;
-  background: #d9f6ee;
+  background: linear-gradient(150deg, #e4faf3, #c3f0e3);
 }
 
 .round-icon.purple {
   color: #5a4cf0;
-  background: #eeeafe;
+  background: linear-gradient(150deg, #f3effe, #e1d9fd);
 }
 
 .round-icon.amber {
   color: #e59100;
-  background: #fff3d7;
+  background: linear-gradient(150deg, #fff6e0, #ffe9bd);
 }
 
 .round-icon.blue {
   color: #0899bf;
-  background: #dcf7ff;
+  background: linear-gradient(150deg, #e6faff, #cdf2fc);
 }
 
 .hero-visual {
@@ -991,19 +966,29 @@ async function submitNotify() {
 .value-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
   margin-top: 46px;
-  padding: 26px 38px;
-  border: 1px solid #dbe6f1;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 18px 40px rgba(31, 61, 98, 0.08);
+  padding: 18px;
+  border: 1px solid rgba(219, 230, 241, 0.9);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 251, 255, 0.86));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 20px 44px rgba(31, 61, 98, 0.1);
 }
 
 .value-item {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.value-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
 }
 
 .value-item h3,
@@ -1061,20 +1046,56 @@ async function submitNotify() {
 }
 
 .service-card {
-  min-height: 310px;
+  position: relative;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
-  padding: 28px 24px 24px;
-  border: 1px solid #dde8f3;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12px 28px rgba(24, 52, 88, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 30px 26px 26px;
+  border: 1px solid rgba(221, 232, 243, 0.9);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 14px 32px rgba(24, 52, 88, 0.07);
+  overflow: hidden;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.32s ease, border-color 0.32s ease;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-teal), var(--color-blue) 50%, var(--color-purple));
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+.service-card::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -30%;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.12), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.32s ease;
 }
 
 .service-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 24px 42px rgba(24, 52, 88, 0.12);
+  transform: translateY(-6px);
+  border-color: rgba(47, 155, 223, 0.35);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 28px 50px rgba(24, 52, 88, 0.16);
+}
+
+.service-card:hover::before,
+.service-card:hover::after {
+  opacity: 1;
 }
 
 .service-card h3 {
@@ -1082,6 +1103,7 @@ async function submitNotify() {
   color: #08102f;
   font-size: 19px;
   font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 .service-card > p {
@@ -1108,14 +1130,29 @@ async function submitNotify() {
   justify-content: space-between;
   gap: 12px;
   margin-top: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  border-radius: 12px;
+  background: rgba(0, 161, 154, 0.06);
   color: #007f91;
   cursor: pointer;
   font-family: inherit;
   font-size: 14px;
   font-weight: 900;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.service-btn:hover {
+  background: rgba(0, 161, 154, 0.12);
+  border-color: rgba(0, 161, 154, 0.4);
+}
+
+.service-btn span:last-child {
+  transition: transform 0.25s ease;
+}
+
+.service-card:hover .service-btn span:last-child {
+  transform: translateX(4px);
 }
 
 .proof-section {
@@ -1134,9 +1171,9 @@ async function submitNotify() {
 .testimonial-visual img {
   width: 100%;
   height: 330px;
-  border-radius: 10px;
+  border-radius: 22px;
   object-fit: cover;
-  box-shadow: 0 18px 36px rgba(24, 52, 88, 0.1);
+  box-shadow: 0 24px 48px rgba(24, 52, 88, 0.14);
 }
 
 .quote-card {
@@ -1145,9 +1182,13 @@ async function submitNotify() {
   bottom: 34px;
   width: 235px;
   padding: 24px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 18px 40px rgba(17, 43, 78, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 24px 50px rgba(17, 43, 78, 0.22);
 }
 
 .quote-card p {
@@ -1272,14 +1313,21 @@ async function submitNotify() {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  width: 62px;
-  height: 62px;
+  width: 64px;
+  height: 64px;
   border: 1px solid currentColor;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: inset 0 0 0 7px rgba(255, 255, 255, 0.8);
-  font-size: 30px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff, #f4f8fd);
+  box-shadow:
+    inset 0 0 0 6px rgba(255, 255, 255, 0.9),
+    0 12px 26px rgba(24, 52, 88, 0.1);
+  font-size: 28px;
   font-weight: 900;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step-item:hover .step-number {
+  transform: translateY(-3px) scale(1.04);
 }
 
 .step-item.teal {

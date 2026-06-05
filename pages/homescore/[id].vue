@@ -1,63 +1,9 @@
 <template>
-  <div class="hs-page">
+  <div class="hs-page" :class="{ 'hs-page--web': screen === 'landing' || screen === 'loading' || screen === 'results' || screen === 'publish' || screen === 'kyc' || screen === 'kyc-pending' || screen === 'published' || screen === 'quick-wins' || screen === 'move-ready' || screen === 'buyer-results' || screen === 'passport' || screen === 'questions' }">
     <!-- Global header — hidden during quiz + post-quiz funnel screens, which
          each render their own top nav and amber address card. -->
-    <div
-      v-if="
-        screen !== 'questions' &&
-        screen !== 'results' &&
-        screen !== 'publish' &&
-        screen !== 'kyc' &&
-        screen !== 'kyc-pending' &&
-        screen !== 'published' &&
-        screen !== 'quick-wins'
-      "
-      class="hs-header"
-    >
-      <button class="hs-back-btn" @click="goBack" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-          <path
-            d="M15 18l-6-6 6-6"
-            stroke="#475569"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <div class="hs-header-center">
-        <p class="hs-header-title">
-          {{
-            screen === 'results'
-              ? 'Your HomeScore'
-              : screen === 'passport'
-                ? 'Property Passport'
-                : screen === 'buyer-results'
-                  ? 'Property Report'
-                  : screen === 'quick-wins'
-                    ? 'Boost your score'
-                    : screen === 'move-ready'
-                      ? 'Get move ready'
-                      : 'HomeScore'
-          }}
-        </p>
-        <p class="hs-header-sub">{{ headerSub }}</p>
-      </div>
-      <button
-        v-if="
-          screen === 'landing' ||
-          screen === 'results' ||
-          screen === 'buyer-results'
-        "
-        class="hs-tour-btn"
-        type="button"
-        title="How does this work?"
-        @click="resultTour.restart()"
-      >
-        ?
-      </button>
-      <div v-else class="hs-header-spacer" />
-    </div>
+    <!-- Global mobile header removed — every screen now renders its own web
+         nav (or, for `loading`, just the spinner on the web canvas). -->
 
     <!-- Tour overlay (renders only when active) -->
     <TourCoach :tour="resultTour" />
@@ -87,6 +33,41 @@
 
     <!-- ── LANDING / AUTO SCORE — prototype-aligned (3a/3b/3c) ──── -->
     <template v-else-if="screen === 'landing'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button
+              class="hsw-tour"
+              type="button"
+              title="How does this work?"
+              aria-label="How does this work?"
+              data-tour="tour-btn"
+              @click="resultTour.restart()"
+            >
+              ?
+            </button>
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              New search
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <ResultDetail
         :property="property"
         :score="autoScoreVal"
@@ -107,29 +88,44 @@
 
     <!-- ── QUESTIONS — prototype-style: teal address card + live gauge ── -->
     <template v-else-if="screen === 'questions'">
-      <div class="sim-root">
-        <!-- Top nav -->
-        <div class="sim-topnav">
-          <button
-            class="sim-back-btn"
-            @click="screen = 'landing'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="sim-eyebrow-pill"><span class="dot" />HomeScore</div>
-          <div style="width: 32px" />
-        </div>
+      <div class="sim-root sim-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'landing'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
 
+        <main class="hsw-shell simw-main">
+          <div class="simw-head">
+            <p class="simw-kicker"><span class="simw-kicker-dot" />Accuracy check</p>
+            <h1>Refine your HomeScore</h1>
+            <p class="simw-lede">
+              Tell us what's been done since the EPC — we'll score your home on reality, not old assumptions.
+            </p>
+          </div>
+
+          <div class="simw-layout">
+            <aside class="simw-aside">
         <!-- Amber address card — consistent with ResultDetail -->
         <div v-if="property" class="sim-addr-card">
           <div class="sim-addr-top">
@@ -246,6 +242,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="simw-content">
         <!-- Two paths — quiz vs bill upload -->
         <div class="sim-paths">
           <div class="sim-paths-eyebrow">Two ways to update your score</div>
@@ -440,6 +439,12 @@
           </button>
         </div>
 
+            </div>
+            <!-- /simw-content -->
+          </div>
+          <!-- /simw-layout -->
+        </main>
+
         <div style="height: 24px" />
       </div>
 
@@ -491,34 +496,53 @@
 
     <!-- ── POST-QUIZ (refined results) ───────────────────────────── -->
     <template v-else-if="screen === 'results'">
-      <div class="pq-root">
-        <!-- Top nav -->
-        <div class="pq-topnav">
-          <button
-            class="pq-back-btn"
-            @click="screen = 'landing'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="pq-topnav-centre">
-            <div class="pq-topnav-title">Your HomeScore</div>
-            <div class="pq-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="pq-root pq-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button
+                class="hsw-tour"
+                type="button"
+                title="How does this work?"
+                aria-label="How does this work?"
+                @click="resultTour.restart()"
+              >
+                ?
+              </button>
+              <button class="hsw-back" type="button" @click="screen = 'landing'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                HomeScore
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell pqw-main">
+          <div class="pqw-head">
+            <p class="pqw-kicker"><span class="pqw-kicker-dot" />Refined HomeScore</p>
+            <h1>Your refined HomeScore</h1>
+            <p class="pqw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="pqw-layout">
+            <aside class="pqw-aside">
         <!-- Amber address card with ✓ Quiz complete pill + 1 stat row -->
         <div v-if="property" class="pq-addr-card">
           <div class="pq-addr-top">
@@ -622,6 +646,9 @@
           </button>
         </div>
 
+            </aside>
+
+            <div class="pqw-content">
         <!-- Refined score card -->
         <div class="pq-score-card" :class="`tone-${pqScoreTone}`">
           <div class="pq-score-eyebrow">
@@ -761,40 +788,54 @@
           </div>
         </div>
 
-        <div style="height: 24px" />
+            </div>
+            <!-- /pqw-content -->
+          </div>
+          <!-- /pqw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── PUBLISH (publish HomeScore to street) ─────────────────── -->
     <template v-else-if="screen === 'publish'">
-      <div class="pub-root">
-        <!-- Top nav with back to results -->
-        <div class="pub-topnav">
-          <button
-            class="pub-back-btn"
-            @click="screen = 'results'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="pub-topnav-centre">
-            <div class="pub-topnav-title">Publish to your street</div>
-            <div class="pub-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="pub-root pub-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to results
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell pubw-main">
+          <div class="pubw-head">
+            <p class="pubw-kicker"><span class="pubw-kicker-dot" />Publish to your street</p>
+            <h1>Make energy costs more accurate for everyone nearby</h1>
+            <p class="pubw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="pubw-layout">
+            <aside class="pubw-aside">
         <!-- Address card -->
         <div v-if="property" class="pub-addr-card">
           <div class="pub-addr-top">
@@ -849,6 +890,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="pubw-content">
         <!-- What you're contributing -->
         <div class="pub-contrib-card">
           <div class="pub-contrib-eyebrow">What you're adding to the data</div>
@@ -974,40 +1018,54 @@
           </button>
         </div>
 
-        <div style="height: 24px" />
+            </div>
+            <!-- /pubw-content -->
+          </div>
+          <!-- /pubw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── KYC (verify ownership: choose method) ─────────────────── -->
     <template v-else-if="screen === 'kyc'">
-      <div class="kyc-root">
-        <!-- Top nav -->
-        <div class="kyc-topnav">
-          <button
-            class="kyc-back-btn"
-            @click="screen = 'publish'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="kyc-topnav-centre">
-            <div class="kyc-topnav-title">Verify ownership</div>
-            <div class="kyc-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="kyc-root kyc-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'publish'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell kycw-main">
+          <div class="kycw-head">
+            <p class="kycw-kicker"><span class="kycw-kicker-dot" />Verify ownership</p>
+            <h1>Prove you own this property</h1>
+            <p class="kycw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="kycw-layout">
+            <aside class="kycw-aside">
         <!-- 3-step progress -->
         <div class="kyc-steps">
           <div class="kyc-step active">
@@ -1036,6 +1094,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="kycw-content">
         <!-- 3 verification method choices -->
         <div class="kyc-methods">
           <div class="kyc-method" @click="verifyWith('photo-id')">
@@ -1082,40 +1143,55 @@
           🔒 Your documents are verified by our KYC partner and never stored by
           UMU HomeScore.
         </div>
-        <div style="height: 32px" />
+
+            </div>
+            <!-- /kycw-content -->
+          </div>
+          <!-- /kycw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── KYC PENDING (verified, ready to publish) ──────────────── -->
     <template v-else-if="screen === 'kyc-pending'">
-      <div class="kyc-root">
-        <!-- Top nav -->
-        <div class="kyc-topnav">
-          <button
-            class="kyc-back-btn"
-            @click="screen = 'kyc'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="kyc-topnav-centre">
-            <div class="kyc-topnav-title">Verifying ownership</div>
-            <div class="kyc-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="kyc-root kyc-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'kyc'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell kycw-main">
+          <div class="kycw-head">
+            <p class="kycw-kicker"><span class="kycw-kicker-dot" />Verifying ownership</p>
+            <h1>Ownership verified</h1>
+            <p class="kycw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="kycw-layout">
+            <aside class="kycw-aside">
         <!-- 3-step progress — step 1 done, step 2 active -->
         <div class="kyc-steps">
           <div class="kyc-step verified">
@@ -1145,6 +1221,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="kycw-content">
         <!-- Now unlocked -->
         <div class="kyc-unlocked">
           <div class="kyc-unlocked-eyebrow">Now unlocked for you</div>
@@ -1177,40 +1256,55 @@
             🏠 Start my Property Passport
           </button>
         </div>
-        <div style="height: 32px" />
+
+            </div>
+            <!-- /kycw-content -->
+          </div>
+          <!-- /kycw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── PUBLISHED (success confirmation) ──────────────────────── -->
     <template v-else-if="screen === 'published'">
-      <div class="kyc-root">
-        <!-- Top nav -->
-        <div class="kyc-topnav">
-          <button
-            class="kyc-back-btn"
-            @click="screen = 'results'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="kyc-topnav-centre">
-            <div class="kyc-topnav-title">Published</div>
-            <div class="kyc-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="kyc-root kyc-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                My HomeScore
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell kycw-main">
+          <div class="kycw-head">
+            <p class="kycw-kicker"><span class="kycw-kicker-dot" />Published</p>
+            <h1>Published to {{ pubStreetName }}</h1>
+            <p class="kycw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="kycw-layout">
+            <aside class="kycw-aside">
         <!-- Amber address card -->
         <div v-if="property" class="pub-addr-card">
           <div class="pub-addr-top">
@@ -1240,6 +1334,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="kycw-content">
         <!-- What's now updated for your street -->
         <div class="kyc-updates-card">
           <div class="kyc-updates-eyebrow">
@@ -1300,13 +1397,49 @@
             ← Back to my HomeScore
           </button>
         </div>
-        <div style="height: 40px" />
+
+            </div>
+            <!-- /kycw-content -->
+          </div>
+          <!-- /kycw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── PASSPORT ──────────────────────────────────────────────── -->
     <template v-else-if="screen === 'passport'">
-      <div class="hs-scroll" style="padding: 0">
+      <div class="hs-scroll hs-scroll--web pp-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="ppw-main">
+          <div class="ppw-head">
+            <p class="ppw-kicker"><span class="ppw-kicker-dot" />Property Passport</p>
+            <h1>Your Property Passport</h1>
+          </div>
         <!-- Tab bar -->
         <div class="hs-vault-tabs">
           <button
@@ -1654,12 +1787,57 @@
           </div>
           <div style="height: 80px" />
         </div>
+        </main>
       </div>
     </template>
 
     <!-- ── BUYER RESULTS ─────────────────────────────────────────── -->
     <template v-else-if="screen === 'buyer-results'">
-      <div class="hs-scroll bv-root">
+      <div class="hs-scroll hs-scroll--web bv-root bv-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button
+                class="hsw-tour"
+                type="button"
+                title="How does this work?"
+                aria-label="How does this work?"
+                @click="resultTour.restart()"
+              >
+                ?
+              </button>
+              <button class="hsw-back" type="button" @click="screen = 'landing'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                HomeScore
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="hsw-shell bvw-main">
+          <div class="bvw-head">
+            <p class="bvw-kicker"><span class="bvw-kicker-dot" />Property report</p>
+            <h1>Buyer report</h1>
+            <p class="bvw-lede">Everything public EPC data can tell you before you view or make an offer.</p>
+          </div>
+
+          <div class="bvw-layout">
+            <aside class="bvw-aside">
         <!-- ── Address card (consistent with ResultDetail) ─────── -->
         <div v-if="property" class="bv-addr-card">
           <div class="bv-addr-top">
@@ -1781,6 +1959,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="bvw-content">
         <!-- ── Buyer risk summary ──────────────────────────────── -->
         <div class="bv-section-h">
           <div class="bv-section-h-icon warn">
@@ -1923,38 +2104,55 @@
         <button class="bv-back" @click="screen = 'landing'">
           ← Back to HomeScore
         </button>
-        <div style="height: 24px" />
+
+            </div>
+            <!-- /bvw-content -->
+          </div>
+          <!-- /bvw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── BOOST YOUR SCORE — matches prototype `boost` screen ───── -->
     <template v-else-if="screen === 'quick-wins'">
-      <div class="boost-root">
-        <!-- Top nav -->
-        <div class="boost-topnav">
-          <button
-            class="boost-back-btn"
-            @click="screen = 'results'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="boost-topnav-centre">
-            <div class="boost-topnav-title">Boost your score</div>
-            <div class="boost-topnav-sub">Every document adds real value</div>
+      <div class="boost-root boost-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to score
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell boostw-main">
+          <div class="boostw-head">
+            <p class="boostw-kicker"><span class="boostw-kicker-dot" />Boost your score</p>
+            <h1>Every document adds real value</h1>
+            <p class="boostw-lede">
+              Add certificates and book trusted pros to verify your home and grow your Move Ready score.
+            </p>
+          </div>
+
+          <div class="boostw-layout">
+            <aside class="boostw-aside">
         <!-- Property Journey card -->
         <div class="boost-journey-card">
           <div class="boost-journey-header">
@@ -1996,6 +2194,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="boostw-content">
         <!-- Upload a document section -->
         <div class="boost-section-label">📎 UPLOAD A DOCUMENT</div>
         <div class="boost-cards">
@@ -2081,13 +2282,48 @@
         >
           ← Back to my score
         </button>
-        <div style="height: 24px" />
+
+            </div>
+            <!-- /boostw-content -->
+          </div>
+          <!-- /boostw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── MOVE READY ────────────────────────────────────────────── -->
     <template v-else-if="screen === 'move-ready'">
-      <div class="hs-scroll">
+      <div class="hs-scroll hs-scroll--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'quick-wins'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="hsw-shell mrw-main">
+          <div class="mrw-headline">
+            <p class="mrw-kicker"><span class="mrw-kicker-dot" />Move-ready status</p>
+          </div>
         <!-- Hero -->
         <div class="hs-mr-hero">
           <div class="hs-mr-hero-glow" />
@@ -2124,6 +2360,8 @@
           </div>
         </div>
 
+          <div class="mrw-grid">
+            <div class="mrw-col">
         <!-- Steps -->
         <div class="hs-qw-section-label">What happens next — 3 steps</div>
         <div class="hs-mr-steps">
@@ -2171,6 +2409,8 @@
           </div>
         </div>
 
+            </div>
+            <div class="mrw-col">
         <!-- Stats grid -->
         <div class="hs-mr-stats">
           <div class="hs-mr-stat">
@@ -2209,9 +2449,16 @@
         <button class="hs-btn-ghost" @click="screen = 'quick-wins'">
           ← Back
         </button>
-        <div style="height: 40px" />
+            </div>
+            <!-- /mrw-col -->
+          </div>
+          <!-- /mrw-grid -->
+        </main>
       </div>
     </template>
+
+    <!-- Shared site footer (all web screens; hidden during the brief loader) -->
+    <SiteFooter v-if="screen !== 'loading'" />
 
     <!-- Auth gate modal — shown when a guest taps "I'm interested in buying"
          or "Save to Buyer Profile". Returns user to this property after login. -->
@@ -2472,6 +2719,7 @@ import { usePropertyActions } from '~/composables/usePropertyActions'
 import { useAppToast } from '~/composables/useCustomToast'
 import ResultDetail from '~/components/homescore/ResultDetail.vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
 import type { TopWin, Opportunity } from '~/types/homescore'
 import { QUESTIONS } from '~/utils/homescoreScoring'
@@ -3746,10 +3994,13 @@ function makeAnimRef(source: () => number, durMs = 700, decimals = 0) {
   const out = ref(0)
   let raf = 0
   function animateTo(to: number) {
+    // On the server (SSR) there is no rAF — just set the final value so the
+    // initial render is correct and we don't throw during setup.
     const reduce =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      typeof window === 'undefined' ||
+      typeof requestAnimationFrame === 'undefined' ||
+      (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     if (reduce) {
       out.value = to
       return
@@ -3794,10 +4045,12 @@ function makeTypewriterRef(source: () => string, msPerChar = 32) {
       clearInterval(timer)
       timer = null
     }
+    // On the server (SSR) there is no timer loop — render the full text so the
+    // initial markup is complete and we don't call setInterval during setup.
     const reduce =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      typeof window === 'undefined' ||
+      (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     const full = text || ''
     if (reduce || !full) {
       out.value = full
@@ -4030,7 +4283,7 @@ const pqScoreExplainer = computed<string>(() => {
 // Refined per-pillar breakdown: take the EPC-derived baseline and credit
 // each accepted simulator improvement to the pillar it belongs to.
 const refinedBreakdownBars = computed(() => {
-  const base = (autoBreakdown.value ?? {}) as Record<string, number>
+  const base = (autoBreakdown.value ?? {}) as unknown as Record<string, number>
   const pillar: Record<string, number> = {
     heating: base.heating ?? 0,
     structure: base.structure ?? 0,
@@ -4189,7 +4442,9 @@ async function onPublishToStreet() {
     gateOwnerAction('publish')
     return
   }
-  await confirmPublish()
+  // Verified owner — step through the ownership-verification screen first
+  // (Verify → Publish → Passport), which then confirms the publish.
+  screen.value = 'kyc'
 }
 
 // User picked a KYC verification method. Records the intent via
@@ -4795,10 +5050,7 @@ function formatFileSize(bytes: number): string {
 }
 
 function openMarketplace() {
-  showToast({
-    message: 'Marketplace coming soon',
-    iconEmoji: '🔧',
-  })
+  router.push('/marketplace')
 }
 
 const qwUploadedCount = computed(
@@ -5064,7 +5316,183 @@ watch(screen, (s) => {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* `clip` (not `hidden`) prevents horizontal scroll WITHOUT turning this into
+     a scroll container — so the sticky web nav and sidebars keep working. */
+  overflow-x: clip;
+}
+
+/* ── Web result layout (landing screen only) ─────────────────────────
+   On the landing screen we widen the page to a full web canvas and let
+   ResultDetail's internal shell lay its cards out in a two-column grid. */
+.hs-page--web {
+  max-width: none;
+  background:
+    radial-gradient(circle at 80% 6%, rgba(0, 161, 154, 0.1), transparent 32%),
+    radial-gradient(circle at 6% 12%, rgba(90, 76, 240, 0.07), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f6fbfa 48%, #ffffff 100%);
+}
+
+.hsw-shell {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hsw-back:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.hsw-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+.hsw-tour {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #e2f1ea;
+  background: #f1f9f4;
+  color: #00a19a;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.hsw-tour:hover {
+  background: #f2faf8;
+  border-color: #b2e4e1;
+  color: #007e78;
+}
+
+.hsw-cta {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(120deg, #00a19a, #2f9bdf 52%, #5a4cf0);
+  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  transition: transform 0.18s;
+}
+
+.hsw-cta:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 899px) {
+  /* Below the two-column breakpoint, hide the desktop nav links/CTA so the
+     landing reverts to a clean mobile presentation. */
+  .hsw-links,
+  .hsw-cta {
+    display: none;
+  }
+  .hsw-shell {
+    width: calc(100% - 32px);
+  }
+  .hsw-nav-inner {
+    min-height: 56px;
+  }
 }
 
 /* ── Header ───────────────────────────────────────────── */
@@ -5178,20 +5606,71 @@ watch(screen, (s) => {
   scroll-behavior: smooth;
 }
 
+/* ── Web layout (move-ready screen on desktop) ────────────────────── */
+.hs-scroll--web {
+  flex: none;
+  overflow-y: visible;
+  padding: 0;
+}
+.mrw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.mrw-headline {
+  margin-bottom: 14px;
+}
+.mrw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.mrw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.mrw-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
+  align-items: start;
+  gap: 28px;
+  margin-top: 4px;
+}
+.mrw-col {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .mrw-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
 /* ── Loading ──────────────────────────────────────────── */
 .hs-loading-wrap {
   flex: 1;
+  min-height: 60vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 18px;
 }
 .hs-loading-ring {
-  width: 44px;
-  height: 44px;
-  border: 4px solid #e2e8e8;
-  border-top-color: #1f7a66;
+  width: 52px;
+  height: 52px;
+  border: 4px solid #d6efed;
+  border-top-color: #00a19a;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -5201,9 +5680,10 @@ watch(screen, (s) => {
   }
 }
 .hs-loading-label {
-  font-size: 14px;
-  color: #94a3b8;
-  font-weight: 500;
+  font-size: 15px;
+  color: #5b6d89;
+  font-weight: 600;
+  letter-spacing: -0.1px;
 }
 
 /* ── Money hook ───────────────────────────────────────── */
@@ -7103,6 +7583,51 @@ watch(screen, (s) => {
 }
 
 /* ── Vault tabs ──────────────────────────────────────── */
+/* ── Web layout (passport screen on desktop) ──────────────────────── */
+.ppw-main {
+  position: relative;
+  z-index: 2;
+  width: min(960px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 30px 0 60px;
+}
+.ppw-head {
+  margin-bottom: 18px;
+}
+.ppw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.ppw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.ppw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+/* Turn the tab strip into a rounded web card. */
+.ppw-main .hs-vault-tabs {
+  border: 1px solid #e7ecf2;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(19, 45, 78, 0.05);
+  overflow: hidden;
+}
+
 .hs-vault-tabs {
   display: flex;
   background: white;
@@ -9029,6 +9554,88 @@ watch(screen, (s) => {
   background: var(--bv-bg);
 }
 
+/* ── Web layout (buyer-results screen on desktop) ─────────────────── */
+.bv-root--web {
+  background: transparent;
+}
+.bvw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.bvw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.bvw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--bv-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.bvw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--bv-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.bvw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.bvw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.bvw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.bvw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Sidebar cards fill the column (reset their 28rem-era margins). */
+.bvw-layout .bvw-aside > * {
+  margin: 0;
+}
+.bvw-content {
+  min-width: 0;
+}
+/* The report sections keep their native side gutters so headers and cards
+   stay aligned; just trim the first one's top padding. */
+.bvw-content > .bv-section-h:first-child {
+  padding-top: 0;
+}
+
+@media (max-width: 980px) {
+  .bvw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .bvw-aside {
+    position: static;
+  }
+}
+
 /* ── Address card (consistent with ResultDetail) ────────────── */
 .bv-addr-card {
   margin: 16px 22px 0;
@@ -9590,6 +10197,91 @@ watch(screen, (s) => {
 /* ──────────────────────────────────────────────────────────────
    SIMULATOR — replaces the old quiz; matches homescore-v2_13.html
    ────────────────────────────────────────────────────────────── */
+/* ── Web layout (questions / accuracy-check screen on desktop) ────── */
+.sim-root--web {
+  max-width: none !important;
+  min-height: auto;
+  background: transparent;
+  overflow: visible;
+}
+.simw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.simw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.simw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.simw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.simw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.simw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.simw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.simw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Sidebar cards fill the column (reset their 28rem-era margins/padding). */
+.simw-layout .simw-aside > * {
+  margin: 0;
+}
+.simw-content {
+  min-width: 0;
+}
+/* The content keeps the sections' native spacing; just trim the first one's
+   top margin so it aligns with the sidebar. */
+.simw-content > .sim-paths {
+  margin-top: 0;
+}
+
+@media (max-width: 980px) {
+  .simw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .simw-aside {
+    position: static;
+  }
+}
+
 .sim-root {
   --sim-navy: #231d45;
   --sim-navy-soft: #4a4566;
@@ -10492,6 +11184,92 @@ watch(screen, (s) => {
   overflow-x: hidden;
 }
 
+/* ── Web layout (results screen on desktop) ───────────────────────── */
+.pq-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.pqw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.pqw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.pqw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--pq-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pqw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--pq-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.pqw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.pqw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.pqw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.pqw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.pqw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+/* Neutralise the cards' original 28rem-era side margins — spacing is now the
+   flex gaps. Specificity (0,3,0) wins over each card's own margin rule. */
+.pqw-layout .pqw-aside > *,
+.pqw-layout .pqw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .pqw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .pqw-aside {
+    position: static;
+  }
+}
+
 /* Top nav */
 .pq-topnav {
   display: flex;
@@ -11194,6 +11972,92 @@ watch(screen, (s) => {
   overflow-x: hidden;
 }
 
+/* ── Web layout (publish screen on desktop) ───────────────────────── */
+.pub-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.pubw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.pubw-head {
+  max-width: 720px;
+  margin-bottom: 24px;
+}
+.pubw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--pub-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pubw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--pub-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.pubw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+.pubw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.pubw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.pubw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.pubw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Neutralise the cards' original 28rem-era side margins — spacing is now the
+   flex gaps. Specificity (0,3,0) wins over each card's own margin rule. */
+.pubw-layout .pubw-aside > *,
+.pubw-layout .pubw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .pubw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .pubw-aside {
+    position: static;
+  }
+}
+
 /* Amber address card */
 .pub-addr-card {
   margin: 16px 22px 0;
@@ -11702,6 +12566,92 @@ watch(screen, (s) => {
   color: var(--kyc-navy);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ── Web layout (kyc screen on desktop) ───────────────────────────── */
+.kyc-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.kycw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.kycw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.kycw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--kyc-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.kycw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--kyc-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.kycw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.kycw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.kycw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.kycw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.kycw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Neutralise the cards' original 28rem-era side margins — spacing is now the
+   flex gaps. Specificity (0,3,0) wins over each card's own margin rule. */
+.kycw-layout .kycw-aside > *,
+.kycw-layout .kycw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .kycw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .kycw-aside {
+    position: static;
+  }
 }
 
 /* Top nav */
@@ -12367,6 +13317,90 @@ watch(screen, (s) => {
   color: var(--b-navy);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ── Web layout (boost / quick-wins screen on desktop) ────────────── */
+.boost-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.boostw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.boostw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.boostw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--b-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.boostw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--b-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.boostw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.boostw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.boostw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.boostw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.boostw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.boostw-layout .boostw-aside > *,
+.boostw-layout .boostw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .boostw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .boostw-aside {
+    position: static;
+  }
 }
 
 /* Top nav */
