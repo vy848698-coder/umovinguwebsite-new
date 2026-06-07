@@ -1,20 +1,68 @@
 <template>
-  <div class="mobile-container passport-page bg-umu-gradient">
-    <div class="passport-header">
-      <AppHeader
-        title="Passport"
-        :showBack="true"
-        right="profile"
-        :show-tour="true"
-        @tour="passportTourRef?.start?.()"
-      />
+  <div class="ppv-root">
+    <div class="ppv-ambient ppv-ambient-a" />
+    <div class="ppv-ambient ppv-ambient-b" />
+    <div class="ppv-mesh" />
 
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button
+            class="hsw-tour"
+            type="button"
+            title="Take a quick tour"
+            aria-label="Take a quick tour"
+            @click="passportTourRef?.start?.()"
+          >
+            ?
+          </button>
+          <button class="hsw-back" type="button" @click="navigateTo('/passport')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            All passports
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="hsw-shell ppv-main">
+      <!-- Page head — title + lede + isometric house -->
+      <div class="ppv-head">
+        <div class="ppv-head-text">
+          <p class="ppv-kicker"><span class="ppv-kicker-dot" />Property Passport</p>
+          <h1>Your Passport</h1>
+          <p class="ppv-lede">
+            Manage, publish, and share your property information with ease.
+          </p>
+        </div>
+        <img
+          src="/house.png"
+          alt=""
+          class="ppv-head-house"
+          @error="(e) => (e.target.style.display = 'none')"
+        />
+      </div>
+
+      <!-- Seller / Buyer role switch -->
       <SegmentedSwitch
+        class="ppv-role-switch"
         v-model="selectedRole"
         :options="roleOptions"
         @update:modelValue="onRoleSwitch"
       />
-    </div>
 
     <div class="passport-content">
       <!-- ── Premium Passport hero — book on left, dashboard on right ── -->
@@ -37,42 +85,44 @@
               <OPIcon name="caretDown" class="w-[16px] h-[16px]" />
             </button>
           </div>
-          <div class="pp-hero-stats">
-            <div class="pp-hero-stat">
-              <div class="pp-hero-stat-val">{{ heroHsScore }}</div>
-              <div class="pp-hero-stat-lbl">HS</div>
-            </div>
-            <div class="pp-hero-stat">
-              <div class="pp-hero-stat-val">{{ heroDocsCount }}</div>
-              <div class="pp-hero-stat-lbl">Docs</div>
-            </div>
-            <div class="pp-hero-stat">
-              <div class="pp-hero-stat-val">{{ heroSectionsLabel }}</div>
-              <div class="pp-hero-stat-lbl">Sections</div>
-            </div>
-            <!-- <div class="pp-hero-stat">
-              <div class="pp-hero-stat-val pp-hero-stat-val--ready">
-                {{ heroReadyPct }}
+          <div class="pp-hero-bottom">
+            <div class="pp-hero-stats">
+              <div class="pp-hero-stat">
+                <div class="pp-hero-stat-val">{{ heroHsScore }}</div>
+                <div class="pp-hero-stat-lbl">PTS</div>
               </div>
-              <div class="pp-hero-stat-lbl">Ready</div>
-            </div> -->
-          </div>
-          <div class="pp-hero-dash">
-            <div class="pp-hero-dash-row">
-              <span class="pp-hero-dash-label">Passport progress</span>
-              <span class="pp-hero-dash-pct">{{ overallProgress }}%</span>
-            </div>
-            <div class="pp-hero-dash-bar">
-              <div
-                class="pp-hero-dash-fill"
-                :style="{ width: safeProgress + '%' }"
-              >
-                <OPIcon name="progressMan" class="pp-hero-dash-man" />
+              <div class="pp-hero-stat">
+                <div class="pp-hero-stat-val">{{ heroDocsCount }}</div>
+                <div class="pp-hero-stat-lbl">Docs</div>
+              </div>
+              <div class="pp-hero-stat">
+                <div class="pp-hero-stat-val">{{ heroSectionsLabel }}</div>
+                <div class="pp-hero-stat-lbl">Sections</div>
               </div>
             </div>
-            <div class="pp-hero-dash-issued">
-              <span class="pp-hero-dash-dot" />
-              Passport issued
+
+            <div class="pp-hero-progress">
+              <div class="pp-hero-ring">
+                <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
+                  <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
+                  <circle
+                    cx="36"
+                    cy="36"
+                    r="30"
+                    class="pp-hero-ring-fill"
+                    stroke-dasharray="188.5"
+                    :stroke-dashoffset="188.5 - (188.5 * safeProgress) / 100"
+                  />
+                </svg>
+                <span class="pp-hero-ring-pct">{{ overallProgress }}%</span>
+              </div>
+              <div class="pp-hero-progress-meta">
+                <div class="pp-hero-progress-label">Passport progress</div>
+                <div class="pp-hero-dash-issued">
+                  <span class="pp-hero-dash-dot" />
+                  Passport issued
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -437,6 +487,9 @@
         <div style="height: 80px" />
       </div>
     </div>
+    </main>
+
+    <SiteFooter />
 
     <!-- Add Collaborator Modal -->
     <AddCollaboratorModal
@@ -454,19 +507,24 @@
       @select="switchPassport"
     />
 
-    <!-- Guided tour — auto-runs once, replays from the "?" in AppHeader -->
+    <!-- Guided tour — auto-runs once, replays from the "?" in the nav -->
     <OnboardingTour
       ref="passportTourRef"
       :steps="passportTourSteps"
       storage-key="umu_tour_passportview_v1"
     />
+
+    <div class="ppv-mobile-nav">
+      <BottomNav active="passport" />
+    </div>
   </div>
 </template>
 
 <script setup>
 // import { usePassportSteps } from '~/composables/usePassportSteps'
 import PassportMapView from '@/components/passport-view/PassportMapView.vue'
-import AppHeader from '@/components/core/AppHeader.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import BottomNav from '~/components/core/BottomNav.vue'
 import PassportCard from '@/components/passport-view/PassportCard.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 import SegmentedSwitch from '@/components/core/SegmentedSwitch.vue'
@@ -893,20 +951,336 @@ const onRoleSwitch = (role) => {
 </script>
 
 <style scoped>
-.passport-page {
-  min-height: 100vh;
-  background: #fff;
+/* ── Web canvas ───────────────────────────────────────────────────── */
+.ppv-root {
+  --color-border: #e7ecf2;
+  min-height: 100dvh;
   color: #231d45;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* `clip` keeps the sticky nav working. */
+  overflow: clip;
+  position: relative;
 }
 
-.passport-header {
+.ppv-ambient,
+.ppv-mesh {
+  pointer-events: none;
+  position: fixed;
+}
+
+.ppv-ambient {
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+
+.ppv-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+
+.ppv-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+.ppv-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+/* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
+.hsw-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-tour {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #e2f1ea;
+  background: #f1f9f4;
+  color: #00a19a;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.hsw-tour:hover {
+  background: #f2faf8;
+  border-color: #b2e4e1;
+  color: #007e78;
+}
+
+.hsw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
   background: #fff;
-  padding: 14px 20px 12px;
-  border-bottom: 1px solid #eef0f6;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hsw-back:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.hsw-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Page head ────────────────────────────────────────────────────── */
+.ppv-main {
+  padding: 36px 0 60px;
+}
+
+.ppv-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.ppv-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ppv-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+
+.ppv-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.ppv-lede {
+  margin: 14px 0 0;
+  max-width: 460px;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.ppv-head-house {
+  width: clamp(160px, 22vw, 240px);
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: -8px;
+  filter: drop-shadow(0 24px 36px rgba(31, 61, 98, 0.16));
+  pointer-events: none;
+  user-select: none;
+}
+
+.ppv-role-switch {
+  margin-bottom: 18px;
+}
+
+.ppv-mobile-nav {
+  display: none;
 }
 
 .passport-content {
-  padding: 16px 20px 80px !important;
+  padding: 0 0 40px !important;
+}
+
+/* ── Hero bottom — stats + circular progress ring ─────────────────── */
+.pp-hero-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.pp-hero-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.pp-hero-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.pp-hero-ring-svg {
+  width: 72px;
+  height: 72px;
+  display: block;
+}
+
+.pp-hero-ring-track {
+  fill: none;
+  stroke: #e2f1ea;
+  stroke-width: 6;
+}
+
+.pp-hero-ring-fill {
+  fill: none;
+  stroke: #00a19a;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pp-hero-ring-pct {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #08102f;
+  letter-spacing: -0.02em;
+}
+
+.pp-hero-progress-meta {
+  min-width: 0;
+}
+
+.pp-hero-progress-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 6px;
 }
 
 .header-top {
@@ -1780,14 +2154,17 @@ const onRoleSwitch = (role) => {
     radial-gradient(circle at 90% 90%, rgba(35, 29, 69, 0.04), transparent 50%),
     linear-gradient(180deg, #f4fbfa 0%, #fff 100%);
   border: 1px solid #e2f1ea;
-  border-radius: 18px;
-  padding: 18px 16px 16px;
-  margin-bottom: 14px;
+  border-radius: 22px;
+  padding: 24px 26px;
+  margin-bottom: 16px;
   display: flex;
-  align-items: stretch;
-  gap: 14px;
+  align-items: center;
+  gap: 26px;
   position: relative;
   overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px rgba(31, 61, 98, 0.08);
 }
 .pp-hero-glow {
   position: absolute;
@@ -1800,12 +2177,12 @@ const onRoleSwitch = (role) => {
   pointer-events: none;
 }
 .pp-hero-book {
-  width: 104px;
+  width: 132px;
   flex-shrink: 0;
   display: flex;
   align-items: stretch;
   justify-content: center;
-  filter: drop-shadow(0 8px 18px rgba(0, 140, 134, 0.28));
+  filter: drop-shadow(0 12px 26px rgba(0, 140, 134, 0.3));
 }
 .pp-hero-book :deep(.passport-card) {
   padding: 0;
@@ -1815,7 +2192,7 @@ const onRoleSwitch = (role) => {
 }
 .pp-hero-book :deep(.passport-container) {
   width: 100%;
-  height: 140px;
+  height: 172px;
 }
 .pp-hero-book :deep(.passport-image) {
   width: 100%;
@@ -1831,12 +2208,12 @@ const onRoleSwitch = (role) => {
   z-index: 1;
 }
 .pp-hero-eyebrow {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #00a19a;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 .pp-hero-addr-row {
   display: flex;
@@ -1848,16 +2225,16 @@ const onRoleSwitch = (role) => {
   min-width: 0;
 }
 .pp-hero-addr-l1 {
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
   color: #231d45;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 .pp-hero-addr-l2 {
-  font-size: 11.5px;
+  font-size: 13px;
   color: #94a3b8;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .pp-hero-switch {
   width: 26px;
@@ -1872,35 +2249,37 @@ const onRoleSwitch = (role) => {
   flex-shrink: 0;
 }
 .pp-hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  align-items: center;
   gap: 0;
-  margin-top: 10px;
 }
 .pp-hero-stat {
   text-align: center;
-  padding: 0 4px;
+  padding: 0 22px;
+}
+.pp-hero-stat:first-child {
+  padding-left: 0;
 }
 .pp-hero-stat + .pp-hero-stat {
-  border-left: 1px solid rgba(35, 29, 69, 0.08);
+  border-left: 1px solid rgba(35, 29, 69, 0.1);
 }
 .pp-hero-stat-val {
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 900;
   color: #231d45;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 .pp-hero-stat-val--ready {
   color: #00a19a;
 }
 .pp-hero-stat-lbl {
-  font-size: 7.5px;
+  font-size: 10px;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 3px;
-  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-top: 5px;
+  font-weight: 800;
 }
 
 .pp-hero-dash {
@@ -2219,5 +2598,67 @@ const onRoleSwitch = (role) => {
   font-size: 18px;
   font-weight: 600;
   flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .ppv-head-house {
+    width: 150px;
+  }
+}
+
+@media (max-width: 899px) {
+  .hsw-links {
+    display: none;
+  }
+
+  .hsw-shell {
+    width: calc(100% - 32px);
+  }
+
+  .hsw-nav-inner {
+    min-height: 58px;
+  }
+
+  .ppv-main {
+    padding-top: 26px;
+    padding-bottom: 96px;
+  }
+
+  .ppv-mobile-nav {
+    display: block;
+  }
+
+  .ppv-head-house {
+    display: none;
+  }
+
+  .pp-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .pp-hero-book {
+    width: 120px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hsw-shell {
+    width: calc(100% - 24px);
+  }
+
+  .hsw-back {
+    display: none;
+  }
+
+  .pp-hero-bottom {
+    gap: 14px;
+  }
+
+  .pp-hero-stat {
+    padding: 0 14px;
+  }
 }
 </style>

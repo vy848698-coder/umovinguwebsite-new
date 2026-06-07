@@ -1,22 +1,35 @@
 <template>
-  <div class="pd-page mobile-container">
-    <div class="pd-topbar">
-      <button class="pd-back" @click="goBack" aria-label="Back">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="pd-top-title">Passport complete</div>
-      <div class="pd-top-spacer" />
-    </div>
+  <div class="pd-page">
+    <div class="pd-ambient pd-ambient-a" />
+    <div class="pd-ambient pd-ambient-b" />
+    <div class="pd-mesh" />
 
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="goBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="pdw-main">
     <!-- Hero -->
     <div class="pd-hero">
       <div class="pd-burst" aria-hidden="true">
@@ -101,8 +114,13 @@
       </ul>
     </div>
 
-    <div style="height: 100px" />
-    <BottomNav active="passport" />
+    </main>
+
+    <SiteFooter />
+
+    <div class="pd-mobile-nav">
+      <BottomNav active="passport" />
+    </div>
 
     <Toast
       v-if="toastState.visible"
@@ -117,6 +135,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BottomNav from '~/components/core/BottomNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import Toast from '~/components/ui/Toast.vue'
 import { useAppToast } from '~/composables/useCustomToast'
 
@@ -190,44 +209,65 @@ function goBack() {
 </script>
 
 <style scoped>
+/* ── Web canvas ───────────────────────────────────────────────────── */
 .pd-page {
-  min-height: 100vh;
-  background: #fafafa;
-  padding-bottom: 24px;
-}
-.pd-topbar {
-  display: flex;
-  align-items: center;
-  padding: 14px 18px;
-  background: #fff;
-  border-bottom: 1px solid #f1efee;
-}
-.pd-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid #ececef;
-  background: #fff;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-.pd-back svg {
-  width: 16px;
-  height: 16px;
+  --color-border: #e7ecf2;
+  min-height: 100dvh;
   color: #231d45;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: clip;
+  position: relative;
 }
-.pd-top-title {
-  flex: 1;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.2px;
+.pd-ambient,
+.pd-mesh { pointer-events: none; position: fixed; }
+.pd-ambient { border-radius: 999px; filter: blur(48px); opacity: 0.16; }
+.pd-ambient-a { width: 300px; height: 300px; left: -100px; top: 120px; background: #00a19a; }
+.pd-ambient-b { width: 320px; height: 320px; right: -120px; top: 160px; background: #5a4cf0; }
+.pd-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
 }
-.pd-top-spacer {
-  width: 36px;
+
+/* ── Web nav ──────────────────────────────────────────────────────── */
+.hsw-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; position: relative; z-index: 2; }
+.hsw-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
 }
+.hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 10px; color: #0d1835; cursor: pointer; font-size: 20px; font-weight: 800; flex-shrink: 0; font-family: inherit; }
+.hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
+.hsw-links { display: flex; gap: 6px; }
+.hsw-links button { border: 0; background: transparent; color: #475a7b; cursor: pointer; font-size: 14px; font-weight: 700; padding: 10px 14px; border-radius: 10px; white-space: nowrap; font-family: inherit; transition: background 0.18s, color 0.18s; }
+.hsw-links button:hover { color: #0c2342; background: rgba(0, 161, 154, 0.08); }
+.hsw-links button.active { color: #00857f; background: rgba(0, 161, 154, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24); }
+.hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #d8e3ee; background: #fff; color: #0c2342; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.18s, background 0.18s; }
+.hsw-back:hover { border-color: #bfd1e4; background: #f8fbff; }
+.hsw-back svg { width: 15px; height: 15px; }
+
+/* ── Focused completion column ────────────────────────────────────── */
+.pdw-main {
+  position: relative;
+  z-index: 1;
+  width: min(640px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 20px 0 60px;
+}
+.pd-mobile-nav { display: none; }
 
 .pd-hero {
   position: relative;
@@ -463,5 +503,23 @@ function goBack() {
   color: #007e78;
   font-weight: 700;
   text-decoration: underline;
+}
+
+/* ── Web column overrides (cards fill the focused column) ──────────── */
+.pdw-main .pd-cta-stack { padding-left: 0; padding-right: 0; }
+.pdw-main .pd-stats { margin-left: 0; margin-right: 0; }
+.pdw-main .pd-next { margin-left: 0; margin-right: 0; }
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 899px) {
+  .hsw-links { display: none; }
+  .hsw-shell { width: calc(100% - 32px); }
+  .hsw-nav-inner { min-height: 58px; }
+  .pdw-main { width: calc(100% - 32px); padding-bottom: 96px; }
+  .pd-mobile-nav { display: block; }
+}
+@media (max-width: 640px) {
+  .hsw-shell, .pdw-main { width: calc(100% - 24px); }
+  .hsw-back { display: none; }
 }
 </style>

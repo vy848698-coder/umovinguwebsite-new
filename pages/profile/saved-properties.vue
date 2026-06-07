@@ -157,6 +157,7 @@
 <script setup lang="ts">
 import { usePropertyActions } from '~/composables/usePropertyActions'
 import PropertyImage from '~/components/property/PropertyImage.vue'
+import WebTopNav from '~/components/core/WebTopNav.vue'
 
 definePageMeta({ middleware: 'auth' })
 

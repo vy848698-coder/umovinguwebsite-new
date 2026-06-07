@@ -62,6 +62,7 @@
 <script setup lang="ts">
 import { useVerificationCode } from '../composables/useVerificationCode'
 import CodeInput from './verification/CodeInput.vue'
+import BackButton from './core/BackButton.vue'
 
 // Use the composable for all data and methods
 const {

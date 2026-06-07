@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import OPIcon from '~/components/ui/OPIcon.vue'
 definePageMeta({
   title: 'Welcome - UmovingU',
 })

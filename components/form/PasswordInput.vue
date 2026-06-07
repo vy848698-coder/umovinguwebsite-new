@@ -34,6 +34,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import OPIcon from '~/components/ui/OPIcon.vue'
 
 const props = defineProps({
   modelValue: {

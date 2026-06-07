@@ -287,6 +287,7 @@
 
 <script setup lang="ts">
 import { useProfile } from '~/composables/useProfile'
+import WebTopNav from '~/components/core/WebTopNav.vue'
 
 definePageMeta({ title: 'Settings - UmovingU', middleware: 'auth' })
 

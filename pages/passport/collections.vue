@@ -1,108 +1,76 @@
 <template>
-  <div class="collections-page mobile-container bg-umu-gradient">
-    <!-- Header -->
-    <div class="coll-header">
-      <button class="back-btn" @click="router.back()">
-        <svg width="10" height="17" viewBox="0 0 10 17" fill="none">
-          <path
-            d="M8.5 1.5L1.5 8.5L8.5 15.5"
-            stroke="#00a19a"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <span>Back</span>
-      </button>
-      <div class="coll-header-right">
-        <!-- Compact search — expands to a full-width input when toggled -->
-        <div class="coll-nav-search" :class="{ open: searchOpen }">
-          <button
-            class="coll-nav-search-btn"
-            aria-label="Search Passports"
-            data-tour="search-btn"
-            @click="onToggleSearch"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="M16.5 16.5L21 21" />
-            </svg>
-          </button>
-          <input
-            v-if="searchOpen"
-            ref="searchInputRef"
-            v-model="query"
-            class="coll-nav-search-input"
-            placeholder="Search Passports…"
-            @keyup.escape="searchOpen = false"
-            @blur="onSearchBlur"
-          />
-          <button
-            v-if="searchOpen && query"
-            class="coll-nav-search-clear"
-            aria-label="Clear search"
-            @click="query = ''"
-          >
-            ×
-          </button>
-        </div>
+  <div class="pp-root">
+    <div class="pp-ambient pp-ambient-a" />
+    <div class="pp-ambient pp-ambient-b" />
+    <div class="pp-mesh" />
 
-        <button
-          class="coll-tour-btn"
-          aria-label="Take a quick tour"
-          data-tour="tour-btn"
-          @click="collectionsTourRef?.start?.()"
-        >
-          ?
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
         </button>
-        <div
-          class="w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 cursor-pointer"
-          @click="navigateTo('/profile')"
-        >
-          <UserAvatar
-            :src="profile?.avatarUrl"
-            :firstName="profile?.firstName"
-            :lastName="profile?.lastName"
-            :size="36"
-          />
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button
+            class="hsw-tour"
+            type="button"
+            title="Take a quick tour"
+            aria-label="Take a quick tour"
+            data-tour="tour-btn"
+            @click="collectionsTourRef?.start?.()"
+          >
+            ?
+          </button>
+          <button class="hsw-avatar" type="button" aria-label="Profile" @click="navigateTo('/profile')">
+            <UserAvatar
+              :src="profile?.avatarUrl"
+              :firstName="profile?.firstName"
+              :lastName="profile?.lastName"
+              :size="40"
+            />
+          </button>
+          <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Hero — greeting + big title + inline stats (prototype-matching) -->
-    <div class="coll-hero" data-tour="hero">
-      <div class="coll-hero-eyebrow">
-        Welcome back<template v-if="profile?.firstName"
-          >, {{ profile.firstName }}</template
-        >
+    <main class="hsw-shell ppw-main">
+      <!-- Page head — kicker + title + lede + stats -->
+      <div class="ppw-head" data-tour="hero">
+        <p class="ppw-kicker"><span class="ppw-kicker-dot" />Your portfolio</p>
+        <h1>
+          Passports<template v-if="profile?.firstName"><span class="ppw-head-name"> — welcome back, {{ profile.firstName }}</span></template>
+        </h1>
+        <p class="ppw-lede">
+          Every Property Passport you own, in one place. Pick up where you left
+          off, manage collections and keep documents secured.
+        </p>
+        <div class="ppw-stats" data-tour="stats">
+          <div class="ppw-stat">
+            <span class="ppw-stat-num">{{ totalPassports }}</span>
+            <span class="ppw-stat-label">{{ totalPassports === 1 ? 'property' : 'properties' }}</span>
+          </div>
+          <div class="ppw-stat">
+            <span class="ppw-stat-num">{{ documentsSecured }}</span>
+            <span class="ppw-stat-label">documents secured</span>
+          </div>
+          <div class="ppw-stat">
+            <span class="ppw-stat-num gold">{{ pointsEarned }}</span>
+            <span class="ppw-stat-label">points earned</span>
+          </div>
+        </div>
       </div>
-      <h1 class="coll-hero-title">Passports</h1>
-      <div class="coll-hero-stats" data-tour="stats">
-        <span>
-          <span class="stat-num">{{ totalPassports }}</span>
-          {{ totalPassports === 1 ? 'property' : 'properties' }}
-        </span>
-        <span class="stat-sep" />
-        <span>
-          <span class="stat-num">{{ documentsSecured }}</span>
-          documents secured
-        </span>
-        <span class="stat-sep" />
-        <span>
-          <span class="stat-num gold">{{ pointsEarned }}</span>
-          points earned
-        </span>
-      </div>
-    </div>
 
+      <div class="ppw-layout">
+        <aside class="ppw-aside">
     <!-- Pick up where you left off — most recently edited passport -->
     <button
       v-if="resumeCard"
@@ -207,9 +175,40 @@
       </button>
     </div>
 
-    <!-- Controls row -->
-    <div class="controls-row px-4 mb-4">
-      <button class="create-collection-btn" @click="showCreateModal = true">
+        </aside>
+
+        <section class="ppw-content">
+    <!-- Controls row — search + create -->
+    <div class="ppw-controls">
+      <div class="ppw-search" :class="{ active: !!query }">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="M16.5 16.5L21 21" />
+        </svg>
+        <input
+          v-model="query"
+          class="ppw-search-input"
+          data-tour="search-btn"
+          placeholder="Search passports by address or postcode…"
+        />
+        <button
+          v-if="query"
+          class="ppw-search-clear"
+          aria-label="Clear search"
+          @click="query = ''"
+        >
+          ×
+        </button>
+      </div>
+      <button class="ppw-create-btn" @click="showCreateModal = true">
         <span>+</span> Create Collection
       </button>
     </div>
@@ -399,6 +398,11 @@
         <p class="cell-sub">Add Passport</p>
       </div>
     </div>
+        </section>
+      </div>
+    </main>
+
+    <SiteFooter />
 
     <!-- Create collection modal -->
     <CreateCollectionModal
@@ -491,16 +495,22 @@
       :steps="collectionsTourSteps"
       storage-key="umu_tour_collections_v1"
     />
+
+    <div class="pp-mobile-nav">
+      <BottomNav active="passport" />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CreateCollectionModal from '@/components/modals/CreateCollectionModal.vue'
 import CollectionDetailModal from '@/components/modals/CollectionDetailModal.vue'
 import UserAvatar from '~/components/ui/UserAvatar.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import BottomNav from '~/components/core/BottomNav.vue'
 
 const { profile } = useProfile()
 
@@ -521,25 +531,6 @@ const activeCollection = ref(null)
 const sortAsc = ref(true)
 const cityFilter = ref('all')
 
-// Compact navbar search toggle — only shown when the user taps the magnifier
-// in the header. Closes on blur (unless there's an active query) and on Esc.
-const searchOpen = ref(false)
-const searchInputRef = ref(null)
-
-async function onToggleSearch() {
-  searchOpen.value = !searchOpen.value
-  if (searchOpen.value) {
-    await nextTick()
-    searchInputRef.value?.focus?.()
-  }
-}
-
-function onSearchBlur() {
-  // Keep the input open when there's a query so the user can see it driving
-  // results. Close it when the user blurs an empty input.
-  if (!query.value.trim()) searchOpen.value = false
-}
-
 // Pull a sensible "place" label from any passport — prefers city, falls
 // back to the postcode area (the letters before the first digit, e.g. "CV5"
 // → "CV", "SK7" → "SK"). Lets us auto-derive Coventry/Stockport-style
@@ -558,10 +549,6 @@ function passportCity(p) {
 const showDeleteModal = ref(false)
 const passportToDelete = ref(null)
 const deleting = ref(false)
-
-const toggleSort = () => {
-  sortAsc.value = !sortAsc.value
-}
 
 function passportMatchesCity(p) {
   if (cityFilter.value === 'all') return true
@@ -848,22 +835,457 @@ const executeDelete = async () => {
 </script>
 
 <style scoped>
-.collections-page {
-  /* `mobile-container` already provides max-w-md / mx-auto / w-full /
-     min-h-dvh; we just need to make sure the page can grow naturally and
-     scrolls with the document, not inside a clipped container. */
-  width: 100%;
+/* ── Web canvas ───────────────────────────────────────────────────── */
+.pp-root {
+  --color-teal: #00a19a;
+  --color-blue: #2f9bdf;
+  --color-purple: #5a4cf0;
+  --color-ink: #231d45;
+  --color-muted: #6b6783;
+  --color-border: #e7ecf2;
+  min-height: 100dvh;
+  color: var(--color-ink);
   background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
-  display: flex;
-  flex-direction: column;
-  overflow: visible;
-  color: #231d45;
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 8px 12px 28px;
+  /* `clip` keeps the sticky nav working (vs `hidden`, which makes this a
+     scroll container and breaks position: sticky). */
+  overflow: clip;
+  position: relative;
+}
+
+.pp-ambient,
+.pp-mesh {
+  pointer-events: none;
+  position: fixed;
+}
+
+.pp-ambient {
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+
+.pp-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+
+.pp-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+.pp-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+/* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
+.hsw-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-tour {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #e2f1ea;
+  background: #f1f9f4;
+  color: #00a19a;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.hsw-tour:hover {
+  background: #f2faf8;
+  border-color: #b2e4e1;
+  color: #007e78;
+}
+
+.hsw-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.hsw-avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.12);
+}
+
+.hsw-cta {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(120deg, #00a19a, #2f9bdf 52%, #5a4cf0);
+  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  transition: transform 0.18s;
+}
+
+.hsw-cta:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Page head ────────────────────────────────────────────────────── */
+.ppw-main {
+  padding: 48px 0 60px;
+}
+
+.ppw-head {
+  max-width: 760px;
+}
+
+.ppw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ppw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+
+.ppw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.ppw-head-name {
+  color: #00857f;
+  font-weight: 800;
+}
+
+.ppw-lede {
+  margin: 18px 0 0;
+  max-width: 560px;
+  color: #5b6d89;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.ppw-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.ppw-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 20px;
+  border: 1px solid rgba(231, 236, 242, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 24px rgba(17, 52, 88, 0.06);
+}
+
+.ppw-stat-num {
+  font-size: 26px;
+  font-weight: 900;
+  color: #1a1535;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum';
+  line-height: 1;
+}
+
+.ppw-stat-num.gold {
+  color: #b07a1f;
+}
+
+.ppw-stat-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6b6783;
+}
+
+/* ── Two-column layout ────────────────────────────────────────────── */
+.ppw-layout {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 36px;
+  margin-top: 40px;
+  align-items: start;
+}
+
+.ppw-aside {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ppw-content {
+  min-width: 0;
+}
+
+/* ── Controls (search + create) ───────────────────────────────────── */
+.ppw-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.ppw-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1.5px solid #e7ecf2;
+  border-radius: 14px;
+  padding: 0 12px;
+  height: 48px;
+  color: #94a3b8;
+  box-shadow: 0 10px 24px rgba(24, 52, 88, 0.05);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ppw-search:focus-within,
+.ppw-search.active {
+  border-color: #00a19a;
+  color: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
+}
+
+.ppw-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #231d45;
+}
+
+.ppw-search-input::placeholder {
+  color: #9c98ad;
+  font-weight: 500;
+}
+
+.ppw-search-clear {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ppw-search-clear:hover {
+  background: #eef0f6;
+  color: #231d45;
+}
+
+.ppw-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 14px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.ppw-create-btn span {
+  font-size: 18px;
+  color: #00a19a;
+  line-height: 1;
+}
+
+.ppw-create-btn:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+  transform: translateY(-1px);
+}
+
+.pp-mobile-nav {
+  display: none;
+}
+
+/* ── Web overrides for legacy mobile blocks ───────────────────────── */
+/* Resume card → fits the sidebar, full width, no stray mobile margins. */
+.ppw-aside .coll-resume {
+  width: 100%;
+  margin: 0;
+}
+
+/* Watching list → sidebar block, no horizontal padding / huge bottom gap. */
+.ppw-aside .watching-section {
+  padding: 0;
+  margin: 0;
+}
+
+.ppw-aside .watching-header {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Location chips → wrap inside the sidebar instead of horizontal scroll. */
+.ppw-aside .coll-cities {
+  flex-wrap: wrap;
+  padding: 0;
+  overflow: visible;
+}
+
+/* Passport grid → roomy gallery, no leftover tailwind px-4 / pb-24. */
+.ppw-content .passport-grid {
+  padding: 0;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 28px 18px;
+  justify-items: center;
+}
+
+.ppw-content .coll-state-wrap {
+  padding: 0;
 }
 
 .coll-state-wrap {
@@ -918,276 +1340,67 @@ const executeDelete = async () => {
   cursor: pointer;
 }
 
-/* Header */
-.coll-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 14px 18px 8px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-  background: rgba(249, 252, 255, 0.92);
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  position: sticky;
-  top: 8px;
-  z-index: 20;
-}
-
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #fff;
-  border: 1px solid #ececef;
-  color: #231d45;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0 12px 0 10px;
-  height: 36px;
-  border-radius: 999px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.back-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.12);
-}
-
-/* Title block */
-.coll-title-block {
-  text-align: center;
-  padding: 16px 24px 20px;
-}
-
-.coll-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 6px;
-}
-
-.coll-subtitle-colored {
-  color: #00a19a;
-  font-size: 15px;
-  margin: 0 0 4px;
-}
-
-.coll-subtitle {
-  color: #8e8e93;
-  font-size: 13px;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* ── Header — tour-button alignment ─────────────────────── */
-.coll-header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Compact search lives in the navbar — collapses to a 32 px circular
-   button, expands to a pill-shaped input that pushes the avatar/help
-   buttons out of frame on tap. */
-.coll-nav-search {
-  display: inline-flex;
-  align-items: center;
-  background: #fff;
-  border: 1px solid rgba(174, 201, 231, 0.5);
-  border-radius: 999px;
-  height: 32px;
-  overflow: hidden;
-  transition:
-    width 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 0.18s,
-    background 0.18s;
-  width: 32px;
-}
-.coll-nav-search.open {
-  width: 220px;
-  background: #fff;
-  border-color: #e5f4f2;
-  box-shadow: 0 8px 18px rgba(17, 52, 88, 0.12);
-}
-.coll-nav-search-btn {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: transparent;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  color: #4a5568;
-  flex-shrink: 0;
-}
-.coll-nav-search.open .coll-nav-search-btn {
-  color: #00a19a;
-}
-.coll-nav-search-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 13px;
-  color: #231d45;
-  padding: 0 6px 0 0;
-  font-family: inherit;
-}
-.coll-nav-search-input::placeholder {
-  color: #94a3b8;
-}
-.coll-nav-search-clear {
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 50%;
-  background: #f1f5f9;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  margin-right: 4px;
-  flex-shrink: 0;
-}
-.coll-nav-search-clear:hover {
-  background: #eef0f6;
-  color: #231d45;
-}
-
-.coll-tour-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid rgba(174, 201, 231, 0.5);
-  color: #4a5568;
-  font-size: 15px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  font-family: inherit;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s;
-}
-.coll-tour-btn:hover,
-.coll-tour-btn:active {
-  background: #f7fbff;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(35, 29, 69, 0.1);
-}
-
-/* ── Hero block (greeting + Passports + inline stats) ───── */
-.coll-hero {
-  width: min(100%, 980px);
-  margin: 12px auto 0;
-  padding: 26px 24px 22px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.96) 0%,
-    rgba(242, 250, 255, 0.94) 52%,
-    rgba(236, 255, 249, 0.96) 100%
-  );
-  border: 1px solid rgba(174, 201, 231, 0.48);
-  border-radius: 24px;
-  box-shadow:
-    0 14px 34px rgba(17, 52, 88, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  position: relative;
-  overflow: hidden;
-}
-
-.coll-hero::before {
-  content: '';
-  position: absolute;
-  top: -26px;
-  right: -18px;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.12) 0%, transparent 72%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.coll-hero-eyebrow {
-  font-size: 12px;
-  font-weight: 800;
-  color: #007e78;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  position: relative;
-  z-index: 1;
-}
-.coll-hero-title {
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  color: #1a1535;
-  margin: 0 0 10px;
-  position: relative;
-  z-index: 1;
-}
-.coll-hero-stats {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 13px;
-  font-weight: 700;
-  color: #6b6783;
-  letter-spacing: -0.01em;
-  position: relative;
-  z-index: 1;
-}
-.coll-hero-stats .stat-num {
-  color: #1a1535;
-  font-weight: 800;
-  font-feature-settings: 'tnum';
-  margin-right: 4px;
-}
-.coll-hero-stats .stat-num.gold {
-  color: #b07a1f;
-}
-.coll-hero-stats .stat-sep {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #c0bdcc;
-  margin: 0 8px;
-}
-
-@media (max-width: 700px) {
-  .collections-page {
-    padding: 0 10px 24px;
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .ppw-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
 
-  .coll-header {
-    width: 100%;
-    border-radius: 16px;
-    top: 0;
+  .ppw-aside {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 899px) {
+  .hsw-links,
+  .hsw-cta {
+    display: none;
   }
 
-  .coll-hero {
-    width: 100%;
-    padding: 22px 18px 18px;
-    border-radius: 20px;
+  .hsw-shell {
+    width: calc(100% - 32px);
   }
 
-  .coll-hero-title {
-    font-size: 34px;
+  .hsw-nav-inner {
+    min-height: 58px;
   }
 
-  .coll-nav-search.open {
-    width: 180px;
+  .ppw-main {
+    padding-top: 32px;
+    padding-bottom: 96px;
+  }
+
+  .pp-mobile-nav {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .hsw-shell {
+    width: calc(100% - 24px);
+  }
+
+  .ppw-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ppw-create-btn {
+    justify-content: center;
+  }
+
+  .ppw-content .passport-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hsw-cta,
+  .hsw-avatar,
+  .ppw-create-btn {
+    transition: none;
   }
 }
 
@@ -1302,46 +1515,6 @@ const executeDelete = async () => {
   transform: translateX(2px);
 }
 
-/* Search */
-.coll-search {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 40px;
-  padding: 12px 16px;
-  gap: 10px;
-  border: 1.5px solid #e5e5ea;
-}
-
-.coll-search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 15px;
-  color: #333;
-  background: transparent;
-}
-
-.coll-search-input::placeholder {
-  color: #aaa;
-}
-
-.coll-search-btn {
-  color: #00a19a;
-  font-size: 15px;
-  font-weight: 600;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Controls */
-.controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 /* Location chips */
 .coll-cities {
   display: flex;
@@ -1392,32 +1565,6 @@ const executeDelete = async () => {
 .coll-city-chip.active .coll-city-num {
   background: rgba(255, 255, 255, 0.22);
   color: #fff;
-}
-
-.sort-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1.5px solid #e0e0e0;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.create-collection-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: white;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 24px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-  cursor: pointer;
 }
 
 /* Grid */
