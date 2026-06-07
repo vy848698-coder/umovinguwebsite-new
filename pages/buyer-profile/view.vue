@@ -458,8 +458,9 @@ const strength = computed(() => {
 const animatedStrength = ref(0)
 let strengthRaf = 0
 function tweenStrength(to: number) {
+  // SSR-safe: no rAF on the server (the immediate watcher runs during SSR).
   const reduce =
-    typeof window !== 'undefined' &&
+    typeof window === 'undefined' ||
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
   if (reduce) { animatedStrength.value = to; return }
   cancelAnimationFrame(strengthRaf)

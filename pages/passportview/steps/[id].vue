@@ -1,16 +1,38 @@
 <template>
-  <div class="mobile-container step-page bg-umu-gradient">
-    <!-- <div class="step-header">
-      <button class="back-btn" @click="goBack">
-        <span class="back-arrow">←</span> Back
-      </button>
-      <button class="menu-btn">⋯</button>
-    </div> -->
+  <div class="st-root">
+    <div class="st-ambient st-ambient-a" />
+    <div class="st-ambient st-ambient-b" />
+    <div class="st-mesh" />
 
-    <AppHeader :showBack="true" :backTo="backToPassportUrl" right="dots" />
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="navigateTo(backToPassportUrl)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back to passport
+          </button>
+        </div>
+      </div>
+    </header>
 
-    <div class="step-content">
-      <!-- Hero — matches prototype (teal-pale gradient + ring meta) but uses our icon -->
+    <main class="hsw-shell stw-main">
+      <div class="stw-layout">
+        <aside class="stw-aside">
+      <!-- Hero — section header card (icon + title + ring meta) -->
       <section class="hero">
         <span class="hero-badge"
           ><span class="dot"></span> Low risk · Verified</span
@@ -78,7 +100,9 @@
         :minimum-time="'3 Days'"
         @viewProfile="handleViewProfile"
       />
+        </aside>
 
+        <section class="stw-content">
       <div class="tasks-section">
         <div class="section-header">
           <h2 class="section-title">Your Tasks</h2>
@@ -172,6 +196,14 @@
           </div>
         </div>
       </div>
+        </section>
+      </div>
+    </main>
+
+    <SiteFooter />
+
+    <div class="st-mobile-nav">
+      <BottomNav active="passport" />
     </div>
   </div>
 </template>
@@ -180,11 +212,11 @@
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import PointsSection from '@/components/passport-view/PointsSection.vue'
 import UnderReview from '~/components/passport-view/UnderReview.vue'
-import AppHeader from '@/components/core/AppHeader.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
-import HeroSection from '@/components/HeroSection.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import BottomNav from '~/components/core/BottomNav.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -334,9 +366,195 @@ const goBack = () => {
 </script>
 
 <style scoped>
-.step-page {
-  min-height: 100vh;
-  padding-bottom: 40px;
+/* ── Web canvas ───────────────────────────────────────────────────── */
+.st-root {
+  --color-border: #e7ecf2;
+  min-height: 100dvh;
+  color: #231d45;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: clip;
+  position: relative;
+}
+
+.st-ambient,
+.st-mesh {
+  pointer-events: none;
+  position: fixed;
+}
+
+.st-ambient {
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+
+.st-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+
+.st-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+.st-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+/* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
+.hsw-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hsw-back:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.hsw-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Layout ───────────────────────────────────────────────────────── */
+.stw-main {
+  padding: 34px 0 60px;
+}
+
+.stw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.stw-aside {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stw-content {
+  min-width: 0;
+}
+
+.st-mobile-nav {
+  display: none;
 }
 
 .step-header {
@@ -816,5 +1034,56 @@ const goBack = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+/* ── Web layout overrides ─────────────────────────────────────────── */
+.stw-aside .hero {
+  margin: 0;
+}
+.stw-aside .action-buttons {
+  margin-bottom: 0;
+}
+.stw-content .tasks-section {
+  margin-top: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .stw-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .stw-aside {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 899px) {
+  .hsw-links {
+    display: none;
+  }
+  .hsw-shell {
+    width: calc(100% - 32px);
+  }
+  .hsw-nav-inner {
+    min-height: 58px;
+  }
+  .stw-main {
+    padding-top: 26px;
+    padding-bottom: 96px;
+  }
+  .st-mobile-nav {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .hsw-shell {
+    width: calc(100% - 24px);
+  }
+  .hsw-back {
+    display: none;
+  }
 }
 </style>

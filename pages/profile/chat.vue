@@ -139,6 +139,7 @@
 </template>
 
 <script setup lang="ts">
+import WebTopNav from '~/components/core/WebTopNav.vue'
 definePageMeta({
   title: 'MoveMate AI - UmovingU',
   middleware: 'auth',

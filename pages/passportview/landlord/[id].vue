@@ -1,18 +1,55 @@
 <template>
-  <div class="lp-page mobile-container">
-    <!-- Nav bar -->
-    <div class="lp-nav-bar">
-      <button class="lp-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="lp-nav-title">Landlord Passport</div>
-      <button class="lp-nav-action" @click="openTenantShare" :disabled="!passport">Share</button>
-    </div>
+  <div class="lp-page">
+    <div class="lp-ambient lp-ambient-a" />
+    <div class="lp-ambient lp-ambient-b" />
+    <div class="lp-mesh" />
+
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="goBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+          <button class="hsw-cta" type="button" :disabled="!passport" @click="openTenantShare">Share</button>
+        </div>
+      </div>
+    </header>
 
     <main class="lp-body">
       <div class="atm-bg teal" />
+
+      <!-- Page head — title + lede + isometric house -->
+      <div class="lpw-head">
+        <div class="lpw-head-text">
+          <p class="lpw-kicker"><span class="lpw-kicker-dot" />Landlord Passport</p>
+          <h1>Your Letting Passport</h1>
+          <p class="lpw-lede">
+            Keep certificates current, stay compliant, and share everything with
+            your tenant in one tap.
+          </p>
+        </div>
+        <img
+          src="/house.png"
+          alt=""
+          class="lpw-head-house"
+          @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
+        />
+      </div>
 
       <div v-if="loading" class="lp-loading">Loading…</div>
 
@@ -34,39 +71,50 @@
                 <div class="pp-hero-addr-l2">{{ passport.postcode }}</div>
               </div>
             </div>
-            <div class="pp-hero-stats">
-              <div class="pp-hero-stat">
-                <div class="pp-hero-stat-val">{{ progressPct }}<small>%</small></div>
-                <div class="pp-hero-stat-lbl">Compliant</div>
-              </div>
-              <div class="pp-hero-stat">
-                <div class="pp-hero-stat-val">{{ docCount }}</div>
-                <div class="pp-hero-stat-lbl">Docs</div>
-              </div>
-              <div class="pp-hero-stat">
-                <div class="pp-hero-stat-val">
-                  {{ stats.complete }}<span class="pp-hero-stat-of">/{{ stats.total }}</span>
+            <div class="pp-hero-bottom">
+              <div class="pp-hero-stats">
+                <div class="pp-hero-stat">
+                  <div class="pp-hero-stat-val">{{ progressPct }}<small>%</small></div>
+                  <div class="pp-hero-stat-lbl">Compliant</div>
                 </div>
-                <div class="pp-hero-stat-lbl">Sections</div>
-              </div>
-            </div>
-            <div class="pp-hero-dash">
-              <div class="pp-hero-dash-row">
-                <span class="pp-hero-dash-label">Compliance progress</span>
-                <span class="pp-hero-dash-pct">{{ progressPct }}%</span>
-              </div>
-              <div class="pp-hero-dash-bar">
-                <div class="pp-hero-dash-fill" :style="{ width: progressPct + '%' }">
-                  <span class="pp-hero-dash-man">🚶</span>
+                <div class="pp-hero-stat">
+                  <div class="pp-hero-stat-val">{{ docCount }}</div>
+                  <div class="pp-hero-stat-lbl">Docs</div>
+                </div>
+                <div class="pp-hero-stat">
+                  <div class="pp-hero-stat-val">
+                    {{ stats.complete }}<span class="pp-hero-stat-of">/{{ stats.total }}</span>
+                  </div>
+                  <div class="pp-hero-stat-lbl">Sections</div>
                 </div>
               </div>
-              <div v-if="firstExpiring" class="pp-hero-dash-warn">
-                <span class="pp-hero-dash-warn-dot" />
-                {{ firstExpiring }}
-              </div>
-              <div v-else class="pp-hero-dash-issued">
-                <span class="pp-hero-dash-dot" />
-                Letting passport active
+
+              <div class="pp-hero-progress">
+                <div class="pp-hero-ring">
+                  <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
+                    <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
+                    <circle
+                      cx="36"
+                      cy="36"
+                      r="30"
+                      class="pp-hero-ring-fill"
+                      stroke-dasharray="188.5"
+                      :stroke-dashoffset="188.5 - (188.5 * progressPct) / 100"
+                    />
+                  </svg>
+                  <span class="pp-hero-ring-pct">{{ progressPct }}%</span>
+                </div>
+                <div class="pp-hero-progress-meta">
+                  <div class="pp-hero-progress-label">Compliance</div>
+                  <div v-if="firstExpiring" class="pp-hero-dash-warn">
+                    <span class="pp-hero-dash-warn-dot" />
+                    {{ firstExpiring }}
+                  </div>
+                  <div v-else class="pp-hero-dash-issued">
+                    <span class="pp-hero-dash-dot" />
+                    Letting passport active
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -292,6 +340,12 @@
       </template>
     </main>
 
+    <SiteFooter />
+
+    <div class="lp-mobile-nav">
+      <BottomNav active="passport" />
+    </div>
+
     <!-- Convert modal -->
     <Teleport to="body">
       <div v-if="showConvertModal" class="lp-overlay" @click.self="showConvertModal = false">
@@ -510,6 +564,8 @@
 import { useRoute } from 'vue-router'
 import { usePassportClaim } from '~/composables/usePassportClaim'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({ title: 'Landlord Passport — UmovingU', middleware: 'auth' })
 
@@ -1101,52 +1157,267 @@ const SectionCard = defineComponent({
 </script>
 
 <style scoped>
+/* ── Web canvas ───────────────────────────────────────────────────── */
 .lp-page {
+  --color-border: #e7ecf2;
   min-height: 100dvh;
-  background: #fafaf8;
   color: #0e2840;
   position: relative;
-  padding-bottom: 32px;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: clip;
 }
 
-.lp-nav-bar {
-  display: flex;
-  align-items: center;
-  padding: 10px 22px 8px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
+.lp-ambient,
+.lp-mesh {
+  pointer-events: none;
+  position: fixed;
+}
+
+.lp-ambient {
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+
+.lp-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+
+.lp-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+.lp-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+/* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
+.hsw-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
   position: relative;
   z-index: 2;
 }
-.lp-nav-icon-btn {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #0e2840;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 24px;
 }
-.lp-nav-icon-btn svg { width: 18px; height: 18px; }
-.lp-nav-title { flex: 1; text-align: center; font-size: 16px; font-weight: 800; color: #0e2840; letter-spacing: -0.4px; }
-.lp-nav-action {
-  font-size: 13px;
-  font-weight: 800;
-  padding: 8px 14px;
-  border-radius: 100px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  color: #1f7a66;
-  flex-shrink: 0;
-}
-.lp-nav-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.lp-body { position: relative; }
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hsw-back:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.hsw-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+.hsw-cta {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(120deg, #00a19a, #2f9bdf 52%, #5a4cf0);
+  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  transition: transform 0.18s;
+}
+
+.hsw-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.hsw-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Page head ────────────────────────────────────────────────────── */
+.lpw-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 0 6px;
+}
+
+.lpw-head-text {
+  min-width: 0;
+}
+
+.lpw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lpw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+
+.lpw-head h1 {
+  margin: 0;
+  color: #08102f;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.lpw-lede {
+  margin: 14px 0 0;
+  max-width: 460px;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.lpw-head-house {
+  width: clamp(150px, 20vw, 220px);
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: -6px;
+  filter: drop-shadow(0 24px 36px rgba(31, 61, 98, 0.16));
+  pointer-events: none;
+  user-select: none;
+}
+
+.lp-mobile-nav {
+  display: none;
+}
+
+/* ── Content column ───────────────────────────────────────────────── */
+.lp-body {
+  position: relative;
+  z-index: 1;
+  width: min(960px, calc(100% - 48px));
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
 .atm-bg {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -1163,16 +1434,21 @@ const SectionCard = defineComponent({
 /* ── Premium hero (mirrors seller passport) ──────────────── */
 .pp-hero {
   display: grid;
-  grid-template-columns: 130px 1fr;
-  gap: 16px;
-  padding: 10px 22px 22px;
+  grid-template-columns: 150px 1fr;
+  gap: 26px;
+  padding: 24px 28px;
   position: relative;
   z-index: 1;
-  align-items: stretch;
+  align-items: center;
   background:
-    radial-gradient(ellipse 70% 100% at 50% 0%, rgba(61, 189, 163, 0.14), transparent 60%);
+    radial-gradient(ellipse 70% 100% at 20% 0%, rgba(61, 189, 163, 0.12), transparent 60%),
+    linear-gradient(180deg, #ffffff, #f7fdfb);
+  border: 1px solid #e2f1ea;
   border-radius: 22px;
-  margin: 4px 14px 14px;
+  margin: 18px 0 16px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px rgba(31, 61, 98, 0.08);
 }
 .pp-hero-glow {
   position: absolute;
@@ -1190,13 +1466,13 @@ const SectionCard = defineComponent({
 }
 .pp-hero-book :deep(.passport-card) { margin: 0; padding: 0; }
 .pp-hero-book :deep(.passport-container) {
-  max-width: 110px;
-  width: 110px;
+  max-width: 138px;
+  width: 138px;
 }
 .pp-hero-book :deep(.passport-image) {
-  width: 110px;
+  width: 138px;
   height: auto;
-  filter: drop-shadow(0 10px 24px rgba(14, 40, 64, 0.3));
+  filter: drop-shadow(0 12px 26px rgba(14, 40, 64, 0.32));
 }
 
 .pp-hero-info {
@@ -1229,71 +1505,108 @@ const SectionCard = defineComponent({
   color: #4a5868;
   margin-top: 2px;
 }
+.pp-hero-addr-l1 {
+  font-size: 22px;
+}
+.pp-hero-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
 .pp-hero-stats {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 0;
 }
-.pp-hero-stat { flex: 1; min-width: 0; }
+.pp-hero-stat {
+  text-align: center;
+  padding: 0 20px;
+}
+.pp-hero-stat:first-child {
+  padding-left: 0;
+}
+.pp-hero-stat + .pp-hero-stat {
+  border-left: 1px solid rgba(14, 40, 64, 0.1);
+}
 .pp-hero-stat-val {
-  font-size: 19px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 900;
   color: #0e2840;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
   font-feature-settings: 'tnum';
   line-height: 1;
 }
-.pp-hero-stat-val small { font-size: 11px; color: #4a5868; font-weight: 700; }
-.pp-hero-stat-of { font-size: 12px; color: #8a95a0; font-weight: 700; }
+.pp-hero-stat-val small { font-size: 13px; color: #4a5868; font-weight: 800; }
+.pp-hero-stat-of { font-size: 14px; color: #8a95a0; font-weight: 800; }
 .pp-hero-stat-lbl {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #8a95a0;
-  margin-top: 4px;
-}
-
-.pp-hero-dash { margin-top: 12px; }
-.pp-hero-dash-row {
-  display: flex;
-  justify-content: space-between;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #4a5868;
-  margin-bottom: 5px;
+  color: #8a95a0;
+  margin-top: 6px;
 }
-.pp-hero-dash-pct { color: #1f7a66; font-feature-settings: 'tnum'; }
-.pp-hero-dash-bar {
-  height: 8px;
-  background: rgba(31, 122, 102, 0.12);
-  border-radius: 100px;
-  overflow: visible;
+
+/* Circular progress ring */
+.pp-hero-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.pp-hero-ring {
   position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
 }
-.pp-hero-dash-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3dbda3, #1f7a66);
-  border-radius: 100px;
-  transition: width 0.3s ease;
-  position: relative;
+.pp-hero-ring-svg {
+  width: 72px;
+  height: 72px;
+  display: block;
 }
-.pp-hero-dash-man {
+.pp-hero-ring-track {
+  fill: none;
+  stroke: #e2f1ea;
+  stroke-width: 6;
+}
+.pp-hero-ring-fill {
+  fill: none;
+  stroke: #1f7a66;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pp-hero-ring-pct {
   position: absolute;
-  right: -10px;
-  top: -12px;
+  inset: 0;
+  display: grid;
+  place-items: center;
   font-size: 16px;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  font-weight: 900;
+  color: #0e2840;
+  letter-spacing: -0.02em;
 }
+.pp-hero-progress-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a95a0;
+  margin-bottom: 6px;
+}
+
 .pp-hero-dash-issued,
 .pp-hero-dash-warn {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: -0.1px;
 }
@@ -1901,5 +2214,81 @@ const SectionCard = defineComponent({
   color: #92400e;
   margin-top: 2px;
   line-height: 1.4;
+}
+
+/* ── Web column overrides — fill the content column (drop mobile gutters) ── */
+.lp-body .lp-convert-card {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+.lp-body .lp-tabs {
+  padding-left: 0;
+  padding-right: 0;
+}
+.lp-body .section-heading {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+.lp-body .lp-sec {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+.lp-body .lp-doc,
+.lp-body .lp-empty,
+.lp-body .lp-tenancy-card {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 899px) {
+  .hsw-links {
+    display: none;
+  }
+  .hsw-shell {
+    width: calc(100% - 32px);
+  }
+  .hsw-nav-inner {
+    min-height: 58px;
+  }
+  .lp-body {
+    width: calc(100% - 32px);
+    padding-bottom: 96px;
+  }
+  .lpw-head-house {
+    display: none;
+  }
+  .lp-mobile-nav {
+    display: block;
+  }
+  .pp-hero {
+    grid-template-columns: 120px 1fr;
+    gap: 18px;
+    padding: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hsw-shell,
+  .lp-body {
+    width: calc(100% - 24px);
+  }
+  .hsw-back {
+    display: none;
+  }
+  .lpw-head {
+    padding-top: 20px;
+  }
+  .pp-hero {
+    grid-template-columns: 1fr;
+  }
+  .pp-hero-book {
+    justify-content: flex-start;
+  }
+  .pp-hero-stat {
+    padding: 0 14px;
+  }
 }
 </style>

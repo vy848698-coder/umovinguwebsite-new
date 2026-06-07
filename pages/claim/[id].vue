@@ -1,5 +1,35 @@
 <template>
-  <div class="claim-root  mobile-container min-h-screen">
+  <div class="claim-root">
+    <div class="cl-ambient cl-ambient-a" />
+    <div class="cl-ambient cl-ambient-b" />
+    <div class="cl-mesh" />
+
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="navigateTo('/explore')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Exit
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="hsw-shell claim-main">
     <!-- ── Sticky topbar + progress (not shown on fullscreen steps) ── -->
     <div
       v-if="!isFullscreenStep"
@@ -468,6 +498,8 @@
         <button v-else class="cl-err-retry" @click="issuePassport">Retry</button>
       </div>
     </div>
+
+    </main>
 
     <!-- ════════════════════════════ BOTTOM CTA BAR ════════════════════════════ -->
     <div v-if="showCta" class="cl-cta-bar">
@@ -1034,27 +1066,179 @@ async function issuePassport() {
 .claim-root {
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
-  display: flex;
-  flex-direction: column;
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
   padding-bottom: 96px;
   color: #231d45;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-top: 8px;
+  /* `clip` keeps the sticky nav working. */
+  overflow: clip;
+  position: relative;
+}
+
+.cl-ambient,
+.cl-mesh {
+  pointer-events: none;
+  position: fixed;
+}
+
+.cl-ambient {
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.16;
+}
+
+.cl-ambient-a {
+  width: 300px;
+  height: 300px;
+  left: -100px;
+  top: 120px;
+  background: #00a19a;
+}
+
+.cl-ambient-b {
+  width: 320px;
+  height: 320px;
+  right: -120px;
+  top: 160px;
+  background: #5a4cf0;
+}
+
+.cl-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+/* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
+.hsw-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hsw-back:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.hsw-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Wizard column (focused, centered on the web canvas) ──────────── */
+.claim-main {
+  padding-top: 30px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Topbar ─────────────────────────────────────────── */
 .cl-topbar {
-  position: sticky;
-  top: 8px;
-  z-index: 20;
   display: flex;
   align-items: center;
   gap: 10px;
-  width: min(100%, 980px);
+  width: min(100%, 620px);
   margin: 0 auto;
   border: 1px solid rgba(187, 211, 235, 0.58);
   border-radius: 20px;
@@ -1101,14 +1285,11 @@ async function issuePassport() {
 .cl-spacer { width: 32px; }
 
 .cl-prog-strip {
-  width: min(100%, 980px);
+  width: min(100%, 620px);
   margin: 8px auto 0;
   border-radius: 100px;
   height: 4px;
   background: #ececef;
-  position: sticky;
-  top: 80px;
-  z-index: 20;
   overflow: hidden;
 }
 .cl-prog-strip span {
@@ -1120,7 +1301,7 @@ async function issuePassport() {
 
 /* ── Screen ─────────────────────────────────────────── */
 .cl-screen {
-  width: min(100%, 980px);
+  width: min(100%, 620px);
   margin: 0 auto;
   padding: 22px 18px 24px;
   flex: 1;
@@ -1828,7 +2009,7 @@ async function issuePassport() {
   z-index: 30;
 }
 .cl-btn-brand {
-  width: min(100%, 980px);
+  width: min(100%, 620px);
   padding: 14px 18px;
   background: linear-gradient(135deg, #00a19a 0%, #00b6ae 60%, #0f8f88 100%);
   color: #fff;
@@ -1877,20 +2058,27 @@ async function issuePassport() {
   }
 }
 
-@media (max-width: 700px) {
-  .claim-root {
-    padding-top: 0;
+@media (max-width: 899px) {
+  .hsw-links {
+    display: none;
   }
 
+  .hsw-shell {
+    width: calc(100% - 32px);
+  }
+
+  .hsw-nav-inner {
+    min-height: 58px;
+  }
+}
+
+@media (max-width: 700px) {
   .cl-topbar {
     border-radius: 16px;
-    top: 0;
     padding: 12px 14px 8px;
-    padding-top: calc(12px + env(safe-area-inset-top));
   }
 
   .cl-prog-strip {
-    top: 66px;
     border-radius: 100px;
   }
 

@@ -144,6 +144,7 @@
 </template>
 
 <script setup lang="ts">
+import WebTopNav from '~/components/core/WebTopNav.vue'
 definePageMeta({ title: 'Learn & Ask AI - UmovingU', middleware: 'auth' })
 
 const { profile, fetchProfile } = useProfile()

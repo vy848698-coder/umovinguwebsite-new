@@ -109,11 +109,14 @@ type Block =
   | { type: 'bullets'; items: string[] }
   | { type: 'para'; text: string }
 
-const props = defineProps<{
-  show: boolean
-  content: HelpContent | null
-  mode?: 'seller' | 'buyer'
-}>()
+const props = withDefaults(
+  defineProps<{
+    show: boolean
+    content?: HelpContent | null
+    mode?: 'seller' | 'buyer'
+  }>(),
+  { content: null },
+)
 
 defineEmits<{ close: [] }>()
 
