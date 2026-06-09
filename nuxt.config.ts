@@ -1,7 +1,94 @@
 export default defineNuxtConfig({
   devtools: { enabled: false },
-  modules: ['@nuxt/ui', '@pinia/nuxt'],
+  modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt'],
   css: ['~/assets/css/main.css'],
+
+  pwa: {
+    registerType: 'autoUpdate',
+    strategies: 'generateSW',
+    manifest: {
+      name: 'UmovingU - Property Toolkit',
+      short_name: 'UmovingU',
+      description: 'Your complete property toolkit—track progress, store documents, and connect with trusted trades in one place.',
+      theme_color: '#00a19a',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait-primary',
+      start_url: '/',
+      scope: '/',
+      categories: ['lifestyle', 'utilities'],
+      icons: [
+        {
+          src: '/logo.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any',
+        },
+        {
+          src: '/logo.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable',
+        },
+        {
+          src: '/pwa-icon.svg',
+          sizes: 'any',
+          type: 'image/svg+xml',
+          purpose: 'any maskable',
+        },
+      ],
+      screenshots: [],
+    },
+    workbox: {
+      navigateFallback: '/offline',
+      navigateFallbackDenylist: [/^\/api\//],
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
+      runtimeCaching: [
+        {
+          // Google Fonts — cache-first
+          urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts',
+            expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            cacheableResponse: { statuses: [0, 200] },
+          },
+        },
+        {
+          // API calls — network-first so users always get fresh data when online
+          urlPattern: /^https?:\/\/.*\/api\/.*/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
+            cacheableResponse: { statuses: [0, 200] },
+            networkTimeoutSeconds: 10,
+          },
+        },
+        {
+          // Images — stale-while-revalidate
+          urlPattern: /\.(png|jpg|jpeg|svg|gif|webp|ico)(\?.*)?$/i,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'image-cache',
+            expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            cacheableResponse: { statuses: [0, 200] },
+          },
+        },
+      ],
+    },
+    client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 3600,
+    },
+    devOptions: {
+      enabled: true,
+      suppressWarnings: true,
+      navigateFallbackAllowlist: [/^\/$/],
+      type: 'module',
+    },
+  },
+
   app: {
     head: {
       title: 'UmovingU - Your Property Toolkit',
@@ -17,11 +104,14 @@ export default defineNuxtConfig({
             'Your complete property toolkit—track progress, store documents, and connect with trusted trades in one place.',
         },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: 'UmovingU' },
         {
           name: 'apple-mobile-web-app-status-bar-style',
           content: 'black-translucent',
         },
         { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'msapplication-TileColor', content: '#00a19a' },
+        { name: 'theme-color', content: '#00a19a' },
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -34,6 +124,8 @@ export default defineNuxtConfig({
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
         },
+        { rel: 'apple-touch-icon', href: '/logo.png' },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
       ],
     },
   },
