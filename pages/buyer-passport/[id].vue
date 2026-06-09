@@ -1,5 +1,42 @@
 <template>
-  <div class="mobile-container buyer-page min-h-screen">
+  <div class="buyer-page">
+    <div class="bp-ambient bp-ambient-a" />
+    <div class="bp-ambient bp-ambient-b" />
+    <div class="bp-mesh" />
+
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-iconbtn" type="button" title="Take a quick tour" aria-label="Take a quick tour" @click="buyerTourRef?.start?.()">?</button>
+          <button class="hsw-iconbtn" type="button" aria-label="Save to wishlist">
+            <OPIcon name="wishlist" class="w-[18px] h-[18px]" />
+          </button>
+          <button class="hsw-iconbtn" type="button" aria-label="Share" @click="openShareSheet">
+            <OPIcon name="share" class="w-[18px] h-[18px]" />
+          </button>
+          <button class="hsw-back" type="button" @click="goBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="bpw-main">
     <!-- Loading -->
     <div v-if="loading" class="buyer-loading">
       <div class="buyer-spinner" />
@@ -15,40 +52,9 @@
     <template v-else-if="data">
       <!-- Hero Image -->
       <!-- Hero Image — full slider with nav overlay -->
+      <div class="bpw-shell">
       <div class="buyer-hero">
-        <ImageSlider :images="propertyImagesArr">
-          <template #overlay>
-            <!-- Passport badge -->
-            <!-- <div class="buyer-hero__badge">
-              <img
-                src="/op-icons/passportview/umu-passport.png"
-                alt="Property Passport"
-                class="buyer-hero__badge-passport"
-              />
-            </div> -->
-            <!-- Nav buttons -->
-            <div class="buyer-hero__nav">
-              <button class="hero-btn" @click="goBack">
-                <OPIcon name="leftChevronWhite" class="w-[16px] h-[16px]" />
-              </button>
-              <div class="flex gap-3">
-                <button
-                  class="hero-btn"
-                  aria-label="Take a quick tour"
-                  @click="buyerTourRef?.start?.()"
-                >
-                  <span style="font-weight:800;font-size:13px">?</span>
-                </button>
-                <button class="hero-btn">
-                  <OPIcon name="wishlist" class="w-[18px] h-[18px]" />
-                </button>
-                <button class="hero-btn" @click="openShareSheet">
-                  <OPIcon name="share" class="w-[18px] h-[18px]" />
-                </button>
-              </div>
-            </div>
-          </template>
-        </ImageSlider>
+        <ImageSlider :images="propertyImagesArr" />
       </div>
 
       <!-- White content card -->
@@ -693,7 +699,11 @@
           </div>
         </div>
       </div>
+      </div>
     </template>
+    </main>
+
+    <SiteFooter />
 
     <!-- Notes FAB -->
     <Teleport to="body">
@@ -898,6 +908,7 @@
 <script setup lang="ts">
 import OPIcon from '~/components/ui/OPIcon.vue'
 import ImageSlider from '~/components/ui/ImageSlider.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 
@@ -1402,10 +1413,82 @@ async function deleteNote(noteId: string) {
 </script>
 
 <style scoped>
+/* ── Web canvas ───────────────────────────────────────────────────── */
 .buyer-page {
-  background: #f2f6f6;
-  padding-bottom: 40px;
+  --color-border: #e7ecf2;
+  min-height: 100dvh;
+  color: #231d45;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: clip;
+  position: relative;
 }
+.bp-ambient,
+.bp-mesh { pointer-events: none; position: fixed; }
+.bp-ambient { border-radius: 999px; filter: blur(48px); opacity: 0.16; }
+.bp-ambient-a { width: 300px; height: 300px; left: -100px; top: 120px; background: #00a19a; }
+.bp-ambient-b { width: 320px; height: 320px; right: -120px; top: 160px; background: #5a4cf0; }
+.bp-mesh {
+  inset: 0;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+/* ── Web nav ──────────────────────────────────────────────────────── */
+.hsw-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; position: relative; z-index: 2; }
+.hsw-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+}
+.hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 10px; color: #0d1835; cursor: pointer; font-size: 20px; font-weight: 800; flex-shrink: 0; font-family: inherit; }
+.hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
+.hsw-links { display: flex; gap: 6px; }
+.hsw-links button { border: 0; background: transparent; color: #475a7b; cursor: pointer; font-size: 14px; font-weight: 700; padding: 10px 14px; border-radius: 10px; white-space: nowrap; font-family: inherit; transition: background 0.18s, color 0.18s; }
+.hsw-links button:hover { color: #0c2342; background: rgba(0, 161, 154, 0.08); }
+.hsw-links button.active { color: #00857f; background: rgba(0, 161, 154, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24); }
+.hsw-actions { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.hsw-iconbtn {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: #475a7b;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.hsw-iconbtn:hover { border-color: #bfd1e4; background: #f8fbff; color: #0c2342; }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #d8e3ee; background: #fff; color: #0c2342; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.18s, background 0.18s; }
+.hsw-back:hover { border-color: #bfd1e4; background: #f8fbff; }
+.hsw-back svg { width: 15px; height: 15px; }
+
+/* ── Centered content shell ───────────────────────────────────────── */
+.bpw-main { position: relative; z-index: 1; padding: 28px 0 64px; }
+.bpw-shell {
+  width: min(940px, calc(100% - 48px));
+  margin: 0 auto;
+  border-radius: 22px;
+  box-shadow: 0 22px 50px rgba(23, 52, 92, 0.1);
+  overflow: hidden;
+  border: 1px solid rgba(231, 236, 242, 0.9);
+}
+.bpw-main .buyer-loading { min-height: 50vh; }
 
 .buyer-loading {
   display: flex;
@@ -1437,7 +1520,7 @@ async function deleteNote(noteId: string) {
 .buyer-hero {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: clamp(260px, 32vw, 380px);
   overflow: hidden;
 }
 
@@ -1529,7 +1612,7 @@ async function deleteNote(noteId: string) {
 /* ── Card / page surface — matches passportview theme ─────── */
 .buyer-card {
   position: relative;
-  padding: 22px 20px 0;
+  padding: 26px 28px 36px;
   background: #fff;
   color: #231d45;
 }
@@ -2780,5 +2863,25 @@ async function deleteNote(noteId: string) {
 .buyer-toast-leave-to {
   opacity: 0;
   transform: translateX(-50%) translateY(-12px);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 899px) {
+  .hsw-links { display: none; }
+  .hsw-shell { width: calc(100% - 32px); }
+  .hsw-nav-inner { min-height: 58px; }
+  .bpw-main { padding-top: 0; }
+  .bpw-shell {
+    width: 100%;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+  }
+}
+@media (max-width: 640px) {
+  .hsw-back span,
+  .hsw-back { font-size: 13px; }
+  .buyer-card { padding-left: 18px; padding-right: 18px; }
 }
 </style>
