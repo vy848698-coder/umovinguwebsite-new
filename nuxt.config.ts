@@ -43,6 +43,7 @@ export default defineNuxtConfig({
       navigateFallback: '/offline',
       navigateFallbackDenylist: [/^\/api\//],
       globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
+      globIgnores: ['op-icons/temp/**'],
       runtimeCaching: [
         {
           // Google Fonts — cache-first
