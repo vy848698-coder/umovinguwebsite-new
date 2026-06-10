@@ -1,455 +1,269 @@
 
 <template>
-  <div class="pi-page mobile-container">
-    <!-- Nav bar -->
-    <div class="pi-nav-bar">
-      <button class="pi-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="pi-nav-title">Personal Information</div>
-      <div style="width: 38px" />
-    </div>
+  <div class="pi-shell">
+    <BuyerProfileNav back-label="Back" @back="goBack" />
 
     <main class="pi-body">
-      <div class="atm-bg atm-bg-warm" />
-
-      <!-- Hero -->
-      <div class="pi-hero">
-        <button
-          type="button"
-          class="pi-avatar"
-          aria-label="Edit profile picture"
-          @click="isAvatarDrawerOpen = true"
-        >
-          <img
-            v-if="avatarPreview"
-            :src="avatarPreview"
-            alt="Profile avatar"
-            class="pi-avatar-img"
-          />
-          <span v-else>{{ initials }}</span>
-          <div class="avatar-camera-mini">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-              />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-          </div>
-        </button>
-        <div class="pi-name">{{ fullName || 'Your Profile' }}</div>
-        <div class="pi-meta">{{ profile?.email || '' }}</div>
-        <div class="pi-completion">
-          <span>Profile</span>
-          <div class="pic-track">
-            <div class="pic-fill" :style="{ width: profileCompletion + '%' }" />
-          </div>
-          <span class="pic-pct">{{ profileCompletion }}%</span>
-        </div>
-      </div>
-
-      <!-- Name & contact -->
-      <div class="section-heading">Name &amp; contact</div>
-      <div class="pi-section">
-        <div class="pi-group">
+        <!-- Welcome hero banner -->
+        <section class="pi-welcome">
           <button
-            v-for="(item, index) in contactDetails"
-            :key="item.key"
-            class="pi-row"
             type="button"
-            @click="openContactEditor(index)"
+            class="pi-avatar"
+            aria-label="Edit profile picture"
+            @click="isAvatarDrawerOpen = true"
           >
-            <div class="pir-content">
-              <div class="pir-label">{{ item.label }}</div>
-              <div class="pir-value" :class="{ empty: !item.value }">
-                {{ item.value || `Add ${item.label.toLowerCase()}` }}
-              </div>
-            </div>
-            <div class="pir-edit">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z" />
-              </svg>
-            </div>
-          </button>
-
-          <div class="pi-row">
-            <div class="pir-content">
-              <div class="pir-label">Contact visibility</div>
-              <div class="pir-hint">
-                Sellers see your details only when you message them
-              </div>
-            </div>
-            <button
-              type="button"
-              class="pir-toggle"
-              :class="{ on: contactVisible }"
-              @click="toggleContactVisible"
-              :aria-label="
-                contactVisible
-                  ? 'Disable contact visibility'
-                  : 'Enable contact visibility'
-              "
+            <img
+              v-if="avatarPreview"
+              :src="avatarPreview"
+              alt="Profile avatar"
+              class="pi-avatar-img"
             />
-          </div>
-        </div>
-      </div>
-
-      <!-- Address -->
-      <div class="section-heading">
-        Address
-        <span class="sh-action" @click="openAddressEditor(null)">+ Add</span>
-      </div>
-      <div class="pi-section">
-        <div v-if="(profile?.addresses ?? []).length === 0" class="pi-group">
-          <button class="pi-row" type="button" @click="openAddressEditor(null)">
-            <div class="pir-content">
-              <div class="pir-label">Current address</div>
-              <div class="pir-value empty">Add your address</div>
-            </div>
-            <div class="pir-edit">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
+            <span v-else>{{ initials }}</span>
+            <div class="avatar-camera-mini">
+              <Icon name="heroicons:camera-solid" class="avatar-camera-svg" />
             </div>
           </button>
-        </div>
 
-        <div v-else class="pi-group">
-          <div
-            v-for="addr in profile?.addresses ?? []"
-            :key="addr.id"
-            class="pi-row"
-          >
-            <div class="pir-content">
-              <div class="pir-label">{{ addr.label || 'Address' }}</div>
-              <div class="pir-value">{{ formatAddress(addr) }}</div>
+          <div class="pi-welcome-text">
+            <div class="pi-welcome-greet">Welcome back, {{ firstNameDisplay }}! <span class="pi-wave">👋</span></div>
+            <h1 class="pi-welcome-title">Your Profile</h1>
+            <p class="pi-welcome-sub">Manage your details, preferences and stay in control of your journey.</p>
+          </div>
+
+          <div class="pi-welcome-prog" aria-hidden="false">
+            <div class="pi-wp-label">Profile completion</div>
+            <div class="pi-wp-pct">{{ profileCompletion }}%</div>
+            <div class="pic-track">
+              <div class="pic-fill" :style="{ width: profileCompletion + '%' }" />
             </div>
-            <button
-              class="pir-edit"
-              type="button"
-              aria-label="Edit address"
-              @click="openAddressEditor(addr)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z" />
-              </svg>
-            </button>
-            <button
-              class="pir-edit pir-delete"
-              type="button"
-              aria-label="Delete address"
-              @click="handleDeleteAddress(addr.id)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
-              </svg>
+            <p class="pi-wp-hint">Almost there! Complete a few more steps to get the most out of UmovingU.</p>
+          </div>
+
+          <div class="pi-welcome-cta">
+            <div class="pi-wc-head">
+              <Icon name="heroicons:sparkles-solid" class="pi-wc-gem" />
+              <span>Complete your profile</span>
+            </div>
+            <p class="pi-wc-sub">Add a few more details to personalise your experience.</p>
+            <button type="button" class="pi-wc-btn" @click="openContactEditor(0)">
+              Continue setup <Icon name="heroicons:arrow-right" class="pi-wc-btn-ic" />
             </button>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- Company -->
-      <div class="section-heading">
-        Company
-        <span class="sh-action" @click="openCompanyEditor(null)">+ Add</span>
-      </div>
-      <div class="pi-section">
-        <div v-if="(profile?.companies ?? []).length === 0" class="pi-group">
-          <button class="pi-row" type="button" @click="openCompanyEditor(null)">
-            <div class="pir-content">
-              <div class="pir-label">Registered company</div>
-              <div class="pir-value empty">Add company details</div>
-            </div>
-            <div class="pir-edit">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </div>
-          </button>
-        </div>
-
-        <div v-else class="pi-group">
-          <div
-            v-for="company in profile?.companies ?? []"
-            :key="company.id"
-            class="pi-row"
-          >
-            <div class="pir-content">
-              <div class="pir-label">{{ company.name }}</div>
-              <div v-if="company.address" class="pir-value">
-                {{ company.address }}
+        <!-- Top grid: Personal Info · Property Journey · Identity -->
+        <div class="pi-grid">
+          <!-- Personal Information card -->
+          <section class="pi-card">
+            <div class="pi-card-head">
+              <div class="pi-card-titlewrap">
+                <span class="pi-card-ic ic-blue"><Icon name="heroicons:user" /></span>
+                <h2 class="pi-card-title">Personal Information</h2>
               </div>
-              <div
-                v-if="company.companyNumber || company.director"
-                class="pir-hint"
+            </div>
+
+            <div class="pi-fieldlist">
+              <button
+                v-for="(item, index) in contactDetails"
+                :key="item.key"
+                class="pi-field"
+                type="button"
+                @click="openContactEditor(index)"
               >
-                <span v-if="company.companyNumber"
-                  >No. {{ company.companyNumber }}</span
-                >
-                <span v-if="company.companyNumber && company.director">
-                  ·
+                <span class="pi-field-ic"><Icon :name="contactIcons[item.key]" /></span>
+                <span class="pi-field-body">
+                  <span class="pi-field-label">{{ item.label }}</span>
+                  <span class="pi-field-value" :class="{ empty: !item.value }">
+                    {{ item.value || `Add ${item.label.toLowerCase()}` }}
+                  </span>
                 </span>
-                <span v-if="company.director">{{ company.director }}</span>
+                <Icon name="heroicons:pencil-square" class="pi-field-edit" />
+              </button>
+            </div>
+
+            <div class="pi-card-note">
+              <Icon name="heroicons:lock-closed" class="pi-card-note-ic" />
+              Your personal information is secure and private.
+            </div>
+          </section>
+
+          <!-- Property Journey card -->
+          <section class="pi-card">
+            <div class="pi-card-head">
+              <div class="pi-card-titlewrap">
+                <span class="pi-card-ic ic-aqua"><Icon name="heroicons:home-modern" /></span>
+                <h2 class="pi-card-title">Property Journey</h2>
               </div>
+              <button type="button" class="pi-card-action" @click="openAddressEditor(null)">
+                <Icon name="heroicons:pencil-square" class="pi-card-action-ic" />Edit
+              </button>
             </div>
-            <button
-              class="pir-edit"
-              type="button"
-              aria-label="Edit company"
-              @click="openCompanyEditor(company)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z" />
-              </svg>
-            </button>
-            <button
-              class="pir-edit pir-delete"
-              type="button"
-              aria-label="Delete company"
-              @click="handleDeleteCompany(company.id)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <!-- Solicitor -->
-      <div class="section-heading">
-        Solicitor
-        <span class="sh-action" @click="openSolicitorEditor(null)">+ Add</span>
-      </div>
-      <div class="pi-section">
-        <div v-if="(profile?.solicitors ?? []).length === 0" class="pi-group">
-          <button
-            class="pi-row"
-            type="button"
-            @click="openSolicitorEditor(null)"
-          >
-            <div class="pir-content">
-              <div class="pir-label">Solicitor</div>
-              <div class="pir-value empty">Add your solicitor</div>
-            </div>
-            <div class="pir-edit">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </div>
-          </button>
-        </div>
+            <div class="pi-journeylist">
+              <button class="pi-journey" type="button" @click="openAddressEditor((profile?.addresses ?? [])[0] ?? null)">
+                <span class="pi-journey-ic ic-aqua"><Icon name="heroicons:map-pin" /></span>
+                <span class="pi-journey-body">
+                  <span class="pi-journey-label">Current address</span>
+                  <span class="pi-journey-value" :class="{ empty: !(profile?.addresses ?? []).length }">
+                    {{ (profile?.addresses ?? []).length ? formatAddress(profile.addresses[0]) : 'Not added yet' }}
+                  </span>
+                </span>
+                <span class="pi-journey-pill" :class="(profile?.addresses ?? []).length ? 'added' : 'todo'">
+                  {{ (profile?.addresses ?? []).length ? 'Added ✓' : 'Add' }}
+                </span>
+              </button>
 
-        <div v-else class="pi-group">
-          <div
-            v-for="sol in profile?.solicitors ?? []"
-            :key="sol.id"
-            class="pi-row"
-          >
-            <div class="pir-content">
-              <div class="pir-label">{{ sol.name }}</div>
-              <div v-if="sol.contactName || sol.email" class="pir-value">
-                <span v-if="sol.contactName">{{ sol.contactName }}</span>
-                <span v-if="sol.contactName && sol.email"> · </span>
-                <span v-if="sol.email">{{ sol.email }}</span>
+              <button class="pi-journey" type="button" @click="openCompanyEditor((profile?.companies ?? [])[0] ?? null)">
+                <span class="pi-journey-ic ic-indigo"><Icon name="heroicons:building-office-2" /></span>
+                <span class="pi-journey-body">
+                  <span class="pi-journey-label">Registered company</span>
+                  <span class="pi-journey-value" :class="{ empty: !(profile?.companies ?? []).length }">
+                    {{ (profile?.companies ?? []).length ? profile.companies[0].name : 'Not added yet' }}
+                  </span>
+                </span>
+                <span class="pi-journey-pill" :class="(profile?.companies ?? []).length ? 'added' : 'todo'">
+                  {{ (profile?.companies ?? []).length ? 'Added ✓' : 'Add' }}
+                </span>
+              </button>
+
+              <button class="pi-journey" type="button" @click="openSolicitorEditor((profile?.solicitors ?? [])[0] ?? null)">
+                <span class="pi-journey-ic ic-blue"><Icon name="heroicons:scale" /></span>
+                <span class="pi-journey-body">
+                  <span class="pi-journey-label">Solicitor</span>
+                  <span class="pi-journey-value" :class="{ empty: !(profile?.solicitors ?? []).length }">
+                    {{ (profile?.solicitors ?? []).length ? profile.solicitors[0].name : 'Not added yet' }}
+                  </span>
+                </span>
+                <span class="pi-journey-pill" :class="(profile?.solicitors ?? []).length ? 'added' : 'todo'">
+                  {{ (profile?.solicitors ?? []).length ? 'Added ✓' : 'Add' }}
+                </span>
+              </button>
+            </div>
+
+            <div class="pi-card-note tip">
+              <Icon name="heroicons:light-bulb" class="pi-card-note-ic" />
+              Add these details for a smoother experience.
+            </div>
+          </section>
+
+          <!-- Identity Verification card -->
+          <section class="pi-card pi-card-verify">
+            <div class="pi-card-head">
+              <div class="pi-card-titlewrap">
+                <span class="pi-card-ic ic-green"><Icon name="heroicons:shield-check" /></span>
+                <h2 class="pi-card-title">Identity Verification</h2>
               </div>
-              <div v-if="sol.phone || sol.reference" class="pir-hint">
-                <span v-if="sol.phone">{{ sol.phone }}</span>
-                <span v-if="sol.phone && sol.reference"> · </span>
-                <span v-if="sol.reference">Ref {{ sol.reference }}</span>
+              <button type="button" class="pi-card-action" @click="navigateTo('/profile/support')">
+                Learn more<Icon name="heroicons:arrow-top-right-on-square" class="pi-card-action-ic" />
+              </button>
+            </div>
+
+            <div class="pi-verify-body">
+              <div class="pi-verify-badge" :class="{ done: profile?.isVerified }">
+                <Icon name="heroicons:shield-check-solid" class="pi-verify-badge-ic" />
               </div>
-            </div>
-            <button
-              class="pir-edit"
-              type="button"
-              aria-label="Edit solicitor"
-              @click="openSolicitorEditor(sol)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z" />
-              </svg>
-            </button>
-            <button
-              class="pir-edit pir-delete"
-              type="button"
-              aria-label="Delete solicitor"
-              @click="handleDeleteSolicitor(sol.id)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Communication preferences -->
-      <div class="section-heading">Communication preferences</div>
-      <div class="pi-section">
-        <div class="pi-group">
-          <div
-            v-for="item in communicationPreferences"
-            :key="item.key"
-            class="pi-row"
-          >
-            <div class="pir-content">
-              <div class="pir-label">{{ item.label }}</div>
-              <div class="pir-hint">{{ item.hint }}</div>
-            </div>
-            <button
-              type="button"
-              class="pir-toggle"
-              :class="{ on: item.value }"
-              :aria-label="item.label"
-              @click="toggleCommsPreference(item.key)"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Identity verification -->
-      <div class="section-heading">Identity verification</div>
-      <div class="pi-section">
-        <div class="pi-group">
-          <div class="pi-row" :class="{ 'verified-row': profile?.isVerified }">
-            <div v-if="profile?.isVerified" class="pir-verified-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <div class="pir-content">
-              <div
-                class="pir-label"
-                :class="{ 'verified-label': profile?.isVerified }"
-              >
+              <div class="pi-verify-title">
                 {{ profile?.isVerified ? 'Verified' : 'Not verified yet' }}
               </div>
-              <div class="pir-value" :class="{ empty: !profile?.isVerified }">
-                {{
-                  profile?.isVerified
-                    ? 'By Onfido · verified profile'
-                    : 'Complete ID verification to be trusted'
-                }}
+              <p class="pi-verify-sub">
+                {{ profile?.isVerified
+                  ? 'Your identity has been verified by Onfido.'
+                  : 'Verify your identity to build trust and unlock all platform features.' }}
+              </p>
+              <button type="button" class="pi-verify-btn" :disabled="profile?.isVerified">
+                {{ profile?.isVerified ? 'Verified' : 'Verify identity' }}
+                <Icon v-if="!profile?.isVerified" name="heroicons:arrow-right" class="pi-verify-btn-ic" />
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- Bottom row: Comms preferences · Profile completion -->
+        <div class="pi-grid-2">
+          <!-- Communication Preferences -->
+          <section class="pi-card">
+            <div class="pi-card-head col">
+              <div class="pi-card-titlewrap">
+                <span class="pi-card-ic ic-blue"><Icon name="heroicons:bell" /></span>
+                <h2 class="pi-card-title">Communication Preferences</h2>
+              </div>
+              <button type="button" class="pi-card-action">
+                <Icon name="heroicons:cog-6-tooth" class="pi-card-action-ic" />Edit preferences
+              </button>
+            </div>
+            <p class="pi-card-desc">Choose how you want to receive updates and notifications.</p>
+
+            <div class="pi-prefs">
+              <div
+                v-for="item in communicationPreferences"
+                :key="item.key"
+                class="pi-pref"
+              >
+                <span class="pi-pref-ic"><Icon :name="prefIcons[item.key]" /></span>
+                <span class="pi-pref-body">
+                  <span class="pi-pref-label">{{ item.label }}</span>
+                  <span class="pi-pref-hint">{{ item.hint }}</span>
+                </span>
+                <button
+                  type="button"
+                  class="pir-toggle"
+                  :class="{ on: item.value }"
+                  :aria-label="item.label"
+                  @click="toggleCommsPreference(item.key)"
+                />
               </div>
             </div>
-            <div class="pir-edit">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
+          </section>
+
+          <!-- Profile Completion checklist -->
+          <section class="pi-card">
+            <div class="pi-card-head">
+              <div class="pi-card-titlewrap">
+                <span class="pi-card-ic ic-aqua"><Icon name="heroicons:check-circle" /></span>
+                <div>
+                  <h2 class="pi-card-title">Profile Completion</h2>
+                  <p class="pi-card-desc tight">Complete these steps to finish your profile.</p>
+                </div>
+              </div>
             </div>
-          </div>
+
+            <div class="pi-completion-row">
+              <div class="pi-checklist">
+                <div
+                  v-for="step in completionSteps"
+                  :key="step.label"
+                  class="pi-check"
+                  :class="{ done: step.done }"
+                >
+                  <Icon :name="step.icon" class="pi-check-ic" />
+                  <span class="pi-check-label">{{ step.label }}</span>
+                  <span class="pi-check-state" :class="step.done ? 'ok' : 'pending'">
+                    <Icon v-if="step.done" name="heroicons:check-16-solid" />
+                    <template v-else>Pending</template>
+                  </span>
+                </div>
+              </div>
+
+              <div class="pi-ring-wrap">
+                <div class="pi-ring" :style="ringStyle">
+                  <div class="pi-ring-inner">
+                    <span class="pi-ring-pct">{{ profileCompletion }}%</span>
+                    <span class="pi-ring-cap">Completed</span>
+                  </div>
+                </div>
+                <div class="pi-ring-note">
+                  <Icon name="heroicons:sparkles-solid" class="pi-ring-note-ic" />
+                  Great progress! You're just a few steps away.
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-      </div>
+
+        <div class="pi-footnote">
+          <Icon name="heroicons:lock-closed" class="pi-footnote-ic" />
+          Your data is encrypted and never shared with third parties.
+        </div>
     </main>
 
     <!-- Contact Edit Drawer -->
@@ -691,7 +505,7 @@
 <script setup>
 import BaseDrawer from '@/components/ui/BaseDrawer.vue'
 import PhoneInput from '@/components/form/PhoneInput.vue'
-
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 definePageMeta({ title: 'Personal Information - UmovingU', middleware: 'auth' })
 
 const {
@@ -758,6 +572,21 @@ const contactDetails = computed(() => [
   { label: 'Phone', value: profile.value?.phone ?? '', key: 'phone' },
 ])
 
+const contactIcons = {
+  name: 'heroicons:user',
+  email: 'heroicons:envelope',
+  phone: 'heroicons:phone',
+}
+const prefIcons = {
+  pushNotifications: 'heroicons:device-phone-mobile',
+  emailNewsletter: 'heroicons:envelope',
+  smsNotifications: 'heroicons:chat-bubble-oval-left',
+}
+
+const firstNameDisplay = computed(
+  () => profile.value?.firstName || fullName.value?.split(' ')[0] || 'there',
+)
+
 const contactVisible = computed(() => profile.value?.contactVisible ?? true)
 const toggleContactVisible = async () => {
   if (!profile.value) return
@@ -821,7 +650,7 @@ const communicationPreferences = computed(() => [
   },
   {
     key: 'smsNotifications',
-    label: 'SMS',
+    label: 'SMS alerts',
     hint: 'Time-sensitive alerts only',
     value: profile.value?.smsNotifications ?? false,
   },
@@ -948,386 +777,224 @@ const profileCompletion = computed(() => {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 })
 
+const completionSteps = computed(() => [
+  { label: 'Add full name', icon: 'heroicons:pencil', done: !!profile.value?.firstName },
+  { label: 'Add email address', icon: 'heroicons:envelope', done: !!profile.value?.email },
+  { label: 'Add phone number', icon: 'heroicons:phone', done: !!profile.value?.phone },
+  { label: 'Add current address', icon: 'heroicons:map-pin', done: !!profile.value?.addresses?.length },
+  { label: 'Add company details', icon: 'heroicons:building-office-2', done: !!profile.value?.companies?.length },
+  { label: 'Add solicitor', icon: 'heroicons:scale', done: !!profile.value?.solicitors?.length },
+  { label: 'Verify your identity', icon: 'heroicons:shield-check', done: !!profile.value?.isVerified },
+])
+
+const ringStyle = computed(() => ({
+  background: `conic-gradient(#00a19a ${profileCompletion.value * 3.6}deg, #e6eef2 0deg)`,
+}))
+
 const goBack = useGoBack('/profile')
 </script>
 
 <style scoped>
-.pi-page {
+.pi-shell {
   --fx-aqua: #00a19a;
   --fx-blue: #2f9bdf;
   --fx-indigo: #4f4ff2;
   --fx-text: #1f2b3f;
   --fx-muted: #6f8199;
-  --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: var(--fx-text);
-  position: relative;
-  padding-bottom: 34px;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.pi-nav-bar {
-  display: flex;
-  align-items: center;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 12px 18px 10px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
-  position: relative;
-  z-index: 2;
-}
-.pi-nav-icon-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #143047;
-  flex-shrink: 0;
-  box-shadow:
-    0 8px 22px rgba(19, 48, 71, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transition:
-    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.pi-nav-icon-btn:hover {
-  transform: translateY(-2px);
-  border-color: rgba(183, 209, 236, 0.9);
-  box-shadow:
-    0 12px 24px rgba(19, 48, 71, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-.pi-nav-icon-btn svg {
-  width: 18px;
-  height: 18px;
-}
-.pi-nav-title {
-  flex: 1;
-  text-align: center;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.35px;
-  color: #10263d;
-}
+/* Body */
+.pi-body { width: min(1280px, calc(100% - 64px)); margin: 0 auto; padding: 32px 0 70px; }
 
-.pi-body {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 14px;
+/* ── Welcome hero banner ───────────────────────────────────────── */
+.pi-welcome {
+  display: grid;
+  grid-template-columns: auto 1.4fr 1fr 1fr;
+  align-items: center;
+  gap: 28px;
+  border-radius: 24px;
+  padding: 26px 30px;
+  margin-bottom: 26px;
+  background: linear-gradient(120deg, #e8f7f2 0%, #eef3ff 55%, #f1ecfe 100%);
+  border: 1px solid #e6eef8;
+  box-shadow: 0 14px 38px rgba(15, 44, 76, 0.06);
 }
-.atm-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 280px;
-  pointer-events: none;
-  z-index: 0;
+.pi-welcome-greet { font-size: 15px; font-weight: 700; color: #2a4055; margin-bottom: 2px; }
+.pi-wave { display: inline-block; }
+.pi-welcome-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #10263d; line-height: 1.1; margin-bottom: 6px; }
+.pi-welcome-sub { font-size: 14px; color: #5f7488; line-height: 1.5; max-width: 320px; }
+.pi-welcome-prog { min-width: 0; }
+.pi-wp-label { font-size: 12.5px; font-weight: 700; color: #5f7488; margin-bottom: 4px; }
+.pi-wp-pct { font-size: 30px; font-weight: 800; color: #00a19a; letter-spacing: -0.5px; line-height: 1; margin-bottom: 10px; }
+.pi-wp-hint { font-size: 12px; color: #6f8398; line-height: 1.5; margin-top: 8px; }
+.pi-welcome-cta {
+  border-radius: 18px; background: #fff; border: 1px solid #e7eef8;
+  padding: 16px 18px; box-shadow: 0 8px 22px rgba(15, 44, 76, 0.06);
 }
-.atm-bg.atm-bg-warm {
-  background:
-    radial-gradient(circle at 92% 8%, rgba(208, 236, 255, 0.32) 0%, rgba(208, 236, 255, 0) 48%);
+.pi-wc-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #10263d; margin-bottom: 4px; }
+.pi-wc-gem { width: 18px; height: 18px; color: #6c5cf0; }
+.pi-wc-sub { font-size: 12.5px; color: #6f8398; line-height: 1.45; margin-bottom: 12px; }
+.pi-wc-btn {
+  width: 100%; height: 42px; border-radius: 12px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, #5b5bf0, #6c5cf0); color: #fff;
+  font-family: inherit; font-size: 13.5px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  box-shadow: 0 10px 22px rgba(92, 76, 240, 0.28); transition: transform 0.2s, box-shadow 0.2s;
 }
+.pi-wc-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(92, 76, 240, 0.34); }
+.pi-wc-btn-ic { width: 15px; height: 15px; }
 
-/* Hero */
-.pi-hero {
-  margin-top: 8px;
-  border-radius: 28px;
-  padding: 24px 18px 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  overflow: hidden;
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+/* ── Card grids ────────────────────────────────────────────────── */
+.pi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 22px; }
+.pi-grid-2 { display: grid; grid-template-columns: 1fr 1.25fr; gap: 22px; margin-bottom: 24px; }
+
+.pi-card {
+  border-radius: 20px; background: #fff; border: 1px solid #e8eef5;
+  box-shadow: 0 10px 30px rgba(15, 44, 76, 0.05); padding: 22px 22px 18px;
+  display: flex; flex-direction: column;
 }
-.pi-hero::before {
-  content: '';
-  position: absolute;
-  inset: -145% auto auto -40%;
-  width: 54%;
-  height: 320%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 46%, rgba(255, 255, 255, 0) 100%);
-  transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
+.pi-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.pi-card-head.col { flex-wrap: wrap; }
+.pi-card-titlewrap { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.pi-card-ic { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pi-card-ic :deep(svg) { width: 20px; height: 20px; }
+.ic-blue { background: #eaf0ff; color: #5b6ef0; }
+.ic-aqua { background: #e3f5f1; color: #00a19a; }
+.ic-green { background: #e3f5ec; color: #18a558; }
+.ic-indigo { background: #efeafe; color: #7c5cf0; }
+.pi-card-title { font-size: 16px; font-weight: 800; color: #10263d; letter-spacing: -0.3px; }
+.pi-card-action {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  font-family: inherit; font-size: 12.5px; font-weight: 700; color: #41566b;
+  background: #fff; border: 1px solid #e2e8f1; border-radius: 9px; padding: 6px 11px; cursor: pointer;
+  transition: border-color 0.16s, color 0.16s;
 }
-.pi-hero:hover {
-  transform: translateY(-4px);
-  border-color: rgba(172, 203, 233, 0.7);
-  box-shadow:
-    0 20px 44px rgba(18, 55, 88, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+.pi-card-action:hover { border-color: #b9d5ea; color: #10263d; }
+.pi-card-action-ic { width: 14px; height: 14px; }
+.pi-card-desc { font-size: 13px; color: #6f8398; line-height: 1.45; margin-bottom: 14px; }
+.pi-card-desc.tight { margin: 2px 0 0; }
+
+/* Field list (personal info) */
+.pi-fieldlist { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.pi-field {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: #f9fbfe; border: 1px solid #eef3f9; border-radius: 14px; padding: 11px 13px;
+  cursor: pointer; font-family: inherit; transition: border-color 0.16s, background 0.16s;
 }
-.pi-hero:hover::before {
-  transform: translateX(220%) rotate(16deg);
+.pi-field:hover { border-color: #cfe0f1; background: #f4f9ff; }
+.pi-field-ic { width: 34px; height: 34px; border-radius: 10px; background: #eaf0ff; color: #5b6ef0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pi-field-ic :deep(svg) { width: 17px; height: 17px; }
+.pi-field-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pi-field-label { font-size: 11px; font-weight: 700; color: #8195aa; }
+.pi-field-value { font-size: 14px; font-weight: 700; color: #16314a; word-break: break-word; }
+.pi-field-value.empty { color: #00a19a; }
+.pi-field-edit { width: 16px; height: 16px; color: #9fb0c2; flex-shrink: 0; }
+
+.pi-card-note {
+  display: flex; align-items: center; gap: 8px; margin-top: 14px;
+  font-size: 12px; font-weight: 600; color: #2f7d6f; background: #e9f6f1;
+  border-radius: 11px; padding: 9px 12px;
 }
+.pi-card-note.tip { color: #8a6d1f; background: #fdf6e3; }
+.pi-card-note-ic { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Property journey */
+.pi-journeylist { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.pi-journey {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: #f9fbfe; border: 1px solid #eef3f9; border-radius: 14px; padding: 11px 13px;
+  cursor: pointer; font-family: inherit; transition: border-color 0.16s, background 0.16s;
+}
+.pi-journey:hover { border-color: #cfe0f1; background: #f4f9ff; }
+.pi-journey-ic { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pi-journey-ic :deep(svg) { width: 17px; height: 17px; }
+.pi-journey-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pi-journey-label { font-size: 13.5px; font-weight: 800; color: #16314a; }
+.pi-journey-value { font-size: 12.5px; font-weight: 600; color: #5f7488; word-break: break-word; }
+.pi-journey-value.empty { color: #93a3b5; }
+.pi-journey-pill { flex-shrink: 0; font-size: 11px; font-weight: 800; border-radius: 100px; padding: 4px 10px; }
+.pi-journey-pill.added { color: #18a558; background: #e3f5ec; }
+.pi-journey-pill.todo { color: #b07d12; background: #fdf3da; }
+
+/* Identity verification */
+.pi-card-verify { text-align: center; }
+.pi-verify-body { display: flex; flex-direction: column; align-items: center; flex: 1; justify-content: center; padding: 6px 0; }
+.pi-verify-badge { width: 76px; height: 76px; border-radius: 50%; background: #e7f5ee; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.pi-verify-badge-ic { width: 38px; height: 38px; color: #18a558; }
+.pi-verify-badge.done { background: #d8f3e3; }
+.pi-verify-title { font-size: 17px; font-weight: 800; color: #10263d; margin-bottom: 6px; }
+.pi-verify-sub { font-size: 12.5px; color: #6f8398; line-height: 1.5; max-width: 240px; margin-bottom: 16px; }
+.pi-verify-btn {
+  width: 100%; height: 46px; border-radius: 12px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, #00a99a, #0c8f74); color: #fff;
+  font-family: inherit; font-size: 14px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26); transition: transform 0.2s, box-shadow 0.2s;
+}
+.pi-verify-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(0, 161, 154, 0.32); }
+.pi-verify-btn:disabled { opacity: 0.6; cursor: default; }
+.pi-verify-btn-ic { width: 15px; height: 15px; }
+
+/* Comms preferences */
+.pi-prefs { display: flex; flex-direction: column; gap: 10px; }
+.pi-pref {
+  display: flex; align-items: center; gap: 12px;
+  background: #f9fbfe; border: 1px solid #eef3f9; border-radius: 14px; padding: 12px 14px;
+}
+.pi-pref-ic { width: 36px; height: 36px; border-radius: 10px; background: #e3f5f1; color: #00a19a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pi-pref-ic :deep(svg) { width: 18px; height: 18px; }
+.pi-pref-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pi-pref-label { font-size: 14px; font-weight: 800; color: #16314a; }
+.pi-pref-hint { font-size: 12px; color: #6f8398; }
+
+/* Profile completion checklist + ring */
+.pi-completion-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.pi-checklist { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 2px; }
+.pi-check { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid #f0f4f8; }
+.pi-check:last-child { border-bottom: none; }
+.pi-check-ic { width: 16px; height: 16px; color: #9fb0c2; flex-shrink: 0; }
+.pi-check.done .pi-check-ic { color: #00a19a; }
+.pi-check-label { flex: 1; font-size: 13px; font-weight: 600; color: #3c5165; }
+.pi-check.done .pi-check-label { color: #16314a; }
+.pi-check-state { flex-shrink: 0; font-size: 11px; font-weight: 800; }
+.pi-check-state.pending { color: #b07d12; background: #fdf3da; border-radius: 100px; padding: 3px 9px; }
+.pi-check-state.ok { width: 20px; height: 20px; border-radius: 50%; background: #e3f5ec; color: #18a558; display: inline-flex; align-items: center; justify-content: center; }
+.pi-check-state.ok :deep(svg) { width: 13px; height: 13px; }
+
+.pi-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.pi-ring { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.pi-ring-inner { width: 116px; height: 116px; border-radius: 50%; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px #eef3f9; }
+.pi-ring-pct { font-size: 28px; font-weight: 800; color: #00a19a; letter-spacing: -0.5px; }
+.pi-ring-cap { font-size: 12px; font-weight: 700; color: #6f8398; }
+.pi-ring-note { display: flex; align-items: flex-start; gap: 7px; max-width: 180px; font-size: 11.5px; font-weight: 600; color: #6c5cf0; background: #f2eefe; border-radius: 11px; padding: 9px 11px; line-height: 1.4; }
+.pi-ring-note-ic { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+.pi-footnote { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #8195aa; padding: 8px 0; }
+.pi-footnote-ic { width: 15px; height: 15px; }
+
 .pi-avatar {
-  width: 94px;
-  height: 94px;
-  border-radius: 50%;
+  width: 96px; height: 96px; border-radius: 50%;
   background: linear-gradient(145deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  font-weight: 750;
-  letter-spacing: 1px;
-  box-shadow:
-    0 10px 22px rgba(48, 98, 214, 0.24),
-    inset 0 0 0 3px rgba(255, 255, 255, 0.08);
-  margin-bottom: 14px;
-  position: relative;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  color: #fff; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 800; letter-spacing: 1px;
+  box-shadow: 0 10px 22px rgba(48, 98, 214, 0.24);
+  position: relative; border: none; cursor: pointer; font-family: inherit; flex-shrink: 0;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s;
 }
-.pi-avatar:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 14px 26px rgba(48, 98, 214, 0.3),
-    inset 0 0 0 3px rgba(255, 255, 255, 0.1);
-}
-.pi-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
+.pi-avatar:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(48, 98, 214, 0.3); }
+.pi-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .avatar-camera-mini {
-  position: absolute;
-  bottom: -1px;
-  right: -1px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  position: absolute; bottom: -1px; right: -1px;
+  width: 30px; height: 30px; border-radius: 50%;
   background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
-  color: #fff;
-  border: 2.5px solid #f4fbff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #fff; border: 3px solid #fff;
+  display: flex; align-items: center; justify-content: center;
 }
-.avatar-camera-mini svg {
-  width: 12px;
-  height: 12px;
-}
-.pi-name {
-  margin-top: 2px;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 31px;
-  line-height: 1.08;
-  letter-spacing: -0.85px;
-  font-weight: 750;
-  color: #10263d;
-  margin-bottom: 4px;
-}
-.pi-meta {
-  font-size: 14px;
-  color: #50637a;
-  font-weight: 600;
-  margin-bottom: 14px;
-}
-.pi-completion {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-  background: rgba(229, 255, 248, 0.92);
-  border: 1px solid rgba(0, 161, 154, 0.35);
-  border-radius: 100px;
-  padding: 8px 14px 8px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #047b75;
-}
-.pic-track {
-  width: 76px;
-  height: 6px;
-  background: rgba(131, 228, 213, 0.35);
-  border-radius: 100px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.pic-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--fx-aqua), var(--fx-blue));
-  border-radius: 100px;
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.pic-pct {
-  color: #067a74;
-  font-weight: 800;
-}
-
-/* Section heading */
-.section-heading {
-  margin-top: 16px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: #71849b;
-  padding: 0 4px 10px;
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.sh-action {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 800;
-  color: #067a74;
-  cursor: pointer;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-/* Section / group / row */
-.pi-section {
-  padding: 0;
-  margin-bottom: 6px;
-  position: relative;
-  z-index: 1;
-}
-.pi-group {
-  border-radius: 22px;
-  border: 1px solid var(--fx-panel-border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
-  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.08);
-  overflow: hidden;
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.pi-group:hover {
-  transform: translateY(-2px);
-  border-color: #bdd6ea;
-  box-shadow: 0 16px 32px rgba(15, 44, 76, 0.11);
-}
-.pi-row {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid rgba(216, 230, 244, 0.72);
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-  color: inherit;
-}
-.pi-row:last-child {
-  border-bottom: none;
-}
-.pi-row:hover {
-  background: rgba(245, 250, 255, 0.78);
-}
-.pi-row.verified-row {
-  background: linear-gradient(90deg, rgba(234, 254, 249, 0.96), rgba(245, 251, 255, 0.2));
-  cursor: default;
-}
-.pi-row.verified-row:hover {
-  background: linear-gradient(90deg, rgba(234, 254, 249, 0.96), rgba(245, 251, 255, 0.2));
-}
-
-.pir-content {
-  flex: 1;
-  min-width: 0;
-}
-.pir-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: #7f91a8;
-  margin-bottom: 2px;
-}
-.pir-label.verified-label {
-  color: #067a74;
-}
-.pir-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: #17314a;
-  letter-spacing: -0.2px;
-  line-height: 1.35;
-  word-break: break-word;
-}
-.pir-value.empty {
-  color: #067a74;
-  font-weight: 700;
-}
-.pir-hint {
-  font-size: 12.5px;
-  color: #627891;
-  font-weight: 600;
-  margin-top: 2px;
-  line-height: 1.35;
-}
-
-.pir-edit {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(228, 247, 243, 0.96);
-  color: #067a74;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    background 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.pir-edit:hover {
-  transform: translateY(-1px);
-  background: rgba(205, 240, 232, 0.96);
-}
-.pir-edit svg {
-  width: 15px;
-  height: 15px;
-}
-.pir-delete {
-  background: #fff1ef;
-  color: #c35a47;
-}
-.pir-delete:hover {
-  background: #ffe2dc;
-}
-
+.avatar-camera-svg { width: 14px; height: 14px; }
 .pir-toggle {
   width: 44px;
   height: 24px;
@@ -1356,22 +1023,6 @@ const goBack = useGoBack('/profile')
 }
 .pir-toggle.on::after {
   transform: translateX(20px);
-}
-
-.pir-verified-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.pir-verified-icon svg {
-  width: 17px;
-  height: 17px;
 }
 
 /* Drawer CTA */
@@ -1439,65 +1090,40 @@ const goBack = useGoBack('/profile')
   letter-spacing: -0.2px;
 }
 
-@media (min-width: 768px) {
-  .pi-nav-bar {
-    padding: 14px 22px 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .pi-body {
-    padding: 0 18px;
-  }
-
-  .pi-hero {
-    padding: 28px 24px 24px;
-  }
-
-  .pi-name {
-    font-size: 34px;
-  }
-
-  .pi-section {
-    margin-bottom: 8px;
-  }
-
-  .pi-row {
-    padding: 15px 18px;
-  }
-
-  .pir-value {
-    font-size: 14.5px;
-  }
+@media (max-width: 1180px) {
+  .pi-grid { grid-template-columns: 1fr 1fr; }
+  .pi-card-verify { grid-column: 1 / -1; }
 }
-
-@media (max-width: 430px) {
-  .pi-nav-title {
-    font-size: 18px;
-  }
-
-  .pi-name {
-    font-size: 28px;
-  }
-
-  .pi-meta {
-    font-size: 13px;
-  }
+@media (max-width: 1000px) {
+  .pi-body { padding: 28px 0 60px; }
+  .pi-welcome { grid-template-columns: auto 1fr; row-gap: 22px; }
+  .pi-welcome-prog, .pi-welcome-cta { grid-column: 1 / -1; }
+}
+@media (max-width: 860px) {
+  .pi-grid, .pi-grid-2 { grid-template-columns: 1fr; }
+  .pi-card-verify { grid-column: auto; }
+}
+@media (max-width: 760px) {
+  .pi-body { width: calc(100% - 32px); padding: 24px 0 56px; }
+  .pi-welcome { padding: 22px; gap: 18px; }
+  .pi-welcome-title { font-size: 26px; }
+  .pi-avatar { width: 80px; height: 80px; font-size: 27px; }
+}
+@media (max-width: 560px) {
+  .pi-welcome { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .pi-welcome-sub { margin: 0 auto; }
+  .pi-completion-row { justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pi-nav-icon-btn,
-  .pi-hero,
   .pi-avatar,
-  .pi-group,
-  .pir-edit,
+  .pi-card,
+  .pi-wc-btn,
+  .pi-verify-btn,
   .drawer-cta,
   .avatar-pick-row {
     transition: none;
     animation: none;
-  }
-
-  .pi-hero::before {
-    display: none;
   }
 }
 </style>

@@ -1,15 +1,49 @@
 <template>
   <div class="bp-page">
-    <!-- Top nav: back + "Buyer Passport" + Share -->
-    <div class="bp-top-nav">
-      <button class="bp-back" @click="goBack" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="bp-nav-centre">Buyer Profile</div>
-      <span class="bp-nav-right" @click="goShare">Share</span>
-    </div>
+    <div class="bp-ambient bp-ambient-a" />
+    <div class="bp-ambient bp-ambient-b" />
+    <div class="bp-mesh" />
+
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" class="active" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-iconbtn" type="button" @click="goShare()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            Share
+          </button>
+          <button class="hsw-help" type="button" @click="router.push('/support')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Need Help?
+          </button>
+          <button class="hsw-back" type="button" @click="goBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+        </div>
+      </div>
+    </header>
 
     <!-- Loading / empty -->
     <div v-if="loading" class="bp-loading">Loading your Profile…</div>
@@ -25,6 +59,124 @@
     </div>
 
     <template v-else>
+      <!-- ── Page title bar ── -->
+      <div class="hsw-shell bpvw-titlebar">
+        <div class="bpvw-title-left">
+          <div class="bpvw-title-logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+          </div>
+          <span class="bpvw-title-text">BUYER PROFILE</span>
+        </div>
+        <button class="bpvw-help" @click="router.push('/support')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+          Need Help?
+        </button>
+      </div>
+
+      <main class="hsw-shell bpvw-layout">
+      <!-- ── Left aside: one tall white panel ── -->
+      <aside class="bpvw-aside">
+        <!-- Hero card with gauge + actions (flush to panel top) -->
+        <div class="hero-card">
+          <div class="bp-hero-top">
+            <span class="bp-hero-eyebrow">{{ tierLabel.toUpperCase() }}</span>
+            <span class="bp-hero-strength">{{ Math.round(animatedStrength) }}% COMPLETE</span>
+          </div>
+          <div class="bp-hero-body">
+            <!-- Circular gauge -->
+            <div class="bp-gauge-wrap">
+              <svg width="108" height="108" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="7" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="7"
+                  :stroke-dasharray="passportGaugeDash"
+                  :stroke-dashoffset="passportGaugeOffset"
+                  stroke-linecap="round"
+                  transform="rotate(-90 50 50)"
+                  style="transition: stroke-dashoffset 0.9s cubic-bezier(.22,1,.36,1)"
+                />
+                <text x="50" y="46" text-anchor="middle" font-size="22" font-weight="800" fill="white">
+                  {{ Math.round(animatedStrength) }}%
+                </text>
+                <text x="50" y="62" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.72)">
+                  Profile
+                </text>
+                <text x="50" y="71" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.72)">
+                  Strength
+                </text>
+              </svg>
+            </div>
+            <div class="bp-hero-info">
+              <div class="bp-hero-name">{{ displayName }}</div>
+              <div class="bp-hero-ref">{{ tierLabel }}</div>
+            </div>
+          </div>
+          <div class="bp-hero-actions">
+            <button class="bp-hero-btn bp-hero-btn--solid" @click="goShare">View Profile</button>
+            <button class="bp-hero-btn bp-hero-btn--ghost" @click="goEdit">Settings</button>
+          </div>
+        </div>
+
+        <!-- White panel body -->
+        <div class="bpvw-aside-body">
+          <!-- Profile completion -->
+          <div class="bp-pb-wrap">
+            <div class="bp-pb-row">
+              <span class="bp-pb-label">Profile Completion</span>
+              <span class="bp-pb-pct">{{ Math.round(animatedStrength) }}%</span>
+            </div>
+            <div class="pb-track">
+              <div class="pb-fill" :style="{ width: Math.round(animatedStrength) + '%' }" />
+            </div>
+            <div v-if="completionTip" class="bp-pb-tip">{{ completionTip }}</div>
+          </div>
+
+          <!-- Identity verified strip -->
+          <div class="dvs-strip">
+            <div class="dvs-badge-ic">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+            </div>
+            <div class="dvs-text">
+              <div class="dvs-title">Identity verified via OneID &amp; KYC Digital Verification</div>
+              <div class="dvs-sub">Secured by Bank-Grade Encryption</div>
+            </div>
+          </div>
+
+          <!-- Reward banner -->
+          <div class="reward-banner">
+            <div class="reward-icon">🎁</div>
+            <div>
+              <div class="reward-title">Your profile creation reward</div>
+              <div class="reward-sub">
+                You're almost there! Complete your profile identity and documents to
+                earn exclusive rewards instantly.
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier upgrade nudge -->
+          <button
+            v-if="tier !== 'PREMIUM'"
+            class="upgrade-nudge"
+            @click="tierDrawerOpen = true"
+          >
+            <div class="upgrade-star">★</div>
+            <div class="upgrade-body">
+              <div class="upgrade-title">
+                {{ tier === 'BASIC' ? 'Upgrade to Verified' : 'Upgrade to Platinum' }}
+              </div>
+              <div class="upgrade-sub">
+                {{ tier === 'BASIC'
+                  ? 'Add powerful bonds, affordability + CFO'
+                  : 'Add Equifax + lender API access — takes 2 minutes' }}
+              </div>
+            </div>
+            <span class="upgrade-arrow">›</span>
+          </button>
+        </div>
+      </aside><!-- /bpvw-aside -->
+
+      <!-- ── Right content column ── -->
+      <div class="bpvw-content">
       <!-- Pending access request banner (OPDA verifier flow) -->
       <button
         v-for="r in pendingRequests"
@@ -44,120 +196,9 @@
         <span class="bp-access-banner-chev">→</span>
       </button>
 
-      <!-- Eyebrow pill with pulse -->
-      <div class="bp-eyebrow-wrap">
-        <div class="eyebrow-pill">
-          <div class="pulse-dot" />BUYER PROFILE
-        </div>
-      </div>
-
-      <!-- Hero card with gauge -->
-      <div class="bp-hero-wrap">
-        <div class="hero-card">
-          <div class="bp-hero-top">
-            <span class="bp-hero-eyebrow">{{ tierLabel.toUpperCase() }}</span>
-            <span class="bp-hero-strength">{{ Math.round(animatedStrength) }}% STRENGTH</span>
-          </div>
-          <div class="bp-hero-body">
-            <!-- Circular gauge -->
-            <div class="bp-gauge-wrap">
-              <svg width="80" height="80" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="8" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="8"
-                  :stroke-dasharray="passportGaugeDash"
-                  :stroke-dashoffset="passportGaugeOffset"
-                  stroke-linecap="round"
-                  transform="rotate(-90 50 50)"
-                  style="transition: stroke-dashoffset 0.9s cubic-bezier(.22,1,.36,1)"
-                />
-                <text x="50" y="48" text-anchor="middle" font-size="22" font-weight="800" fill="white">
-                  {{ Math.round(animatedStrength) }}
-                </text>
-                <text x="50" y="62" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.7)">
-                  strength
-                </text>
-              </svg>
-            </div>
-            <div class="bp-hero-info">
-              <div class="bp-hero-name">{{ displayName }}</div>
-              <div class="bp-hero-ref">
-                <template v-if="(passport as any).publicRef">
-                  Verified · {{ (passport as any).publicRef }}
-                </template>
-                <template v-else>Verified buyer</template>
-              </div>
-              <div class="bp-hero-pills">
-                <span class="hero-pill">🪪 Verified</span>
-                <span v-if="fundsLabelShort" class="hero-pill">{{ fundsLabelShort }}</span>
-                <span class="hero-pill">{{ chainShortLabel }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Profile completion -->
-      <div class="bp-pb-wrap">
-        <div class="bp-pb-row">
-          <span class="bp-pb-label">Profile completion</span>
-          <span class="bp-pb-pct">{{ Math.round(animatedStrength) }}%</span>
-        </div>
-        <div class="pb-track">
-          <div class="pb-fill" :style="{ width: Math.round(animatedStrength) + '%' }" />
-        </div>
-        <div v-if="completionTip" class="bp-pb-tip">{{ completionTip }}</div>
-      </div>
-
-      <!-- DVS strip -->
-      <div class="dvs-strip">
-        <div class="dvs-badge">UK DVS</div>
-        <div class="dvs-text">
-          Identity verified under the UK Digital Verification Services Trust Framework
-        </div>
-      </div>
-
-      <!-- Permanence banner -->
-      <div class="persist-banner-wrap">
-        <div class="persist-banner">
-          <div class="persist-icon">♾️</div>
-          <div>
-            <div class="persist-title">Your profile carries forward</div>
-            <div class="persist-sub">
-              When you buy your next home, your verified identity and documents
-              come with you — no need to reverify.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tier upgrade nudge -->
-      <div v-if="tier !== 'PREMIUM'" class="upgrade-nudge-wrap">
-        <button
-          class="upgrade-nudge amber-n"
-          @click="tierDrawerOpen = true"
-        >
-          <div class="upgrade-star">★</div>
-          <div class="upgrade-body">
-            <div class="upgrade-title">
-              {{ tier === 'BASIC' ? 'Upgrade to Verified' : 'Upgrade to Platinum' }}
-            </div>
-            <div class="upgrade-sub">
-              {{ tier === 'BASIC'
-                ? 'Add proof of funds + affordability — £29'
-                : 'Add Equifax + lender API access — takes 2 minutes' }}
-            </div>
-          </div>
-          <span class="upgrade-arrow">→</span>
-        </button>
-      </div>
-
       <!-- ── Verified Credentials section ── -->
       <div class="section-header">
-        <div class="sec-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-        </div>
+        <div class="sec-icon"><Icon name="heroicons:shield-check" class="sec-icon-svg" /></div>
         <div>
           <div class="sec-title">VERIFIED CREDENTIALS</div>
           <div class="sec-sub">Your verified information</div>
@@ -165,51 +206,54 @@
       </div>
       <div class="tile-grid">
         <div class="tile">
-          <div class="tile-icon">🪪</div>
-          <div class="tile-title">Identity</div>
+          <div class="tile-head">
+            <div class="tile-icon"><Icon name="heroicons:identification" class="tile-icon-svg" /></div>
+            <div class="tile-title">Identity</div>
+          </div>
           <div class="tile-value">Verified</div>
-          <div class="tile-prov">via Onfido / DVS</div>
+          <div class="tile-prov">OneID &amp; KYC Verified</div>
         </div>
-        <div class="tile" :class="{ amber: !passport.fundsType }">
-          <div class="tile-icon" :class="{ 'amber-bg': !passport.fundsType }">💰</div>
-          <div class="tile-title">Funds</div>
+        <div class="tile" :class="{ amber: !passport.fundsType }" @click="goEdit">
+          <div class="tile-head">
+            <div class="tile-icon" :class="{ 'amber-bg': !passport.fundsType }">
+              <Icon name="heroicons:banknotes" class="tile-icon-svg" :class="{ 'icon-amber': !passport.fundsType }" />
+            </div>
+            <div class="tile-title">Funds</div>
+          </div>
           <div class="tile-value" :class="{ amber: !passport.fundsType }">
-            {{ fundsLabelLong || 'Add proof' }}
+            {{ passport.fundsType ? fundsLabelLong : 'Add proof' }}
           </div>
           <div class="tile-prov" :class="{ amber: !passport.fundsType }">
-            {{ fundsTypeLong }}
+            {{ passport.fundsType ? fundsTypeLong : 'Add proof of funds' }}
           </div>
         </div>
         <div class="tile">
-          <div class="tile-icon">🔗</div>
-          <div class="tile-title">Chain</div>
-          <div class="tile-value">{{ chainShortLabel }}</div>
-          <div class="tile-prov">Self-declared</div>
-        </div>
-        <div class="tile" :class="{ amber: !hasMortgageAip }">
-          <div class="tile-icon" :class="{ 'amber-bg': !hasMortgageAip }">
-            {{ hasMortgageAip ? '🏦' : '⚠️' }}
+          <div class="tile-head">
+            <div class="tile-icon"><Icon name="heroicons:link" class="tile-icon-svg" /></div>
+            <div class="tile-title">Chain</div>
           </div>
-          <div class="tile-title">Mortgage</div>
+          <div class="tile-value">{{ chainShortLabel }}</div>
+          <div class="tile-prov">Link attached</div>
+        </div>
+        <div class="tile" :class="{ amber: !hasMortgageAip }" @click="goEdit">
+          <div class="tile-head">
+            <div class="tile-icon" :class="{ 'amber-bg': !hasMortgageAip }">
+              <Icon :name="hasMortgageAip ? 'heroicons:building-library' : 'heroicons:exclamation-triangle'" class="tile-icon-svg" :class="{ 'icon-amber': !hasMortgageAip }" />
+            </div>
+            <div class="tile-title">Mortgage</div>
+          </div>
           <div class="tile-value" :class="{ amber: !hasMortgageAip }">
-            {{ hasMortgageAip ? 'AIP held' : 'Add AIP' }}
+            {{ hasMortgageAip ? 'AIP held' : 'Add LVR' }}
           </div>
           <div class="tile-prov" :class="{ amber: !hasMortgageAip }">
-            {{ hasMortgageAip ? 'Lender verified' : 'Not yet verified' }}
+            {{ hasMortgageAip ? 'Lender verified' : 'Add LVR details' }}
           </div>
         </div>
       </div>
 
       <!-- ── Documents section ── -->
       <div class="section-header">
-        <div class="sec-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
-        </div>
+        <div class="sec-icon"><Icon name="heroicons:document-text" class="sec-icon-svg" /></div>
         <div>
           <div class="sec-title">DOCUMENTS</div>
           <div class="sec-sub">Your verified records</div>
@@ -217,153 +261,132 @@
       </div>
       <div class="teal-card bp-docs-card">
         <div class="doc-row">
-          <div class="doc-icon">🪪</div>
+          <div class="doc-icon"><Icon name="heroicons:identification" class="doc-icon-svg" /></div>
           <div class="doc-body">
             <div class="doc-title">Identity Verification</div>
-            <div class="doc-meta">{{ idTypeLabel }} · verified by Onfido (DVS)</div>
+            <div class="doc-meta">OneID / KYC Process · Last verified: {{ lastVerifiedLabel }}</div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill clear">✓ VERIFIED</span>
-            <span class="doc-chev">›</span>
+            <span class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
+            <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
         <div class="doc-row">
-          <div class="doc-icon">💰</div>
+          <div class="doc-icon"><Icon name="heroicons:banknotes" class="doc-icon-svg" /></div>
           <div class="doc-body">
             <div class="doc-title">Proof of Funds</div>
-            <div class="doc-meta">{{ fundsMetaText }}</div>
+            <div class="doc-meta">{{ passport.fundsType ? fundsMetaText : 'Banking or financial proof documents' }}</div>
           </div>
-          <div class="doc-right doc-right--col">
-            <span v-if="passport.fundsType" class="risk-pill clear">✓ VERIFIED</span>
-            <span v-else class="risk-pill add">+ ADD DOC</span>
+          <div class="doc-right">
+            <span v-if="passport.fundsType" class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
+            <span v-else class="risk-pill add">ADD DOCS</span>
+            <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
-          <span class="doc-chev">›</span>
         </div>
-        <div class="doc-row" @click="goShare()">
-          <div class="doc-icon">🏦</div>
+        <div class="doc-row" @click="goEdit()">
+          <div class="doc-icon"><Icon name="heroicons:document-text" class="doc-icon-svg" /></div>
           <div class="doc-body">
             <div class="doc-title">Mortgage in Principle</div>
             <div class="doc-meta">
               {{ hasMortgageAip
                 ? 'AIP on file · lender verified'
-                : 'Upload your AIP — lender will be verified' }}
+                : 'Optional if your LVR · Lender can view or fund' }}
             </div>
           </div>
           <div class="doc-right">
             <span :class="hasMortgageAip ? 'risk-pill clear' : 'risk-pill add'">
-              {{ hasMortgageAip ? '✓ VERIFIED' : '+ ADD DOC' }}
+              <Icon v-if="hasMortgageAip" name="heroicons:check-16-solid" class="pill-ic" />{{ hasMortgageAip ? 'VERIFIED' : 'ADD DOCS' }}
             </span>
-            <span class="doc-chev">›</span>
+            <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
-        <div class="doc-row">
-          <div class="doc-icon">🔗</div>
+        <div class="doc-row" @click="goEdit()">
+          <div class="doc-icon"><Icon name="heroicons:link" class="doc-icon-svg" /></div>
           <div class="doc-body">
             <div class="doc-title">Chain Position</div>
-            <div class="doc-meta">
-              {{ chainShortLabel }} · self-declared · ready to move
-            </div>
+            <div class="doc-meta">Existing sale information · Verify to move</div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill flag">Self-declared</span>
-            <span class="doc-chev">›</span>
+            <span class="risk-pill add">Link / Add details</span>
+            <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
         <div v-if="passport.solicitorStatus === 'yes'" class="doc-row">
-          <div class="doc-icon">🏛️</div>
+          <div class="doc-icon"><Icon name="heroicons:building-library" class="doc-icon-svg" /></div>
           <div class="doc-body">
             <div class="doc-title">Solicitor</div>
             <div class="doc-meta">Solicitor instructed</div>
             <div class="sol-verified">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m5 12 5 5L20 7" />
-              </svg>
+              <Icon name="heroicons:check-16-solid" class="sol-check" />
               Confirmed on Law Society register
             </div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill ok">✓ INSTRUCTED</span>
-            <span class="doc-chev">›</span>
+            <span class="risk-pill ok"><Icon name="heroicons:check-16-solid" class="pill-ic" />INSTRUCTED</span>
+            <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
       </div>
 
-      <!-- ── Share section ── -->
-      <div class="section-header">
-        <div class="sec-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-            <polyline points="16 6 12 2 8 6" />
-            <line x1="12" y1="2" x2="12" y2="15" />
-          </svg>
-        </div>
-        <div>
-          <div class="sec-title">SHARE YOUR PROFILE</div>
-        </div>
-      </div>
-      <div class="bp-share-card">
-        <button class="action-row" @click="goShare">
-          <div class="action-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
-            </svg>
-          </div>
-          <div class="action-text">
-            <div class="action-title">Share</div>
-            <div class="action-sub">Send to agents or generate link</div>
-          </div>
-          <span class="doc-chev">›</span>
-        </button>
-        <button class="action-row action-row--bordered" @click="goPdf">
-          <div class="action-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-            </svg>
-          </div>
-          <div class="action-text">
-            <div class="action-title">Download PDF</div>
-            <div class="action-sub">Certified profile document</div>
-          </div>
-          <span class="doc-chev">›</span>
-        </button>
-        <button class="action-row action-row--bordered" @click="goSign">
-          <div class="action-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-            </svg>
-          </div>
-          <div class="action-text">
-            <div class="action-title">
-              {{ passport.signedAt ? 'Re-sign profile' : 'Add digital signature' }}
-            </div>
-            <div class="action-sub">
-              {{ passport.signedAt
-                ? `Signed ${formatSignedAt(passport.signedAt)}`
-                : 'Embed your signature in the PDF' }}
-            </div>
-          </div>
-          <span class="doc-chev">›</span>
-        </button>
-        <button class="action-row action-row--bordered" @click="goEdit">
-          <div class="action-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-          </div>
-          <div class="action-text">
-            <div class="action-title">Edit Profile</div>
-            <div class="action-sub">Update your information</div>
-          </div>
-          <span class="doc-chev">›</span>
-        </button>
-      </div>
+      </div><!-- /bpvw-content -->
+      </main><!-- /bpvw-layout -->
 
-      <div style="height: 24px" />
+      <!-- ── Share section (full-width below the grid) ── -->
+      <section class="hsw-shell bpvw-share-section">
+        <div class="section-header">
+          <div class="sec-icon"><Icon name="heroicons:arrow-up-tray" class="sec-icon-svg" /></div>
+          <div>
+            <div class="sec-title">SHARE YOUR PROFILE</div>
+            <div class="sec-sub">Connect &amp; share your profile instantly</div>
+          </div>
+        </div>
+        <div class="bp-share-grid">
+          <button class="share-card" @click="goShare">
+            <div class="share-card-icon"><Icon name="heroicons:arrow-up-tray" class="share-icon-svg" /></div>
+            <div class="share-card-body">
+              <div class="share-card-title">Share</div>
+              <div class="share-card-sub">Send to agents or professionals</div>
+            </div>
+            <Icon name="heroicons:chevron-right" class="share-card-chev" />
+          </button>
+          <button class="share-card" @click="goPdf">
+            <div class="share-card-icon"><Icon name="heroicons:document-arrow-down" class="share-icon-svg" /></div>
+            <div class="share-card-body">
+              <div class="share-card-title">Download PDF</div>
+              <div class="share-card-sub">Get a linked profile document</div>
+            </div>
+            <Icon name="heroicons:chevron-right" class="share-card-chev" />
+          </button>
+          <button class="share-card" @click="goSign">
+            <div class="share-card-icon"><Icon name="heroicons:link" class="share-icon-svg" /></div>
+            <div class="share-card-body">
+              <div class="share-card-title">Re-link profile</div>
+              <div class="share-card-sub">Expand to OneID, Equifax &amp; more</div>
+            </div>
+            <Icon name="heroicons:chevron-right" class="share-card-chev" />
+          </button>
+          <button class="share-card" @click="goEdit">
+            <div class="share-card-icon"><Icon name="heroicons:pencil-square" class="share-icon-svg" /></div>
+            <div class="share-card-body">
+              <div class="share-card-title">Edit Profile</div>
+              <div class="share-card-sub">Update your information</div>
+            </div>
+            <Icon name="heroicons:chevron-right" class="share-card-chev" />
+          </button>
+        </div>
+
+        <!-- Privacy footer banner -->
+        <div class="bp-privacy-banner">
+          <div class="bp-privacy-icon">
+            <Icon name="heroicons:lock-closed" class="bp-privacy-icon-svg" />
+          </div>
+          <div class="bp-privacy-text">
+            <div class="bp-privacy-title">Your privacy &amp; data security is our priority</div>
+            <div class="bp-privacy-sub">All information is encrypted and securely stored. You control what you share.</div>
+          </div>
+          <button class="bp-privacy-btn" @click="router.push('/profile/privacy')">Privacy &amp; Security</button>
+        </div>
+      </section>
     </template>
 
     <!-- Tier upgrade drawer (Stripe checkout) -->
@@ -373,6 +396,8 @@
       @close="tierDrawerOpen = false"
       @tier-changed="onTierChanged"
     />
+    <SiteFooter />
+    <BottomNav active="explore" />
   </div>
 </template>
 
@@ -389,6 +414,8 @@ import {
 import { useProfile } from '~/composables/useProfile'
 import { useAppToast } from '~/composables/useCustomToast'
 import TierUpgradeDrawer from '~/components/buyer-profile/TierUpgradeDrawer.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({ title: 'Buyer Profile — UmovingU', middleware: 'auth' })
 
@@ -540,6 +567,16 @@ const hasMortgageAip = computed(
   () => passport.value?.fundsType === 'mortgage' && !!passport.value?.fundsDocumentUrl,
 )
 
+const lastVerifiedLabel = computed(() => {
+  const iso =
+    (passport.value as any)?.identityVerifiedAt ||
+    (passport.value as any)?.verifiedAt ||
+    (passport.value as any)?.updatedAt ||
+    (passport.value as any)?.createdAt
+  const d = iso ? new Date(iso) : new Date()
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+})
+
 const completionTip = computed(() => {
   if (animatedStrength.value >= 95) return ''
   if (!hasMortgageAip.value) return '+ Add Mortgage AIP to reach 100% Platinum'
@@ -563,206 +600,161 @@ function goEdit() { router.push('/buyer-profile/build') }
 </script>
 
 <style scoped>
-/* Plus Jakarta Sans across this page to match the prototype. */
 .bp-page {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: none;
   width: 100%;
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 0 14px 28px;
+  position: relative; overflow-x: hidden;
 }
 
-/* ── Top nav ── */
-.bp-top-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  width: min(100%, 1080px);
-  margin: 8px auto 0;
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  background: rgba(249, 252, 255, 0.92);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
-  padding: 14px 18px 6px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-}
-.bp-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: #fff; border: 1px solid #ececef;
-  display: flex; align-items: center; justify-content: center;
-  color: #231d45; cursor: pointer; flex-shrink: 0;
-}
-.bp-nav-centre {
-  flex: 1; text-align: center;
-  font-size: 15px; font-weight: 800; color: #231d45;
-}
-.bp-nav-right {
-  font-size: 13px; font-weight: 700; color: #00a19a;
-  cursor: pointer; white-space: nowrap; padding: 8px 4px;
-}
+/* ── Ambient orbs ── */
+.bp-ambient { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.bp-ambient-a { width: 560px; height: 560px; top: -140px; left: -160px; background: radial-gradient(circle, rgba(0,161,154,0.13) 0%, transparent 70%); }
+.bp-ambient-b { width: 480px; height: 480px; bottom: 10%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.11) 0%, transparent 70%); }
+.bp-mesh { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(rgba(0,161,154,0.04) 1px, transparent 1px); background-size: 28px 28px; }
 
-/* ── Loading / empty ── */
-.bp-loading {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  padding: 80px 22px; text-align: center;
-  color: #6b6783; font-size: 13px; font-weight: 600;
-}
-.bp-empty {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  border-radius: 22px;
-  border: 1px solid rgba(174, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 34px rgba(17, 52, 88, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  padding: 60px 22px; text-align: center;
-}
-.bp-empty-ic { font-size: 48px; margin-bottom: 12px; }
-.bp-empty-title {
-  font-size: 18px; font-weight: 800; color: #231d45; margin-bottom: 8px;
-}
-.bp-empty-sub {
-  font-size: 13px; color: #6b6783; line-height: 1.55;
-  max-width: 22rem; margin: 0 auto 18px;
-}
+/* ── Web nav ── */
+.hsw-nav { position: sticky; top: 0; z-index: 100; background: rgba(247,251,255,0.88); backdrop-filter: blur(18px); border-bottom: 1px solid rgba(173,201,231,0.3); }
+.hsw-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; }
+.hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #10263d; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+.hsw-brand-logo { width: 28px; height: 28px; border-radius: 8px; object-fit: cover; }
+.hsw-links { display: flex; align-items: center; gap: 4px; }
+.hsw-links button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: #516070; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-links button:hover { color: #10263d; background: rgba(0,0,0,0.05); }
+.hsw-links button.active { color: #00a19a; font-weight: 700; background: rgba(0,161,154,0.08); }
+.hsw-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.hsw-iconbtn { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #00a19a; background: rgba(0,161,154,0.08); border: 1px solid rgba(0,161,154,0.2); border-radius: 10px; padding: 7px 13px; cursor: pointer; font-family: inherit; }
+.hsw-back { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #516070; background: rgba(255,255,255,0.8); border: 1px solid rgba(173,201,231,0.5); border-radius: 10px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-back svg { width: 15px; height: 15px; flex-shrink: 0; }
+.hsw-back:hover { color: #10263d; border-color: #b9d5ea; }
+.hsw-help { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #10263d; background: rgba(255,255,255,0.9); border: 1px solid rgba(173,201,231,0.5); border-radius: 10px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-help:hover { background: #fff; border-color: #b9d5ea; }
 
-/* ── Pending access request banner ── */
-.bp-access-banner {
-  margin: 10px auto 0;
-  width: min(100%, 1080px);
-  background: linear-gradient(135deg, #fef3c7, #fffaf0);
-  border: 1.5px solid #f0b460;
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 12px;
-  cursor: pointer; text-align: left;
-  font-family: inherit;
-  animation: bp-pulse-glow 2s ease-in-out infinite;
+/* ── Page title bar ── */
+.bpvw-titlebar { display: flex; align-items: center; justify-content: space-between; padding: 32px 0 4px; }
+.bpvw-title-left { display: flex; align-items: center; gap: 14px; }
+.bpvw-title-logo {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: #e6f6f4;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.bp-access-banner-ic {
-  width: 38px; height: 38px; border-radius: 10px;
-  background: #fff; display: flex; align-items: center;
-  justify-content: center; font-size: 18px; flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(212, 130, 42, 0.18);
+.bpvw-title-logo svg { stroke: #00a19a; }
+.bpvw-title-text { font-size: 24px; font-weight: 800; color: #10263d; letter-spacing: 1px; }
+.bpvw-help {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700; color: #10263d;
+  background: #fff; border: 1px solid rgba(173,201,231,0.5);
+  border-radius: 100px; padding: 9px 16px; cursor: pointer; font-family: inherit;
+  transition: all 0.18s;
 }
-.bp-access-banner-text { flex: 1; min-width: 0; }
-.bp-access-banner-title {
-  font-size: 12.5px; font-weight: 800; color: #231d45;
-}
-.bp-access-banner-sub {
-  font-size: 11px; color: #6b6783; margin-top: 1px;
-}
-.bp-access-banner-chev {
-  font-size: 16px; font-weight: 800; color: #c4821a;
-}
-@keyframes bp-pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(240, 180, 96, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(240, 180, 96, 0); }
-}
+.bpvw-help:hover { border-color: #b9d5ea; box-shadow: 0 4px 12px rgba(15,44,76,0.08); }
 
-/* ── Eyebrow pill with pulse ── */
-.bp-eyebrow-wrap {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  text-align: center; padding: 8px 0 0;
-}
-.eyebrow-pill {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: 11px; font-weight: 800; color: #007e78;
-  background: #f2faf8; border: 1px solid #e5f4f2;
-  padding: 6px 12px; border-radius: 100px;
-  letter-spacing: 1.4px; text-transform: uppercase;
-}
-.pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%; background: #00a19a;
-  position: relative; flex-shrink: 0;
-}
-.pulse-dot::after {
-  content: ''; position: absolute; inset: -3px; border-radius: 50%;
-  background: #00a19a; opacity: 0.35;
-  animation: bp-pulse 1.8s ease-out infinite;
-}
-@keyframes bp-pulse {
-  0% { transform: scale(1); opacity: 0.35; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
+/* ── Two-column layout ── */
+.bpvw-layout { display: grid; grid-template-columns: 380px minmax(0,1fr); gap: 32px; align-items: start; padding: 24px 0 28px; }
 
-/* ── Hero card ── */
-.bp-hero-wrap {
-  width: min(100%, 1080px);
-  margin: 14px auto 0;
+/* Left column is ONE tall white panel that fills the row height */
+.bpvw-aside {
+  display: flex; flex-direction: column;
+  background: #fff;
+  border: 1px solid #e8eef5;
+  border-radius: 24px;
+  box-shadow: 0 14px 36px rgba(15, 44, 76, 0.07);
+  overflow: hidden;
   animation: bp-fadeUp 0.4s 0.1s both;
 }
+.bpvw-aside-body {
+  display: flex; flex-direction: column; gap: 18px;
+  padding: 22px;
+}
+.bpvw-content { display: flex; flex-direction: column; align-items: stretch; gap: 28px; min-width: 0; }
+.bpvw-content > * { width: 100%; }
+
+/* ── Loading / empty ── */
+.bp-loading { padding: 80px 22px; text-align: center; color: #6b6783; font-size: 13px; font-weight: 600; }
+.bp-empty { margin: 36px auto; max-width: 560px; border-radius: 22px; border: 1px solid rgba(174,201,231,0.48); background: linear-gradient(160deg,rgba(255,255,255,0.92) 0%,rgba(242,250,255,0.9) 52%,rgba(236,255,249,0.95) 100%); box-shadow: 0 14px 34px rgba(17,52,88,0.12),inset 0 1px 0 rgba(255,255,255,0.96); padding: 60px 22px; text-align: center; }
+.bp-empty-ic { font-size: 48px; margin-bottom: 12px; }
+.bp-empty-title { font-size: 18px; font-weight: 800; color: #231d45; margin-bottom: 8px; }
+.bp-empty-sub { font-size: 13px; color: #6b6783; line-height: 1.55; max-width: 22rem; margin: 0 auto 18px; }
+
+/* ── Pending access request banner ── */
+.bp-access-banner { background: linear-gradient(135deg, #fef3c7, #fffaf0); border: 1.5px solid #f0b460; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; text-align: left; font-family: inherit; animation: bp-pulse-glow 2s ease-in-out infinite; width: 100%; }
+.bp-access-banner-ic { width: 38px; height: 38px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(212,130,42,0.18); }
+.bp-access-banner-text { flex: 1; min-width: 0; }
+.bp-access-banner-title { font-size: 12.5px; font-weight: 800; color: #231d45; }
+.bp-access-banner-sub { font-size: 11px; color: #6b6783; margin-top: 1px; }
+.bp-access-banner-chev { font-size: 16px; font-weight: 800; color: #c4821a; }
+@keyframes bp-pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(240,180,96,0.4); } 50% { box-shadow: 0 0 0 6px rgba(240,180,96,0); } }
+
 @keyframes bp-fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Hero card (flush to top of white panel) ── */
 .hero-card {
-  background: linear-gradient(140deg, #00b6ae 0%, #00a19a 50%, #00514d 100%);
-  box-shadow: 0 12px 32px -10px rgba(0, 161, 154, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  border-radius: 20px;
-  padding: 18px 20px 20px;
+  background: linear-gradient(150deg, #00b6ae 0%, #009a93 48%, #00514d 100%);
+  padding: 26px 26px 26px;
   color: white;
   position: relative; overflow: hidden;
+  flex-shrink: 0;
 }
 .hero-card::after {
   content: ''; position: absolute; top: -40%; right: -20%;
-  width: 280px; height: 280px; border-radius: 50%;
+  width: 320px; height: 320px; border-radius: 50%;
   background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 65%);
   pointer-events: none;
 }
 .hero-card > * { position: relative; z-index: 1; }
 .bp-hero-top {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 .bp-hero-eyebrow {
-  font-size: 9px; font-weight: 800; letter-spacing: 1.2px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px; font-weight: 800; letter-spacing: 1.4px;
+  color: rgba(255, 255, 255, 0.6);
 }
 .bp-hero-strength {
-  font-size: 9px; font-weight: 800;
-  background: rgba(255, 255, 255, 0.95); color: #00a19a;
-  border-radius: 100px; padding: 4px 10px;
+  font-size: 10px; font-weight: 800;
+  background: rgba(255, 255, 255, 0.95); color: #007e78;
+  border-radius: 100px; padding: 5px 12px;
   letter-spacing: 0.4px;
 }
 .bp-hero-body {
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; gap: 18px;
+  margin-bottom: 20px;
 }
 .bp-gauge-wrap { flex-shrink: 0; }
 .bp-hero-info { flex: 1; min-width: 0; }
 .bp-hero-name {
-  font-size: 17px; font-weight: 800; color: white;
-  margin-bottom: 2px; letter-spacing: -0.2px;
+  font-size: 22px; font-weight: 800; color: white;
+  margin-bottom: 4px; letter-spacing: -0.4px;
 }
 .bp-hero-ref {
-  font-size: 11px; color: rgba(255, 255, 255, 0.65);
-  margin-bottom: 10px;
+  font-size: 13px; color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
 }
-.bp-hero-pills { display: flex; flex-wrap: wrap; gap: 5px; }
-.hero-pill {
-  font-size: 9px; font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 100px;
-  padding: 4px 9px; color: white;
-  white-space: nowrap;
+.bp-hero-actions { display: flex; gap: 10px; }
+.bp-hero-btn {
+  flex: 1; font-size: 13.5px; font-weight: 800; font-family: inherit;
+  border-radius: 12px; padding: 12px; cursor: pointer;
+  transition: all 0.18s;
 }
+.bp-hero-btn--solid {
+  background: #fff; color: #007e78; border: none;
+}
+.bp-hero-btn--solid:hover { background: #f2faf8; }
+.bp-hero-btn--ghost {
+  background: rgba(255,255,255,0.12); color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.4);
+}
+.bp-hero-btn--ghost:hover { background: rgba(255,255,255,0.2); }
 
 /* ── Profile completion bar ── */
 .bp-pb-wrap {
-  width: min(100%, 1080px);
-  margin: 14px auto 0;
   animation: bp-fadeUp 0.4s 0.15s both;
 }
 .bp-pb-row {
@@ -785,156 +777,134 @@ function goEdit() { router.push('/buyer-profile/build') }
   margin-top: 7px;
 }
 
-/* ── DVS strip ── */
+/* ── Identity verified strip ── */
 .dvs-strip {
-  width: min(100%, 1080px);
-  margin: 12px auto 0;
-  background: linear-gradient(90deg, #f6f5fb, #f2faf8);
-  border: 1px solid #e5f4f2;
+  background: #f2faf8;
+  border: 1px solid #d8efeb;
   border-radius: 14px;
-  padding: 10px 22px;
-  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
   animation: bp-fadeUp 0.4s 0.18s both;
 }
-.dvs-badge {
-  background: #231d45; color: white;
-  font-size: 8px; font-weight: 800; letter-spacing: 0.5px;
-  padding: 3px 7px; border-radius: 4px;
-  flex-shrink: 0;
+.dvs-badge-ic {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: #fff; border: 1px solid #d8efeb;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.dvs-text {
-  font-size: 10.5px; font-weight: 700;
-  color: #4a4566; line-height: 1.35;
-}
+.dvs-text { min-width: 0; }
+.dvs-title { font-size: 12.5px; font-weight: 800; color: #17314a; line-height: 1.3; }
+.dvs-sub { font-size: 11px; font-weight: 600; color: #6b6783; margin-top: 2px; }
 
-/* ── Permanence banner ── */
-.persist-banner-wrap {
-  width: min(100%, 1080px);
-  margin: 10px auto 0;
-  animation: bp-fadeUp 0.4s 0.19s both;
-}
-.persist-banner {
-  background: linear-gradient(135deg, #f6f5fb, #f2faf8);
-  border: 1px solid #e5f4f2; border-radius: 14px;
-  padding: 12px 14px;
+/* ── Reward banner ── */
+.reward-banner {
+  background: #f7f6fc;
+  border: 1px solid #ebe8f6;
+  border-radius: 14px;
+  padding: 16px;
   display: flex; align-items: flex-start; gap: 12px;
 }
-.persist-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
-.persist-title {
-  font-size: 12px; font-weight: 800; color: #231d45; margin-bottom: 2px;
-}
-.persist-sub {
-  font-size: 11px; color: #6b6783; line-height: 1.4;
-}
+.reward-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.reward-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
+.reward-sub { font-size: 11.5px; color: #6b6783; line-height: 1.5; }
 
 /* ── Tier upgrade nudge ── */
-.upgrade-nudge-wrap {
-  width: min(100%, 1080px);
-  margin: 10px auto 0;
-  animation: bp-fadeUp 0.4s 0.195s both;
-}
 .upgrade-nudge {
-  background: linear-gradient(135deg, #f2faf8, #f6f5fb);
-  border: 1px solid #e5f4f2;
+  background: linear-gradient(135deg, #fffaf0, #fff6e8);
+  border: 1px solid #f5e4c4;
   border-radius: 14px;
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 12px;
+  padding: 16px;
+  display: flex; align-items: center; gap: 14px;
   font-family: inherit; cursor: pointer; text-align: left; width: 100%;
+  transition: all 0.2s cubic-bezier(.22,1,.36,1);
 }
-.upgrade-nudge.amber-n {
-  background: linear-gradient(135deg, #fffaf0, #fff8ec);
-  border-color: #fbefd9;
-}
-.upgrade-star { font-size: 20px; flex-shrink: 0; }
+.upgrade-nudge:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(196,130,26,0.14); }
+.upgrade-star { font-size: 20px; flex-shrink: 0; color: #10263d; }
 .upgrade-body { flex: 1; min-width: 0; }
-.upgrade-title {
-  font-size: 12px; font-weight: 800; color: #231d45;
-}
-.upgrade-sub {
-  font-size: 11px; color: #6b6783; margin-top: 1px;
-}
-.upgrade-arrow {
-  font-size: 12px; font-weight: 800; color: #c4821a;
-}
+.upgrade-title { font-size: 14px; font-weight: 800; color: #231d45; }
+.upgrade-sub { font-size: 12px; color: #8a7a5a; margin-top: 2px; }
+.upgrade-arrow { font-size: 20px; font-weight: 800; color: #c4821a; }
 
 /* ── Section header ── */
 .section-header {
   display: flex; align-items: center; gap: 12px;
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  padding: 22px 0 10px;
+  padding: 4px 0 6px;
 }
 .sec-icon {
-  width: 34px; height: 34px; border-radius: 10px;
+  width: 36px; height: 36px; border-radius: 11px;
   background: linear-gradient(135deg, #00b6ae, #007e78);
-  box-shadow: 0 3px 10px rgba(0, 161, 154, 0.30);
+  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.28);
   display: flex; align-items: center; justify-content: center;
   color: white; flex-shrink: 0;
 }
-.sec-title { font-size: 14px; font-weight: 800; color: #231d45; letter-spacing: 0.5px; }
-.sec-sub { font-size: 11.5px; color: #6b6783; }
+.sec-icon-svg { width: 19px; height: 19px; color: #fff; }
+.sec-title { font-size: 15px; font-weight: 800; color: #10263d; letter-spacing: 0.6px; }
+.sec-sub { font-size: 12px; color: #6b6783; margin-top: 1px; }
 
 /* ── Tile grid ── */
 .tile-grid {
-  width: min(100%, 1080px);
-  margin: 0 auto;
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 16px;
   padding: 0;
 }
 .tile {
-  background: white; border-radius: 16px;
-  padding: 16px 14px;
-  border: 1.5px solid transparent;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s cubic-bezier(.34, 1.56, .64, 1);
+  background: white; border-radius: 18px;
+  padding: 20px 20px 18px;
+  border: 1.5px solid #eef2f7;
+  box-shadow: 0 2px 10px rgba(15, 44, 76, 0.04);
+  transition: all 0.22s cubic-bezier(.22, 1, .36, 1);
+  display: flex; flex-direction: column;
 }
 .tile:hover {
-  transform: scale(1.03);
-  border-color: #231d45;
-  box-shadow: 0 8px 24px rgba(35, 29, 69, 0.12);
+  transform: translateY(-3px);
+  border-color: #b5d8f0;
+  box-shadow: 0 10px 28px rgba(15, 44, 76, 0.1);
 }
-.tile.amber { border-color: #e6a23c; }
+.tile.amber { border-color: #f3d489; background: linear-gradient(180deg, #fffdf8, #fffaf0); }
+.tile-head {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
 .tile-icon {
-  width: 32px; height: 32px; border-radius: 10px;
-  background: #f2faf8;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: #eef6f4;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; margin-bottom: 10px;
+  flex-shrink: 0;
 }
-.tile-icon.amber-bg { background: #fbefd9; }
+.tile-icon.amber-bg { background: #fbeed4; }
+.tile-icon-svg { width: 22px; height: 22px; color: #00a19a; }
+.tile-icon-svg.icon-amber { color: #d99a2b; }
 .tile-title {
-  font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 2px;
+  font-size: 12px; font-weight: 700; color: #8a97a8;
+  text-transform: uppercase; letter-spacing: 0.8px;
 }
-.tile-value { font-size: 15px; font-weight: 800; color: #00a19a; }
+.tile-value { font-size: 20px; font-weight: 800; color: #009a93; margin-bottom: 12px; letter-spacing: -0.3px; }
 .tile-value.amber { color: #c4821a; }
 .tile-prov {
-  font-size: 9px; font-weight: 700; color: #007e78;
-  background: #f2faf8; border: 1px solid #e5f4f2;
-  border-radius: 100px; padding: 3px 8px;
-  display: inline-block;
-  margin-top: 6px;
+  font-size: 10.5px; font-weight: 700; color: #007e78;
+  background: #edf9f7; border: 1px solid #c8ece9;
+  border-radius: 100px; padding: 5px 12px;
+  align-self: flex-start;
+  cursor: pointer;
 }
 .tile-prov.amber {
-  color: #c4821a; background: #fbefd9; border-color: #e6a23c;
+  color: #c4821a; background: #fbefd9; border-color: #f0c96a; cursor: pointer;
 }
 
 /* ── Documents card ── */
 .teal-card {
   background: white;
   border: 2px solid #00a19a;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 6px 22px rgba(0, 161, 154, 0.1);
 }
 .bp-docs-card {
-  width: min(100%, 1080px);
-  margin: 0 auto;
   overflow: hidden;
   animation: bp-fadeUp 0.4s 0.3s both;
 }
 .doc-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid #f5f5f7;
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #f1f3f6;
   cursor: pointer;
   transition: background 0.15s;
   text-align: left;
@@ -942,27 +912,30 @@ function goEdit() { router.push('/buyer-profile/build') }
 .doc-row:last-child { border-bottom: none; }
 .doc-row:hover { background: #fafafa; }
 .doc-icon {
-  width: 32px; height: 32px; border-radius: 10px;
+  width: 38px; height: 38px; border-radius: 11px;
   background: #f2faf8;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; flex-shrink: 0;
+  flex-shrink: 0;
 }
+.doc-icon-svg { width: 20px; height: 20px; color: #3a4a5e; }
 .doc-body { flex: 1; min-width: 0; }
 .doc-title {
-  font-size: 13.5px; font-weight: 800; color: #231d45;
+  font-size: 14.5px; font-weight: 800; color: #231d45;
 }
 .doc-meta {
-  font-size: 11px; color: #6b6783; margin-top: 1px;
+  font-size: 12px; color: #6b6783; margin-top: 2px;
 }
 .doc-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .doc-right--col { flex-direction: column; align-items: flex-end; gap: 4px; }
-.doc-chev { color: #9c98ad; font-weight: 800; font-size: 15px; }
+.doc-chev { width: 18px; height: 18px; color: #9c98ad; flex-shrink: 0; }
 
 .risk-pill {
+  display: inline-flex; align-items: center; gap: 3px;
   font-size: 10px; font-weight: 800;
-  padding: 4px 8px; border-radius: 100px;
+  padding: 4px 9px; border-radius: 100px;
   white-space: nowrap; letter-spacing: 0.3px;
 }
+.pill-ic { width: 12px; height: 12px; }
 .risk-pill.clear {
   background: #f2faf8; color: #007e78; border: 1px solid #e5f4f2;
 }
@@ -981,35 +954,84 @@ function goEdit() { router.push('/buyer-profile/build') }
   font-size: 10px; font-weight: 700; color: #007e78;
   margin-top: 3px;
 }
+.sol-check { width: 12px; height: 12px; color: #007e78; }
 
-/* ── Share section card with action rows ── */
-.bp-share-card {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  background: white;
-  border: 1.5px solid #ececef;
-  border-radius: 16px;
-  overflow: hidden;
+/* ── Share section (full-width below grid) ── */
+.bpvw-share-section {
+  display: flex; flex-direction: column; gap: 20px;
+  padding-bottom: 80px;
+}
+.bp-share-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: stretch;          /* equal height across the row */
   animation: bp-fadeUp 0.4s 0.4s both;
 }
-.action-row {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 22px;
-  cursor: pointer; transition: background 0.15s;
-  background: white; border: none;
-  font-family: inherit; width: 100%; text-align: left;
+.share-card {
+  background: white;
+  border: 1.5px solid #e8eef5;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  cursor: pointer; font-family: inherit; text-align: left;
+  transition: all 0.2s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 2px 10px rgba(15,44,76,0.05);
 }
-.action-row:hover { background: #fafafa; }
-.action-row--bordered { border-top: 1px solid #f5f5f7; }
-.action-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: #f2faf8;
+.share-card:hover {
+  transform: translateY(-3px);
+  border-color: #a8d5c8;
+  box-shadow: 0 10px 28px rgba(0,161,154,0.12);
+}
+.share-card-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: #eef6f4;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
+  margin-bottom: 12px; flex-shrink: 0;
 }
-.action-text { flex: 1; min-width: 0; }
-.action-title { font-size: 13.5px; font-weight: 800; color: #231d45; }
-.action-sub { font-size: 11px; color: #6b6783; }
+.share-icon-svg { width: 21px; height: 21px; color: #007e78; display: block; }
+.share-card-body { width: 100%; }
+.share-card-title { font-size: 15px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
+.share-card-sub {
+  font-size: 12.5px; color: #6b6783; line-height: 1.5;
+}
+/* chevron sits just under the text, pushed to the right; margin-top:auto keeps
+   it at the bottom only when grid-stretch makes a card taller than its content */
+.share-card-chev {
+  align-self: flex-end;
+  margin-top: auto;
+  padding-top: 12px;
+  width: 18px; height: 18px; color: #b5bdc9;
+  display: block;
+}
+
+/* ── Privacy footer banner ── */
+.bp-privacy-banner {
+  display: flex; align-items: center; gap: 16px;
+  background: #f0f4fa;
+  border: 1.5px solid #dce6f0;
+  border-radius: 16px;
+  padding: 18px 22px;
+  animation: bp-fadeUp 0.4s 0.45s both;
+}
+.bp-privacy-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: white; border: 1px solid #dce6f0;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.bp-privacy-icon-svg { width: 20px; height: 20px; color: #10263d; }
+.bp-privacy-text { flex: 1; min-width: 0; }
+.bp-privacy-title { font-size: 13px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.bp-privacy-sub { font-size: 11px; color: #627891; line-height: 1.4; }
+.bp-privacy-btn {
+  background: #10263d; color: white; border: none;
+  border-radius: 10px; padding: 10px 18px;
+  font-size: 12px; font-weight: 800; font-family: inherit;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: background 0.18s;
+}
+.bp-privacy-btn:hover { background: #17314a; }
 
 /* ── CTA button (shared) ── */
 .cta-btn {
@@ -1029,72 +1051,41 @@ function goEdit() { router.push('/buyer-profile/build') }
   box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
 }
 
-@media (min-width: 1024px) {
-  .bp-page {
-    padding: 0 20px 34px;
-  }
-
-  .bp-hero-wrap,
-  .bp-pb-wrap,
-  .dvs-strip,
-  .persist-banner-wrap,
-  .upgrade-nudge-wrap,
-  .section-header,
-  .tile-grid,
-  .bp-docs-card,
-  .bp-share-card,
-  .bp-empty,
-  .bp-loading,
-  .bp-access-banner,
-  .bp-eyebrow-wrap,
-  .bp-top-nav {
-    width: min(100%, 1180px);
-  }
-
-  .tile-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .hero-card {
-    border-radius: 24px;
-    padding: 22px 24px;
-  }
-
-  .bp-hero-name {
-    font-size: 20px;
-  }
-
-  .bp-share-card,
-  .bp-docs-card,
-  .bp-empty {
-    border-radius: 20px;
-  }
+/* Tablet: 2-column layout collapses, share goes 2-up */
+@media (max-width: 1080px) {
+  .bp-share-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-@media (max-width: 700px) {
-  .bp-page {
-    padding: 0 10px 20px;
-  }
-
-  .bp-top-nav {
-    border-radius: 16px;
-    padding: 12px 12px 6px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .bp-hero-body {
-    gap: 12px;
-  }
-
-  .dvs-strip {
-    padding: 10px 12px;
-  }
-
-  .doc-row,
-  .action-row {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
+@media (max-width: 980px) {
+  .bpvw-layout { grid-template-columns: 1fr; align-items: start; gap: 24px; }
+  .tile-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .bp-privacy-banner { flex-wrap: wrap; }
+  .upgrade-nudge { margin-top: 0; }
+}
+@media (max-width: 760px) {
+  .hsw-links, .hsw-cta { display: none; }
+  .bpvw-layout { padding: 20px 0 20px; gap: 20px; }
+  .bpvw-share-section { padding-bottom: 56px; gap: 16px; }
+  .bpvw-titlebar { padding: 24px 0 4px; }
+  .bpvw-title-text { font-size: 20px; }
+  .bp-share-grid { gap: 14px; }
+  .share-card { padding: 18px 16px; }
+  .share-card-icon { width: 40px; height: 40px; margin-bottom: 12px; }
+  .doc-row { padding: 14px 14px; gap: 12px; }
+  .doc-icon { width: 34px; height: 34px; }
+  .bp-hero-name { font-size: 19px; }
+}
+@media (max-width: 560px) {
+  /* Stack credential tiles + share cards to a single column on phones */
+  .tile-grid { grid-template-columns: 1fr; }
+  .bp-share-grid { grid-template-columns: 1fr; }
+  .bpvw-aside-body { padding: 18px; gap: 14px; }
+  .hero-card { padding: 22px 20px 20px; }
+  .bp-hero-body { gap: 14px; }
+  /* Privacy banner: button drops below text, full-width */
+  .bp-privacy-banner { padding: 16px 18px; }
+  .bp-privacy-btn { width: 100%; }
+  .doc-title { font-size: 13.5px; }
+  .doc-meta { font-size: 11px; }
+  .bpvw-help span, .bpvw-help { font-size: 12px; }
 }
 </style>

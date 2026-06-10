@@ -1,22 +1,38 @@
 <template>
   <div class="mp-page">
-    <!-- Top nav: back + eyebrow pill + sign-in/save -->
-    <div class="mp-top-nav">
-      <button class="mp-back" @click="goBack" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="mp-nav-centre">
-        <div class="eyebrow-pill">
-          <span class="eyebrow-dot" />Buyer Profile
+    <div class="mp-ambient mp-ambient-a" />
+    <div class="mp-ambient mp-ambient-b" />
+    <div class="mp-mesh" />
+
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" class="active" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="goBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
         </div>
       </div>
-      <div style="width: 44px" />
-    </div>
+    </header>
 
-    <!-- ── Hero ─────────────────────────────────────────── -->
+    <main class="hsw-shell mp-body">
+    <!-- ── Page head ────────────────────────────────────────── -->
     <div class="mp-hero-head">
+      <div class="mp-kicker"><span class="mp-kicker-dot" />BUYER PROFILE</div>
       <h1 class="mp-hero-title">Stand out as a serious buyer</h1>
       <p class="mp-hero-sub">
         Verified buyers get 3× more offers accepted. Build your profile in
@@ -24,93 +40,138 @@
       </p>
     </div>
 
-    <div class="mp-main-grid">
-    <!-- ── Hero card (prototype-exact gradient + shimmer) ── -->
+    <!-- ── Full-width hero banner with shield illustration ── -->
     <div class="mp-hero-wrap">
       <div class="hero-card" @click="goToBuild">
-        <div class="hero-eyebrow">UMU Buyer Profile</div>
-        <div class="hero-tagline">"Trusted, ready,<br />chain-free."</div>
-        <div class="hero-name">{{ heroName }}</div>
-        <div class="hero-pills">
-          <div class="hero-pill">🪪 ID Verified</div>
-          <div v-if="heroFunds" class="hero-pill">{{ heroFunds }}</div>
-          <div class="hero-pill">Chain free</div>
+        <div class="hero-card-copy">
+          <div class="hero-eyebrow">VERIFIED BUYER STANDARD</div>
+          <div class="hero-tagline">“Trusted, ready,<br />chain-free.”</div>
+          <div class="hero-name">{{ heroName }}</div>
+          <div class="hero-pills">
+            <div class="hero-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+              ID Verified
+            </div>
+            <div v-if="heroFunds" class="hero-pill">{{ heroFunds }}</div>
+            <div class="hero-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+              Chain Free
+            </div>
+          </div>
+          <div class="hero-footer-text">
+            {{ hasProgress ? 'Tap to continue' : 'Tap to start' }}
+          </div>
         </div>
-        <div class="hero-footer">
-          <span class="hero-footer-text">{{
-            hasProgress ? 'Tap to continue' : 'Tap to start'
-          }}</span>
-          <span class="hero-share-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
+        <!-- Glowing shield -->
+        <div class="hero-shield-wrap" aria-hidden="true">
+          <div class="hero-spark hero-spark-1" />
+          <div class="hero-spark hero-spark-2" />
+          <div class="hero-spark hero-spark-3" />
+          <div class="hero-shield">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
+            <svg class="hero-shield-check" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 12 5 5L20 7" />
+            </svg>
+          </div>
+          <div class="hero-shield-base" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Two-column body: Why / What's inside ── -->
+    <div class="mp-main-grid">
+      <!-- LEFT: Why it matters -->
+      <div class="mp-col">
+        <div class="section-header">
+          <div class="sec-icon">
+            <Icon name="heroicons:briefcase" class="sec-icon-svg" />
+          </div>
+          <div>
+            <div class="sec-title">WHY IT MATTERS</div>
+            <div class="sec-sub">Your competitive edge</div>
+          </div>
+        </div>
+        <div class="mp-benefits">
+          <div v-for="b in benefits" :key="b" class="mp-benefit">
+            <div class="mp-tick">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 12 5 5L20 7" />
+              </svg>
+            </div>
+            <span>{{ b }}</span>
+          </div>
+        </div>
+
+        <!-- Live activity -->
+        <div v-if="activityStats.publishedLast7d > 0" class="live-bar">
+          <div class="pulse-dot" />
+          <span>
+            <strong>{{ activityStats.publishedLast7d.toLocaleString() }}</strong>
+            {{ activityStats.publishedLast7d === 1 ? 'buyer' : 'buyers' }}
+            verified this week · avg. 4 min to complete
           </span>
         </div>
-      </div>
-    </div>
 
-    <!-- ── Why it matters ─────────────────────────────────── -->
-    <div class="section-header section-header--why">
-      <div class="sec-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
+        <!-- Complete your profile nudge -->
+        <button class="mp-nudge" @click="goToBuild">
+          <div class="mp-nudge-ic">
+            <Icon name="heroicons:sparkles-solid" class="mp-nudge-ic-svg" />
+          </div>
+          <div class="mp-nudge-body">
+            <div class="mp-nudge-title">Complete your profile.</div>
+            <div class="mp-nudge-sub">Increase trust. Get better offers.</div>
+          </div>
+          <Icon name="heroicons:chevron-right" class="mp-nudge-arrow" />
+        </button>
       </div>
-      <div>
-        <div class="sec-title">WHY IT MATTERS</div>
-        <div class="sec-sub">Your competitive edge</div>
-      </div>
-    </div>
-    <div class="mp-benefits">
-      <div v-for="b in benefits" :key="b" class="mp-benefit">
-        <div class="mp-tick">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m5 12 5 5L20 7" />
-          </svg>
+
+      <!-- RIGHT: What's inside -->
+      <div class="mp-col">
+        <div class="section-header">
+          <div class="sec-icon">
+            <Icon name="heroicons:squares-2x2" class="sec-icon-svg" />
+          </div>
+          <div>
+            <div class="sec-title">WHAT'S INSIDE</div>
+            <div class="sec-sub">Your five sections</div>
+          </div>
         </div>
-        <span>{{ b }}</span>
-      </div>
-    </div>
-
-    <!-- ── Live activity ──────────────────────────────────── -->
-    <div v-if="activityStats.publishedLast7d > 0" class="live-bar">
-      <div class="pulse-dot" />
-      <span>
-        <strong>{{ activityStats.publishedLast7d.toLocaleString() }}</strong>
-        {{ activityStats.publishedLast7d === 1 ? 'buyer' : 'buyers' }}
-        verified this week · avg. 4 min to complete
-      </span>
-    </div>
-
-    <!-- ── What's inside ──────────────────────────────────── -->
-    <div class="section-header section-header--inside">
-      <div class="sec-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <path d="M8 2v4M16 2v4M3 10h18" />
-        </svg>
-      </div>
-      <div>
-        <div class="sec-title">WHAT'S INSIDE</div>
-        <div class="sec-sub">Your five sections</div>
-      </div>
-    </div>
-    <div class="options-block">
-      <div v-for="s in sections" :key="s.title" class="opt-card opt-card--compact">
-        <div class="opt-icon">{{ s.emoji }}</div>
-        <div class="opt-text">
-          <div class="opt-title">{{ s.title }}</div>
-          <div class="opt-sub">{{ s.sub }}</div>
+        <div class="options-block">
+          <div v-for="s in sections" :key="s.title" class="opt-card opt-card--compact">
+            <div class="opt-icon">
+              <Icon :name="s.icon" class="opt-icon-svg" />
+            </div>
+            <div class="opt-text">
+              <div class="opt-title">{{ s.title }}</div>
+              <div class="opt-sub">{{ s.sub }}</div>
+            </div>
+            <span
+              class="rec-pill"
+              :class="s.required ? 'rec-pill--req' : 'rec-pill--opt'"
+            >
+              <Icon v-if="s.required" name="heroicons:check-16-solid" class="rec-pill-ic" />
+              <Icon v-else name="heroicons:sparkles-16-solid" class="rec-pill-ic" />
+              {{ s.required ? 'COMPLETED' : 'OPTIONAL' }}
+            </span>
+          </div>
         </div>
-        <span
-          class="rec-pill"
-          :class="s.required ? 'rec-pill--req' : 'rec-pill--opt'"
-        >
-          {{ s.required ? 'REQUIRED' : 'OPTIONAL' }}
-        </span>
+      </div>
+    </div>
+
+    <!-- ── Safety footer banner ── -->
+    <div class="mp-safety-banner">
+      <div class="mp-safety-ic">
+        <Icon name="heroicons:shield-check" class="mp-safety-ic-svg" />
+      </div>
+      <div class="mp-safety-text">
+        <div class="mp-safety-title">Your information is safe with us</div>
+        <div class="mp-safety-sub">We use bank-grade encryption to protect your data.</div>
+      </div>
+      <div class="mp-safety-badge">
+        <Icon name="heroicons:lock-closed-solid" class="mp-safety-badge-ic" />
+        100% Secure
       </div>
     </div>
 
@@ -119,14 +180,20 @@
       <button class="cta-btn" @click="goToBuild">
         <span class="cta-btn-inner">
           {{ hasProgress ? 'Continue my Profile' : 'Build my Buyer Profile' }}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
+          <Icon name="heroicons:arrow-right" class="cta-btn-arrow" />
         </span>
       </button>
-      <div class="ghost-link">Free · No subscription · 5-minute build</div>
+      <div class="ghost-link">
+        <span class="ghost-item"><Icon name="heroicons:bookmark" class="ghost-ic" />Save anytime</span>
+        <span class="ghost-dot">·</span>
+        <span class="ghost-item"><Icon name="heroicons:x-mark" class="ghost-ic" />No subscriptions</span>
+        <span class="ghost-dot">·</span>
+        <span class="ghost-item"><Icon name="heroicons:sparkles" class="ghost-ic" />Minimal &amp; helpful</span>
+      </div>
     </div>
-    </div>
+    </main>
+    <SiteFooter />
+    <BottomNav active="explore" />
   </div>
 </template>
 
@@ -135,6 +202,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBuyerProfile } from '~/composables/useBuyerProfile'
 import { useProfile } from '~/composables/useProfile'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import BottomNav from '~/components/core/BottomNav.vue'
 
 const router = useRouter()
 const { getBuyerProfile, getActivityStats } = useBuyerProfile()
@@ -180,11 +249,11 @@ const benefits = [
 ]
 
 const sections = [
-  { emoji: '🪪', title: 'Verified identity', sub: 'Onfido KYC + DVS-certified', required: true },
-  { emoji: '🏦', title: 'Proof of funds', sub: 'Mortgage AIP or bank statement', required: true },
-  { emoji: '🔗', title: 'Chain position', sub: 'First-time, chain-free, or selling', required: true },
-  { emoji: '⚖️', title: 'Solicitor & timeline', sub: 'Move-readiness signals', required: false },
-  { emoji: '✍️', title: 'Your story', sub: 'Optional short intro to sellers', required: false },
+  { icon: 'heroicons:identification', title: 'Verified Identity', sub: 'OneID / KYC · IDV verified', required: true },
+  { icon: 'heroicons:banknotes', title: 'Proof of Funds', sub: 'Mortgage / Bank statement', required: true },
+  { icon: 'heroicons:link', title: 'Chain Position', sub: 'Free from chain, free to sell', required: true },
+  { icon: 'heroicons:user-group', title: 'Solution & Timeline', sub: 'Move readiness signals', required: false },
+  { icon: 'heroicons:rocket-launch', title: 'Your Story', sub: 'Optional buyer introduction', required: false },
 ]
 
 const goBack = useGoBack('/explore')
@@ -202,10 +271,7 @@ onMounted(async () => {
   try {
     const data = await getBuyerProfile()
     existing.value = data
-    if (data?.published) {
-      router.replace('/buyer-profile/view')
-      return
-    }
+    // Do NOT auto-redirect — let the user see the landing page.
   } catch {
     /* token may be missing — stay on intro */
   } finally {
@@ -222,144 +288,104 @@ onMounted(async () => {
   --fx-indigo: #4f4ff2;
   --fx-text: #1f2b3f;
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: var(--fx-text);
-  max-width: none;
   width: 100%;
-  margin: 0 auto;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 0 14px 34px;
   position: relative;
+  overflow-x: hidden;
 }
 
-/* ───────────── Top nav ───────────── */
-.mp-top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: none;
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 12px 4px 8px;
-  padding-top: calc(12px + env(safe-area-inset-top));
-}
-.mp-back {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #143047;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.mp-back:hover {
-  transform: translateY(-2px);
-  border-color: rgba(183, 209, 236, 0.9);
-  box-shadow: 0 12px 24px rgba(19, 48, 71, 0.12);
-}
-.mp-nav-centre { flex: 1; display: flex; justify-content: center; }
-
-/* ───────────── Eyebrow pill ───────────── */
-.eyebrow-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  color: #067a74;
-  background: rgba(229, 255, 248, 0.92);
-  border: 1px solid rgba(0, 161, 154, 0.28);
-  padding: 6px 12px;
-  border-radius: 100px;
-  text-transform: uppercase;
-}
-.eyebrow-dot {
-  width: 5px;
-  height: 5px;
+/* ── Ambient orbs ── */
+.mp-ambient {
+  position: fixed;
   border-radius: 50%;
-  background: #00a19a;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.mp-ambient-a {
+  width: 560px; height: 560px;
+  top: -140px; left: -160px;
+  background: radial-gradient(circle, rgba(0,161,154,0.13) 0%, transparent 70%);
+}
+.mp-ambient-b {
+  width: 480px; height: 480px;
+  bottom: 10%; right: -120px;
+  background: radial-gradient(circle, rgba(90,76,240,0.11) 0%, transparent 70%);
+}
+.mp-mesh {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: radial-gradient(rgba(0,161,154,0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
-/* ───────────── Hero head ───────────── */
+/* ── Web nav (shared hsw-nav block) ── */
+.hsw-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,251,255,0.88);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(173,201,231,0.3);
+}
+.hsw-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; }
+.hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #10263d; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+.hsw-brand-logo { width: 28px; height: 28px; border-radius: 8px; object-fit: cover; }
+.hsw-links { display: flex; align-items: center; gap: 4px; }
+.hsw-links button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: #516070; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-links button:hover { color: #10263d; background: rgba(0,0,0,0.05); }
+.hsw-links button.active { color: #00a19a; font-weight: 700; background: rgba(0,161,154,0.08); }
+.hsw-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.hsw-back { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #516070; background: rgba(255,255,255,0.8); border: 1px solid rgba(173,201,231,0.5); border-radius: 10px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-back svg { width: 15px; height: 15px; flex-shrink: 0; }
+.hsw-back:hover { color: #10263d; border-color: #b9d5ea; }
+.hsw-cta { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: linear-gradient(120deg, #00a19a, #2f9bdf); border: none; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+/* ── Main body + layout ── */
+.mp-body { padding: 40px 0 80px; }
+
+/* ───────────── Page head ───────────── */
 .mp-hero-head {
-  width: min(100%, 980px);
-  margin-top: 8px;
-  margin-left: auto;
-  margin-right: auto;
-  border-radius: 28px;
-  padding: 24px 18px 18px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  position: relative;
-  overflow: hidden;
+  margin-bottom: 32px;
 }
-.mp-hero-head::before {
-  content: '';
-  position: absolute;
-  inset: -145% auto auto -40%;
-  width: 54%;
-  height: 320%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.38) 46%, rgba(255, 255, 255, 0) 100%);
-  transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
+.mp-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 800; letter-spacing: 1.4px;
+  color: #067a74; background: rgba(229,255,248,0.92);
+  border: 1px solid rgba(0,161,154,0.28);
+  padding: 6px 12px; border-radius: 100px; text-transform: uppercase;
+  margin-bottom: 14px;
 }
-.mp-hero-head:hover::before {
-  transform: translateX(220%) rotate(16deg);
-}
+.mp-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
 .mp-hero-title {
-  position: relative;
   font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 34px;
-  font-weight: 750;
-  color: #10263d;
-  line-height: 1.06;
-  margin-bottom: 8px;
-  letter-spacing: -0.9px;
+  font-size: 52px; font-weight: 800; color: #10263d;
+  line-height: 1.04; margin-bottom: 12px; letter-spacing: -1.6px;
 }
 .mp-hero-sub {
-  position: relative;
-  font-size: 13px;
-  color: #627891;
-  line-height: 1.5;
-  font-weight: 600;
+  font-size: 16px; color: #627891; line-height: 1.55; font-weight: 600; max-width: 620px;
 }
 
-/* ───────────── Hero card ───────────── */
-.mp-hero-wrap { padding: 14px 0 0; }
-
-.mp-main-grid {
-  display: block;
-  width: min(100%, 980px);
-  margin: 0 auto;
-}
+/* ───────────── Full-width hero banner ───────────── */
+.mp-hero-wrap { padding: 4px 0 0; margin-bottom: 30px; }
 .hero-card {
-  background: linear-gradient(140deg, #00b6ae 0%, #00a19a 40%, #1d6aa0 100%);
+  background: linear-gradient(115deg, #00a19a 0%, #0e8a9d 42%, #1d6aa0 72%, #2f6fc4 100%);
   box-shadow:
-    0 18px 34px -12px rgba(17, 87, 145, 0.38),
+    0 28px 54px -18px rgba(17, 87, 145, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-radius: 22px;
-  padding: 22px;
+  border-radius: 26px;
+  padding: 48px 52px;
   color: #fff;
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 270px;
   transition:
     transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1);
@@ -367,95 +393,120 @@ onMounted(async () => {
 .hero-card:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 24px 40px -14px rgba(17, 87, 145, 0.46),
+    0 34px 60px -20px rgba(17, 87, 145, 0.52),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .hero-card::after {
   content: '';
   position: absolute;
-  top: -40%;
-  right: -20%;
-  width: 280px;
-  height: 280px;
+  top: -30%;
+  right: 8%;
+  width: 420px;
+  height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, transparent 62%);
   pointer-events: none;
 }
-.hero-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 60px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transform: translateX(-100%) skewX(-15deg);
-  animation: mp-shimmer 3s ease-in-out infinite;
-  pointer-events: none;
-}
-.hero-card > * { position: relative; z-index: 1; }
+.hero-card-copy { position: relative; z-index: 2; max-width: 50%; }
 @keyframes mp-shimmer {
   0% { transform: translateX(-100%) skewX(-15deg); }
   100% { transform: translateX(600%) skewX(-15deg); }
 }
 .hero-eyebrow {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1.8px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.74;
-  margin-bottom: 4px;
+  opacity: 0.78;
+  margin-bottom: 14px;
 }
 .hero-tagline {
-  font-size: 22px;
+  font-size: 38px;
   font-weight: 800;
-  font-style: italic;
-  line-height: 1.2;
-  margin-bottom: 12px;
+  line-height: 1.12;
+  margin-bottom: 18px;
+  letter-spacing: -0.8px;
 }
 .hero-name {
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  opacity: 0.92;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 18px;
+  opacity: 0.96;
 }
 .hero-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 18px;
 }
 .hero-pill {
-  font-size: 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px;
   font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 100px;
-  padding: 5px 10px;
+  padding: 7px 14px;
   color: #fff;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.08);
-}
-.hero-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.1);
 }
 .hero-footer-text {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   opacity: 0.82;
 }
-.hero-share-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+
+/* ── Glowing shield illustration ── */
+.hero-shield-wrap {
+  position: relative; z-index: 1;
+  width: 230px; height: 230px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
+.hero-shield {
+  position: relative;
+  width: 150px; height: 150px;
+  border-radius: 28px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.32), rgba(255,255,255,0.08));
+  border: 1.5px solid rgba(255,255,255,0.4);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 60px rgba(255,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  animation: mp-float 4s ease-in-out infinite;
+}
+.hero-shield svg { width: 92px; height: 92px; }
+.hero-shield-check { position: absolute; width: 38px !important; height: 38px !important; }
+.hero-shield-base {
+  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  width: 170px; height: 26px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%);
+  filter: blur(4px);
+}
+.hero-spark {
+  position: absolute; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 8px rgba(255,255,255,0.9);
+  animation: mp-twinkle 2.4s ease-in-out infinite;
+}
+.hero-spark-1 { width: 6px; height: 6px; top: 22%; right: 16%; }
+.hero-spark-2 { width: 4px; height: 4px; top: 60%; right: 8%; animation-delay: 0.7s; }
+.hero-spark-3 { width: 5px; height: 5px; top: 40%; left: 10%; animation-delay: 1.3s; }
+@keyframes mp-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes mp-twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ───────────── Two-column body ───────────── */
+.mp-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+.mp-col { display: flex; flex-direction: column; }
+.mp-cta-wrap { padding-top: 28px; }
 
 /* ───────────── Section header ───────────── */
 .section-header {
@@ -465,17 +516,16 @@ onMounted(async () => {
   padding: 20px 2px 10px;
 }
 .sec-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
-  box-shadow: 0 10px 18px rgba(48, 98, 214, 0.2);
+  background: #e3f4f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
   flex-shrink: 0;
 }
+.sec-icon-svg { width: 20px; height: 20px; color: #00a19a; }
 .sec-title {
   font-size: 11px;
   font-weight: 800;
@@ -491,33 +541,71 @@ onMounted(async () => {
 
 /* ───────────── Benefits ───────────── */
 .mp-benefits {
-  border-radius: 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
-  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.08);
-  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(173, 201, 231, 0.4);
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 44, 76, 0.07);
+  padding: 26px 28px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 22px;
+  position: relative;
 }
 .mp-benefit {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 13.5px;
+  gap: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #17314a;
+  position: relative;
+}
+/* vertical connector line between ticks */
+.mp-benefit:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 14px; top: 30px;
+  width: 1.5px; height: 22px;
+  background: linear-gradient(180deg, rgba(0,161,154,0.4), rgba(0,161,154,0.1));
 }
 .mp-tick {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  box-shadow: 0 4px 10px rgba(0,161,154,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  z-index: 1;
 }
+
+/* ───────────── Complete-profile nudge ───────────── */
+.mp-nudge {
+  margin-top: 16px;
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; text-align: left; cursor: pointer;
+  font-family: inherit;
+  background: #fff;
+  border: 1px solid rgba(173, 201, 231, 0.4);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 22px rgba(15, 44, 76, 0.06);
+  transition: all 0.2s cubic-bezier(.22,1,.36,1);
+}
+.mp-nudge:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(15,44,76,0.1); border-color: #c5b8f5; }
+.mp-nudge-ic {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #ece9ff, #eef4ff);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.mp-nudge-ic-svg { width: 22px; height: 22px; color: #6a5af0; }
+.mp-nudge-body { flex: 1; min-width: 0; }
+.mp-nudge-title { font-size: 15px; font-weight: 800; color: #17314a; margin-bottom: 2px; }
+.mp-nudge-sub { font-size: 13px; color: #627891; font-weight: 600; }
+.mp-nudge-arrow { width: 22px; height: 22px; color: #9aa9bd; flex-shrink: 0; }
 
 /* ───────────── Live bar ───────────── */
 .live-bar {
@@ -559,19 +647,19 @@ onMounted(async () => {
 .options-block {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 12px;
 }
 .opt-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border: 1px solid #dfe8f3;
+  background: #fff;
+  border: 1px solid #e8eef5;
   border-radius: 16px;
-  padding: 13px 14px;
+  padding: 16px 18px;
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
+  gap: 14px;
+  box-shadow: 0 8px 18px rgba(19, 51, 82, 0.05);
 }
 .opt-card--compact { cursor: default; }
 .opt-card:hover {
@@ -585,39 +673,71 @@ onMounted(async () => {
   box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.1);
 }
 .opt-icon {
-  font-size: 20px;
-  width: 36px;
-  text-align: center;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: #eef2f7;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+.opt-icon-svg { width: 22px; height: 22px; color: #3a4a5e; }
 .opt-text { flex: 1; min-width: 0; }
 .opt-title {
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 800;
   color: #17314a;
 }
 .opt-sub {
-  font-size: 11px;
+  font-size: 12.5px;
   color: #627891;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 .rec-pill {
-  font-size: 9px;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 5px 11px;
   border-radius: 100px;
-  letter-spacing: 1px;
+  letter-spacing: 0.6px;
   flex-shrink: 0;
 }
+.rec-pill-ic { width: 12px; height: 12px; }
 .rec-pill--req {
   background: #e2f1ea;
   color: #067a74;
   border: 1px solid rgba(0, 161, 154, 0.25);
 }
 .rec-pill--opt {
-  background: #edf2f8;
-  color: #627891;
+  background: #eef0ff;
+  color: #6a6ae0;
+  border: 1px solid rgba(106,106,224,0.2);
 }
+
+/* ───────────── Safety banner ───────────── */
+.mp-safety-banner {
+  margin-top: 36px;
+  display: flex; align-items: center; gap: 18px;
+  background: #fff;
+  border: 1px solid rgba(173, 201, 231, 0.4);
+  border-radius: 20px;
+  padding: 22px 28px;
+  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.06);
+}
+.mp-safety-ic {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #ece9ff, #eef4ff);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.mp-safety-ic-svg { width: 22px; height: 22px; color: #4f4ff2; }
+.mp-safety-text { flex: 1; min-width: 0; }
+.mp-safety-title { font-size: 15px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.mp-safety-sub { font-size: 13px; color: #627891; font-weight: 600; }
+.mp-safety-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 800; color: #067a74;
+  white-space: nowrap; flex-shrink: 0;
+}
+.mp-safety-badge-ic { width: 15px; height: 15px; color: #067a74; }
 
 /* ───────────── CTA ───────────── */
 .mp-cta-wrap { padding: 20px 0 0; }
@@ -626,12 +746,12 @@ onMounted(async () => {
   background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
   color: #fff;
   border: none;
-  border-radius: 14px;
-  padding: 16px;
-  font-size: 14px;
+  border-radius: 18px;
+  padding: 22px;
+  font-size: 17px;
   font-weight: 800;
   font-family: inherit;
-  box-shadow: 0 14px 24px rgba(58, 87, 206, 0.28);
+  box-shadow: 0 18px 32px rgba(58, 87, 206, 0.3);
   position: relative;
   overflow: hidden;
   cursor: pointer;
@@ -662,216 +782,68 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
+.cta-btn-arrow { width: 18px; height: 18px; }
 .ghost-link {
-  text-align: center;
-  display: block;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 700;
   color: #627891;
-  padding: 12px 10px 4px;
+  padding: 18px 10px 4px;
 }
+.ghost-item { display: inline-flex; align-items: center; gap: 6px; }
+.ghost-ic { width: 15px; height: 15px; color: #8a97a8; }
+.ghost-dot { color: #c2cdd9; }
 
-@media (min-width: 768px) {
-  .mp-page {
-    padding: 0 18px 40px;
-  }
-
-  .mp-top-nav {
-    padding: 14px 4px 10px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .mp-hero-head {
-    padding: 28px 24px 24px;
-  }
-
-  .mp-hero-title {
-    font-size: 38px;
-  }
-
-  .hero-tagline {
-    font-size: 24px;
-  }
-
-  .options-block {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
+@media (max-width: 980px) {
+  .mp-main-grid { grid-template-columns: 1fr; gap: 28px; }
+  .mp-hero-title { font-size: 38px; }
+  .hero-card { flex-direction: column; align-items: flex-start; padding: 32px; min-height: 0; gap: 20px; }
+  .hero-card-copy { max-width: 100%; }
+  .hero-shield-wrap { width: 100%; height: 180px; }
+  .mp-safety-banner { flex-wrap: wrap; }
 }
-
-@media (min-width: 1440px) {
-  .mp-page {
-    padding: 0 22px 42px;
-  }
-
-  .mp-top-nav,
-  .mp-hero-head,
-  .mp-main-grid {
-    width: min(100%, 1180px);
-  }
-
-  .mp-main-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
-    gap: 14px 18px;
-    align-items: start;
-  }
-
-  .mp-hero-wrap,
-  .section-header--why,
-  .mp-benefits,
-  .live-bar {
-    grid-column: 1;
-  }
-
-  .section-header--inside,
-  .options-block,
-  .mp-cta-wrap {
-    grid-column: 2;
-  }
-
-  .section-header--inside {
-    padding-top: 14px;
-  }
-
-  .mp-cta-wrap {
-    padding-top: 12px;
-  }
-
-  .options-block {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-  }
+@media (max-width: 760px) {
+  .hsw-links, .hsw-cta { display: none; }
+  .mp-hero-head { margin-bottom: 22px; }
+  .mp-hero-title { font-size: 28px; letter-spacing: -0.8px; }
+  .mp-hero-sub { font-size: 14px; }
+  .hero-card { padding: 26px 22px; border-radius: 22px; }
+  .hero-tagline { font-size: 26px; }
+  .hero-name { font-size: 16px; }
+  .hero-shield-wrap { height: 150px; }
+  .hero-shield { width: 120px; height: 120px; }
+  .hero-shield svg { width: 72px; height: 72px; }
+  .mp-body { padding: 24px 0 56px; }
+  .mp-benefits { padding: 20px; gap: 18px; }
+  .opt-card { padding: 14px; }
+  .cta-btn { padding: 18px; font-size: 15px; }
 }
-
-@media (min-width: 1024px) and (max-width: 1439px) {
-  .mp-page {
-    padding: 0 20px 34px;
-  }
-
-  .mp-hero-head {
-    margin-top: 6px;
-    padding: 22px 18px 16px;
-    border-radius: 24px;
-  }
-
-  .mp-hero-title {
-    font-size: 32px;
-    line-height: 1.08;
-    margin-bottom: 6px;
-  }
-
-  .mp-hero-sub {
-    font-size: 12.5px;
-    line-height: 1.45;
-  }
-
-  .mp-main-grid { display: block; }
-
-  .mp-hero-wrap {
-    padding-top: 10px;
-  }
-
-  .hero-card {
-    padding: 18px;
-    border-radius: 20px;
-  }
-
-  .hero-tagline {
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-
-  .hero-pills {
-    margin-bottom: 12px;
-  }
-
-  .section-header {
-    padding: 14px 2px 8px;
-  }
-
-  .section-header--inside {
-    padding-top: 8px;
-  }
-
-  .mp-benefits {
-    padding: 12px;
-    gap: 8px;
-    border-radius: 18px;
-  }
-
-  .mp-benefit {
-    font-size: 13px;
-    gap: 10px;
-  }
-
-  .mp-tick {
-    width: 24px;
-    height: 24px;
-  }
-
-  .live-bar {
-    margin-top: 10px;
-    padding: 9px 10px;
-    font-size: 10.5px;
-  }
-
-  .options-block {
-    gap: 8px;
-  }
-
-  .opt-card {
-    padding: 11px 12px;
-    border-radius: 14px;
-  }
-
-  .opt-title {
-    font-size: 13px;
-  }
-
-  .opt-sub {
-    font-size: 10.5px;
-  }
-
-  .mp-cta-wrap {
-    padding-top: 8px;
-  }
-
-  .cta-btn {
-    padding: 14px;
-    border-radius: 12px;
-  }
-
-  .ghost-link {
-    padding-top: 9px;
-  }
-}
-
-@media (max-width: 430px) {
-  .mp-hero-title {
-    font-size: 30px;
-  }
-
-  .hero-tagline {
-    font-size: 20px;
-  }
-
-  .sec-sub {
-    font-size: 14px;
-  }
+@media (max-width: 480px) {
+  .mp-hero-title { font-size: 24px; }
+  .hero-tagline { font-size: 22px; }
+  .hero-pills { gap: 6px; }
+  .hero-pill { font-size: 11px; padding: 6px 11px; }
+  /* Safety banner stacks: text full width, badge below */
+  .mp-safety-banner { padding: 18px 20px; gap: 14px; }
+  .mp-safety-badge { width: 100%; }
+  /* What's-inside pills don't shrink the title */
+  .opt-title { font-size: 14px; }
+  .opt-sub { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mp-back,
   .hero-card,
   .opt-card,
   .cta-btn,
-  .mp-hero-head::before,
-  .hero-card::before,
+  .mp-nudge,
+  .hero-shield,
+  .hero-spark,
   .pulse-dot::after {
     transition: none;
     animation: none;

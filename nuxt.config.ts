@@ -83,7 +83,10 @@ export default defineNuxtConfig({
       periodicSyncForUpdates: 3600,
     },
     devOptions: {
-      enabled: true,
+      // Service worker disabled in dev — the navigateFallback to /offline
+      // hijacks every non-precached route (pages aren't precached in dev),
+      // which made all routes redirect to /offline. PWA still runs in prod.
+      enabled: false,
       suppressWarnings: true,
       navigateFallbackAllowlist: [/^\/$/],
       type: 'module',
