@@ -1,90 +1,106 @@
 <template>
   <div class="sd-page">
-    <!-- Top nav: back / title / Clear -->
-    <div class="sd-top-nav">
-      <button class="sd-back" @click="goBack" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="sd-nav-centre">Sign your Profile</div>
-      <span
-        class="sd-nav-right"
-        :class="{ disabled: !canClear }"
-        @click="onClear"
-      >
-        Clear
-      </span>
-    </div>
+    <div class="sd-ambient sd-ambient-a" />
+    <div class="sd-ambient sd-ambient-b" />
 
-    <!-- Intro -->
-    <div class="sd-intro">
-      <p>
-        Sign below to confirm this profile is accurate and you authorise its
-        sharing. Your signature will be embedded in the PDF.
-      </p>
-    </div>
+    <BuyerProfileNav back-label="Back" @back="goBack" />
 
-    <!-- Document summary -->
-    <div class="sd-doc-summary">
-      <div class="sd-doc-label">SIGNING</div>
-      <div class="sd-doc-title">UMU Buyer Profile — {{ displayName }}</div>
-      <div class="sd-doc-meta">
-        Ref: {{ publicRef }} · {{ todayLabel }} · Profile + Financial Credentials
+    <main class="sd-shell">
+      <!-- Page head -->
+      <div class="sd-head">
+        <div class="sd-kicker"><span class="sd-kicker-dot" />SIGN YOUR PROFILE</div>
+        <h1 class="sd-h1">Add your digital signature</h1>
+        <p class="sd-sub">
+          Sign to confirm this profile is accurate and authorise its sharing.
+          Your signature is embedded in the certified PDF.
+        </p>
       </div>
-    </div>
 
-    <!-- Signature pad -->
-    <span class="sec-label">DRAW YOUR SIGNATURE</span>
-    <div class="sig-pad" :class="{ signed: hasDrawn }">
-      <canvas
-        ref="canvasEl"
-        class="sig-canvas"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointerleave="onPointerUp"
-        @pointercancel="onPointerUp"
-      />
-      <div v-if="!hasDrawn" class="sig-placeholder">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#9c98ad">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-        </svg>
-        <span class="sig-placeholder-text">Draw your signature here</span>
+      <div class="sd-grid">
+        <!-- LEFT: signature pad -->
+        <div class="sd-card sd-card--pad">
+          <div class="sd-card-head">
+            <span class="sd-card-eyebrow">DRAW YOUR SIGNATURE</span>
+            <button
+              class="sd-clear"
+              :class="{ disabled: !canClear }"
+              :disabled="!canClear"
+              @click="onClear"
+            >
+              <Icon name="heroicons:arrow-path" class="sd-clear-ic" />Clear
+            </button>
+          </div>
+
+          <div class="sig-pad" :class="{ signed: hasDrawn }">
+            <canvas
+              ref="canvasEl"
+              class="sig-canvas"
+              @pointerdown="onPointerDown"
+              @pointermove="onPointerMove"
+              @pointerup="onPointerUp"
+              @pointerleave="onPointerUp"
+              @pointercancel="onPointerUp"
+            />
+            <div v-if="!hasDrawn" class="sig-placeholder">
+              <Icon name="heroicons:pencil" class="sig-placeholder-ic" />
+              <span class="sig-placeholder-text">Draw your signature here</span>
+            </div>
+          </div>
+
+          <!-- Or type name -->
+          <div class="sd-type-wrap">
+            <div class="sd-type-divider"><span>or type your name instead</span></div>
+            <input
+              v-model="typedName"
+              type="text"
+              class="sd-type-input"
+              :placeholder="displayName"
+              @input="onTypeNameInput"
+            />
+          </div>
+
+          <!-- Apply CTA -->
+          <button
+            class="cta-btn"
+            :disabled="!canApply || applying"
+            @click="onApply"
+          >
+            <span class="cta-btn-inner">
+              {{ applying ? 'Applying…' : 'Apply signature' }}
+              <Icon v-if="!applying" name="heroicons:arrow-right" class="cta-arrow" />
+            </span>
+          </button>
+          <div v-if="errorMsg" class="sd-err">
+            <Icon name="heroicons:exclamation-circle" class="sd-err-ic" />{{ errorMsg }}
+          </div>
+        </div>
+
+        <!-- RIGHT: document summary + legal -->
+        <div class="sd-side">
+          <div class="sd-card sd-doc-summary">
+            <div class="sd-doc-label">
+              <Icon name="heroicons:document-text" class="sd-doc-label-ic" />SIGNING
+            </div>
+            <div class="sd-doc-title">UMU Buyer Profile</div>
+            <div class="sd-doc-name">{{ displayName }}</div>
+            <div class="sd-doc-rows">
+              <div class="sd-doc-row"><span>Reference</span><strong>{{ publicRef }}</strong></div>
+              <div class="sd-doc-row"><span>Date</span><strong>{{ todayLabel }}</strong></div>
+              <div class="sd-doc-row"><span>Scope</span><strong>Profile + Financials</strong></div>
+            </div>
+          </div>
+
+          <div class="sd-legal">
+            <Icon name="heroicons:shield-check" class="sd-legal-ic" />
+            <span>
+              Your digital signature is timestamp-verified by UMU and embedded in
+              the PDF as a legally recognised electronic signature under
+              <strong>eIDAS</strong> regulation.
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- Or type name -->
-    <div class="sd-type-wrap">
-      <div class="sd-type-divider">— or type your name instead —</div>
-      <input
-        v-model="typedName"
-        type="text"
-        class="sd-type-input"
-        :placeholder="displayName"
-        @input="onTypeNameInput"
-      />
-    </div>
-
-    <!-- Legal note -->
-    <div class="sd-legal">
-      By signing you confirm this profile is accurate. Your digital signature
-      is timestamp-verified by UMU and embedded in the PDF as a legally
-      recognised electronic signature under eIDAS regulation.
-    </div>
-
-    <!-- Apply CTA -->
-    <div class="sd-cta-wrap">
-      <button
-        class="cta-btn"
-        :disabled="!canApply || applying"
-        @click="onApply"
-      >
-        {{ applying ? 'Applying…' : 'Apply signature →' }}
-      </button>
-      <div v-if="errorMsg" class="sd-err">{{ errorMsg }}</div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -95,6 +111,7 @@ import {
   type BuyerProfile,
 } from '~/composables/useBuyerProfile'
 import { useProfile } from '~/composables/useProfile'
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
 definePageMeta({ title: 'Sign Profile — UmovingU', middleware: 'auth' })
 
@@ -261,240 +278,122 @@ async function onApply() {
 const goBack = useGoBack('/buyer-profile/pdf')
 </script>
 
+
 <style scoped>
 .sd-page {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: none;
   width: 100%;
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 0 14px 32px;
+  position: relative; overflow-x: hidden;
 }
+.sd-ambient { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.sd-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.12) 0%, transparent 70%); }
+.sd-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sd-top-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  width: min(100%, 980px);
-  margin: 8px auto 0;
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  background: rgba(249, 252, 255, 0.92);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
-  padding: 14px 18px 6px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-}
-.sd-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: #fff; border: 1px solid #ececef;
-  display: flex; align-items: center; justify-content: center;
-  color: #231d45; cursor: pointer; flex-shrink: 0;
-}
-.sd-nav-centre {
-  flex: 1; text-align: center;
-  font-size: 15px; font-weight: 800; color: #231d45;
-}
-.sd-nav-right {
-  font-size: 13px; font-weight: 700; color: #c73e36;
-  cursor: pointer; padding: 8px 4px; white-space: nowrap;
-  transition: opacity 0.15s;
-}
-.sd-nav-right.disabled { opacity: 0.35; pointer-events: none; }
+.sd-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
 
-.sd-intro {
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 12px 0 0;
-  text-align: center;
-  animation: sd-fadeUp 0.4s 0.05s both;
+/* Head */
+.sd-head { margin-bottom: 28px; max-width: 640px; }
+.sd-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
+  color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28);
+  padding: 6px 12px; border-radius: 100px; margin-bottom: 14px;
 }
-@keyframes sd-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.sd-intro p {
-  font-size: 13px; color: #6b6783; line-height: 1.5;
-}
+.sd-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
+.sd-h1 { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.sd-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
 
-.sd-doc-summary {
-  width: min(100%, 980px);
-  margin: 12px auto 0;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  border: 1px solid rgba(174, 201, 231, 0.48);
-  border-radius: 16px;
-  box-shadow:
-    0 14px 34px rgba(17, 52, 88, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  padding: 12px 14px;
-  animation: sd-fadeUp 0.4s 0.08s both;
-}
-.sd-doc-label {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.8px;
-  color: #9c98ad;
-  margin-bottom: 8px;
-}
-.sd-doc-title {
-  font-size: 13px; font-weight: 800; color: #231d45;
-}
-.sd-doc-meta {
-  font-size: 11px; color: #6b6783; margin-top: 2px;
-}
+/* Grid */
+.sd-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 
-.sec-label {
-  font-size: 11px; font-weight: 800;
-  color: #6b6783; letter-spacing: 1px;
-  text-transform: uppercase;
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 16px 0 8px;
-  display: block;
-  animation: sd-fadeDown 0.4s 0.1s both;
-}
-@keyframes sd-fadeDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* Cards */
+.sd-card { background: #fff; border: 1px solid #e8eef5; border-radius: 22px; box-shadow: 0 14px 34px rgba(15,44,76,0.07); padding: 24px; }
+.sd-card--pad { display: flex; flex-direction: column; }
+.sd-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.sd-card-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #8a97a8; }
+.sd-clear { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #00a19a; background: #f2faf8; border: 1px solid #d8efeb; border-radius: 9px; padding: 6px 11px; cursor: pointer; font-family: inherit; transition: all 0.16s; }
+.sd-clear:hover:not(.disabled) { background: #e6f6f3; }
+.sd-clear.disabled { opacity: 0.4; cursor: not-allowed; }
+.sd-clear-ic { width: 13px; height: 13px; }
 
-/* Signature pad — dashed when empty, solid teal when signed (prototype). */
+/* Signature pad */
 .sig-pad {
   position: relative;
-  width: min(100%, 980px);
-  margin: 0 auto;
-  background: white;
-  border: 2px dashed #ececef;
-  border-radius: 14px;
-  height: 180px;
+  height: 220px;
+  border: 2px dashed #cdd9e6;
+  border-radius: 16px;
+  background: #fbfdff;
   overflow: hidden;
-  animation: sd-fadeUp 0.4s 0.1s both;
-  transition: all 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
-.sig-pad.signed {
-  border-style: solid;
-  border-color: #00a19a;
-  background: #f2faf8;
-}
-.sig-canvas {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  touch-action: none;
-  cursor: crosshair;
-}
-.sig-placeholder {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
-  pointer-events: none;
-}
-.sig-placeholder-text {
-  font-size: 12px; font-weight: 700; color: #9c98ad;
-}
+.sig-pad.signed { border-style: solid; border-color: #00a19a; background: #fff; }
+.sig-canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.sig-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; pointer-events: none; }
+.sig-placeholder-ic { width: 30px; height: 30px; color: #9aa9bd; }
+.sig-placeholder-text { font-size: 13px; font-weight: 600; color: #9aa9bd; }
 
-.sd-type-wrap {
-  width: min(100%, 980px);
-  margin: 12px auto 0;
-  animation: sd-fadeUp 0.4s 0.15s both;
-}
-.sd-type-divider {
-  font-size: 11px; font-weight: 700; color: #9c98ad;
-  text-align: center; margin-bottom: 8px;
-}
-.sd-type-input {
-  width: 100%;
-  border: 1.5px solid #ececef;
-  border-radius: 12px;
-  padding: 13px 14px;
-  font-family: 'Plus Jakarta Sans', inherit;
-  font-size: 18px; font-style: italic;
-  color: #231d45;
-  outline: none;
-  text-align: center;
-  background: white;
-  transition: all 0.15s;
-}
-.sd-type-input:focus { border-color: #00a19a; }
+/* Type name */
+.sd-type-wrap { margin-top: 18px; }
+.sd-type-divider { display: flex; align-items: center; text-align: center; font-size: 11px; font-weight: 600; color: #9aa9bd; margin-bottom: 12px; }
+.sd-type-divider::before, .sd-type-divider::after { content: ''; flex: 1; height: 1px; background: #e8eef5; }
+.sd-type-divider span { padding: 0 12px; }
+.sd-type-input { width: 100%; border: 1.5px solid #e2e8f1; border-radius: 12px; padding: 14px 16px; font-size: 15px; font-family: inherit; color: #231d45; background: #fbfdff; transition: border-color 0.18s, box-shadow 0.18s; }
+.sd-type-input:focus { outline: none; border-color: #00a19a; box-shadow: 0 0 0 3px rgba(0,161,154,0.12); }
+.sd-type-input::placeholder { color: #b5bdc9; }
 
-.sd-legal {
-  width: min(100%, 980px);
-  margin: 10px auto 0;
-  padding: 10px 12px;
-  background: #f6f5fb;
-  border-radius: 10px;
-  font-size: 10.5px; color: #6b6783; line-height: 1.4;
-  animation: sd-fadeUp 0.4s 0.18s both;
-}
-
-.sd-cta-wrap {
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 12px 0 0;
-  animation: sd-fadeUp 0.4s 0.22s both;
-}
+/* CTA */
 .cta-btn {
-  width: 100%;
-  background: #00a19a; color: white; border: none;
-  border-radius: 14px; padding: 16px;
-  font-family: inherit; font-size: 14px; font-weight: 800;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  width: 100%; margin-top: 20px;
+  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 48%, #4f4ff2 100%);
+  color: #fff; border: none; border-radius: 14px; padding: 17px;
+  font-size: 15px; font-weight: 800; font-family: inherit;
+  box-shadow: 0 14px 26px rgba(58,87,206,0.26); cursor: pointer;
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s, filter 0.2s;
 }
-.cta-btn:hover:not(:disabled) {
-  background: #00b6ae;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+.cta-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(58,87,206,0.32); }
+.cta-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cta-btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.cta-arrow { width: 17px; height: 17px; }
+.sd-err { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12.5px; font-weight: 700; color: #d4541e; }
+.sd-err-ic { width: 16px; height: 16px; }
+
+/* Side */
+.sd-side { display: flex; flex-direction: column; gap: 16px; }
+.sd-doc-summary {
+  background: linear-gradient(150deg, #00b6ae 0%, #009a93 48%, #00514d 100%);
+  border: none; color: #fff;
+  box-shadow: 0 16px 36px -12px rgba(0,161,154,0.45);
 }
-.cta-btn:disabled {
-  opacity: 0.5; cursor: not-allowed; pointer-events: none;
+.sd-doc-label { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: rgba(255,255,255,0.7); margin-bottom: 12px; }
+.sd-doc-label-ic { width: 15px; height: 15px; }
+.sd-doc-title { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.sd-doc-name { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 18px; }
+.sd-doc-rows { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid rgba(255,255,255,0.18); padding-top: 16px; }
+.sd-doc-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.sd-doc-row span { color: rgba(255,255,255,0.7); }
+.sd-doc-row strong { color: #fff; font-weight: 700; }
+.sd-legal { display: flex; align-items: flex-start; gap: 12px; background: #f6f5fb; border: 1px solid #ebe8f6; border-radius: 16px; padding: 16px; font-size: 12px; color: #6b6783; line-height: 1.55; }
+.sd-legal-ic { width: 22px; height: 22px; color: #6a5af0; flex-shrink: 0; }
+.sd-legal strong { color: #4a4566; }
+
+@media (max-width: 940px) {
+  .sd-grid { grid-template-columns: 1fr; gap: 20px; }
+  .sd-side { flex-direction: column; }
+  .sd-h1 { font-size: 30px; }
 }
-.sd-err {
-  margin-top: 8px;
-  font-size: 12px; font-weight: 600; color: #c73e36;
-  text-align: center;
+@media (max-width: 760px) {
+  .sd-shell { width: calc(100% - 32px); padding: 32px 0 64px; }
+  .sd-h1 { font-size: 26px; }
+  .sd-sub { font-size: 14px; }
+  .sd-card { padding: 20px; border-radius: 18px; }
+  .sig-pad { height: 190px; }
 }
-
-@media (min-width: 1024px) {
-  .sd-page {
-    padding: 0 20px 34px;
-  }
-
-  .sd-top-nav,
-  .sd-intro,
-  .sd-doc-summary,
-  .sec-label,
-  .sig-pad,
-  .sd-type-wrap,
-  .sd-legal,
-  .sd-cta-wrap {
-    width: min(100%, 1080px);
-  }
-
-  .sig-pad {
-    height: 220px;
-    border-radius: 18px;
-  }
-
-  .sd-doc-summary {
-    border-radius: 18px;
-    padding: 14px 16px;
-  }
-}
-
-@media (max-width: 700px) {
-  .sd-page {
-    padding: 0 10px 24px;
-  }
-
-  .sd-top-nav {
-    border-radius: 16px;
-    padding: 12px 12px 6px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
+@media (max-width: 480px) {
+  .sd-shell { width: calc(100% - 24px); }
+  .sd-h1 { font-size: 23px; }
 }
 </style>

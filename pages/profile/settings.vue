@@ -12,215 +12,293 @@
     </WebTopNav>
 
     <main class="st-body">
-      <div class="atm-bg atm-bg-teal" />
-
       <button class="st-back-btn" type="button" @click="goBack">
         <span aria-hidden="true">&larr;</span>
         Back
       </button>
 
-      <!-- Hero h1 -->
-      <div class="st-hero">
-        <div class="hero-greeting">Make UMU yours</div>
-        <div class="st-h1">Settings</div>
-      </div>
+      <!-- Header: title + security card -->
+      <header class="st-header">
+        <div class="st-header-intro">
+          <div class="st-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="st-h1">Settings</h1>
+            <p class="st-subtitle">Manage your account, preferences and privacy settings all in one place.</p>
+          </div>
+        </div>
 
-      <!-- Security strength card -->
-      <div class="st-section">
         <div class="st-strength-card">
-          <div class="st-strength-row">
-            <div class="st-strength-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
-                <path d="M9 12l2 2 4-4" />
+          <div class="st-strength-shield">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
+              <rect x="9" y="11" width="6" height="5" rx="1" />
+              <path d="M10 11V9.5a2 2 0 0 1 4 0V11" />
+            </svg>
+            <span class="st-strength-check">✓</span>
+          </div>
+          <div class="st-strength-body">
+            <div class="st-strength-title">Account secured</div>
+            <div class="st-strength-sub">Strong password · Keep email up to date</div>
+            <div class="st-strength-meter">
+              <span class="st-strength-pct">{{ securityScore }}%</span>
+              <span>{{ securityLabel }}</span>
+            </div>
+            <div class="st-strength-bar">
+              <div class="st-strength-fill" :style="{ width: securityScore + '%' }" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Card grid -->
+      <div class="st-grid">
+        <!-- Account & security -->
+        <section class="st-card">
+          <div class="st-card-head">
+            <span class="st-card-chip teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
               </svg>
+            </span>
+            <h2 class="st-card-title">Account &amp; Security</h2>
+          </div>
+          <div class="st-group">
+            <button class="st-row" @click="navigateTo('/profile/personal-information')">
+              <span class="st-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+                </svg>
+              </span>
+              <div class="st-row-content">
+                <div class="st-row-label">Personal information</div>
+                <div class="st-row-meta">Name, email, phone, address</div>
+              </div>
+              <span class="st-row-chev">›</span>
+            </button>
+            <button class="st-row" @click="openChangePassword">
+              <span class="st-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 14a4 4 0 1 1 4-4" /><path d="m11 10 9 9" /><path d="m17 13 2 2" /><path d="m14 16 2 2" />
+                </svg>
+              </span>
+              <div class="st-row-content">
+                <div class="st-row-label">Change password</div>
+                <div class="st-row-meta">Update the password on your account</div>
+              </div>
+              <span class="st-row-chev">›</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Notifications -->
+        <section class="st-card">
+          <div class="st-card-head">
+            <span class="st-card-chip violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </span>
+            <h2 class="st-card-title">Notifications</h2>
+          </div>
+          <div class="st-group">
+            <div class="st-row">
+              <span class="st-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" />
+                </svg>
+              </span>
+              <div class="st-row-content">
+                <div class="st-row-label">In-app push</div>
+                <div class="st-row-meta">Viewing reminders &amp; messages</div>
+              </div>
+              <div class="st-toggle" :class="{ on: prefs.pushNotifications }" @click="setPref('pushNotifications', !prefs.pushNotifications)" />
             </div>
-            <div class="st-strength-body">
-              <div class="st-strength-title">Account secured</div>
-              <div class="st-strength-sub">
-                Strong password · keep email up to date
+            <div class="st-row">
+              <span class="st-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" />
+                </svg>
+              </span>
+              <div class="st-row-content">
+                <div class="st-row-label">Email newsletter</div>
+                <div class="st-row-meta">Weekly market &amp; saved property updates</div>
+              </div>
+              <div class="st-toggle" :class="{ on: prefs.emailNewsletter }" @click="setPref('emailNewsletter', !prefs.emailNewsletter)" />
+            </div>
+            <div class="st-row">
+              <span class="st-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </span>
+              <div class="st-row-content">
+                <div class="st-row-label">SMS</div>
+                <div class="st-row-meta">Time-sensitive alerts only</div>
+              </div>
+              <div class="st-toggle" :class="{ on: prefs.smsNotifications }" @click="setPref('smsNotifications', !prefs.smsNotifications)" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Appearance & language -->
+        <section class="st-card">
+          <div class="st-card-head">
+            <span class="st-card-chip teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z" />
+              </svg>
+            </span>
+            <h2 class="st-card-title">Appearance &amp; Language</h2>
+          </div>
+          <div class="st-group">
+            <div class="st-row st-row--block">
+              <div class="st-row-content">
+                <div class="st-row-label">Theme</div>
+                <div class="st-row-meta">Choose how the app looks</div>
+              </div>
+              <div class="st-segment">
+                <button
+                  v-for="opt in themeOptions"
+                  :key="opt.value"
+                  class="st-segment-btn"
+                  :class="{ active: theme === opt.value }"
+                  @click="setTheme(opt.value)"
+                >
+                  {{ opt.label }}
+                </button>
+              </div>
+            </div>
+            <button class="st-row">
+              <div class="st-row-content">
+                <div class="st-row-label">Language</div>
+                <div class="st-row-meta">English (UK)</div>
+              </div>
+              <span class="st-row-chev">›</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Privacy & data -->
+        <section class="st-card">
+          <div class="st-card-head">
+            <span class="st-card-chip indigo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <h2 class="st-card-title">Privacy &amp; Data</h2>
+          </div>
+          <div class="st-group">
+            <div class="st-row">
+              <div class="st-row-content">
+                <div class="st-row-label">Contact visibility</div>
+                <div class="st-row-meta">Sellers see your details only when you message them</div>
+              </div>
+              <div class="st-toggle" :class="{ on: prefs.contactVisible }" @click="setPref('contactVisible', !prefs.contactVisible)" />
+            </div>
+            <button class="st-row">
+              <div class="st-row-content">
+                <div class="st-row-label">Download your data</div>
+                <div class="st-row-meta">Export everything as JSON</div>
+              </div>
+              <span class="st-row-chev">›</span>
+            </button>
+            <button class="st-row danger">
+              <div class="st-row-content">
+                <div class="st-row-label">Delete account</div>
+                <div class="st-row-meta">Permanent. We'll wipe everything.</div>
+              </div>
+              <span class="st-row-chev">›</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Legal + promo -->
+      <div class="st-legal-row">
+        <section class="st-card st-legal-card">
+          <div class="st-card-head">
+            <span class="st-card-chip blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3 8 4-3 7H7L4 7l8-4z" /><path d="M4 7 2 11m18-4 2 4M12 3v18" /><path d="M8 21h8" />
+              </svg>
+            </span>
+            <h2 class="st-card-title">Legal</h2>
+          </div>
+          <div class="st-group">
+            <a class="st-row" href="/legal/terms">
+              <div class="st-row-content"><div class="st-row-label">Terms of Service</div></div>
+              <span class="st-row-chev">›</span>
+            </a>
+            <a class="st-row" href="/legal/privacy">
+              <div class="st-row-content"><div class="st-row-label">Privacy Policy</div></div>
+              <span class="st-row-chev">›</span>
+            </a>
+            <a class="st-row" href="/legal/cookies">
+              <div class="st-row-content"><div class="st-row-label">Cookie preferences</div></div>
+              <span class="st-row-chev">›</span>
+            </a>
+            <div class="st-row" style="cursor: default">
+              <div class="st-row-content">
+                <div class="st-row-label">App version</div>
+                <div class="st-row-meta">v1.0.0</div>
               </div>
             </div>
           </div>
-          <div class="st-strength-bar">
-            <div
-              class="st-strength-fill"
-              :style="{ width: securityScore + '%' }"
-            />
+        </section>
+
+        <aside class="st-promo">
+          <div class="st-promo-shield">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" /><path d="m9 12 2 2 4-4" />
+            </svg>
           </div>
-          <div class="st-strength-meter">
-            <span class="st-strength-pct">{{ securityScore }}%</span>
-            <span>· {{ securityLabel }}</span>
-          </div>
-        </div>
+          <div class="st-promo-title">Your privacy is our priority</div>
+          <div class="st-promo-text">We use bank-grade encryption to protect your data and privacy.</div>
+          <button class="st-promo-btn" type="button" @click="navigateTo('/legal/privacy')">Learn more →</button>
+        </aside>
       </div>
 
-      <!-- Account & security -->
-      <div class="st-section-heading">Account &amp; security</div>
-      <div class="st-section">
-        <div class="st-group">
-          <button
-            class="st-row"
-            @click="navigateTo('/profile/personal-information')"
-          >
-            <div class="st-row-content">
-              <div class="st-row-label">Personal information</div>
-              <div class="st-row-meta">Name, email, phone, address</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </button>
-          <button class="st-row" @click="openChangePassword">
-            <div class="st-row-content">
-              <div class="st-row-label">Change password</div>
-              <div class="st-row-meta">Update the password on your account</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Notifications -->
-      <div class="st-section-heading">Notifications</div>
-      <div class="st-section">
-        <div class="st-group">
-          <div class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">In-app push</div>
-              <div class="st-row-meta">Viewing reminders &amp; messages</div>
-            </div>
-            <div
-              class="st-toggle"
-              :class="{ on: prefs.pushNotifications }"
-              @click="setPref('pushNotifications', !prefs.pushNotifications)"
-            />
-          </div>
-          <div class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">Email newsletter</div>
-              <div class="st-row-meta">
-                Weekly market &amp; saved property updates
-              </div>
-            </div>
-            <div
-              class="st-toggle"
-              :class="{ on: prefs.emailNewsletter }"
-              @click="setPref('emailNewsletter', !prefs.emailNewsletter)"
-            />
-          </div>
-          <div class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">SMS</div>
-              <div class="st-row-meta">Time-sensitive alerts only</div>
-            </div>
-            <div
-              class="st-toggle"
-              :class="{ on: prefs.smsNotifications }"
-              @click="setPref('smsNotifications', !prefs.smsNotifications)"
-            />
+      <!-- Trust strip -->
+      <div class="st-trust">
+        <div class="st-trust-card">
+          <span class="st-trust-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" /><path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <div>
+            <div class="st-trust-title">Data Protected</div>
+            <div class="st-trust-text">Bank-grade encryption keeps your data safe and secure.</div>
           </div>
         </div>
-      </div>
-
-      <!-- Appearance & language -->
-      <div class="st-section-heading">Appearance &amp; language</div>
-      <div class="st-section">
-        <div class="st-group">
-          <div class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">Theme</div>
-              <div class="st-row-meta">Choose how the app looks</div>
-            </div>
-            <div class="st-segment">
-              <button
-                v-for="opt in themeOptions"
-                :key="opt.value"
-                class="st-segment-btn"
-                :class="{ active: theme === opt.value }"
-                @click="setTheme(opt.value)"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
+        <div class="st-trust-card">
+          <span class="st-trust-icon violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+            </svg>
+          </span>
+          <div>
+            <div class="st-trust-title">Always Up to Date</div>
+            <div class="st-trust-text">Manage your preferences and stay in control.</div>
           </div>
-          <button class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">Language</div>
-              <div class="st-row-meta">English (UK)</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </button>
         </div>
-      </div>
-
-      <!-- Privacy & data -->
-      <div class="st-section-heading">Privacy &amp; data</div>
-      <div class="st-section">
-        <div class="st-group">
-          <div class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">Contact visibility</div>
-              <div class="st-row-meta">
-                Sellers see your details only when you message them
-              </div>
-            </div>
-            <div
-              class="st-toggle"
-              :class="{ on: prefs.contactVisible }"
-              @click="setPref('contactVisible', !prefs.contactVisible)"
-            />
+        <div class="st-trust-card">
+          <span class="st-trust-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </span>
+          <div>
+            <div class="st-trust-title">Need Help?</div>
+            <div class="st-trust-text">Our support team is here to assist you.</div>
           </div>
-          <button class="st-row">
-            <div class="st-row-content">
-              <div class="st-row-label">Download your data</div>
-              <div class="st-row-meta">Export everything as JSON</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </button>
-          <button class="st-row danger">
-            <div class="st-row-content">
-              <div class="st-row-label">Delete account</div>
-              <div class="st-row-meta">Permanent. We'll wipe everything.</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Legal -->
-      <div class="st-section-heading">Legal</div>
-      <div class="st-section">
-        <div class="st-group">
-          <a class="st-row" href="/legal/terms">
-            <div class="st-row-content">
-              <div class="st-row-label">Terms of Service</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </a>
-          <a class="st-row" href="/legal/privacy">
-            <div class="st-row-content">
-              <div class="st-row-label">Privacy Policy</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </a>
-          <a class="st-row" href="/legal/cookies">
-            <div class="st-row-content">
-              <div class="st-row-label">Cookie preferences</div>
-            </div>
-            <span class="st-row-chev">›</span>
-          </a>
-          <div class="st-row" style="cursor: default">
-            <div class="st-row-content">
-              <div class="st-row-label">App version</div>
-              <div class="st-row-meta">v1.0.0</div>
-            </div>
-          </div>
+          <span class="st-row-chev">→</span>
         </div>
       </div>
 
@@ -427,7 +505,7 @@ const securityLabel = computed(() => {
     linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 34px;
+  padding-bottom: 48px;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -450,7 +528,6 @@ const securityLabel = computed(() => {
   pointer-events: none;
   opacity: 0.24;
 }
-
 .ambient-a {
   width: 260px;
   height: 260px;
@@ -458,7 +535,6 @@ const securityLabel = computed(() => {
   left: -60px;
   background: rgba(0, 161, 154, 0.3);
 }
-
 .ambient-b {
   width: 280px;
   height: 280px;
@@ -478,7 +554,6 @@ const securityLabel = computed(() => {
   padding: 10px 14px;
   font-size: 14px;
 }
-
 .st-quick-btn.solid {
   border: 1px solid transparent;
   color: #fff;
@@ -486,57 +561,13 @@ const securityLabel = computed(() => {
   box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
 }
 
-.st-nav-bar {
-  display: flex;
-  align-items: center;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 12px 18px 10px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
-  position: relative;
-  z-index: 2;
-}
-.st-nav-icon-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #143047;
-  flex-shrink: 0;
-  box-shadow:
-    0 8px 22px rgba(19, 48, 71, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-.st-nav-icon-btn:hover {
-  transform: translateY(-2px);
-}
-.st-nav-icon-btn svg {
-  width: 18px;
-  height: 18px;
-}
-.st-nav-title {
-  flex: 1;
-  text-align: center;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.35px;
-  color: #10263d;
-}
-
 .st-body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1080px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 18px 14px 0;
+  padding: 20px 22px 0;
 }
 
 .st-back-btn {
@@ -552,79 +583,180 @@ const securityLabel = computed(() => {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  margin-bottom: 14px;
-}
-.atm-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 280px;
-  pointer-events: none;
-  z-index: 0;
-}
-.atm-bg.atm-bg-teal {
-  background: radial-gradient(circle at 92% 8%, rgba(208, 236, 255, 0.32) 0%, rgba(208, 236, 255, 0) 48%);
+  margin-bottom: 18px;
 }
 
-.st-hero {
-  margin-top: 8px;
-  border-radius: 28px;
-  padding: 24px 18px 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  position: relative;
-  z-index: 1;
+/* ── Header ─────────────────────────────────────────────── */
+.st-header {
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 460px);
+  gap: 22px;
+  align-items: stretch;
+  margin-bottom: 26px;
 }
-.hero-greeting {
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: #70839c;
-  font-weight: 700;
-  margin-bottom: 4px;
+.st-header-intro {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding-top: 6px;
 }
+.st-header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  background: linear-gradient(150deg, rgba(0, 161, 154, 0.16), rgba(47, 155, 223, 0.12));
+  color: var(--fx-aqua);
+  display: grid;
+  place-items: center;
+}
+.st-header-icon svg { width: 26px; height: 26px; }
 .st-h1 {
   font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 34px;
+  font-size: 40px;
   font-weight: 750;
   color: #10263d;
-  letter-spacing: -0.9px;
-  line-height: 1.06;
+  letter-spacing: -1px;
+  line-height: 1.04;
+}
+.st-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6a7d96;
+  margin-top: 8px;
+  max-width: 340px;
+  line-height: 1.5;
 }
 
-.st-section-heading {
-  font-size: 11px;
+.st-strength-card {
+  border-radius: 22px;
+  border: 1px solid rgba(173, 201, 231, 0.5);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.96) 0%, rgba(241, 250, 255, 0.92) 52%, rgba(236, 255, 249, 0.96) 100%);
+  box-shadow:
+    0 16px 40px rgba(18, 55, 88, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 22px 24px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.st-strength-shield {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  flex-shrink: 0;
+  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 14px 26px rgba(0, 150, 160, 0.32);
+}
+.st-strength-shield svg { width: 32px; height: 32px; }
+.st-strength-check {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #14c08a;
+  color: #fff;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: #71849b;
-  padding: 18px 4px 10px;
-  position: relative;
-  z-index: 1;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+}
+.st-strength-body { flex: 1; min-width: 0; }
+.st-strength-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #17314a;
+  letter-spacing: -0.3px;
+}
+.st-strength-sub {
+  font-size: 13px;
+  color: #627891;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.st-strength-meter {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a8f6a;
+  margin-top: 12px;
+}
+.st-strength-pct { color: #14a36e; font-weight: 800; font-size: 14px; }
+.st-strength-bar {
+  height: 6px;
+  background: rgba(131, 228, 213, 0.35);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.st-strength-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #14c08a, var(--fx-aqua));
+  border-radius: 100px;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.st-section {
-  padding: 0;
-  position: relative;
-  z-index: 1;
+/* ── Card grid ──────────────────────────────────────────── */
+.st-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin-bottom: 22px;
 }
-.st-group {
-  border-radius: 20px;
+.st-card {
+  border-radius: 22px;
   border: 1px solid var(--fx-panel-border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
-  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 252, 255, 0.95) 100%);
+  box-shadow: 0 12px 30px rgba(15, 44, 76, 0.07);
+  padding: 22px;
+}
+.st-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.st-card-chip {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.st-card-chip svg { width: 19px; height: 19px; }
+.st-card-chip.teal { background: rgba(0, 161, 154, 0.12); color: var(--fx-aqua); }
+.st-card-chip.violet { background: rgba(112, 92, 240, 0.12); color: #6c5ce7; }
+.st-card-chip.indigo { background: rgba(79, 79, 242, 0.12); color: var(--fx-indigo); }
+.st-card-chip.blue { background: rgba(47, 155, 223, 0.12); color: var(--fx-blue); }
+.st-card-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #16314a;
+}
+
+.st-group {
+  border-radius: 16px;
+  border: 1px solid rgba(216, 230, 244, 0.8);
+  background: #fff;
   overflow: hidden;
-  margin-bottom: 14px;
 }
 .st-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 13px;
+  padding: 15px 16px;
   border: none;
   background: transparent;
   border-bottom: 1px solid rgba(216, 230, 244, 0.72);
@@ -635,19 +767,24 @@ const securityLabel = computed(() => {
   text-decoration: none;
   color: inherit;
 }
-.st-row:last-child {
-  border-bottom: none;
+.st-row:last-child { border-bottom: none; }
+.st-row:hover { background: rgba(245, 250, 255, 0.78); }
+.st-row.danger .st-row-label { color: #e0584a; }
+.st-row.danger .st-row-chev { color: #e0584a; }
+.st-row--block { cursor: default; }
+.st-row--block:hover { background: transparent; }
+.st-row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: #f0f5fb;
+  color: #51698a;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
 }
-.st-row:hover {
-  background: rgba(245, 250, 255, 0.78);
-}
-.st-row.danger .st-row-label {
-  color: #c35a47;
-}
-.st-row-content {
-  flex: 1;
-  min-width: 0;
-}
+.st-row-icon svg { width: 18px; height: 18px; }
+.st-row-content { flex: 1; min-width: 0; }
 .st-row-label {
   font-size: 14px;
   font-weight: 700;
@@ -664,11 +801,12 @@ const securityLabel = computed(() => {
   color: #8fa2bc;
   font-size: 18px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .st-toggle {
-  width: 44px;
-  height: 24px;
+  width: 46px;
+  height: 26px;
   border-radius: 100px;
   background: #dce8f2;
   position: relative;
@@ -680,116 +818,151 @@ const securityLabel = computed(() => {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   background: #fff;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.st-toggle.on {
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
-}
-.st-toggle.on::after {
-  transform: translateX(20px);
-}
+.st-toggle.on { background: linear-gradient(120deg, #14c08a 0%, var(--fx-aqua) 100%); }
+.st-toggle.on::after { transform: translateX(20px); }
 
 .st-segment {
   display: inline-flex;
   background: #edf2f8;
   border-radius: 100px;
   padding: 3px;
+  flex-shrink: 0;
 }
 .st-segment-btn {
   border: none;
   background: transparent;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #57708b;
-  padding: 5px 10px;
+  padding: 6px 13px;
   border-radius: 100px;
   cursor: pointer;
 }
 .st-segment-btn.active {
   background: #fff;
   color: #17314a;
+  box-shadow: 0 2px 6px rgba(15, 44, 76, 0.12);
 }
 
-.st-strength-card {
-  border-radius: 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 32px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  padding: 16px;
+/* ── Legal + promo ──────────────────────────────────────── */
+.st-legal-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 360px);
+  gap: 22px;
+  margin-bottom: 22px;
 }
-.st-strength-row {
+.st-legal-card { margin: 0; }
+.st-promo {
+  border-radius: 22px;
+  padding: 28px 26px;
+  background: linear-gradient(160deg, rgba(0, 161, 154, 0.1) 0%, rgba(47, 155, 223, 0.1) 55%, rgba(79, 79, 242, 0.1) 100%);
+  border: 1px solid rgba(173, 201, 231, 0.5);
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
 }
-.st-strength-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+.st-promo-shield {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
   color: #fff;
   display: grid;
   place-items: center;
+  margin-bottom: 16px;
+  box-shadow: 0 14px 26px rgba(0, 150, 160, 0.28);
 }
-.st-strength-icon svg {
-  width: 18px;
-  height: 18px;
+.st-promo-shield svg { width: 30px; height: 30px; }
+.st-promo-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #10263d;
+  letter-spacing: -0.3px;
 }
-.st-strength-title {
+.st-promo-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5e7186;
+  line-height: 1.5;
+  margin: 8px 0 18px;
+}
+.st-promo-btn {
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+  color: #16314a;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 18px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(15, 44, 76, 0.1);
+}
+
+/* ── Trust strip ────────────────────────────────────────── */
+.st-trust {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.st-trust-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--fx-panel-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
+  box-shadow: 0 10px 24px rgba(15, 44, 76, 0.06);
+  padding: 18px 20px;
+}
+.st-trust-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.st-trust-icon svg { width: 21px; height: 21px; }
+.st-trust-icon.teal { background: rgba(0, 161, 154, 0.12); color: var(--fx-aqua); }
+.st-trust-icon.violet { background: rgba(112, 92, 240, 0.12); color: #6c5ce7; }
+.st-trust-icon.blue { background: rgba(47, 155, 223, 0.12); color: var(--fx-blue); }
+.st-trust-title {
   font-size: 14px;
   font-weight: 800;
   color: #17314a;
+  letter-spacing: -0.2px;
 }
-.st-strength-sub {
-  font-size: 12px;
-  color: #627891;
+.st-trust-text {
+  font-size: 12.5px;
   font-weight: 600;
-  margin-top: 2px;
-}
-.st-strength-bar {
-  height: 6px;
-  background: rgba(131, 228, 213, 0.35);
-  border-radius: 100px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-.st-strength-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--fx-aqua), var(--fx-blue));
-  border-radius: 100px;
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.st-strength-meter {
-  font-size: 11px;
-  font-weight: 700;
   color: #627891;
-  display: flex;
-  gap: 6px;
-}
-.st-strength-pct {
-  color: #067a74;
-  font-weight: 800;
+  margin-top: 2px;
+  line-height: 1.45;
 }
 
+/* ── Toast ──────────────────────────────────────────────── */
 .st-toast {
   position: fixed;
   left: 50%;
-  bottom: 80px;
+  bottom: 32px;
   transform: translateX(-50%);
   z-index: 40;
   background: #17314a;
   color: #fff;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 10px 16px;
+  padding: 11px 20px;
   border-radius: 999px;
   box-shadow: 0 8px 22px rgba(35, 29, 69, 0.32);
 }
@@ -805,29 +978,32 @@ const securityLabel = computed(() => {
   transform: translateX(-50%) translateY(8px);
 }
 
+/* ── Change password modal ──────────────────────────────── */
 .st-overlay {
   position: fixed;
   inset: 0;
   background: rgba(14, 40, 64, 0.42);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   z-index: 70;
+  padding: 20px;
 }
 .st-modal {
   width: 100%;
   max-width: 28rem;
   background: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
-  border-radius: 24px 24px 0 0;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   max-height: 92vh;
   overflow: hidden;
-  animation: st-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 30px 70px rgba(14, 40, 64, 0.3);
+  animation: st-pop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes st-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.st-modal-handle { width: 36px; height: 4px; background: #ccd7e6; border-radius: 100px; margin: 8px auto 0; }
-.st-modal-header { display: flex; align-items: center; padding: 12px 18px 10px; }
+@keyframes st-pop { from { transform: translateY(14px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.st-modal-handle { display: none; }
+.st-modal-header { display: flex; align-items: center; padding: 18px 20px 10px; }
 .st-modal-title { flex: 1; font-size: 18px; font-weight: 800; color: #17314a; letter-spacing: -0.4px; }
 .st-modal-close {
   width: 30px;
@@ -843,9 +1019,9 @@ const securityLabel = computed(() => {
   align-items: center;
   justify-content: center;
 }
-.st-modal-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
+.st-modal-body { flex: 1; overflow-y: auto; padding: 6px 20px 14px; }
 .st-modal-footer {
-  padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+  padding: 12px 20px 18px;
   border-top: 1px solid #dfe8f3;
   background: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
   display: flex;
@@ -886,9 +1062,7 @@ const securityLabel = computed(() => {
   color: #17314a;
   outline: none;
 }
-.st-field-input:focus {
-  border-color: #7da7cf;
-}
+.st-field-input:focus { border-color: #7da7cf; }
 .st-btn-secondary {
   flex: 1;
   background: #fff;
@@ -919,37 +1093,21 @@ const securityLabel = computed(() => {
 }
 .st-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-@media (min-width: 768px) {
-  .st-nav-bar {
-    padding: 14px 22px 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .st-body {
-    padding: 0 18px;
-  }
-
-  .st-hero {
-    padding: 28px 24px 24px;
-  }
-
-  .st-h1 {
-    font-size: 36px;
-  }
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 920px) {
+  .st-header { grid-template-columns: 1fr; }
+  .st-grid { grid-template-columns: 1fr; }
+  .st-legal-row { grid-template-columns: 1fr; }
+  .st-trust { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 430px) {
-  .st-nav-title {
-    font-size: 18px;
-  }
-
-  .st-h1 {
-    font-size: 30px;
-  }
+@media (max-width: 560px) {
+  .st-body { padding: 16px 14px 0; }
+  .st-h1 { font-size: 32px; }
+  .st-card, .st-strength-card { padding: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .st-nav-icon-btn,
   .st-row,
   .st-toggle::after,
   .st-segment-btn,

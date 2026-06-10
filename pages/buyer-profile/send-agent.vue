@@ -1,104 +1,119 @@
 <template>
   <div class="sa-page">
-    <!-- Top nav -->
-    <div class="sa-top-nav">
-      <button class="sa-back" @click="goBack" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="sa-nav-centre">Share with Agent</div>
-      <span class="sa-nav-right" @click="goView">Done</span>
-    </div>
+    <div class="sa-ambient sa-ambient-a" />
+    <div class="sa-ambient sa-ambient-b" />
 
-    <!-- Scope reminder (prototype-exact) -->
-    <div class="scope-panel">
-      <div class="scope-title">📋 THEY WILL SEE</div>
-      <div class="scope-row">
-        <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
-        ID Verified (Onfido / DVS)
-      </div>
-      <div class="scope-row">
-        <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
-        Budget · Proof of deposit · AML clear
-      </div>
-      <div class="scope-row">
-        <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
-        Chain free · Solicitor instructed
-      </div>
-      <div class="scope-hidden">
-        🔒 Not shared: account numbers, full DOB, credit score, personal address
-      </div>
-    </div>
+    <BuyerProfileNav back-label="Back" @back="goBack" />
 
-    <span class="sec-label">AGENT DETAILS</span>
-    <form class="recipient-card recipient-form" @submit.prevent="onSend">
-      <label class="sa-field">
-        <span class="sa-field-label">Agent name</span>
-        <input
-          v-model="form.name"
-          type="text"
-          class="sa-input"
-          placeholder="e.g. James Cooper"
-          required
-          :disabled="sending || !!sentId"
-        />
-      </label>
-      <label class="sa-field">
-        <span class="sa-field-label">
-          Email
-          <span class="sa-field-hint">— the secure link is sent here</span>
-        </span>
-        <input
-          v-model="form.email"
-          type="email"
-          class="sa-input"
-          placeholder="agent@savills.co.uk"
-          required
-          :disabled="sending || !!sentId"
-        />
-      </label>
-      <label class="sa-field">
-        <span class="sa-field-label">
-          Firm
-          <span class="sa-field-hint">— optional</span>
-        </span>
-        <input
-          v-model="form.firm"
-          type="text"
-          class="sa-input"
-          placeholder="e.g. Savills, Knight Frank"
-          :disabled="sending || !!sentId"
-        />
-      </label>
+    <main class="sa-shell">
+      <div class="sa-head">
+        <div class="sa-kicker"><span class="sa-kicker-dot" />SHARE WITH AGENT</div>
+        <h1 class="sa-h1">Send your verified profile</h1>
+        <p class="sa-sub">
+          Email a secure, time-limited link to any agent. They see only your
+          verified credentials — never your raw data.
+        </p>
+      </div>
 
-      <button
-        v-if="!sentId"
-        type="submit"
-        class="send-btn-wide"
-        :disabled="sending || !canSubmit"
-      >
-        <span v-if="sending" class="sa-spinner" />
-        {{ sending ? 'Sending…' : '⤴ Send secure link' }}
-      </button>
-    </form>
+      <div class="sa-grid">
+        <!-- LEFT: form / confirmation -->
+        <div class="sa-card sa-form-card">
+          <template v-if="!sentId">
+            <div class="sa-card-eyebrow"><Icon name="heroicons:user-plus" class="sa-eyebrow-ic" />AGENT DETAILS</div>
+            <form class="recipient-form" @submit.prevent="onSend">
+              <label class="sa-field">
+                <span class="sa-field-label">Agent name</span>
+                <input
+                  v-model="form.name"
+                  type="text"
+                  class="sa-input"
+                  placeholder="e.g. James Cooper"
+                  required
+                  :disabled="sending"
+                />
+              </label>
+              <label class="sa-field">
+                <span class="sa-field-label">
+                  Email <span class="sa-field-hint">— the secure link is sent here</span>
+                </span>
+                <input
+                  v-model="form.email"
+                  type="email"
+                  class="sa-input"
+                  placeholder="agent@savills.co.uk"
+                  required
+                  :disabled="sending"
+                />
+              </label>
+              <label class="sa-field">
+                <span class="sa-field-label">
+                  Firm <span class="sa-field-hint">— optional</span>
+                </span>
+                <input
+                  v-model="form.firm"
+                  type="text"
+                  class="sa-input"
+                  placeholder="e.g. Savills, Knight Frank"
+                  :disabled="sending"
+                />
+              </label>
 
-    <!-- Confirmation card -->
-    <div v-if="sentId" class="sa-confirm-wrap">
-      <div class="sent-confirm">
-        <div class="sent-emoji">✅</div>
-        <div class="sent-title">Profile sent!</div>
-        <div class="sent-sub">{{ sentSubLine }}</div>
-        <div class="sent-foot">
-          They'll receive a secure link to view your verified credentials.
+              <button type="submit" class="cta-btn" :disabled="sending || !canSubmit">
+                <span class="cta-btn-inner">
+                  <span v-if="sending" class="sa-spinner" />
+                  <Icon v-else name="heroicons:paper-airplane" class="cta-ic" />
+                  {{ sending ? 'Sending…' : 'Send secure link' }}
+                </span>
+              </button>
+            </form>
+          </template>
+
+          <!-- Confirmation -->
+          <div v-else class="sa-confirm">
+            <div class="sa-confirm-badge"><Icon name="heroicons:check-badge-solid" class="sa-confirm-badge-ic" /></div>
+            <div class="sa-confirm-title">Profile sent!</div>
+            <div class="sa-confirm-sub">{{ sentSubLine }}</div>
+            <div class="sa-confirm-foot">
+              They'll receive a secure link to view your verified credentials.
+            </div>
+            <div class="sa-confirm-actions">
+              <button class="cta-btn outline" @click="goView">Back to my profile</button>
+              <button class="sa-add-another" @click="resetForm">
+                <Icon name="heroicons:plus" class="sa-add-ic" />Send to another agent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: scope panel -->
+        <div class="sa-side">
+          <div class="sa-card scope-panel">
+            <div class="scope-title"><Icon name="heroicons:eye" class="scope-title-ic" />THEY WILL SEE</div>
+            <div class="scope-row">
+              <span class="scope-check"><Icon name="heroicons:check-16-solid" class="scope-check-ic" /></span>
+              ID Verified (Onfido / DVS)
+            </div>
+            <div class="scope-row">
+              <span class="scope-check"><Icon name="heroicons:check-16-solid" class="scope-check-ic" /></span>
+              Budget · Proof of deposit · AML clear
+            </div>
+            <div class="scope-row">
+              <span class="scope-check"><Icon name="heroicons:check-16-solid" class="scope-check-ic" /></span>
+              Chain free · Solicitor instructed
+            </div>
+            <div class="scope-hidden">
+              <Icon name="heroicons:lock-closed" class="scope-hidden-ic" />
+              Not shared: account numbers, full DOB, credit score, personal address
+            </div>
+          </div>
+
+          <div class="sa-trust">
+            <Icon name="heroicons:clock" class="sa-trust-ic" />
+            <span>Links expire automatically after 30 days. You can revoke access anytime.</span>
+          </div>
         </div>
       </div>
-      <div class="sa-back-cta-wrap">
-        <button class="cta-btn outline" @click="goView">Back to my profile</button>
-      </div>
-      <!-- Add another -->
-      <button class="sa-add-another" @click="resetForm">+ Send to another agent</button>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -106,6 +121,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useBuyerProfile } from '~/composables/useBuyerProfile'
 import { useAppToast } from '~/composables/useCustomToast'
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
 definePageMeta({ title: 'Share with Agent — UmovingU', middleware: 'auth' })
 
@@ -188,275 +204,83 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sa-page {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
-  color: #231d45;
-  max-width: none;
-  width: 100%;
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Inter, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  padding: 0 14px 32px;
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  color: #231d45; width: 100%;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; position: relative; overflow-x: hidden;
 }
+.sa-ambient { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.sa-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.12) 0%, transparent 70%); }
+.sa-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sa-top-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  width: min(100%, 980px);
-  margin: 8px auto 0;
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  background: rgba(249, 252, 255, 0.92);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
-  padding: 14px 18px 6px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-}
-.sa-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: #fff; border: 1px solid #ececef;
-  display: flex; align-items: center; justify-content: center;
-  color: #231d45; cursor: pointer; flex-shrink: 0;
-}
-.sa-nav-centre {
-  flex: 1; text-align: center;
-  font-size: 15px; font-weight: 800; color: #231d45;
-}
-.sa-nav-right {
-  font-size: 13px; font-weight: 700; color: #00a19a;
-  cursor: pointer; padding: 8px 4px; white-space: nowrap;
-}
+.sa-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
+.sa-head { margin-bottom: 28px; max-width: 640px; }
+.sa-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
+.sa-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
+.sa-h1 { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.sa-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
 
-/* Scope panel — same as share */
-.scope-panel {
-  width: min(100%, 980px);
-  background: #f2faf8;
-  border: 1.5px solid #e5f4f2;
-  border-radius: 14px;
-  padding: 12px 14px;
-  margin: 10px auto 0;
-}
-.scope-title {
-  font-size: 11px; font-weight: 800;
-  color: #007e78; letter-spacing: 0.5px;
-  margin-bottom: 7px;
-}
-.scope-row {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 11.5px; font-weight: 700; color: #231d45;
-  margin-bottom: 4px;
-}
-.scope-row:last-of-type { margin-bottom: 0; }
-.scope-check {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: #00a19a;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.scope-hidden {
-  font-size: 10px; font-weight: 700; color: #9c98ad;
-  margin-top: 7px;
-  padding-top: 7px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
+.sa-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.sa-card { background: #fff; border: 1px solid #e8eef5; border-radius: 22px; box-shadow: 0 14px 34px rgba(15,44,76,0.07); padding: 26px; }
+.sa-card-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #8a97a8; margin-bottom: 18px; }
+.sa-eyebrow-ic { width: 15px; height: 15px; }
 
-.sec-label {
-  font-size: 11px; font-weight: 800;
-  color: #6b6783; letter-spacing: 1px;
-  text-transform: uppercase;
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 16px 0 8px;
-  display: block;
-}
+.recipient-form { display: flex; flex-direction: column; gap: 16px; }
+.sa-field { display: flex; flex-direction: column; gap: 7px; }
+.sa-field-label { font-size: 13px; font-weight: 700; color: #17314a; }
+.sa-field-hint { font-weight: 500; color: #9aa9bd; }
+.sa-input { width: 100%; border: 1.5px solid #e2e8f1; border-radius: 12px; padding: 14px 16px; font-size: 15px; font-family: inherit; color: #231d45; background: #fbfdff; transition: border-color 0.18s, box-shadow 0.18s; }
+.sa-input:focus { outline: none; border-color: #00a19a; box-shadow: 0 0 0 3px rgba(0,161,154,0.12); }
+.sa-input::placeholder { color: #b5bdc9; }
+.sa-input:disabled { background: #f4f6f9; color: #9aa9bd; }
 
-/* Recipient form (free-text) */
-.recipient-card {
-  width: min(100%, 980px);
-  background: white;
-  border: 2px solid #00a19a;
-  border-radius: 14px;
-  overflow: hidden;
-  margin: 0 auto;
-}
-.recipient-form {
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.sa-field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.sa-field-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #6b6783;
-}
-.sa-field-hint {
-  font-weight: 600;
-  color: #9c98ad;
-  letter-spacing: 0;
-}
-.sa-input {
-  width: 100%;
-  padding: 11px 12px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: #231d45;
-  background: #fafafa;
-  border: 1.5px solid #ececef;
-  border-radius: 10px;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-sizing: border-box;
-}
-.sa-input:focus {
-  border-color: #00a19a;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.1);
-}
-.sa-input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.sa-input::placeholder {
-  color: #9c98ad;
-  font-weight: 500;
-}
-.send-btn-wide {
-  margin-top: 4px;
-  background: #00a19a;
-  color: white;
-  border: none;
-  border-radius: 100px;
-  padding: 12px 16px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.send-btn-wide:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.sa-spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.45);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: sa-spin 0.7s linear infinite;
-}
-@keyframes sa-spin {
-  to { transform: rotate(360deg); }
-}
+.cta-btn { width: 100%; margin-top: 6px; background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 48%, #4f4ff2 100%); color: #fff; border: none; border-radius: 14px; padding: 17px; font-size: 15px; font-weight: 800; font-family: inherit; box-shadow: 0 14px 26px rgba(58,87,206,0.26); cursor: pointer; transition: transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s; }
+.cta-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(58,87,206,0.32); }
+.cta-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cta-btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.cta-ic { width: 17px; height: 17px; }
+.cta-btn.outline { background: #fff; color: #10263d; border: 1.5px solid #d6dfeb; box-shadow: none; }
+.cta-btn.outline:hover { border-color: #00a19a; transform: translateY(-1px); box-shadow: 0 8px 18px rgba(15,44,76,0.08); }
+.sa-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: sa-spin 0.7s linear infinite; }
+@keyframes sa-spin { to { transform: rotate(360deg); } }
 
-.sa-confirm-wrap {
-  margin-top: 14px;
-  animation: sa-fadeUp 0.35s ease both;
-}
-@keyframes sa-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.sent-confirm {
-  background: linear-gradient(135deg, #dcfce7, #f0fdf4);
-  border: 1.5px solid #b8e8c8;
-  border-radius: 16px;
-  padding: 18px 22px;
-  width: min(100%, 980px);
-  margin: 0 auto;
-  text-align: center;
-}
-.sent-emoji { font-size: 36px; margin-bottom: 8px; }
-.sent-title {
-  font-size: 15px; font-weight: 800; color: #166534;
-  margin-bottom: 4px;
-}
-.sent-sub {
-  font-size: 12px; color: #166534; opacity: 0.8;
-}
-.sent-foot {
-  font-size: 11px; color: #166534; opacity: 0.6;
-  margin-top: 4px;
-}
-.sa-back-cta-wrap {
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 12px 0 0;
-}
-.sa-add-another {
-  display: block; text-align: center;
-  width: min(100%, 980px);
-  margin: 12px auto 0;
-  background: none; border: none;
-  font-family: inherit;
-  font-size: 12px; font-weight: 700; color: #007e78;
-  cursor: pointer; padding: 8px 0;
-}
+/* Confirmation */
+.sa-confirm { text-align: center; padding: 14px 0; }
+.sa-confirm-badge { width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 16px; background: linear-gradient(140deg, #00b6ae, #007e78); box-shadow: 0 14px 30px -8px rgba(0,161,154,0.5); display: flex; align-items: center; justify-content: center; animation: sa-pop 0.5s cubic-bezier(.22,1,.36,1) both; }
+.sa-confirm-badge-ic { width: 36px; height: 36px; color: #fff; }
+@keyframes sa-pop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.sa-confirm-title { font-size: 22px; font-weight: 800; color: #231d45; margin-bottom: 6px; }
+.sa-confirm-sub { font-size: 14px; color: #17314a; font-weight: 600; margin-bottom: 6px; }
+.sa-confirm-foot { font-size: 13px; color: #6b6783; line-height: 1.5; max-width: 360px; margin: 0 auto 22px; }
+.sa-confirm-actions { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto; }
+.sa-add-another { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 700; color: #00a19a; cursor: pointer; padding: 8px; }
+.sa-add-ic { width: 15px; height: 15px; }
 
-.cta-btn {
-  width: 100%;
-  background: #00a19a; color: white; border: none;
-  border-radius: 14px; padding: 13px;
-  font-family: inherit; font-size: 13px; font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+/* Scope panel */
+.sa-side { display: flex; flex-direction: column; gap: 16px; }
+.scope-panel { background: linear-gradient(150deg, #00b6ae 0%, #009a93 48%, #00514d 100%); border: none; color: #fff; box-shadow: 0 16px 36px -12px rgba(0,161,154,0.45); }
+.scope-title { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: rgba(255,255,255,0.72); margin-bottom: 16px; }
+.scope-title-ic { width: 15px; height: 15px; }
+.scope-row { display: flex; align-items: center; gap: 11px; font-size: 13.5px; font-weight: 600; color: #fff; padding: 8px 0; }
+.scope-check { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.scope-check-ic { width: 13px; height: 13px; color: #fff; }
+.scope-hidden { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.18); font-size: 11.5px; color: rgba(255,255,255,0.78); line-height: 1.5; }
+.scope-hidden-ic { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+.sa-trust { display: flex; align-items: center; gap: 10px; font-size: 11.5px; font-weight: 600; color: #627891; background: #f0f4fa; border: 1px solid #dce6f0; border-radius: 14px; padding: 14px 16px; }
+.sa-trust-ic { width: 18px; height: 18px; color: #10263d; flex-shrink: 0; }
+
+@media (max-width: 940px) {
+  .sa-grid { grid-template-columns: 1fr; gap: 20px; }
+  .sa-h1 { font-size: 30px; }
 }
-.cta-btn:hover {
-  background: #00b6ae;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+@media (max-width: 760px) {
+  .sa-shell { width: calc(100% - 32px); padding: 32px 0 64px; }
+  .sa-h1 { font-size: 26px; }
+  .sa-sub { font-size: 14px; }
+  .sa-card { padding: 22px 20px; border-radius: 18px; }
 }
-.cta-btn.outline {
-  background: white; color: #231d45;
-  border: 1.5px solid #231d45;
-  box-shadow: none;
-}
-
-@media (min-width: 1024px) {
-  .sa-page {
-    padding: 0 20px 34px;
-  }
-
-  .sa-top-nav,
-  .scope-panel,
-  .sec-label,
-  .recipient-card,
-  .sent-confirm,
-  .sa-back-cta-wrap,
-  .sa-add-another {
-    width: min(100%, 1080px);
-  }
-
-  .recipient-card,
-  .sent-confirm {
-    border-radius: 20px;
-  }
-}
-
-@media (max-width: 700px) {
-  .sa-page {
-    padding: 0 10px 24px;
-  }
-
-  .sa-top-nav {
-    border-radius: 16px;
-    padding: 12px 12px 6px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
+@media (max-width: 480px) {
+  .sa-shell { width: calc(100% - 24px); }
+  .sa-h1 { font-size: 23px; }
 }
 </style>

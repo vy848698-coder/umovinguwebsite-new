@@ -1,40 +1,45 @@
 <template>
   <div class="sh-page">
-    <!-- Top nav -->
-    <div class="sh-top-nav">
-      <button class="sh-back" @click="goBack" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="sh-nav-centre">Share Profile</div>
-      <span class="sh-nav-right" @click="goView">Done</span>
-    </div>
+    <div class="sh-ambient sh-ambient-a" />
+    <div class="sh-ambient sh-ambient-b" />
 
-    <!-- Tab switcher -->
-    <div class="sh-tabs-wrap">
-      <div class="how-tabs">
-        <button
-          v-for="t in tabs"
-          :key="t.id"
-          class="how-tab"
-          :class="{ active: activeTab === t.id }"
-          @click="activeTab = t.id"
-        >
-          <template v-if="t.id === 'active' && activeCount > 0">
-            Active ●
-          </template>
-          <template v-else-if="t.id === 'link'">Link &amp; QR</template>
-          <template v-else>{{ t.label }}</template>
-        </button>
+    <BuyerProfileNav back-label="Back" @back="goBack" />
+
+    <main class="sh-shell">
+      <div class="sh-head">
+        <div class="sh-kicker"><span class="sh-kicker-dot" />SHARE YOUR PROFILE</div>
+        <h1 class="sh-h1">Share your verified profile</h1>
+        <p class="sh-sub">
+          Send a secure link to an agent, generate a QR, manage who has access,
+          or download the certified PDF.
+        </p>
       </div>
-    </div>
+
+      <!-- Tab switcher -->
+      <div class="sh-tabs-wrap">
+        <div class="how-tabs">
+          <button
+            v-for="t in tabs"
+            :key="t.id"
+            class="how-tab"
+            :class="{ active: activeTab === t.id }"
+            @click="activeTab = t.id"
+          >
+            <Icon :name="t.icon" class="how-tab-ic" />
+            <template v-if="t.id === 'active' && activeCount > 0">
+              Active <span class="how-tab-dot" />
+            </template>
+            <template v-else-if="t.id === 'link'">Link &amp; QR</template>
+            <template v-else>{{ t.label }}</template>
+          </button>
+        </div>
+      </div>
 
     <!-- ── SEND tab ── -->
     <div v-if="activeTab === 'people'" class="sh-pane">
       <!-- Scope disclosure -->
       <div class="scope-panel">
-        <div class="scope-title">📋 THEY WILL SEE</div>
+        <div class="scope-title"><Icon name="heroicons:eye" class="scope-title-ic" />THEY WILL SEE</div>
         <div class="scope-row">
           <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
           ID Verified (Onfido / DVS)
@@ -52,7 +57,8 @@
           Your story (optional)
         </div>
         <div class="scope-hidden">
-          🔒 Not shared: personal address, full name, date of birth, account numbers
+          <Icon name="heroicons:lock-closed" class="scope-hidden-ic" />
+          Not shared: personal address, full name, date of birth, account numbers
         </div>
       </div>
 
@@ -60,20 +66,23 @@
       <!-- Send to a specific agent: routes to the dedicated form so we
            don't show fake "suggested agents" to the user. -->
       <div class="recipient-card recipient-empty">
-        <div class="recipient-empty-emoji">📤</div>
+        <div class="recipient-empty-emoji"><Icon name="heroicons:paper-airplane" class="recipient-empty-ic" /></div>
         <div class="recipient-empty-title">Send to your agent</div>
         <div class="recipient-empty-sub">
           Enter their name + email — we'll deliver a secure link that
           expires in 30 days.
         </div>
-        <button class="cta-btn" @click="goSendAgent">Open send form →</button>
+        <button class="cta-btn" @click="goSendAgent">
+          <span class="cta-btn-inner">Open send form<Icon name="heroicons:arrow-right" class="cta-ic" /></span>
+        </button>
       </div>
 
       <button
         class="sh-link-instead"
         @click="activeTab = 'link'"
       >
-        Or share a link instead →
+        Or share a link instead
+        <Icon name="heroicons:arrow-right" class="sh-link-instead-ic" />
       </button>
     </div>
 
@@ -98,9 +107,10 @@
             <div class="share-name">{{ s.recipientName || 'Unnamed share' }}</div>
             <div class="share-scope">{{ scopeShort(s.scope) }}</div>
             <div class="share-expiry">
+              <Icon name="heroicons:clock" class="share-expiry-ic" />
               <template v-if="s.revokedAt">Revoked</template>
-              <template v-else-if="isExpired(s)">⏱ Expired</template>
-              <template v-else>⏱ Expires in {{ daysUntil(s.expiresAt) }} days</template>
+              <template v-else-if="isExpired(s)">Expired</template>
+              <template v-else>Expires in {{ daysUntil(s.expiresAt) }} days</template>
             </div>
           </div>
           <button
@@ -144,7 +154,7 @@
         </div>
         <div class="sh-qr-meta">Scan to verify</div>
         <button class="sh-qr-save" type="button" @click="downloadQr">
-          📥 Save QR
+          <Icon name="heroicons:arrow-down-tray" class="sh-qr-save-ic" />Save QR
         </button>
       </div>
       <p class="sh-expires-note">
@@ -161,19 +171,24 @@
         <div class="sh-pdf-tagline">"Trusted, ready, chain-free."</div>
         <div class="sh-pdf-name">{{ displayName }}</div>
         <div class="sh-pdf-pills">
-          <span class="sh-pdf-pill">🪪 ID Verified</span>
+          <span class="sh-pdf-pill"><Icon name="heroicons:check-16-solid" class="sh-pdf-pill-ic" />ID Verified</span>
           <span v-if="fundsShort" class="sh-pdf-pill">{{ fundsShort }} Funds</span>
           <span class="sh-pdf-pill">{{ chainShort }}</span>
         </div>
       </div>
       <div class="sh-cta-wrap">
-        <button class="cta-btn" @click="goPdf">📄 Preview & Download PDF</button>
+        <button class="cta-btn" @click="goPdf">
+          <span class="cta-btn-inner"><Icon name="heroicons:document-arrow-down" class="cta-ic" />Preview &amp; Download PDF</span>
+        </button>
       </div>
-      <button class="sh-sign-link" @click="goSign">✍️ Add digital signature</button>
+      <button class="sh-sign-link" @click="goSign">
+        <Icon name="heroicons:pencil-square" class="sh-sign-ic" />Add digital signature
+      </button>
       <p class="sh-pdf-note">
         PDF includes your verified badge and is digitally signed by UMU
       </p>
     </div>
+    </main>
   </div>
 </template>
 
@@ -186,6 +201,7 @@ import {
 } from '~/composables/useBuyerProfile'
 import { useProfile } from '~/composables/useProfile'
 import { useAppToast } from '~/composables/useCustomToast'
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
 definePageMeta({ title: 'Share Profile — UmovingU', middleware: 'auth' })
 
@@ -195,11 +211,11 @@ const { fetchProfile, profile } = useProfile()
 const { showToast } = useAppToast()
 
 type TabId = 'people' | 'active' | 'link' | 'pdf'
-const tabs: { id: TabId; label: string }[] = [
-  { id: 'people', label: 'Send' },
-  { id: 'active', label: 'Active' },
-  { id: 'link', label: 'Link' },
-  { id: 'pdf', label: 'PDF' },
+const tabs: { id: TabId; label: string; icon: string }[] = [
+  { id: 'people', label: 'Send', icon: 'heroicons:paper-airplane' },
+  { id: 'active', label: 'Active', icon: 'heroicons:users' },
+  { id: 'link', label: 'Link', icon: 'heroicons:qr-code' },
+  { id: 'pdf', label: 'PDF', icon: 'heroicons:document-arrow-down' },
 ]
 const activeTab = ref<TabId>('people')
 
@@ -416,53 +432,28 @@ function goSign() { router.push('/buyer-profile/sign') }
 <style scoped>
 .sh-page {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: none;
   width: 100%;
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 0 14px 32px;
+  position: relative; overflow-x: hidden;
 }
+.sh-ambient { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.sh-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.1) 0%, transparent 70%); }
+.sh-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sh-top-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  width: min(100%, 1080px);
-  margin: 8px auto 0;
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  background: rgba(249, 252, 255, 0.92);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
-  padding: 14px 18px 6px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-}
-.sh-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: #fff; border: 1px solid #ececef;
-  display: flex; align-items: center; justify-content: center;
-  color: #231d45; cursor: pointer; flex-shrink: 0;
-}
-.sh-nav-centre {
-  flex: 1; text-align: center;
-  font-size: 15px; font-weight: 800; color: #231d45;
-}
-.sh-nav-right {
-  font-size: 13px; font-weight: 700; color: #00a19a;
-  cursor: pointer; padding: 8px 4px; white-space: nowrap;
-}
+.sh-shell { width: min(880px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
+.sh-head { margin-bottom: 22px; max-width: 640px; }
+.sh-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
+.sh-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
+.sh-h1 { font-size: 36px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.sh-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
 
 /* Tab switcher */
 .sh-tabs-wrap {
-  display: flex; justify-content: center;
-  width: min(100%, 1080px);
-  margin: 14px auto 0;
+  display: flex; justify-content: flex-start;
+  margin: 0 0 22px;
   animation: sh-fadeDown 0.4s 0.05s both;
 }
 @keyframes sh-fadeDown {
@@ -470,25 +461,42 @@ function goSign() { router.push('/buyer-profile/sign') }
   to { opacity: 1; transform: translateY(0); }
 }
 .how-tabs {
-  display: inline-flex;
-  background: #fafafa; border: 1px solid #ececef;
-  border-radius: 100px; padding: 4px; gap: 4px;
+  display: inline-flex; flex-wrap: wrap;
+  background: #fff; border: 1px solid #e8eef5;
+  border-radius: 14px; padding: 5px; gap: 4px;
+  box-shadow: 0 4px 14px rgba(15,44,76,0.05);
 }
 .how-tab {
-  font-family: inherit;
-  font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
   color: #6b6783; background: transparent; border: none;
-  padding: 8px 14px; border-radius: 100px;
+  padding: 9px 16px; border-radius: 10px;
   cursor: pointer; transition: all 0.15s;
 }
+.how-tab:hover { color: #10263d; background: rgba(0,0,0,0.03); }
+.how-tab-ic { width: 16px; height: 16px; }
+.how-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
 .how-tab.active {
-  background: #00a19a; color: white;
-  box-shadow: 0 2px 8px rgba(0, 161, 154, 0.3);
+  background: linear-gradient(120deg, #00a19a, #2f9bdf); color: white;
+  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.3);
 }
+.how-tab.active:hover { color: #fff; }
 
 .sh-pane {
   animation: sh-fadeUp 0.4s 0.1s both;
 }
+
+/* ── Icon sizing for converted emojis ── */
+.scope-title-ic { width: 15px; height: 15px; }
+.scope-hidden-ic { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+.recipient-empty-ic { width: 26px; height: 26px; color: #00a19a; }
+.sh-link-instead-ic { width: 15px; height: 15px; }
+.share-expiry-ic { width: 13px; height: 13px; }
+.sh-qr-save-ic { width: 16px; height: 16px; }
+.sh-pdf-pill-ic { width: 12px; height: 12px; }
+.sh-sign-ic { width: 16px; height: 16px; }
+.cta-btn-inner { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.cta-ic { width: 17px; height: 17px; }
 @keyframes sh-fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
@@ -504,6 +512,7 @@ function goSign() { router.push('/buyer-profile/sign') }
   margin: 14px auto 0;
 }
 .scope-title {
+  display: inline-flex; align-items: center; gap: 7px;
   font-size: 11px; font-weight: 800;
   color: #007e78; letter-spacing: 0.5px;
   margin-bottom: 7px;
@@ -521,6 +530,7 @@ function goSign() { router.push('/buyer-profile/sign') }
   flex-shrink: 0;
 }
 .scope-hidden {
+  display: flex; align-items: flex-start; gap: 7px;
   font-size: 10px; font-weight: 700; color: #9c98ad;
   margin-top: 7px;
   padding-top: 7px;
@@ -550,9 +560,10 @@ function goSign() { router.push('/buyer-profile/sign') }
   text-align: center;
 }
 .recipient-empty-emoji {
-  font-size: 28px;
-  line-height: 1;
-  margin-bottom: 10px;
+  width: 56px; height: 56px; border-radius: 16px;
+  background: #eef6f4;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
 }
 .recipient-empty-title {
   font-size: 14px;
@@ -608,15 +619,15 @@ function goSign() { router.push('/buyer-profile/sign') }
 }
 
 .sh-link-instead {
-  display: block; text-align: center;
-  width: min(100%, 1080px);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   margin: 14px auto 0;
   background: none; border: none;
   font-family: inherit;
-  font-size: 12px; font-weight: 700;
+  font-size: 13px; font-weight: 700;
   color: #007e78;
   cursor: pointer; padding: 8px 22px;
 }
+.sh-link-instead:hover { color: #00514d; }
 
 /* Active shares */
 .teal-card {
@@ -645,6 +656,7 @@ function goSign() { router.push('/buyer-profile/sign') }
   font-size: 10.5px; color: #6b6783; margin-top: 1px;
 }
 .share-expiry {
+  display: inline-flex; align-items: center; gap: 4px;
   font-size: 10px; font-weight: 700; color: #c4821a;
   margin-top: 2px;
 }
@@ -750,17 +762,20 @@ function goSign() { router.push('/buyer-profile/sign') }
   margin-top: 10px; font-weight: 600;
 }
 .sh-qr-save {
+  display: inline-flex; align-items: center; gap: 6px;
   margin-top: 14px;
   border: 1.5px solid #231d45;
   background: #fff;
   color: #231d45;
   border-radius: 999px;
-  padding: 8px 18px;
+  padding: 9px 18px;
   font-family: inherit;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
+  transition: all 0.16s;
 }
+.sh-qr-save:hover { background: #231d45; color: #fff; }
 .sh-qr-save:active { transform: scale(0.98); }
 
 /* PDF tab */
@@ -787,20 +802,22 @@ function goSign() { router.push('/buyer-profile/sign') }
   display: flex; flex-wrap: wrap; gap: 5px;
 }
 .sh-pdf-pill {
+  display: inline-flex; align-items: center; gap: 4px;
   font-size: 9px; font-weight: 700;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 100px;
-  padding: 4px 8px;
+  padding: 4px 9px;
   white-space: nowrap;
 }
 .sh-sign-link {
-  display: block; text-align: center;
-  margin-top: 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 12px auto 0;
   background: none; border: none;
   font-family: inherit;
   font-size: 13px; font-weight: 800; color: #007e78;
   cursor: pointer; padding: 8px 22px; width: 100%;
 }
+.sh-sign-link:hover { color: #00514d; }
 .sh-pdf-note {
   width: min(100%, 1080px);
   margin: 0 auto;
@@ -830,60 +847,38 @@ function goSign() { router.push('/buyer-profile/sign') }
   box-shadow: none;
 }
 
-@media (min-width: 1024px) {
-  .sh-page {
-    padding: 0 20px 34px;
-  }
-
-  .sh-top-nav,
-  .sh-tabs-wrap,
-  .scope-panel,
-  .sec-label,
-  .recipient-card,
-  .sh-link-instead,
-  .sh-list,
-  .sh-empty,
-  .sh-expires-note,
-  .sh-cta-wrap,
-  .sh-link-card,
-  .sh-qr-card,
-  .sh-pdf-preview,
-  .sh-pdf-note {
-    width: min(100%, 1180px);
-  }
-
-  .sh-link-card {
-    padding: 16px 18px;
-    border-radius: 18px;
-  }
-
-  .sh-list,
-  .recipient-card,
-  .sh-qr-card,
-  .sh-pdf-preview,
-  .sh-empty {
-    border-radius: 20px;
-  }
+/* Inner pane elements fill the centered shell */
+.scope-panel,
+.sec-label,
+.recipient-card,
+.recipient-empty,
+.sh-link-instead,
+.sh-list,
+.sh-empty,
+.sh-expires-note,
+.sh-cta-wrap,
+.sh-link-card,
+.sh-qr-card,
+.sh-pdf-preview,
+.sh-pdf-note {
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
 }
 
-@media (max-width: 700px) {
-  .sh-page {
-    padding: 0 10px 24px;
-  }
-
-  .sh-top-nav {
-    border-radius: 16px;
-    padding: 12px 12px 6px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .sh-link-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sh-link-copy {
-    width: 100%;
-  }
+@media (max-width: 760px) {
+  .sh-shell { width: calc(100% - 32px); padding: 32px 0 64px; }
+  .sh-h1 { font-size: 28px; }
+  .sh-sub { font-size: 14px; }
+  .how-tabs { width: 100%; justify-content: space-between; }
+  .how-tab { padding: 9px 12px; font-size: 12px; }
+  .sh-link-card { flex-direction: column; align-items: stretch; }
+  .sh-link-copy { width: 100%; }
+}
+@media (max-width: 480px) {
+  .sh-shell { width: calc(100% - 24px); }
+  .sh-h1 { font-size: 24px; }
+  .how-tab span:not(.how-tab-dot) { display: inline; }
 }
 </style>

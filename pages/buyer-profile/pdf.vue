@@ -1,20 +1,23 @@
 <template>
   <div class="pv-page">
-    <!-- Top nav -->
-    <div class="pv-top-nav">
-      <button class="pv-back" @click="goBack" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="pv-nav-centre">Profile PDF</div>
-      <span class="pv-nav-right" @click="goSign">
-        {{ passport?.signedAt ? '✓ Signed' : '✍️ Sign' }}
-      </span>
-    </div>
+    <div class="pv-ambient pv-ambient-a" />
+    <div class="pv-ambient pv-ambient-b" />
 
-    <!-- PDF document render -->
-    <div class="pv-doc-wrap">
+    <BuyerProfileNav back-label="Back" @back="goBack" />
+
+    <main class="pv-shell">
+      <div class="pv-head">
+        <div class="pv-kicker"><span class="pv-kicker-dot" />CERTIFIED DOCUMENT</div>
+        <h1 class="pv-h1">Your Buyer Profile PDF</h1>
+        <p class="pv-sub">
+          A verified, PDTF-conformant document agents and solicitors can trust.
+          Sign it, then download or share.
+        </p>
+      </div>
+
+      <div class="pv-grid">
+        <!-- LEFT: the rendered PDF document -->
+        <div class="pv-doc-wrap">
       <div class="pdf-doc">
         <!-- Diagonal repeating watermark (positioned behind everything) -->
         <div class="pdf-watermark-layer" aria-hidden="true" />
@@ -161,26 +164,44 @@
       </div>
     </div>
 
-    <!-- Download / sign actions -->
-    <div class="pv-actions">
-      <button class="cta-btn" :disabled="downloading" @click="downloadPdf">
-        📄 {{ downloading ? 'Preparing…' : 'Download PDF' }}
-      </button>
-      <button
-        v-if="!passport?.signedAt"
-        class="cta-btn outline"
-        @click="goSign"
-      >
-        ✍️ Add digital signature first
-      </button>
-      <button
-        v-else
-        class="cta-btn outline"
-        @click="goSign"
-      >
-        ✍️ Update signature
-      </button>
-    </div>
+        <!-- RIGHT: sticky action sidebar -->
+        <aside class="pv-side">
+          <div class="pv-side-card">
+            <div class="pv-side-status" :class="{ signed: passport?.signedAt }">
+              <Icon :name="passport?.signedAt ? 'heroicons:check-badge-solid' : 'heroicons:pencil-square'" class="pv-side-status-ic" />
+              <div>
+                <div class="pv-side-status-t">{{ passport?.signedAt ? 'Signed & sealed' : 'Not signed yet' }}</div>
+                <div class="pv-side-status-s">{{ passport?.signedAt ? 'eIDAS verified signature' : 'Add a signature to finalise' }}</div>
+              </div>
+            </div>
+
+            <button class="cta-btn" :disabled="downloading" @click="downloadPdf">
+              <span class="cta-btn-inner">
+                <Icon name="heroicons:arrow-down-tray" class="cta-ic" />
+                {{ downloading ? 'Preparing…' : 'Download PDF' }}
+              </span>
+            </button>
+            <button class="cta-btn outline" @click="goSign">
+              <span class="cta-btn-inner">
+                <Icon name="heroicons:pencil-square" class="cta-ic" />
+                {{ passport?.signedAt ? 'Update signature' : 'Add digital signature' }}
+              </span>
+            </button>
+            <button class="cta-btn ghost" @click="goSendAgent">
+              <span class="cta-btn-inner">
+                <Icon name="heroicons:paper-airplane" class="cta-ic" />
+                Share with agent
+              </span>
+            </button>
+          </div>
+
+          <div class="pv-trust">
+            <Icon name="heroicons:shield-check" class="pv-trust-ic" />
+            <span>PDTF-conformant · verifiable at umu.co/verify · tamper-evident</span>
+          </div>
+        </aside>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -192,6 +213,7 @@ import {
 } from '~/composables/useBuyerProfile'
 import { useProfile } from '~/composables/useProfile'
 import { useAppToast } from '~/composables/useCustomToast'
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
 definePageMeta({ title: 'Profile PDF — UmovingU', middleware: 'auth' })
 
@@ -306,6 +328,7 @@ function formatSignedAt(iso: string | null | undefined) {
 // ── Actions ───────────────────────────────────────────────
 const goBack = useGoBack('/buyer-profile/view')
 function goSign() { router.push('/buyer-profile/sign') }
+function goSendAgent() { router.push('/buyer-profile/send-agent') }
 
 function downloadPdf() {
   // Server-side PDF generation is Phase 4 work — for now we let the browser
@@ -323,53 +346,29 @@ function downloadPdf() {
 <style scoped>
 .pv-page {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: none;
   width: 100%;
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding: 0 14px 20px;
+  position: relative; overflow-x: hidden;
 }
+.pv-ambient { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.pv-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.1) 0%, transparent 70%); }
+.pv-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.pv-top-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  width: min(100%, 1080px);
-  margin: 8px auto 0;
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  background: rgba(249, 252, 255, 0.92);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
-  padding: 14px 18px 6px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-}
-.pv-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: #fff; border: 1px solid #ececef;
-  display: flex; align-items: center; justify-content: center;
-  color: #231d45; cursor: pointer; flex-shrink: 0;
-}
-.pv-nav-centre {
-  flex: 1; text-align: center;
-  font-size: 15px; font-weight: 800; color: #231d45;
-}
-.pv-nav-right {
-  font-size: 13px; font-weight: 700; color: #00a19a;
-  cursor: pointer; padding: 8px 4px; white-space: nowrap;
-}
+.pv-shell { width: min(1180px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
+.pv-head { margin-bottom: 28px; max-width: 640px; }
+.pv-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
+.pv-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
+.pv-h1 { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.pv-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
+
+.pv-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; }
 
 /* PDF doc */
 .pv-doc-wrap {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  padding: 10px 0 0;
+  min-width: 0;
   animation: pv-fadeUp 0.4s 0.05s both;
 }
 @keyframes pv-fadeUp {
@@ -594,71 +593,64 @@ function downloadPdf() {
   background: #fafafa;
 }
 
-/* Action buttons */
-.pv-actions {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  padding: 14px 0;
-  display: flex; flex-direction: column;
-  gap: 8px;
-  animation: pv-fadeUp 0.4s 0.15s both;
-}
+/* Action sidebar */
+.pv-side { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 16px; animation: pv-fadeUp 0.4s 0.15s both; }
+.pv-side-card { background: #fff; border: 1px solid #e8eef5; border-radius: 20px; box-shadow: 0 14px 34px rgba(15,44,76,0.07); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.pv-side-status { display: flex; align-items: center; gap: 12px; background: #fff7ec; border: 1px solid #f5e4c4; border-radius: 14px; padding: 14px; margin-bottom: 4px; }
+.pv-side-status.signed { background: #f2faf8; border-color: #d8efeb; }
+.pv-side-status-ic { width: 30px; height: 30px; color: #c4821a; flex-shrink: 0; }
+.pv-side-status.signed .pv-side-status-ic { color: #00a19a; }
+.pv-side-status-t { font-size: 14px; font-weight: 800; color: #231d45; }
+.pv-side-status-s { font-size: 11.5px; color: #6b6783; margin-top: 1px; }
 .cta-btn {
   width: 100%;
-  background: #00a19a; color: white; border: none;
-  border-radius: 14px; padding: 16px;
+  background: linear-gradient(120deg, #00a19a, #2f9bdf); color: white; border: none;
+  border-radius: 13px; padding: 15px;
   font-family: inherit; font-size: 14px; font-weight: 800;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
-.cta-btn:hover {
-  background: #00b6ae;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
-}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0, 161, 154, 0.3); }
 .cta-btn:disabled { opacity: 0.6; cursor: progress; }
+.cta-btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.cta-ic { width: 17px; height: 17px; }
 .cta-btn.outline {
-  background: white; color: #231d45;
-  border: 1.5px solid #231d45;
-  box-shadow: none;
-  font-size: 13px; padding: 13px;
+  background: #fff; color: #10263d;
+  border: 1.5px solid #d6dfeb; box-shadow: none;
 }
-
-@media (min-width: 1024px) {
-  .pv-page {
-    padding: 0 20px 24px;
-  }
-
-  .pv-top-nav,
-  .pv-doc-wrap,
-  .pv-actions {
-    width: min(100%, 1180px);
-  }
-
-  .pdf-doc {
-    border-radius: 22px;
-  }
+.cta-btn.outline:hover { border-color: #00a19a; box-shadow: 0 8px 18px rgba(15,44,76,0.08); }
+.cta-btn.ghost {
+  background: #f4f7fb; color: #516070; border: none; box-shadow: none;
 }
+.cta-btn.ghost:hover { background: #eaf0f7; }
+.pv-trust { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 600; color: #627891; background: #f0f4fa; border: 1px solid #dce6f0; border-radius: 14px; padding: 13px 15px; }
+.pv-trust-ic { width: 18px; height: 18px; color: #10263d; flex-shrink: 0; }
 
-@media (max-width: 700px) {
-  .pv-page {
-    padding: 0 10px 16px;
-  }
-
-  .pv-top-nav {
-    border-radius: 16px;
-    padding: 12px 12px 6px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
+@media (max-width: 940px) {
+  .pv-grid { grid-template-columns: 1fr; gap: 22px; }
+  .pv-side { position: static; }
+  .pv-h1 { font-size: 30px; }
+}
+@media (max-width: 760px) {
+  .pv-shell { width: calc(100% - 32px); padding: 32px 0 64px; }
+  .pv-h1 { font-size: 26px; }
+  .pv-sub { font-size: 14px; }
+}
+@media (max-width: 480px) {
+  .pv-shell { width: calc(100% - 24px); }
+  .pv-h1 { font-size: 23px; }
 }
 
 /* Print styles — when user prints to PDF, hide the chrome and keep the
    navy header / teal validity band / diagonal watermark visible.
    `print-color-adjust: exact` is required for Chromium-based browsers. */
 @media print {
-  .pv-top-nav, .pv-actions { display: none !important; }
-  .pv-page { background: white; padding-bottom: 0; }
+  .pv-side, .pv-head, .pv-ambient { display: none !important; }
+  :deep(.bpnav) { display: none !important; }
+  .pv-page { background: white; }
+  .pv-shell { width: 100%; padding: 0; }
+  .pv-grid { display: block; }
   .pdf-doc {
     margin: 0;
     border-radius: 0;

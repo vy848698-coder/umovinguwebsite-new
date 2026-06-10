@@ -361,56 +361,95 @@
 
       <!-- ── STEP 2: Tier picker (and funds for Verified/Premium) ── -->
       <div v-if="step === 2" class="bp-step bp-step--tier">
-        <div class="bp-tier-layout">
-          <div class="bp-tier-left">
-            <div class="bp-step-hero">
-              <div class="bp-step-ic bp-ic-purple">⭐</div>
+        <!-- Header: title + helper + dynamic CTA -->
+        <div class="bp-tier-header">
+          <div class="bp-tier-head-left">
+            <div class="bp-step-ic bp-ic-purple">⭐</div>
+            <div>
               <div class="bp-step-title">Choose your tier</div>
               <div class="bp-step-body">
                 Higher tiers add verified credentials sellers and agents look for.
                 One-off payment — no subscription.
               </div>
             </div>
+          </div>
+          <div class="bp-tier-head-right">
+            <div class="bp-tier-helper">
+              <div class="bp-tier-helper-ic">
+                <Icon name="heroicons:shield-check" class="bp-tier-helper-svg" />
+              </div>
+              <div class="bp-tier-helper-body">
+                <div class="bp-tier-helper-t">Not sure which tier?</div>
+                <div class="bp-tier-helper-s">Compare features</div>
+              </div>
+              <Icon name="heroicons:chevron-right" class="bp-tier-helper-chev" />
+            </div>
+            <button
+              v-if="!needsFundsCapture"
+              class="bp-tier-cta"
+              :class="{ disabled: !step2CanContinue }"
+              :disabled="!step2CanContinue"
+              @click="onStep2Continue"
+            >
+              {{ step2CtaLabel }}
+              <Icon name="heroicons:arrow-right" class="bp-tier-cta-ic" />
+            </button>
+          </div>
+        </div>
 
-            <!-- Tier cards -->
-            <div class="bp-tier-list">
-              <button
-                v-for="t in tierOptions"
-                :key="t.id"
-                type="button"
-                class="bp-tier-card"
-                :class="[
-                  t.id.toLowerCase(),
-                  {
-                    selected: selectedTier === t.id,
-                    paid: tierPaidFor === t.id,
-                  },
-                ]"
-                @click="selectedTier = t.id"
-              >
-                <span class="bp-tier-corner">{{ t.corner }}</span>
-                <div class="bp-tier-badge" :class="`bp-tier-badge--${t.id.toLowerCase()}`">
-                  {{ t.badge }}
-                </div>
-                <div class="bp-tier-title">{{ t.title }}</div>
-                <div class="bp-tier-sub">{{ t.sub }}</div>
-                <div class="bp-tier-price-row">
-                  <span class="bp-tier-price">{{ t.priceLabel }}</span>
-                  <span v-if="tierPaidFor === t.id" class="bp-tier-paid-pill">✓ Paid</span>
-                </div>
-                <ul class="bp-tier-features">
-                  <li v-for="f in t.features" :key="f.text">
-                    <span :class="f.included ? 'bp-tier-tick' : 'bp-tier-dash'">
-                      {{ f.included ? '✓' : '○' }}
-                    </span>
-                    {{ f.text }}
-                  </li>
-                </ul>
-              </button>
+        <!-- Tier cards (3-column) -->
+        <div class="bp-tier-grid">
+          <div
+            v-for="t in tierOptions"
+            :key="t.id"
+            class="bp-tier-card"
+            :class="[
+              t.id.toLowerCase(),
+              {
+                selected: selectedTier === t.id,
+                paid: tierPaidFor === t.id,
+              },
+            ]"
+            @click="selectedTier = t.id"
+          >
+            <div v-if="t.id === 'VERIFIED'" class="bp-tier-popular">MOST POPULAR</div>
+            <div class="bp-tier-card-top">
+              <div class="bp-tier-badge" :class="`bp-tier-badge--${t.id.toLowerCase()}`">
+                {{ t.badge }}
+              </div>
+              <span class="bp-tier-radio" :class="{ on: selectedTier === t.id }">
+                <Icon v-if="t.id === 'PREMIUM' && selectedTier !== t.id" name="heroicons:star-solid" class="bp-tier-radio-star" />
+              </span>
+            </div>
+            <div class="bp-tier-title">{{ t.title }}</div>
+            <div class="bp-tier-sub">{{ t.sub }}</div>
+            <div class="bp-tier-price-row">
+              <span class="bp-tier-price">{{ t.priceLabel }}</span>
+              <span v-if="tierPaidFor === t.id" class="bp-tier-paid-pill">
+                <Icon name="heroicons:check-16-solid" class="bp-tier-paid-ic" />Paid
+              </span>
+            </div>
+            <ul class="bp-tier-features">
+              <li v-for="f in t.features" :key="f.text" :class="{ excluded: !f.included }">
+                <Icon v-if="f.included" name="heroicons:check-16-solid" class="bp-tier-tick" />
+                <Icon v-else name="heroicons:x-mark-16-solid" class="bp-tier-dash" />
+                {{ f.text }}
+              </li>
+            </ul>
+            <button
+              type="button"
+              class="bp-tier-select"
+              @click.stop="onTierSelect(t.id)"
+            >
+              {{ selectedTier === t.id && tierPaidFor === t.id ? 'Selected' : `Select ${tierShortName(t.id)}` }}
+            </button>
+            <div class="bp-tier-foot">
+              <Icon :name="t.footIcon" class="bp-tier-foot-ic" />{{ t.foot }}
             </div>
           </div>
+        </div>
 
-          <div class="bp-tier-right">
+        <div class="bp-tier-right" :class="{ 'bp-tier-right--funds': needsFundsCapture }">
             <!-- ── Funds verification (only after a paid tier has been confirmed) ── -->
             <template v-if="needsFundsCapture">
               <div class="bp-field-label">
@@ -515,8 +554,10 @@
               </div>
             </template>
 
-            <!-- Dynamic CTA: pay (paid tier, not yet paid) / continue (basic or after payment + funds) -->
+            <!-- Dynamic CTA shown in-column only while capturing funds; otherwise
+                 the header CTA handles continue/pay. -->
             <button
+              v-if="needsFundsCapture"
               class="bp-next"
               :class="{ disabled: !step2CanContinue }"
               :disabled="!step2CanContinue"
@@ -525,7 +566,43 @@
               {{ step2CtaLabel }}
             </button>
           </div>
-        </div>
+
+        <!-- Trust + reassurance footer (hidden during funds capture) -->
+        <template v-if="!needsFundsCapture">
+          <div class="bp-tier-secure">
+            <div class="bp-tier-secure-ic"><Icon name="heroicons:shield-check" class="bp-tier-secure-svg" /></div>
+            <div class="bp-tier-secure-body">
+              <div class="bp-tier-secure-t">Your data is safe and secure</div>
+              <div class="bp-tier-secure-s">Bank-grade encryption. We never share your information without your permission.</div>
+            </div>
+            <button class="bp-tier-secure-link" type="button" @click="tierDrawerOpen = true">
+              Learn how we protect you<Icon name="heroicons:arrow-right" class="bp-tier-secure-link-ic" />
+            </button>
+          </div>
+          <div class="bp-tier-reassure">
+            <div class="bp-tier-reassure-item">
+              <div class="bp-tier-reassure-ic"><Icon name="heroicons:receipt-percent" class="bp-tier-reassure-svg" /></div>
+              <div>
+                <div class="bp-tier-reassure-t">One-off payment</div>
+                <div class="bp-tier-reassure-s">Pay once. No hidden fees or subscriptions.</div>
+              </div>
+            </div>
+            <div class="bp-tier-reassure-item">
+              <div class="bp-tier-reassure-ic"><Icon name="heroicons:bolt" class="bp-tier-reassure-svg" /></div>
+              <div>
+                <div class="bp-tier-reassure-t">Get more offers</div>
+                <div class="bp-tier-reassure-s">Higher tiers increase trust and help you stand out.</div>
+              </div>
+            </div>
+            <div class="bp-tier-reassure-item">
+              <div class="bp-tier-reassure-ic"><Icon name="heroicons:clock" class="bp-tier-reassure-svg" /></div>
+              <div>
+                <div class="bp-tier-reassure-t">Takes just a few minutes</div>
+                <div class="bp-tier-reassure-s">Complete your profile and get verified quickly.</div>
+              </div>
+            </div>
+          </div>
+        </template>
 
         <!-- Funds upload bottom sheet -->
         <Teleport to="body">
@@ -948,6 +1025,22 @@ const step2CtaLabel = computed(() => {
   return saving.value ? 'Saving…' : 'Continue →'
 })
 
+function tierShortName(id: Tier): string {
+  if (id === 'BASIC') return 'Basic'
+  if (id === 'VERIFIED') return 'Verified'
+  return 'Premium'
+}
+
+// Per-card "Select" button: mark the tier, then drive the same continue/pay
+// flow as the header CTA. For paid tiers not yet purchased this opens Stripe.
+function onTierSelect(id: Tier) {
+  selectedTier.value = id
+  // Basic continues immediately; paid tiers wait for funds capture once paid.
+  if (id === 'BASIC' || tierPaidFor.value !== id) {
+    onStep2Continue()
+  }
+}
+
 async function onStep2Continue() {
   if (selectedTier.value === 'BASIC') {
     // Persist tier=BASIC, then advance.
@@ -1345,7 +1438,7 @@ const propertyTypeOptions = [
 ]
 const tierOptions: Array<{
   id: Tier; corner: string; badge: string; title: string; sub: string;
-  priceLabel: string;
+  priceLabel: string; foot: string; footIcon: string;
   features: Array<{ text: string; included: boolean }>;
 }> = [
   {
@@ -1355,11 +1448,14 @@ const tierOptions: Array<{
     title: 'Identity Verified',
     sub: "Get started — show sellers you're a real, verified buyer.",
     priceLabel: 'Free',
+    foot: 'Great for a first verified profile',
+    footIcon: 'heroicons:check-badge',
     features: [
       { text: 'DVS-certified identity check', included: true },
       { text: 'Chain position & timeline', included: true },
       { text: 'Solicitor instructed status', included: true },
       { text: 'Funds & affordability not verified', included: false },
+      { text: 'Proof of deposit not included', included: false },
     ],
   },
   {
@@ -1369,6 +1465,8 @@ const tierOptions: Array<{
     title: 'Identity + Funds Verified',
     sub: 'The level most sellers and agents expect. Proves you can buy.',
     priceLabel: '£29',
+    foot: 'Great balance of trust and value',
+    footIcon: 'heroicons:shield-check',
     features: [
       { text: 'Everything in Basic', included: true },
       { text: 'Proof of deposit (open banking)', included: true },
@@ -1384,6 +1482,8 @@ const tierOptions: Array<{
     title: 'Full Financial Profile',
     sub: 'Maximum strength — lenders can pre-approve faster with this data.',
     priceLabel: '£79',
+    foot: 'Most comprehensive & powerful',
+    footIcon: 'heroicons:lock-closed',
     features: [
       { text: 'Everything in Verified', included: true },
       { text: 'Experian credit file + score', included: true },
@@ -3056,91 +3156,171 @@ onBeforeUnmount(() => {
   padding: 6px 12px; border-radius: 100px;
 }
 
-/* ── Tier cards (step 2) ──────────────────────────────────── */
-.bp-tier-list {
-  display: flex; flex-direction: column; gap: 10px;
-  margin-bottom: 18px;
+/* ── Tier picker (step 2) — premium 3-column ──────────────── */
+.bp-tier-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 24px; margin-bottom: 22px; flex-wrap: wrap;
+}
+.bp-tier-head-left { display: flex; align-items: flex-start; gap: 14px; }
+.bp-tier-head-left .bp-step-ic { margin: 0; }
+.bp-tier-head-left .bp-step-title { font-size: 28px; line-height: 1.1; margin-bottom: 6px; }
+.bp-tier-head-left .bp-step-body { font-size: 14px; max-width: 460px; }
+.bp-tier-head-right { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; }
+.bp-tier-helper {
+  display: flex; align-items: center; gap: 11px;
+  background: #fff; border: 1px solid #e8eef5; border-radius: 14px;
+  padding: 12px 16px; box-shadow: 0 6px 18px rgba(15,44,76,0.05);
+}
+.bp-tier-helper-ic { width: 36px; height: 36px; border-radius: 10px; background: #eef6f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bp-tier-helper-svg { width: 20px; height: 20px; color: #00a19a; }
+.bp-tier-helper-t { font-size: 13px; font-weight: 800; color: #10263d; }
+.bp-tier-helper-s { font-size: 11.5px; color: #627891; }
+.bp-tier-helper-chev { width: 16px; height: 16px; color: #b5bdc9; }
+.bp-tier-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(120deg, #00a19a, #007e78); color: #fff;
+  border: none; border-radius: 14px; padding: 0 26px;
+  font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 12px 26px rgba(0,161,154,0.3); transition: all 0.18s;
+}
+.bp-tier-cta:hover:not(.disabled) { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(0,161,154,0.36); }
+.bp-tier-cta.disabled { opacity: 0.5; cursor: not-allowed; }
+.bp-tier-cta-ic { width: 17px; height: 17px; }
+
+.bp-tier-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  align-items: stretch; margin-bottom: 22px;
 }
 .bp-tier-card {
   position: relative;
-  border-radius: 18px; padding: 14px 16px;
-  border: 1.5px solid transparent;
-  cursor: pointer; text-align: left;
-  font-family: inherit;
-  transition: all 0.15s;
-  width: 100%;
+  display: flex; flex-direction: column;
+  border-radius: 20px; padding: 24px;
+  border: 1.5px solid #e8eef5; background: #fff;
+  cursor: pointer; text-align: left; font-family: inherit;
+  transition: all 0.18s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 4px 16px rgba(15,44,76,0.05);
 }
-.bp-tier-card.basic {
-  background: linear-gradient(135deg, #f6f5fb, #eeedf5);
-  border-color: #eeedf5;
+.bp-tier-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(15,44,76,0.1); }
+.bp-tier-card.verified { border-color: #cdeae6; }
+.bp-tier-card.selected.basic { border-color: #00a19a; box-shadow: 0 0 0 2px rgba(0,161,154,0.16), 0 14px 32px rgba(15,44,76,0.1); }
+.bp-tier-card.selected.verified { border: 2px solid #00a19a; box-shadow: 0 14px 36px rgba(0,161,154,0.18); }
+.bp-tier-card.selected.premium { border-color: #e6a23c; box-shadow: 0 0 0 2px rgba(212,130,42,0.18), 0 14px 32px rgba(15,44,76,0.1); }
+
+.bp-tier-popular {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(120deg, #00a19a, #007e78); color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.6px;
+  padding: 5px 16px; border-radius: 100px; white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0,161,154,0.32);
 }
-.bp-tier-card.verified {
-  background: linear-gradient(135deg, #f2faf8, #d0f0ee);
-  border-color: #e5f4f2;
-}
-.bp-tier-card.premium {
-  background: linear-gradient(135deg, #fbefd9, #fff8ec);
-  border-color: #fbefd9;
-}
-.bp-tier-card.selected.basic {
-  border-color: #6b6783; box-shadow: 0 0 0 3px rgba(35, 29, 69, 0.12);
-}
-.bp-tier-card.selected.verified {
-  border-color: #00a19a; box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.18);
-}
-.bp-tier-card.selected.premium {
-  border-color: #d4822a; box-shadow: 0 0 0 3px rgba(212, 130, 42, 0.18);
-}
-.bp-tier-corner {
-  position: absolute; top: 12px; right: 14px;
-  font-size: 18px; font-weight: 900;
-  opacity: 0.5;
-}
-.bp-tier-card.selected.basic .bp-tier-corner { color: #231d45; opacity: 1; }
-.bp-tier-card.selected.verified .bp-tier-corner { color: #00a19a; opacity: 1; }
-.bp-tier-card.selected.premium .bp-tier-corner { color: #d4822a; opacity: 1; }
+.bp-tier-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .bp-tier-badge {
   display: inline-block;
-  font-size: 9px; font-weight: 900; letter-spacing: 1.4px;
-  padding: 3px 8px; border-radius: 6px; margin-bottom: 8px;
+  font-size: 10px; font-weight: 900; letter-spacing: 1px;
+  padding: 5px 10px; border-radius: 8px;
 }
-.bp-tier-badge--basic { background: #ececef; color: #4a4566; }
-.bp-tier-badge--verified { background: #00a19a; color: #fff; }
-.bp-tier-badge--premium { background: #d4822a; color: #fff; }
-.bp-tier-title {
-  font-size: 14px; font-weight: 800; color: #231d45;
-  margin-bottom: 2px;
+.bp-tier-badge--basic { background: #eef0f4; color: #6b7688; }
+.bp-tier-badge--verified { background: #e3f4f0; color: #007e78; }
+.bp-tier-badge--premium { background: #fbeed4; color: #c4821a; }
+.bp-tier-radio {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid #d6dfeb; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s;
 }
-.bp-tier-sub {
-  font-size: 11.5px; font-weight: 500; color: #6b6783;
-  line-height: 1.45;
-  margin-bottom: 10px;
-}
-.bp-tier-price-row {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-}
-.bp-tier-price {
-  font-size: 22px; font-weight: 900; color: #231d45;
-  letter-spacing: -0.5px;
-}
+.bp-tier-radio.on { border-color: #00a19a; background: #00a19a; box-shadow: inset 0 0 0 3px #fff; }
+.bp-tier-card.selected.premium .bp-tier-radio.on { border-color: #e6a23c; background: #e6a23c; }
+.bp-tier-radio-star { width: 16px; height: 16px; color: #e6a23c; }
+.bp-tier-card.premium .bp-tier-radio { border: none; background: #fbeed4; }
+
+.bp-tier-title { font-size: 18px; font-weight: 800; color: #10263d; margin-bottom: 6px; letter-spacing: -0.3px; }
+.bp-tier-sub { font-size: 13px; font-weight: 500; color: #627891; line-height: 1.5; margin-bottom: 16px; }
+.bp-tier-price-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.bp-tier-price { font-size: 30px; font-weight: 900; color: #10263d; letter-spacing: -1px; }
+.bp-tier-card.verified .bp-tier-price { color: #10263d; }
 .bp-tier-card.premium .bp-tier-price { color: #d4822a; }
 .bp-tier-paid-pill {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.3px;
   background: #00a19a; color: #fff;
-  padding: 3px 9px; border-radius: 100px;
+  padding: 4px 10px; border-radius: 100px;
 }
+.bp-tier-paid-ic { width: 12px; height: 12px; }
 .bp-tier-features {
-  list-style: none; padding: 0; margin: 0;
-  display: flex; flex-direction: column; gap: 4px;
+  list-style: none; padding: 0; margin: 0 0 20px;
+  display: flex; flex-direction: column; gap: 11px;
+  flex: 1;
 }
 .bp-tier-features li {
-  font-size: 11.5px; color: #4a4566;
-  display: flex; gap: 6px; align-items: flex-start;
-  line-height: 1.4;
+  font-size: 13px; font-weight: 600; color: #2f3d4f;
+  display: flex; gap: 10px; align-items: center; line-height: 1.4;
 }
-.bp-tier-tick { color: #00a19a; font-weight: 900; flex-shrink: 0; }
-.bp-tier-dash { color: #c0bdcc; font-weight: 900; flex-shrink: 0; }
-.bp-tier-card.premium .bp-tier-tick { color: #d4822a; }
+.bp-tier-features li.excluded { color: #9aa9bd; }
+.bp-tier-tick { width: 17px; height: 17px; color: #00a19a; flex-shrink: 0; }
+.bp-tier-card.premium .bp-tier-tick { color: #e6a23c; }
+.bp-tier-dash { width: 16px; height: 16px; color: #c0c9d6; flex-shrink: 0; }
+
+.bp-tier-select {
+  width: 100%; border-radius: 12px; padding: 14px;
+  font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+  transition: all 0.18s; margin-top: auto;
+}
+.bp-tier-card.basic .bp-tier-select { background: #fff; color: #007e78; border: 1.5px solid #00a19a; }
+.bp-tier-card.basic .bp-tier-select:hover { background: #f2faf8; }
+.bp-tier-card.verified .bp-tier-select { background: #007e78; color: #fff; border: none; box-shadow: 0 8px 20px rgba(0,126,120,0.28); }
+.bp-tier-card.verified .bp-tier-select:hover { background: #006661; transform: translateY(-1px); }
+.bp-tier-card.premium .bp-tier-select { background: #fff; color: #d4822a; border: 1.5px solid #e6a23c; }
+.bp-tier-card.premium .bp-tier-select:hover { background: #fffaf0; }
+.bp-tier-foot {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 14px; font-size: 12px; font-weight: 600; color: #627891;
+}
+.bp-tier-foot-ic { width: 15px; height: 15px; color: #94a3b5; }
+.bp-tier-card.verified .bp-tier-foot-ic { color: #00a19a; }
+.bp-tier-card.premium .bp-tier-foot-ic { color: #c4821a; }
+
+/* Trust + reassurance footer */
+.bp-tier-secure {
+  display: flex; align-items: center; gap: 16px;
+  background: #fff; border: 1px solid #e8eef5; border-radius: 18px;
+  padding: 20px 24px; margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(15,44,76,0.04);
+}
+.bp-tier-secure-ic { width: 46px; height: 46px; border-radius: 50%; background: #e3f4f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bp-tier-secure-svg { width: 24px; height: 24px; color: #00a19a; }
+.bp-tier-secure-body { flex: 1; min-width: 0; }
+.bp-tier-secure-t { font-size: 15px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.bp-tier-secure-s { font-size: 13px; color: #627891; line-height: 1.45; }
+.bp-tier-secure-link { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #007e78; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.bp-tier-secure-link-ic { width: 15px; height: 15px; }
+
+.bp-tier-reassure {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  background: #fff; border: 1px solid #e8eef5; border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 16px rgba(15,44,76,0.04);
+}
+.bp-tier-reassure-item { display: flex; align-items: flex-start; gap: 12px; }
+.bp-tier-reassure-ic { width: 40px; height: 40px; border-radius: 50%; background: #eef6f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bp-tier-reassure-svg { width: 20px; height: 20px; color: #00a19a; }
+.bp-tier-reassure-t { font-size: 14px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.bp-tier-reassure-s { font-size: 12.5px; color: #627891; line-height: 1.45; }
+
+/* ── Tier responsive ── */
+@media (max-width: 900px) {
+  .bp-tier-grid { grid-template-columns: 1fr; }
+  .bp-tier-popular { top: -11px; }
+  .bp-tier-reassure { grid-template-columns: 1fr; gap: 18px; }
+  .bp-tier-header { flex-direction: column; }
+  .bp-tier-head-right { width: 100%; }
+  .bp-tier-cta { flex: 1; justify-content: center; padding: 14px 26px; }
+}
+@media (max-width: 640px) {
+  .bp-tier-head-left .bp-step-title { font-size: 24px; }
+  .bp-tier-secure { flex-wrap: wrap; }
+  .bp-tier-secure-link { width: 100%; }
+  .bp-tier-helper { flex: 1; }
+}
 
 /* Funds section header inside step 2 */
 .bp-funds-step-pill {
@@ -3600,37 +3780,13 @@ onBeforeUnmount(() => {
   }
 
   .bp-step--tier {
-    padding: 24px;
+    padding: 28px;
   }
-
-  .bp-step--tier .bp-tier-layout {
-    grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
-    gap: 18px;
-    align-items: start;
-  }
-
-  .bp-step--tier .bp-tier-left {
-    position: sticky;
-    top: 122px;
-  }
-
-  .bp-step--tier .bp-step-hero {
-    align-items: flex-start;
-    text-align: left;
-    margin-bottom: 14px;
-  }
-
-  .bp-step--tier .bp-step-title {
-    font-size: 26px;
-    line-height: 1.2;
-  }
-
-  .bp-step--tier .bp-step-body {
-    font-size: 13.5px;
-  }
-
-  .bp-step--tier .bp-next {
-    margin-top: 14px;
+  /* Funds-capture column (appears below the tier grid once a paid tier is
+     purchased) gets a comfortable centered max-width on desktop. */
+  .bp-step--tier .bp-tier-right--funds {
+    max-width: 640px;
+    margin: 4px auto 0;
   }
 
   .bp-step--chain,

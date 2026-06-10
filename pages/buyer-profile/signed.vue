@@ -1,47 +1,96 @@
 <template>
   <div class="sn-page">
-    <!-- Celebration hero -->
-    <div class="sn-hero">
-      <div class="sn-emoji">✍️</div>
-      <h2 class="sn-title">Profile signed</h2>
-      <p class="sn-sub">
-        Your digital signature has been embedded. The PDF is now ready to share
-        or download.
-      </p>
-    </div>
+    <div class="sn-ambient sn-ambient-a" />
+    <div class="sn-ambient sn-ambient-b" />
 
-    <!-- Signed document preview (teal-bordered card) -->
-    <div class="sn-doc-card">
-      <div class="sn-doc-eyebrow">SIGNED DOCUMENT</div>
-      <div class="sn-doc-title">UMU Buyer Profile — {{ displayName }}</div>
+    <BuyerProfileNav back-label="My profile" @back="goView" />
 
-      <!-- Signature — image OR typed -->
-      <div class="sn-sig-wrap">
-        <div v-if="passport?.signatureData" class="sn-sig-img-frame">
-          <img :src="passport.signatureData" alt="Signature" class="sn-sig-img" />
+    <main class="sn-shell">
+      <!-- Celebration hero -->
+      <div class="sn-hero">
+        <div class="sn-badge">
+          <Icon name="heroicons:check-badge-solid" class="sn-badge-ic" />
         </div>
-        <div v-else class="sn-sig-typed">
-          {{ passport?.signedName || displayName }}
+        <div class="sn-kicker"><span class="sn-kicker-dot" />PROFILE SIGNED</div>
+        <h1 class="sn-title">Your profile is signed &amp; sealed</h1>
+        <p class="sn-sub">
+          Your digital signature has been embedded. The certified PDF is now ready
+          to share with agents or download.
+        </p>
+      </div>
+
+      <div class="sn-grid">
+        <!-- Signed document preview (teal-bordered card) -->
+        <div class="sn-doc-card">
+          <div class="sn-doc-head">
+            <div class="sn-doc-eyebrow">
+              <Icon name="heroicons:document-check" class="sn-doc-eyebrow-ic" />
+              SIGNED DOCUMENT
+            </div>
+            <span class="sn-doc-verified">
+              <Icon name="heroicons:check-16-solid" class="sn-pill-ic" />eIDAS
+            </span>
+          </div>
+          <div class="sn-doc-title">UMU Buyer Profile — {{ displayName }}</div>
+
+          <!-- Signature — image OR typed -->
+          <div class="sn-sig-wrap">
+            <div class="sn-sig-label">Authorised signature</div>
+            <div v-if="passport?.signatureData" class="sn-sig-img-frame">
+              <img :src="passport.signatureData" alt="Signature" class="sn-sig-img" />
+            </div>
+            <div v-else class="sn-sig-typed">
+              {{ passport?.signedName || displayName }}
+            </div>
+          </div>
+
+          <div class="sn-doc-meta">
+            Signed {{ formatSignedAt(passport?.signedAt) }} · eIDAS compliant · UMU
+            ref: {{ publicRef }}-SIG
+          </div>
+          <div class="sn-doc-hash">
+            <Icon name="heroicons:finger-print" class="sn-hash-ic" />
+            sig:sha256·umu·{{ publicRef }}·{{ sigStamp }}·eidas·verified
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="sn-side">
+          <div class="sn-side-card">
+            <div class="sn-side-title">What's next?</div>
+            <button class="sn-action sn-action--primary" @click="goPdf">
+              <span class="sn-action-ic"><Icon name="heroicons:arrow-down-tray" /></span>
+              <span class="sn-action-body">
+                <span class="sn-action-t">Download signed PDF</span>
+                <span class="sn-action-s">Certified, ready to send</span>
+              </span>
+              <Icon name="heroicons:chevron-right" class="sn-action-chev" />
+            </button>
+            <button class="sn-action" @click="goSendAgent">
+              <span class="sn-action-ic"><Icon name="heroicons:paper-airplane" /></span>
+              <span class="sn-action-body">
+                <span class="sn-action-t">Share with agent</span>
+                <span class="sn-action-s">Send a secure link</span>
+              </span>
+              <Icon name="heroicons:chevron-right" class="sn-action-chev" />
+            </button>
+            <button class="sn-action" @click="goView">
+              <span class="sn-action-ic"><Icon name="heroicons:user-circle" /></span>
+              <span class="sn-action-body">
+                <span class="sn-action-t">Back to my profile</span>
+                <span class="sn-action-s">View your full profile</span>
+              </span>
+              <Icon name="heroicons:chevron-right" class="sn-action-chev" />
+            </button>
+          </div>
+
+          <div class="sn-trust">
+            <Icon name="heroicons:lock-closed" class="sn-trust-ic" />
+            <span>Legally binding under eIDAS &amp; UK eIDAS regulations. Tamper-evident.</span>
+          </div>
         </div>
       </div>
-
-      <div class="sn-doc-meta">
-        Signed {{ formatSignedAt(passport?.signedAt) }} · eIDAS compliant · UMU
-        ref: {{ publicRef }}-SIG
-      </div>
-      <div class="sn-doc-hash">
-        sig:sha256·umu·{{ publicRef }}·{{ sigStamp }}·eidas·verified
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="sn-actions">
-      <button class="cta-btn" @click="goPdf">📄 Download signed PDF</button>
-      <button class="cta-btn outline" @click="goSendAgent">
-        ⤴ Share with agent
-      </button>
-      <button class="sn-ghost" @click="goView">Back to my profile</button>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -52,6 +101,7 @@ import {
   type BuyerProfile,
 } from '~/composables/useBuyerProfile'
 import { useProfile } from '~/composables/useProfile'
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
 definePageMeta({ title: 'Profile Signed — UmovingU', middleware: 'auth' })
 
@@ -109,198 +159,112 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sn-page {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: #231d45;
-  max-width: none;
   width: 100%;
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-top: calc(20px + env(safe-area-inset-top));
-  padding-left: 14px;
-  padding-right: 14px;
-  padding-bottom: 32px;
+  position: relative; overflow-x: hidden;
 }
+.sn-ambient { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.sn-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.12) 0%, transparent 70%); }
+.sn-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sn-hero {
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 48px 0 0;
-  text-align: center;
-}
-.sn-emoji {
-  font-size: 56px;
-  line-height: 1;
-  margin-bottom: 14px;
-  display: inline-block;
-  animation: sn-pop 0.5s ease-out 0.05s both;
-}
-@keyframes sn-pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  70% { transform: scale(1.15); }
-  100% { transform: scale(1); opacity: 1; }
-}
-.sn-title {
-  font-size: 22px; font-weight: 800; color: #231d45;
-  letter-spacing: -0.5px;
-  margin-bottom: 6px;
-  animation: sn-fadeUp 0.4s 0.15s both;
-}
-.sn-sub {
-  font-size: 13px; color: #6b6783; line-height: 1.5;
-  animation: sn-fadeUp 0.4s 0.2s both;
-}
-@keyframes sn-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.sn-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 44px 0 90px; }
 
-/* Signed document card — teal border, white bg */
+/* Hero */
+.sn-hero { text-align: center; max-width: 620px; margin: 0 auto 36px; }
+.sn-badge {
+  width: 72px; height: 72px; border-radius: 22px; margin: 0 auto 18px;
+  background: linear-gradient(140deg, #00b6ae, #007e78);
+  box-shadow: 0 16px 34px -8px rgba(0,161,154,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  animation: sn-pop 0.5s cubic-bezier(.22,1,.36,1) 0.05s both;
+}
+.sn-badge-ic { width: 40px; height: 40px; color: #fff; }
+@keyframes sn-pop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.sn-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
+  color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28);
+  padding: 6px 12px; border-radius: 100px; margin-bottom: 14px;
+  animation: sn-fadeUp 0.4s 0.12s both;
+}
+.sn-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
+.sn-title { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.1; margin-bottom: 12px; animation: sn-fadeUp 0.4s 0.16s both; }
+.sn-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; animation: sn-fadeUp 0.4s 0.2s both; }
+@keyframes sn-fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Grid: doc + actions */
+.sn-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+
+/* Signed document card */
 .sn-doc-card {
-  width: min(100%, 980px);
-  margin: 24px auto 0;
-  background: white;
-  border: 2px solid #00a19a;
-  border-radius: 18px;
-  box-shadow:
-    0 14px 30px rgba(17, 52, 88, 0.11),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  padding: 16px;
-  animation: sn-fadeUp 0.4s 0.25s both;
+  background: white; border: 2px solid #00a19a; border-radius: 22px;
+  box-shadow: 0 18px 40px -14px rgba(0,161,154,0.25), inset 0 1px 0 rgba(255,255,255,0.96);
+  padding: 26px 28px;
+  animation: sn-fadeUp 0.4s 0.24s both;
 }
-.sn-doc-eyebrow {
-  font-size: 10px; font-weight: 800; letter-spacing: 1px;
-  color: #007e78;
-  margin-bottom: 10px;
-}
-.sn-doc-title {
-  font-size: 13px; font-weight: 800; color: #231d45;
-  margin-bottom: 4px;
-}
-.sn-sig-wrap {
-  border-top: 1px solid #f5f5f7;
-  border-bottom: 1px solid #f5f5f7;
-  padding: 12px 0;
-  margin: 10px 0;
-  text-align: left;
-}
-.sn-sig-typed {
-  font-family: Georgia, serif;
-  font-size: 20px; font-style: italic;
-  color: #231d45;
-}
-.sn-sig-img-frame {
-  display: inline-block;
-  background: white;
-  border-radius: 8px;
-}
-.sn-sig-img {
-  max-width: 240px;
-  max-height: 80px;
-  display: block;
-}
-.sn-doc-meta {
-  font-size: 10px; color: #9c98ad;
-}
+.sn-doc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.sn-doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #007e78; }
+.sn-doc-eyebrow-ic { width: 16px; height: 16px; }
+.sn-doc-verified { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: #007e78; background: #f2faf8; border: 1px solid #d8efeb; border-radius: 100px; padding: 5px 11px; }
+.sn-pill-ic { width: 13px; height: 13px; }
+.sn-doc-title { font-size: 18px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
+.sn-sig-wrap { border-top: 1px solid #eef1f5; border-bottom: 1px solid #eef1f5; padding: 18px 0; margin: 16px 0; }
+.sn-sig-label { font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #9aa9bd; margin-bottom: 10px; }
+.sn-sig-typed { font-family: Georgia, serif; font-size: 30px; font-style: italic; color: #231d45; }
+.sn-sig-img-frame { display: inline-block; background: white; border-radius: 8px; }
+.sn-sig-img { max-width: 320px; max-height: 96px; display: block; }
+.sn-doc-meta { font-size: 11.5px; color: #9c98ad; line-height: 1.5; }
 .sn-doc-hash {
-  margin-top: 10px;
-  background: #f2faf8;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 9.5px;
-  font-family: 'SF Mono', Menlo, monospace;
-  color: #007e78;
-  word-break: break-all;
+  margin-top: 14px; background: #f2faf8; border-radius: 10px; padding: 12px 14px;
+  font-size: 11px; font-family: 'SF Mono', Menlo, monospace; color: #007e78; word-break: break-all;
+  display: flex; align-items: flex-start; gap: 8px;
 }
+.sn-hash-ic { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
 
-/* Actions */
-.sn-actions {
-  width: min(100%, 980px);
-  margin: 0 auto;
-  padding: 16px 0 0;
-  display: flex; flex-direction: column;
-  gap: 8px;
-  animation: sn-fadeUp 0.4s 0.3s both;
+/* Side actions */
+.sn-side { display: flex; flex-direction: column; gap: 16px; animation: sn-fadeUp 0.4s 0.3s both; }
+.sn-side-card { background: white; border: 1px solid #e8eef5; border-radius: 22px; box-shadow: 0 14px 34px rgba(15,44,76,0.07); padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+.sn-side-title { font-size: 12px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #8a97a8; margin-bottom: 4px; }
+.sn-action {
+  display: flex; align-items: center; gap: 14px;
+  background: #fff; border: 1.5px solid #e8eef5; border-radius: 14px;
+  padding: 14px 16px; cursor: pointer; font-family: inherit; text-align: left; width: 100%;
+  transition: all 0.18s cubic-bezier(.22,1,.36,1);
 }
-.cta-btn {
-  width: 100%;
-  background: #00a19a; color: white; border: none;
-  border-radius: 14px;
-  padding: 16px;
-  font-family: inherit; font-size: 14px; font-weight: 800;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.35);
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+.sn-action:hover { transform: translateY(-2px); border-color: #a8d5c8; box-shadow: 0 10px 24px rgba(0,161,154,0.1); }
+.sn-action--primary { background: linear-gradient(120deg, #00a19a, #2f9bdf); border: none; color: #fff; }
+.sn-action--primary:hover { box-shadow: 0 12px 26px rgba(0,161,154,0.3); }
+.sn-action-ic { width: 38px; height: 38px; border-radius: 11px; background: #eef6f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #007e78; }
+.sn-action-ic :deep(svg) { width: 20px; height: 20px; }
+.sn-action--primary .sn-action-ic { background: rgba(255,255,255,0.2); color: #fff; }
+.sn-action-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sn-action-t { font-size: 14px; font-weight: 800; color: #231d45; }
+.sn-action-s { font-size: 11.5px; color: #6b6783; margin-top: 1px; }
+.sn-action--primary .sn-action-t { color: #fff; }
+.sn-action--primary .sn-action-s { color: rgba(255,255,255,0.82); }
+.sn-action-chev { width: 18px; height: 18px; color: #b5bdc9; flex-shrink: 0; }
+.sn-action--primary .sn-action-chev { color: rgba(255,255,255,0.85); }
+.sn-trust { display: flex; align-items: center; gap: 10px; font-size: 11.5px; font-weight: 600; color: #627891; background: #f0f4fa; border: 1px solid #dce6f0; border-radius: 14px; padding: 14px 16px; }
+.sn-trust-ic { width: 18px; height: 18px; color: #10263d; flex-shrink: 0; }
+
+@media (max-width: 940px) {
+  .sn-grid { grid-template-columns: 1fr; gap: 20px; }
+  .sn-title { font-size: 30px; }
 }
-.cta-btn:hover {
-  background: #00b6ae;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32);
+@media (max-width: 760px) {
+  .sn-shell { width: calc(100% - 32px); padding: 32px 0 64px; }
+  .sn-title { font-size: 26px; }
+  .sn-sub { font-size: 14px; }
+  .sn-doc-card { padding: 22px 20px; border-radius: 18px; }
+  .sn-sig-typed { font-size: 26px; }
 }
-.cta-btn.outline {
-  background: white; color: #231d45;
-  border: 1.5px solid #231d45;
-  box-shadow: none;
-  font-size: 13px; padding: 13px;
-}
-.sn-ghost {
-  background: none; border: none;
-  font-family: inherit;
-  font-size: 12px; font-weight: 700;
-  color: #6b6783;
-  cursor: pointer;
-  padding: 8px;
-}
-
-@media (min-width: 1024px) {
-  .sn-page {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 34px;
-  }
-
-  .sn-hero,
-  .sn-doc-card,
-  .sn-actions {
-    width: min(100%, 1080px);
-  }
-
-  .sn-title {
-    font-size: 28px;
-  }
-
-  .sn-sub {
-    font-size: 14px;
-  }
-
-  .sn-doc-card {
-    padding: 18px;
-    border-radius: 22px;
-  }
-
-  .sn-sig-img {
-    max-width: 320px;
-    max-height: 92px;
-  }
-}
-
-@media (max-width: 700px) {
-  .sn-page {
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 24px;
-  }
-
-  .sn-hero {
-    padding-top: 34px;
-  }
-
-  .sn-doc-card {
-    margin-top: 18px;
-    border-radius: 14px;
-  }
+@media (max-width: 480px) {
+  .sn-shell { width: calc(100% - 24px); }
+  .sn-title { font-size: 23px; }
+  .sn-badge { width: 60px; height: 60px; border-radius: 18px; }
+  .sn-badge-ic { width: 34px; height: 34px; }
 }
 </style>
