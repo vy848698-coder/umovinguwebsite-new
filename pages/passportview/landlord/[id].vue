@@ -166,6 +166,7 @@
         <div v-show="activeTab === 'compliance'">
           <template v-for="group in complianceGroups" :key="group.label">
             <div v-if="group.sections.length > 0" class="section-heading">{{ group.label }}</div>
+            <div v-if="group.sections.length > 0" class="lp-sec-grid">
             <button
               v-for="section in group.sections"
               :key="section.id"
@@ -215,11 +216,13 @@
                 </div>
               </div>
             </button>
+            </div>
           </template>
 
           <!-- Fallback: any sections that didn't match a group bucket -->
           <template v-if="ungroupedSections.length > 0">
             <div class="section-heading">Other</div>
+            <div class="lp-sec-grid">
             <button
               v-for="section in ungroupedSections"
               :key="section.id"
@@ -257,6 +260,7 @@
                 </div>
               </div>
             </button>
+            </div>
           </template>
         </div>
 
@@ -299,6 +303,7 @@
           </div>
 
           <div v-if="tenancySections.length > 0" class="section-heading">Documents to keep current</div>
+          <div v-if="tenancySections.length > 0" class="lp-sec-grid">
           <button
             v-for="section in tenancySections"
             :key="section.id"
@@ -336,6 +341,7 @@
               </div>
             </div>
           </button>
+          </div>
         </div>
       </template>
     </main>
@@ -1715,6 +1721,23 @@ const SectionCard = defineComponent({
   z-index: 1;
 }
 
+/* Grid wrapper — lays the compliance section cards out in columns so the
+   landlord view scrolls far less on wide screens. */
+.lp-sec-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 22px;
+  margin-bottom: 12px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+.lp-sec-grid .lp-sec {
+  width: 100%;
+  margin: 0;
+}
+
 /* Section card — prototype look (icon tile + double pills + progress bar) */
 .lp-sec {
   width: calc(100% - 44px);
@@ -2235,6 +2258,10 @@ const SectionCard = defineComponent({
   margin-left: 0;
   margin-right: 0;
 }
+.lp-body .lp-sec-grid {
+  padding-left: 0;
+  padding-right: 0;
+}
 .lp-body .lp-doc,
 .lp-body .lp-empty,
 .lp-body .lp-tenancy-card {
@@ -2243,6 +2270,12 @@ const SectionCard = defineComponent({
 }
 
 /* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .lp-sec-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 899px) {
   .hsw-links {
     display: none;
@@ -2274,6 +2307,9 @@ const SectionCard = defineComponent({
   .hsw-shell,
   .lp-body {
     width: calc(100% - 24px);
+  }
+  .lp-sec-grid {
+    grid-template-columns: 1fr;
   }
   .hsw-back {
     display: none;

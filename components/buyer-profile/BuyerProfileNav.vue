@@ -13,7 +13,7 @@
         <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
       </nav>
       <div class="bpnav-actions">
-        <button class="bpnav-help" type="button" @click="navigateTo('/support')">
+        <button class="bpnav-help" type="button" @click="navigateTo('/profile/support')">
           <Icon name="heroicons:question-mark-circle" class="bpnav-help-ic" />
           Need Help?
         </button>

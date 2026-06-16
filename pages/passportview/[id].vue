@@ -266,12 +266,18 @@
             v-for="step in steps"
             :key="step.id"
             class="step-card"
+            :class="{ 'step-card--done': step.progress >= 100 }"
             @click="navigateToStep(step.id)"
           >
-            <div class="step-icon-container">
-              <div class="step-icon-bg">
-                <OPIcon :name="step.key" class="w-[80px] h-[80px]" />
+            <div class="step-card-top">
+              <div class="step-icon-container">
+                <div class="step-icon-bg">
+                  <OPIcon :name="step.key" class="w-[56px] h-[56px]" />
+                </div>
               </div>
+              <button class="step-arrow">
+                <OPIcon name="caretRight" class="w-[13px] h-[13px]" />
+              </button>
             </div>
             <div class="step-info">
               <h3 class="step-title">{{ step.title }}</h3>
@@ -309,9 +315,6 @@
                 <span class="progress-percentage">{{ step.progress }}%</span>
               </div>
             </div>
-            <button class="step-arrow">
-              <OPIcon name="caretRight" class="w-[13px] h-[13px]" />
-            </button>
           </div>
         </div>
 
@@ -1622,25 +1625,64 @@ const onRoleSwitch = (role) => {
 }
 
 .steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
 .step-card {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: white;
-  border-radius: 16px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 18px 16px;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 18px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04),
+    0 8px 22px rgba(15, 36, 62, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top accent bar that intensifies on hover for a premium feel */
+.step-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00a19a 0%, #00d4c3 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  border-color: #d8ece9;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04),
+    0 18px 38px rgba(0, 161, 154, 0.14);
+}
+
+.step-card:hover::before {
+  opacity: 1;
 }
 
 .step-card:active {
-  transform: scale(0.98);
+  transform: translateY(-1px) scale(0.995);
+}
+
+.step-card--done::before {
+  opacity: 1;
+}
+
+.step-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
 .step-icon-container {
@@ -1648,7 +1690,10 @@ const onRoleSwitch = (role) => {
 }
 
 .step-icon-bg {
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f1f9f7 0%, #e9f6f4 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1656,29 +1701,31 @@ const onRoleSwitch = (role) => {
 
 .step-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .step-title {
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-  color: #000000;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #0f2440;
 }
 
 .step-points {
   font-size: 12px;
   line-height: 16px;
   color: #00a19a;
-  /* margin: 0 0 8px; */
-  font-weight: 400;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .step-counts {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 10px;
 }
 .step-count-pill {
   display: inline-flex;
@@ -1724,26 +1771,40 @@ const onRoleSwitch = (role) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .progress-bar.small {
-  height: 4px;
+  height: 5px;
   flex: 1;
+  background: #eef2f7;
+  border-radius: 999px;
+}
+
+.progress-bar.small .progress-fill {
+  border-radius: 999px;
 }
 
 .step-arrow {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #f9f9fd;
-  border: 0.5px solid #d2d1e4;
-  font-size: 24px;
-  color: #999;
+  background: #f7f9fc;
+  border: 1px solid #e6ebf2;
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.step-card:hover .step-arrow {
+  background: #00a19a;
+  border-color: #00a19a;
+  color: #fff;
 }
 
 .match_publish_container {
@@ -2605,6 +2666,10 @@ const onRoleSwitch = (role) => {
   .ppv-head-house {
     width: 150px;
   }
+
+  .steps-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 899px) {
@@ -2647,6 +2712,10 @@ const onRoleSwitch = (role) => {
 @media (max-width: 640px) {
   .hsw-shell {
     width: calc(100% - 24px);
+  }
+
+  .steps-list {
+    grid-template-columns: 1fr;
   }
 
   .hsw-back {

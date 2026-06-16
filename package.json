@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "npx rimraf .nuxt && nuxt dev --host",
+    "dev": "nuxt dev --host --port 3000",
+    "dev:clean": "npx rimraf .nuxt/cache && nuxt dev --host --port 3000",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
