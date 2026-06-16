@@ -592,24 +592,11 @@ onUnmounted(() => {
 }
 
 .mesh {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image:
-    linear-gradient(rgba(35, 29, 69, 0.7) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(35, 29, 69, 0.7) 1px, transparent 1px);
-  background-size: 38px 38px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 92%);
+  display: none;
 }
 
 .ambient {
-  position: fixed;
-  border-radius: 999px;
-  filter: blur(36px);
-  pointer-events: none;
-  opacity: 0.32;
-  animation: drift 20s ease-in-out infinite;
+  display: none;
 }
 
 .ambient-a {
