@@ -36,15 +36,12 @@
           <p class="signin-sub">{{ heroSub }}</p>
 
           <div class="signin-image-stack">
-            <article class="signin-image-card signin-image-card--large">
-              <img src="/images/onboarding_background.jpg" alt="UK property street" />
+            <article class="signin-image-card signin-image-card--solo signin-float-a">
+              <img src="/welcome-house.png" alt="Sample house" />
               <div class="signin-image-overlay">
                 <span>HomeScore-ready flow</span>
                 <strong>See the home before the login</strong>
               </div>
-            </article>
-            <article class="signin-image-card signin-image-card--small signin-float-a">
-              <img src="/welcome-house.png" alt="Sample house" />
             </article>
           </div>
 
@@ -718,11 +715,12 @@ const onPrimary = () => {
 .signin-image-stack {
   margin-top: 18px;
   position: relative;
-  min-height: 312px;
+  display: flex;
+  justify-content: center;
 }
 
 .signin-image-card {
-  position: absolute;
+  position: relative;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid #d8e3ee;
@@ -773,18 +771,16 @@ const onPrimary = () => {
   transform: scale(1.05);
 }
 
-.signin-image-card--large {
-  left: 0;
-  top: 0;
-  width: min(100%, 460px);
-  height: 296px;
+.signin-image-card--solo {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 16 / 11;
+  border-color: rgba(0, 161, 154, 0.25);
+  box-shadow: 0 22px 44px rgba(35, 29, 69, 0.16);
 }
 
-.signin-image-card--small {
-  width: 160px;
-  height: 160px;
-  right: 8px;
-  bottom: -4px;
+.signin-image-card--solo img {
+  object-position: center;
 }
 
 .signin-image-overlay {
@@ -1323,12 +1319,8 @@ const onPrimary = () => {
     grid-template-columns: 1fr;
   }
 
-  .signin-image-stack {
-    min-height: 320px;
-  }
-
-  .signin-image-card--large {
-    width: min(100%, 520px);
+  .signin-image-card--solo {
+    max-width: 520px;
   }
 }
 
@@ -1350,20 +1342,8 @@ const onPrimary = () => {
     font-size: 38px;
   }
 
-  .signin-image-stack {
-    min-height: 230px;
-  }
-
-  .signin-image-card--large {
-    width: 100%;
-    height: 220px;
-  }
-
-  .signin-image-card--small {
-    width: 102px;
-    height: 102px;
-    right: 0;
-    bottom: -4px;
+  .signin-image-card--solo {
+    max-width: 100%;
   }
 
   .signin-metrics {

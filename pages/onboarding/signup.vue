@@ -38,18 +38,12 @@
         </div>
 
         <div class="signup-image-stack">
-          <article class="signup-image-card signup-image-card--large">
-            <img src="/images/onboarding_background.jpg" alt="UK house exterior" />
+          <article class="signup-image-card signup-image-card--solo signup-float-a">
+            <img src="/welcome-house.png" alt="Sample house" />
             <div class="signup-image-overlay">
               <span>Instant onboarding</span>
               <strong>Property context before first login</strong>
             </div>
-          </article>
-          <article class="signup-image-card signup-image-card--small signup-float-a">
-            <img src="/welcome-house.png" alt="Sample house" />
-          </article>
-          <article class="signup-image-card signup-image-card--small signup-float-b">
-            <img src="/images/findPropertyBackground.png" alt="Residential property" />
           </article>
         </div>
 
@@ -857,11 +851,12 @@ const handleSubmit = async () => {
 .signup-image-stack {
   margin-top: 18px;
   position: relative;
-  min-height: 312px;
+  display: flex;
+  justify-content: center;
 }
 
 .signup-image-card {
-  position: absolute;
+  position: relative;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid #d8e3ee;
@@ -912,27 +907,16 @@ const handleSubmit = async () => {
   transform: scale(1.05);
 }
 
-.signup-image-card--large {
-  left: 0;
-  top: 0;
-  width: min(100%, 460px);
-  height: 296px;
+.signup-image-card--solo {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 16 / 11;
+  border-color: rgba(0, 161, 154, 0.25);
+  box-shadow: 0 22px 44px rgba(35, 29, 69, 0.16);
 }
 
-.signup-image-card--small {
-  width: 160px;
-  height: 160px;
-}
-
-.signup-image-card--small:nth-of-type(2) {
-  left: auto;
-  right: 8px;
-  top: auto;
-  bottom: -4px;
-}
-
-.signup-image-card--small:nth-of-type(3) {
-  display: none;
+.signup-image-card--solo img {
+  object-position: center;
 }
 
 .signup-image-overlay {
@@ -1159,12 +1143,8 @@ const handleSubmit = async () => {
     width: calc(100% - 28px);
   }
 
-  .signup-image-stack {
-    min-height: 320px;
-  }
-
-  .signup-image-card--large {
-    width: min(100%, 520px);
+  .signup-image-card--solo {
+    max-width: 520px;
   }
 }
 
@@ -1186,23 +1166,8 @@ const handleSubmit = async () => {
     font-size: 38px;
   }
 
-  .signup-image-stack {
-    min-height: 230px;
-  }
-
-  .signup-image-card--large {
-    width: 100%;
-    height: 220px;
-  }
-
-  .signup-image-card--small {
-    width: 102px;
-    height: 102px;
-  }
-
-  .signup-image-card--small:nth-of-type(2) {
-    right: 0;
-    bottom: -4px;
+  .signup-image-card--solo {
+    max-width: 100%;
   }
 
   .signup-metrics {
