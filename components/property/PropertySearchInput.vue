@@ -268,10 +268,23 @@ function handleInput(val: string) {
   loading.value = true
   debounceTimer = setTimeout(async () => {
     try {
-      const { items, total: t } = await fetchPage(val, 0)
+      // Property DB search. If the backend is unreachable this throws — we
+      // still want the postcode fallback below to run, so catch it locally
+      // and treat it as "no property results" instead of aborting.
+      let items: any[] = []
+      let t = 0
+      try {
+        const page = await fetchPage(val, 0)
+        items = page.items
+        t = page.total
+      } catch {
+        items = []
+        t = 0
+      }
       results.value = items
       total.value = t
-      // Fall back to live UK postcode suggestions when no property matched.
+      // Fall back to live UK postcode suggestions when no property matched
+      // (or when the property search failed entirely).
       if (
         items.length === 0 &&
         props.postcodeFallback &&
