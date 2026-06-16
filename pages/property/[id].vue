@@ -13,6 +13,28 @@
     </div>
 
     <template v-else-if="property">
+      <!-- ─── Web top nav ──────────────────────────────────────────── -->
+      <header class="pps-web-nav">
+        <div class="pps-web-nav-inner">
+          <button class="pps-nav-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo.png" alt="" class="pps-nav-logo" />
+            <span>umovingu</span>
+          </button>
+          <nav class="pps-nav-links" aria-label="Primary">
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="pps-nav-actions">
+            <button class="pps-nav-help" type="button" aria-label="Help">?</button>
+            <button class="pps-nav-allpass" type="button" @click="goBack">All passports</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="pps-shell">
       <!-- ─── SECTION 1: Hero ──────────────────────────────────────── -->
       <div
         class="pps-hero"
@@ -117,9 +139,9 @@
           />
         </svg>
 
-        <div class="pps-hero-gradient-overlay" />
+        <div class="pps-hero-scrim" />
 
-        <!-- State-aware hero badges -->
+        <!-- State-aware passport badge (top-right) -->
         <div class="pps-hero-badges">
           <div
             v-if="pageState === 'unclaimed'"
@@ -143,32 +165,32 @@
             💧 {{ floodBadgeLabel }}
           </div>
         </div>
-      </div>
 
-      <!-- ─── SECTION 2: Property Identity ────────────────────────── -->
-      <div class="pps-identity">
-        <div class="pps-identity-address">{{ property.addressLine1 }}</div>
-        <div class="pps-identity-suburb">
-          <template v-if="property.city">{{ property.city }}</template>
-          <template v-if="property.city && property.postcode">, </template>
-          <template v-if="property.postcode">{{ property.postcode }}</template>
-        </div>
-
-        <div v-if="estimatedPrice" class="pps-price-row">
-          <span class="pps-price-value">{{ formatPrice(estimatedPrice) }}</span>
-          <span class="pps-price-source">{{ priceSourceLabel }}</span>
-        </div>
-
-        <div class="pps-pill-row">
-          <span v-if="property.propertyType" class="pps-pill">{{
-            property.propertyType
-          }}</span>
-          <span v-if="property.sqft" class="pps-pill"
-            >📐 {{ property.sqft.toLocaleString() }} sqft</span
-          >
-          <span v-if="property.yearBuilt" class="pps-pill"
-            >📅 {{ property.yearBuilt }}</span
-          >
+        <!-- Identity overlaid on the image — one cohesive hero unit -->
+        <div class="pps-hero-overlay">
+          <h1 class="pps-identity-address">{{ property.addressLine1 }}</h1>
+          <div class="pps-identity-suburb">
+            <template v-if="property.city">{{ property.city }}</template>
+            <template v-if="property.city && property.postcode">, </template>
+            <template v-if="property.postcode">{{ property.postcode }}</template>
+          </div>
+          <div class="pps-hero-meta">
+            <div v-if="estimatedPrice" class="pps-price-row">
+              <span class="pps-price-value">{{ formatPrice(estimatedPrice) }}</span>
+              <span class="pps-price-source">{{ priceSourceLabel }}</span>
+            </div>
+            <div class="pps-pill-row">
+              <span v-if="property.propertyType" class="pps-pill">{{
+                property.propertyType
+              }}</span>
+              <span v-if="property.sqft" class="pps-pill"
+                >📐 {{ property.sqft.toLocaleString() }} sqft</span
+              >
+              <span v-if="property.yearBuilt" class="pps-pill"
+                >📅 {{ property.yearBuilt }}</span
+              >
+            </div>
+          </div>
         </div>
       </div>
 
@@ -292,6 +314,9 @@
         </div>
       </div>
 
+      <!-- ─── Two-column web body ──────────────────────────────────── -->
+      <div class="pps-grid">
+      <div class="pps-col-main">
       <!-- ─── SECTION 4: Live Signal Bar ──────────────────────────── -->
       <div class="pps-signal-bar">
         <div class="pps-signal-left">
@@ -716,6 +741,9 @@
         </div>
       </div>
 
+      </div><!-- /pps-col-main -->
+
+      <aside class="pps-col-side">
       <!-- ─── SECTION 8: Running Costs ─────────────────────────────── -->
       <div v-if="costsBoxes.length > 0" class="pps-costs-card">
         <div class="pps-costs-header">
@@ -871,7 +899,20 @@
         </div>
       </div>
 
-      <div style="height: 80px" />
+      <!-- ─── Ask a question (sidebar) ─────────────────────────────── -->
+      <div class="pps-ask-card">
+        <div class="pps-ask-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </div>
+        <div class="pps-ask-title">Need something specific?</div>
+        <div class="pps-ask-sub">Ask a neighbour or our community</div>
+        <button type="button" class="pps-ask-btn" @click="onContactClick">Ask a question</button>
+      </div>
+      </aside><!-- /pps-col-side -->
+      </div><!-- /pps-grid -->
+      </div><!-- /pps-shell -->
     </template>
 
     <!-- Drawers — wired to the new state-driven CTAs. -->
@@ -6092,18 +6133,194 @@ function formatSaleDate(dateStr: string): string {
 
 <style scoped>
 .pps-page {
+  /* ── Design tokens ───────────────────────────────────────────
+     One source of truth for the premium look: restrained shadows,
+     a consistent radius/spacing rhythm, and a tight type scale. */
+  --ink: #0e1c34;          /* primary text */
+  --ink-2: #46566f;        /* secondary text */
+  --ink-3: #8093a8;        /* muted text */
+  --brand: #00b6ae;        /* teal */
+  --brand-ink: #00857f;    /* teal on light */
+  --navy: #231d45;
+  --line: #e9eef5;         /* hairline borders */
+  --surface: #ffffff;
+
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+
+  --sp-1: 6px;
+  --sp-2: 10px;
+  --sp-3: 14px;
+  --sp-4: 18px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* Layered, low-spread shadows — depth without heaviness */
+  --sh-sm: 0 1px 2px rgba(14, 28, 52, 0.04), 0 1px 3px rgba(14, 28, 52, 0.05);
+  --sh-md: 0 1px 2px rgba(14, 28, 52, 0.04), 0 8px 20px rgba(14, 28, 52, 0.06);
+  --sh-lg: 0 2px 4px rgba(14, 28, 52, 0.04), 0 18px 40px rgba(14, 28, 52, 0.09);
+  --sh-brand: 0 10px 26px rgba(0, 182, 174, 0.20);
+
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+    radial-gradient(1200px 480px at 78% -8%, rgba(0, 182, 174, 0.08) 0%, rgba(0, 182, 174, 0) 60%),
+    linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
   width: 100%;
   margin: 0;
-  color: #231d45;
+  color: var(--ink);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   overflow-x: clip;
-  padding: 8px 12px 24px;
+  padding: 0 0 56px;
+}
+
+/* ─── Web top nav ─────────────────────────────────────────────── */
+.pps-web-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(150%) blur(14px);
+  -webkit-backdrop-filter: saturate(150%) blur(14px);
+  border-bottom: 1px solid rgba(28, 43, 65, 0.07);
+}
+.pps-web-nav-inner {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.pps-nav-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: #0f2440;
+  cursor: pointer;
+}
+.pps-nav-logo { width: 28px; height: 28px; object-fit: contain; }
+.pps-nav-links { display: flex; gap: 4px; }
+.pps-nav-links button {
+  border: 0;
+  background: transparent;
+  color: #5b6d89;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 9px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.pps-nav-links button:hover { background: rgba(20, 53, 98, 0.06); color: #0f2440; }
+.pps-nav-links button.active {
+  background: rgba(0, 182, 174, 0.12);
+  color: #00857f;
+  box-shadow: inset 0 0 0 1px rgba(0, 182, 174, 0.22);
+}
+.pps-nav-actions { display: flex; align-items: center; gap: 12px; }
+.pps-nav-help {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid #e2eaf2;
+  background: #fff;
+  color: #00857f;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.pps-nav-help:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 133, 127, 0.16); }
+.pps-nav-allpass {
+  border: 1px solid #dbe5ef;
+  background: #fff;
+  color: #0f2440;
+  font-weight: 700;
+  font-size: 13.5px;
+  font-family: inherit;
+  padding: 9px 16px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+}
+.pps-nav-allpass:hover { transform: translateY(-1px); border-color: #c6d6e6; box-shadow: 0 8px 18px rgba(15, 36, 62, 0.1); }
+
+/* ─── Shell + two-column grid ─────────────────────────────────── */
+.pps-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding-top: 22px;
+}
+.pps-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
+  align-items: start;
+  margin-top: 16px;
+}
+.pps-col-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.pps-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  position: sticky;
+  top: 88px;
+}
+
+/* ─── Ask-a-question sidebar card ─────────────────────────────── */
+.pps-ask-card {
+  background: #fff;
+  border: 1px solid #e7eef6;
+  border-radius: 18px;
+  padding: 26px 22px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 10px 26px rgba(15, 36, 62, 0.05);
+}
+.pps-ask-ic {
+  width: 46px; height: 46px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #eafaf8, #def6f3);
+  color: #00857f;
+}
+.pps-ask-ic svg { width: 22px; height: 22px; }
+.pps-ask-title { font-size: 16px; font-weight: 800; color: #0f2440; letter-spacing: -0.2px; }
+.pps-ask-sub { font-size: 13px; color: #6b7a90; margin-top: 4px; }
+.pps-ask-btn {
+  margin-top: 16px;
+  border: 1px solid #dbe5ef;
+  background: #fff;
+  color: #0f2440;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 11px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+}
+.pps-ask-btn:hover { transform: translateY(-1px); border-color: #00b6ae; box-shadow: 0 8px 18px rgba(0, 182, 174, 0.18); }
+
+@media (max-width: 980px) {
+  .pps-grid { grid-template-columns: 1fr; }
+  .pps-col-side { position: static; }
+  .pps-nav-links { display: none; }
+  .pps-shell { width: calc(100% - 32px); }
+  .pps-web-nav-inner { width: calc(100% - 32px); }
 }
 
 .pps-loading-state {
@@ -6141,25 +6358,44 @@ function formatSaleDate(dateStr: string): string {
   cursor: pointer;
 }
 
-/* ─── Hero ──────────────────────────────────────────────────── */
+/* ─── Hero (cohesive overlay unit) ──────────────────────────── */
 .pps-hero {
-  height: 260px;
-  width: min(100%, 1080px);
+  height: 340px;
+  width: 100%;
   margin: 0 auto;
-  background: linear-gradient(
-    180deg,
-    #b8cfc4 0%,
-    #8aab96 40%,
-    #6d9080 70%,
-    #f5f5f7 100%
-  );
+  background: linear-gradient(180deg, #b8cfc4 0%, #8aab96 45%, #6d9080 100%);
+  background-size: cover;
+  background-position: center;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-  border-radius: 24px;
-  box-shadow:
-    0 16px 36px rgba(17, 52, 88, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-lg);
+}
+/* Scrim: legible white text over any photo */
+.pps-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 16, 34, 0.32) 0%, rgba(8, 16, 34, 0) 26%),
+    linear-gradient(0deg, rgba(8, 16, 34, 0.78) 0%, rgba(8, 16, 34, 0.28) 34%, rgba(8, 16, 34, 0) 58%);
+  pointer-events: none;
+}
+.pps-hero-overlay {
+  position: absolute;
+  left: var(--sp-5);
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  z-index: 6;
+  color: #fff;
+}
+.pps-hero-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
 }
 .pps-hero-btn {
   position: absolute;
@@ -6212,14 +6448,13 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-hero-badges {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
-  right: 16px;
+  top: 18px;
+  left: 18px;
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
   align-items: center;
   z-index: 10;
-  animation: pps-badge-slide-up 0.4s 0.4s both;
+  animation: pps-badge-slide-up 0.4s 0.3s both;
 }
 @keyframes pps-badge-slide-up {
   from {
@@ -6262,60 +6497,55 @@ function formatSaleDate(dateStr: string): string {
   font-weight: 700;
 }
 
-/* ─── Identity ──────────────────────────────────────────────── */
-.pps-identity {
-  width: min(100%, 1080px);
-  margin: 10px auto 0;
-  background: white;
-  border: 1px solid rgba(174, 201, 231, 0.52);
-  border-radius: 20px;
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  padding: 20px 20px 16px;
-}
+/* ─── Identity (now overlaid on hero) ───────────────────────── */
 .pps-identity-address {
-  font-size: 34px;
+  margin: 0;
+  font-size: clamp(26px, 3vw, 38px);
   font-weight: 800;
-  color: #1a1535;
-  line-height: 1.04;
-  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
 }
 .pps-identity-suburb {
-  font-size: 16px;
-  color: #7f7b96;
-  margin-top: 5px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.86);
+  margin-top: 4px;
+  font-weight: 500;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.3);
 }
 .pps-price-row {
-  margin-top: 12px;
   display: flex;
   align-items: baseline;
-  gap: 0;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .pps-price-value {
-  font-size: 30px;
+  font-size: clamp(24px, 2.6vw, 32px);
   font-weight: 800;
-  color: #00a19a;
+  color: #fff;
   line-height: 1;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 .pps-price-source {
   font-size: 12px;
-  color: #aaa;
-  margin-left: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 500;
 }
 .pps-pill-row {
-  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 .pps-pill {
-  background: #f0f0f2;
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
   padding: 5px 12px;
-  font-size: 13px;
-  color: #444;
+  font-size: 12.5px;
+  color: #fff;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -6324,15 +6554,13 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Action bar ────────────────────────────────────────────── */
 .pps-action-bar {
-  width: min(100%, 1080px);
-  margin: 10px auto 0;
-  padding: 14px 16px;
-  background: white;
-  border: 1px solid rgba(174, 201, 231, 0.52);
-  border-radius: 18px;
-  box-shadow:
-    0 10px 24px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  width: 100%;
+  margin: 0;
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-md);
 }
 .pps-passport-cta-unlock {
   width: 100%;
@@ -6451,8 +6679,8 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Signal bar ────────────────────────────────────────────── */
 .pps-signal-bar {
-  width: min(100%, 1080px);
-  margin: 10px auto 0;
+  width: 100%;
+  margin: 0;
   background: #f2faf8;
   border-top: 1px solid #e5f4f2;
   border-bottom: 1px solid #e5f4f2;
@@ -6499,13 +6727,13 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Score card ────────────────────────────────────────────── */
 .pps-score-card {
-  margin: 14px auto 0;
-  width: min(100%, 1080px);
-  border-radius: 20px;
+  margin: 0;
+  width: 100%;
+  border-radius: var(--r-lg);
   overflow: hidden;
-  border: 2px solid #231d45;
-  box-shadow: 0 4px 20px rgba(35, 29, 69, 0.1);
-  background: white;
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-md);
+  background: var(--surface);
 }
 .pps-score-card--clickable {
   cursor: pointer;
@@ -6696,78 +6924,68 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Explore grid ──────────────────────────────────────────── */
 .pps-explore-header {
-  width: min(100%, 1080px);
-  margin: 0 auto;
-  padding: 20px 16px 12px;
+  width: 100%;
+  margin: var(--sp-2) 0 calc(-1 * var(--sp-1));
+  padding: 0 2px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
 }
 .pps-explore-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
-  color: #1a1535;
+  color: var(--ink);
+  letter-spacing: -0.01em;
 }
 .pps-explore-sources {
   font-size: 13px;
-  color: #00a19a;
+  color: var(--brand-ink);
   font-weight: 700;
 }
 .pps-explore-grid {
-  width: min(100%, 1080px);
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
   padding: 0;
 }
 
 @media (max-width: 700px) {
-  .pps-page {
-    padding: 0 10px 24px;
-  }
-
   .pps-hero {
-    border-radius: 18px;
+    height: 280px;
+    border-radius: var(--r-lg);
   }
 
-  .pps-identity {
-    border-radius: 16px;
-    padding: 16px 14px 12px;
-  }
-
-  .pps-identity-address {
-    font-size: 40px;
-  }
-
-  .pps-action-bar,
-  .pps-signal-bar {
-    border-radius: 14px;
+  .pps-hero-overlay {
+    left: var(--sp-4);
+    right: var(--sp-4);
+    bottom: var(--sp-4);
   }
 
   .pps-explore-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: var(--sp-2);
   }
 }
 .pps-tile {
-  background: white;
-  border-radius: 16px;
-  padding: 16px 14px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: var(--sp-4) var(--sp-3);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(17, 52, 88, 0.08);
-  border: 1.5px solid rgba(174, 201, 231, 0.4);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--sh-sm);
+  border: 1px solid var(--line);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
 }
 .pps-tile:hover {
-  transform: scale(1.03);
-  border-color: rgba(35, 29, 69, 0.44);
-  box-shadow: 0 12px 28px rgba(17, 52, 88, 0.15);
+  transform: translateY(-3px);
+  border-color: #d4e6e3;
+  box-shadow: var(--sh-lg);
 }
 .pps-tile:active {
-  transform: scale(0.97);
+  transform: translateY(-1px);
 }
 .pps-tile-icon {
   width: 32px;
@@ -6824,27 +7042,25 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Passport card ─────────────────────────────────────────── */
 .pps-passport-card {
-  width: min(100%, 1080px);
-  margin: 16px auto 0;
-  background: white;
-  border-radius: 20px;
-  padding: 22px;
+  width: 100%;
+  margin: 0;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(174, 201, 231, 0.52);
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-md);
 }
 .pps-passport-card--clickable {
   cursor: pointer;
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .pps-passport-card--clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(17, 52, 88, 0.16);
+  box-shadow: var(--sh-lg);
 }
 .pps-passport-eyebrow-row {
   display: flex;
@@ -7079,15 +7295,13 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Costs card ────────────────────────────────────────────── */
 .pps-costs-card {
-  width: min(100%, 1080px);
-  margin: 14px auto 0;
-  border-radius: 16px;
+  width: 100%;
+  margin: 0;
+  border-radius: var(--r-lg);
   overflow: hidden;
-  border: 1px solid rgba(174, 201, 231, 0.52);
-  box-shadow:
-    0 10px 24px rgba(17, 52, 88, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  background: white;
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-md);
+  background: var(--surface);
 }
 .pps-costs-header {
   background: linear-gradient(135deg, #fbefd9 0%, #f5e0b5 100%);
@@ -7195,15 +7409,13 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Details card ──────────────────────────────────────────── */
 .pps-details-card {
-  width: min(100%, 1080px);
-  margin: 14px auto 0;
-  border-radius: 16px;
+  width: 100%;
+  margin: 0;
+  border-radius: var(--r-lg);
   overflow: hidden;
-  border: 1px solid rgba(174, 201, 231, 0.46);
-  box-shadow:
-    0 10px 24px rgba(17, 52, 88, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  background: white;
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-md);
+  background: var(--surface);
 }
 .pps-details-header {
   padding: 14px 16px 0;

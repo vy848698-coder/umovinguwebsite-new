@@ -27,7 +27,7 @@
             </svg>
             Share
           </button>
-          <button class="hsw-help" type="button" @click="router.push('/support')">
+          <button class="hsw-help" type="button" @click="router.push('/profile/support')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
               <circle cx="12" cy="12" r="10" />
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
@@ -67,7 +67,7 @@
           </div>
           <span class="bpvw-title-text">BUYER PROFILE</span>
         </div>
-        <button class="bpvw-help" @click="router.push('/support')">
+        <button class="bpvw-help" @click="router.push('/profile/support')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
           Need Help?
         </button>
@@ -384,7 +384,7 @@
             <div class="bp-privacy-title">Your privacy &amp; data security is our priority</div>
             <div class="bp-privacy-sub">All information is encrypted and securely stored. You control what you share.</div>
           </div>
-          <button class="bp-privacy-btn" @click="router.push('/profile/privacy')">Privacy &amp; Security</button>
+          <button class="bp-privacy-btn" @click="router.push('/legal/privacy')">Privacy &amp; Security</button>
         </div>
       </section>
     </template>

@@ -155,7 +155,7 @@ function goToPassportSample() {
   border-color: #6bd4cd;
 }
 .feat-card.homescore:hover {
-  border-color: #00a19a;
+  border-color: #00b6ae;
   box-shadow: 0 10px 26px -8px rgba(0, 161, 154, 0.28);
 }
 .feat-card.passport {
@@ -226,7 +226,7 @@ function goToPassportSample() {
   width: 28px;
   height: 36px;
   border-radius: 4px;
-  background: linear-gradient(170deg, #00b6ae 0%, #00a19a 55%, #007e78 100%);
+  background: linear-gradient(170deg, #00b6ae 0%, #00b6ae 55%, #007e78 100%);
   padding: 3px 3px 2px 4px;
   display: flex;
   flex-direction: column;
@@ -312,9 +312,9 @@ function goToPassportSample() {
   border: 1px solid;
 }
 .feat-card.homescore .feat-pill {
-  background: #00a19a;
+  background: #00b6ae;
   color: #fff;
-  border-color: #00a19a;
+  border-color: #00b6ae;
 }
 .feat-card.passport .feat-pill {
   background: #231d45;
@@ -372,7 +372,7 @@ function goToPassportSample() {
   transform: rotate(-90deg);
 }
 .feat-gauge .g-bg { stroke: #e5f4f2; }
-.feat-gauge .g-fill { stroke: #00a19a; stroke-linecap: round; }
+.feat-gauge .g-fill { stroke: #00b6ae; stroke-linecap: round; }
 .feat-gauge .g-num {
   position: absolute;
   inset: 0;
@@ -416,7 +416,7 @@ function goToPassportSample() {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: #00a19a;
+  background: #00b6ae;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,7 +439,7 @@ function goToPassportSample() {
   top: 4px;
   width: 50px;
   height: 66px;
-  background: linear-gradient(170deg, #00b6ae 0%, #00a19a 55%, #007e78 100%);
+  background: linear-gradient(170deg, #00b6ae 0%, #00b6ae 55%, #007e78 100%);
   border-radius: 3px 6px 6px 3px;
   box-shadow: 0 4px 10px rgba(0, 161, 154, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.20);
   transform: rotate(-4deg);
@@ -492,12 +492,12 @@ function goToPassportSample() {
   right: 3px;
   width: 24px;
   height: 24px;
-  border: 1.2px solid #00a19a;
+  border: 1.2px solid #00b6ae;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00a19a;
+  color: #00b6ae;
   transform: rotate(-12deg);
   background: rgba(255, 255, 255, 0.92);
 }
@@ -544,7 +544,7 @@ function goToPassportSample() {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #00a19a;
+  background: #00b6ae;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -577,7 +577,7 @@ function goToPassportSample() {
   color: #fff;
 }
 .feat-card.homescore .feat-cta {
-  background: #00a19a;
+  background: #00b6ae;
   box-shadow: 0 3px 10px rgba(0, 161, 154, 0.28);
 }
 .feat-card.homescore .feat-cta:hover { background: #00b6ae; }
