@@ -24,7 +24,7 @@
           </svg>
         </button>
         <div class="ob-step">{{ stepIndicator }}</div>
-        <button class="ob-skip" @click="navigateTo('/explore')">Skip</button>
+        <button class="ob-skip" @click="navigateTo('/')">Skip</button>
       </div>
       <div class="ob-progress">
         <div
@@ -1226,6 +1226,34 @@ onMounted(() => {
   padding-bottom: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* ── Desktop / website layout ──────────────────────────────────────
+   Below 768px the page stays a full-bleed mobile screen. On wider
+   viewports it becomes a centered website card on a tinted page so it
+   reads as a web layout rather than a stretched phone screen. */
+@media (min-width: 768px) {
+  .mobile-container {
+    background:
+      radial-gradient(circle at 12% 10%, rgba(0, 161, 154, 0.08) 0%, transparent 38%),
+      radial-gradient(circle at 88% 8%, rgba(35, 29, 69, 0.06) 0%, transparent 42%),
+      #f4f6f9;
+    padding: 40px 20px 56px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .ob-page {
+    width: 100%;
+    max-width: 720px;
+    min-height: auto;
+    border-radius: 24px;
+    border: 1px solid #e7e9f0;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(35, 29, 69, 0.12);
+    overflow: hidden;
+  }
 }
 
 /* ── Light header (replaces the old purple block) ────────────────── */

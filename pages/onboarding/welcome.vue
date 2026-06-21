@@ -90,7 +90,7 @@ const continueToApp = async () => {
     localStorage.removeItem('redirectAfterLogin')
     await navigateTo(redirectPath)
   } else {
-    await navigateTo('/explore')
+    await navigateTo('/')
   }
 }
 
@@ -178,6 +178,38 @@ function runConfetti() {
   min-height: 100dvh;
   position: relative;
   overflow: hidden;
+}
+
+/* ── Desktop / website layout: centered phone-width card on a tinted
+   page (mobile unchanged below 768px). The whole welcome screen is the
+   visual, so we frame it as a centered card rather than restyling its
+   internals. ── */
+@media (min-width: 768px) {
+  .welcome-screen.mobile-container {
+    max-width: 460px;
+    margin: 40px auto;
+    min-height: calc(100dvh - 80px);
+    border-radius: 28px;
+    border: 1px solid #e7e9f0;
+    box-shadow: 0 24px 60px rgba(35, 29, 69, 0.14);
+  }
+
+  /* Tinted page backdrop behind the centered card. */
+  .welcome-screen.mobile-container::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 12% 10%, rgba(0, 161, 154, 0.08) 0%, transparent 38%),
+      radial-gradient(circle at 88% 8%, rgba(35, 29, 69, 0.06) 0%, transparent 42%),
+      #f4f6f9;
+    transform: none;
+    width: auto;
+    height: auto;
+    top: 0;
+    left: 0;
+  }
 }
 .welcome-screen::before {
   content: '';
