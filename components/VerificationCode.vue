@@ -80,6 +80,32 @@ const {
 </script>
 
 <style scoped>
+/* ── Desktop / website layout: centered phone-width card on a tinted
+   page (mobile unchanged below 768px) ── */
+@media (min-width: 768px) {
+  .mobile-container {
+    max-width: 460px;
+    margin: 40px auto;
+    min-height: calc(100dvh - 80px);
+    border-radius: 28px;
+    border: 1px solid #e7e9f0;
+    box-shadow: 0 24px 60px rgba(35, 29, 69, 0.14);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .mobile-container::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 12% 10%, rgba(0, 161, 154, 0.08) 0%, transparent 38%),
+      radial-gradient(circle at 88% 8%, rgba(35, 29, 69, 0.06) 0%, transparent 42%),
+      #f4f6f9;
+  }
+}
+
 /* Verification Header */
 .verification-header {
   @apply pt-6 px-6;
