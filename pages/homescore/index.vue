@@ -8,8 +8,9 @@
     <header class="hs-web-nav">
       <div class="hs-web-shell nav-inner">
         <button class="brand" type="button" @click="navigateTo('/')">
-          <img src="/logo.png" alt="" class="brand-logo" />
-          <span>umovingu</span>
+          <img src="/logo-new.png" alt="umovingu" class="brand-logo" />
+          <span class="brand-name">umovingu</span>
+          <span class="brand-beta">BETA</span>
         </button>
 
         <nav class="web-links" aria-label="Primary navigation">
@@ -221,10 +222,6 @@
 
     <!-- ── Footer (shared, matches Explore) ─────────────────────────── -->
     <SiteFooter />
-
-    <div class="hs-mobile-nav">
-      <BottomNav active="explore" />
-    </div>
   </div>
 </template>
 
@@ -232,7 +229,6 @@
 import { ref, computed, watch } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import ScoreRing from '~/components/homescore/ScoreRing.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 const route = useRoute()
@@ -432,9 +428,29 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 }
 
 .brand-logo {
-  width: 28px;
-  height: 28px;
+  width: auto;
+  height: 32px;
   object-fit: contain;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #0d1835;
+}
+
+.brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #007e78;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 2px;
 }
 
 .web-links {
@@ -1270,10 +1286,6 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   color: #00b6ad;
 }
 
-.hs-mobile-nav {
-  display: none;
-}
-
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .hs-hero {
@@ -1383,11 +1395,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
   .hs-main {
     padding-top: 40px;
-    padding-bottom: 100px;
-  }
-
-  .hs-mobile-nav {
-    display: block;
+    padding-bottom: 48px;
   }
 
   .hs-steps-grid {
@@ -1418,8 +1426,8 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 
   .brand-logo {
-    width: 24px;
-    height: 24px;
+    width: auto;
+    height: 28px;
   }
 
   .hs-main {
@@ -1471,7 +1479,21 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   .hs-how-tabs {
     display: flex;
     width: 100%;
-    overflow-x: auto;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 3px;
+    padding: 4px;
+  }
+
+  .hs-how-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 6px;
+    font-size: 12px;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
   }
 
   .footer-grid {

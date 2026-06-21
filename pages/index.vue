@@ -18,10 +18,33 @@
         </nav>
 
         <div class="lp-nav-actions">
-          <button class="lp-btn lp-btn--ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+          <button class="lp-btn lp-btn--ghost lp-nav-signin" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
           <button class="lp-btn lp-btn--solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
+          <button
+            class="lp-nav-burger"
+            type="button"
+            :aria-expanded="mobileMenuOpen"
+            aria-label="Toggle navigation menu"
+            @click="mobileMenuOpen = !mobileMenuOpen"
+          >
+            <span :class="{ open: mobileMenuOpen }" />
+          </button>
         </div>
       </div>
+
+      <!-- Mobile dropdown menu -->
+      <transition name="lp-menu">
+        <nav v-if="mobileMenuOpen" class="lp-mobile-menu" aria-label="Mobile navigation">
+          <div class="lp-shell">
+            <button type="button" @click="scrollToSection('homescore')">HomeScore</button>
+            <button type="button" @click="scrollToSection('passport')">Passport</button>
+            <button type="button" @click="scrollToSection('story')">Story</button>
+            <button type="button" @click="scrollToSection('market')">Market</button>
+            <button type="button" @click="scrollToSection('reviews')">Reviews</button>
+            <button class="lp-mobile-signin" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+          </div>
+        </nav>
+      </transition>
     </header>
 
     <main>
@@ -421,6 +444,7 @@ const gaugeScore = 74
 const showStickyCta = ref(false)
 const isCalmMode = ref(false)
 const ctaVariant = ref<'A' | 'B'>('A')
+const mobileMenuOpen = ref(false)
 
 // Static illustrative content for the property ribbon. `house` picks one of
 // the flat-illustration variants, `tone` the pastel backdrop, `kind` the tag
@@ -508,6 +532,7 @@ function scrollToTop() {
 }
 
 function scrollToSection(id: string) {
+  mobileMenuOpen.value = false
   const target = document.getElementById(id)
   if (!target) return
   target.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -836,6 +861,64 @@ onUnmounted(() => {
 .lp-nav-links button:hover { color: var(--navy); background: rgba(35, 29, 69, 0.05); }
 .lp-nav-actions { display: inline-flex; align-items: center; gap: 10px; }
 
+/* Hamburger — hidden on desktop, shown ≤960px */
+.lp-nav-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+}
+.lp-nav-burger span,
+.lp-nav-burger span::before,
+.lp-nav-burger span::after {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--navy);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.lp-nav-burger span { position: relative; }
+.lp-nav-burger span::before { position: absolute; top: -6px; }
+.lp-nav-burger span::after { position: absolute; top: 6px; }
+.lp-nav-burger span.open { background: transparent; }
+.lp-nav-burger span.open::before { top: 0; transform: rotate(45deg); }
+.lp-nav-burger span.open::after { top: 0; transform: rotate(-45deg); }
+
+/* Mobile dropdown menu */
+.lp-mobile-menu {
+  display: none;
+  border-top: 1px solid rgba(35, 29, 69, 0.07);
+  background: rgba(243, 242, 239, 0.97);
+  backdrop-filter: blur(12px);
+  padding: 8px 0 14px;
+}
+.lp-mobile-menu .lp-shell { display: flex; flex-direction: column; }
+.lp-mobile-menu button {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  text-align: left;
+  padding: 13px 4px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(35, 29, 69, 0.06);
+}
+.lp-mobile-menu button:last-child { border-bottom: 0; }
+.lp-mobile-signin { color: var(--teal-dark) !important; font-weight: 700 !important; }
+
+.lp-menu-enter-active, .lp-menu-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.lp-menu-enter-from, .lp-menu-leave-to { opacity: 0; transform: translateY(-8px); }
+
 /* ── Hero ────────────────────────────────────────────────────────── */
 .lp-hero { padding: 56px 0 64px; }
 .lp-hero-grid {
@@ -1096,6 +1179,9 @@ onUnmounted(() => {
   width: max-content;
   padding: 6px 8px;
   animation: lp-marquee 42s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 .lp-strip-viewport:hover .lp-strip-track { animation-play-state: paused; }
 
@@ -1154,8 +1240,8 @@ onUnmounted(() => {
 .lp-strip-tag.is-score { background: #ecebf1; color: #6b6783; }
 
 @keyframes lp-marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 .calm-mode .lp-strip-track { animation-play-state: paused; }
 
@@ -1629,23 +1715,75 @@ onUnmounted(() => {
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 960px) {
   .lp-hero-grid, .lp-split, .lp-split--passport { grid-template-columns: 1fr; gap: 40px; }
-  .lp-hero-visual { min-height: 320px; max-width: 420px; }
+  .lp-hero-visual { min-height: 320px; max-width: 420px; margin: 0 auto; }
   .lp-market-grid { grid-template-columns: 1fr; }
   .lp-dark-card-col { justify-content: flex-start; }
   .lp-dark-card { max-width: 100%; }
   .lp-footer-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Swap desktop links for the hamburger menu */
   .lp-nav-links { display: none; }
+  .lp-nav-burger { display: inline-flex; }
+  .lp-mobile-menu { display: block; }
+  .lp-nav-signin { display: none; }
 }
 
 @media (max-width: 600px) {
+  .lp-shell { width: calc(100% - 32px); }
   .lp-section { padding: 52px 0; }
+  .lp-nav-inner { min-height: 60px; gap: 12px; }
+  .lp-nav-actions { gap: 8px; }
   .lp-hero { padding: 36px 0 44px; }
-  .lp-hero-search { flex-direction: column; }
+  .lp-hero-search { flex-direction: column; align-items: stretch; padding: 10px; }
+  .lp-hero-search .lp-btn { width: 100%; justify-content: center; }
   .lp-feature-tiles { grid-template-columns: 1fr; }
-  .lp-story-stats article { flex: 1; min-width: 0; padding: 16px; }
+
+  /* Property strip — smaller cards + lighter shadow so the marquee stays
+     smooth on mobile GPUs (heavy box-shadows are the main repaint cost). */
+  .lp-strip-card { flex: 0 0 200px; box-shadow: 0 6px 16px rgba(35, 29, 69, 0.05); }
+
+  /* On mobile the strip sits well below the 760px calm-mode scroll threshold,
+     so calm-mode would freeze the marquee before it's ever in view. Keep it
+     running so it scrolls like it does on large screens. */
+  .calm-mode .lp-strip-track { animation-play-state: running; }
+  .lp-strip-media { height: 100px; }
+  .lp-house { width: 110px; height: 70px; }
+
+  /* Hero data card — straighten + pull floating badges inside the viewport */
+  .lp-hero-visual { max-width: 340px; min-height: 300px; padding: 18px 0; }
+  .lp-passport-card { transform: none; margin: 0 auto; max-width: 320px; }
+  .lp-badge--solicitor { top: -10px; right: 0; max-width: 200px; }
+  .lp-badge--score { bottom: -10px; left: 0; }
+
+  /* HomeScore card — stack ring above the rows so it never squeezes */
+  .lp-score-top { grid-template-columns: 1fr; gap: 20px; justify-items: center; }
+  .lp-score-rows { width: 100%; }
+  .lp-score-card { padding: 26px 20px; }
+
+  /* Story stats — let the card shrink and wrap instead of overflowing */
+  .lp-story-stats { width: 100%; max-width: 100%; flex-wrap: wrap; }
+  .lp-story-stats article { flex: 1 1 33%; min-width: 0; padding: 16px 12px; }
+  .lp-story-stats strong { font-size: 28px; }
+  .lp-story-stats article + article { border-left: 0; }
+
+  .lp-timeline-toggle { width: 100%; max-width: 100%; }
+  .lp-timeline-toggle button { flex: 1; text-align: center; }
   .lp-timeline { flex-wrap: wrap; gap: 18px; }
   .lp-timeline::before { display: none; }
   .lp-timeline-step { flex: 0 0 28%; }
+
   .lp-footer-grid { grid-template-columns: 1fr 1fr; gap: 22px; }
+}
+
+@media (max-width: 400px) {
+  .lp-shell { width: calc(100% - 24px); }
+  .lp-hero-title { font-size: clamp(34px, 11vw, 42px); letter-spacing: -1.2px; }
+  .lp-h2 { font-size: clamp(26px, 8vw, 30px); }
+  .lp-story-stats { flex-direction: column; }
+  .lp-story-stats article { flex: 1 1 auto; width: 100%; }
+  .lp-story-stats article + article { border-top: 1px solid var(--line); }
+  .lp-timeline-step { flex: 0 0 44%; }
+  .lp-footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .lp-cta-actions .lp-btn { width: 100%; }
 }
 </style>
