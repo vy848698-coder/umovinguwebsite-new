@@ -1357,7 +1357,8 @@ onUnmounted(() => {
   color: var(--navy);
 }
 .lp-story-stats {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   justify-content: center;
   margin: 0 auto 38px;
   background: #fff;
@@ -1376,8 +1377,11 @@ onUnmounted(() => {
 .lp-story-stats span { font-size: 12.5px; color: var(--ink-soft); }
 
 .lp-timeline-toggle {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   gap: 4px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 5px;
   background: #fff;
   border: 1px solid var(--line);
