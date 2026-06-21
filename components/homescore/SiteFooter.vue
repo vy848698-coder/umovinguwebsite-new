@@ -48,11 +48,8 @@
 .ex-footer {
   margin-top: 20px;
   padding: 40px 0 0;
-  border-top: 1px solid rgba(30, 47, 71, 0.12);
-  background:
-    radial-gradient(circle at 86% 18%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 46%),
-    linear-gradient(180deg, rgba(247, 252, 255, 0.96), rgba(236, 246, 252, 0.98));
-  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #231d45;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   position: relative;
   z-index: 2;
@@ -166,11 +163,12 @@
   color: #113352;
 }
 
+/* Sits directly on the dark #231d45 footer background, so keep it light */
 .web-footer-bottom {
   margin-top: 14px;
   padding: 12px 0 20px;
-  border-top: 1px solid rgba(30, 47, 71, 0.11);
-  color: #60748f;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
 }
 
