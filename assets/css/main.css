@@ -1,3 +1,8 @@
+/* Plus Jakarta Sans — imported at the stylesheet level so the font is
+   guaranteed to load with the CSS, independent of the <link> in nuxt.config
+   (which can be skipped by the service-worker cache / blocked at runtime). */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';

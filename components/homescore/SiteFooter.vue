@@ -4,7 +4,9 @@
       <div class="web-footer-grid">
         <div class="web-footer-intro">
           <div class="web-footer-brand">
-            <img src="/logo.png" alt="" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" />
+            </svg>
             <strong>umovingu</strong>
           </div>
           <span class="web-footer-chip">Built for UK property journeys</span>
@@ -46,9 +48,8 @@
 
 <style scoped>
 .ex-footer {
-  margin-top: 20px;
-  padding: 40px 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 40px;
+  padding: 16px 0 24px;
   background: #231d45;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   position: relative;
@@ -61,73 +62,68 @@
 
 .web-footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  border-radius: 22px;
-  border: 1px solid rgba(182, 203, 228, 0.55);
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow:
-    0 20px 36px rgba(30, 58, 92, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding: 44px 0 0;
 }
 
 .web-footer-intro {
   display: grid;
-  gap: 10px;
+  gap: 14px;
+  align-content: start;
 }
 .web-footer-brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
 }
-.web-footer-brand img {
-  width: 22px;
-  height: 22px;
+.web-footer-brand img,
+.web-footer-brand svg {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 .web-footer-brand strong {
-  font-size: 20px;
-  color: #1c2d44;
+  font-size: 21px;
+  color: #fff;
+  font-weight: 800;
   letter-spacing: -0.4px;
 }
 .web-footer-chip {
   justify-self: start;
-  font-size: 11px;
+  font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: #0f756f;
-  border: 1px solid rgba(0, 161, 154, 0.3);
-  background: rgba(230, 252, 249, 0.95);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 999px;
-  padding: 5px 10px;
+  padding: 6px 12px;
   font-weight: 800;
 }
 .web-footer-intro p {
   margin: 0;
-  color: #5b7192;
-  font-size: 13px;
-  line-height: 1.55;
+  max-width: 300px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  line-height: 1.6;
 }
 .web-footer-cta {
   display: inline-flex;
   justify-self: start;
   align-items: center;
   border: 0;
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 13px;
+  padding: 0;
+  font-size: 14px;
   font-weight: 700;
   font-family: inherit;
-  color: #fff;
-  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 100%);
-  box-shadow: 0 10px 18px rgba(30, 128, 196, 0.24);
+  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: color 0.18s ease;
 }
 .web-footer-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(30, 128, 196, 0.22);
+  color: #2fd0c6;
 }
 
 .web-footer-col {
@@ -138,9 +134,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   font-size: 12px;
-  color: #1f3450;
+  font-weight: 800;
+  color: #fff;
   text-transform: uppercase;
   letter-spacing: 1.1px;
 }
@@ -149,27 +146,27 @@
   border: 0;
   display: block;
   background: transparent;
-  color: #50637f;
+  color: rgba(255, 255, 255, 0.62);
   padding: 0;
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 11px;
+  font-size: 14px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   text-align: left;
-  transition: color 0.18s ease, transform 0.18s ease;
+  transition: color 0.18s ease;
 }
 .web-footer-grid button:hover {
-  color: #113352;
+  color: #fff;
 }
 
 /* Sits directly on the dark #231d45 footer background, so keep it light */
 .web-footer-bottom {
-  margin-top: 14px;
-  padding: 12px 0 20px;
+  margin-top: 44px;
+  padding: 22px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
 }
 
 /* ── Header icons ──────────────────────────────────────────────────── */
@@ -182,9 +179,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
-  background: rgba(227, 240, 255, 0.9);
-  color: #2a4a70;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
 }
 .footer-hicon::before {
   content: '';
@@ -194,9 +191,9 @@
   background: currentColor;
 }
 .footer-hicon--product {
-  background: rgba(223, 241, 255, 0.95);
-  border-color: rgba(87, 156, 217, 0.35);
-  color: #2f5f89;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.7);
 }
 .footer-hicon--product::before {
   width: 4px;
@@ -209,9 +206,9 @@
   transform: translate(-2px, -2px);
 }
 .footer-hicon--legal {
-  background: rgba(229, 248, 241, 0.95);
-  border-color: rgba(45, 154, 120, 0.35);
-  color: #1f7f5b;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.7);
 }
 .footer-hicon--legal::before {
   width: 9px;
@@ -220,9 +217,9 @@
   clip-path: polygon(50% 0%, 95% 18%, 82% 100%, 18% 100%, 5% 18%);
 }
 .footer-hicon--account {
-  background: rgba(248, 238, 255, 0.95);
-  border-color: rgba(145, 111, 203, 0.35);
-  color: #6c4fb0;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.7);
 }
 .footer-hicon--account::before {
   width: 6px;
