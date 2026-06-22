@@ -91,11 +91,11 @@
           </div>
 
           <!-- Passport card mockup -->
-          <div class="lp-hero-visual" :style="heroStyleVars" @mousemove="onHeroMove" @mouseleave="resetHeroMove">
+          <div class="lp-hero-visual">
             <article class="lp-passport-card">
               <span class="lp-passport-kicker">Property Passport</span>
               <div class="lp-passport-logo">
-                <OPIcon name="logo" />
+                <img src="/op-icons/logo.svg" alt="umu" class="lp-passport-logo-mark" />
               </div>
               <div class="lp-passport-addr">
                 <strong>55, Woodfield Road</strong>
@@ -111,13 +111,17 @@
 
             <div class="lp-badge lp-badge--solicitor lp-float-b">
               <span class="lp-badge-eyebrow"><i class="lp-badge-pip" />Buyer's solicitor asks</span>
-              <span class="lp-badge-q">"FENSA certificate for the windows?"</span>
+              <div class="lp-badge-q-wrap">
+                <transition name="lp-q-fade" mode="out-in">
+                  <span class="lp-badge-q" :key="solicitorIndex">"{{ currentQuestion }}"</span>
+                </transition>
+              </div>
               <span class="lp-badge-line"><i class="lp-tick" />Already answered in the Passport</span>
             </div>
 
             <div class="lp-badge lp-badge--score lp-float-c">
               <span class="lp-badge-eyebrow">Your HomeScore</span>
-              <strong>74<small>/100</small></strong>
+              <strong><span data-count="74">74</span><small>/100</small></strong>
               <span class="lp-badge-score-sub">Good · ready to improve</span>
             </div>
           </div>
@@ -213,7 +217,7 @@
                   <circle class="lp-ring-bg" cx="70" cy="70" r="58" />
                   <circle class="lp-ring-meter" cx="70" cy="70" r="58" />
                 </svg>
-                <div class="lp-score-center"><strong>74</strong><span>Good</span></div>
+                <div class="lp-score-center"><strong>{{ displayScore }}</strong><span>Good</span></div>
               </div>
               <ul class="lp-score-rows">
                 <li><span>Bills vs. your street</span><b class="warn">22% above</b></li>
@@ -243,7 +247,7 @@
               <li><span class="lp-step-n">2</span><div><strong>See your score in seconds</strong><p>Bills, energy and value scored out of 100 — compared to your street and neighbours.</p></div></li>
               <li><span class="lp-step-n">3</span><div><strong>Sharpen it, then go move-ready</strong><p>Add your real bills and improvements to confirm your score — the on-ramp to a Property Passport.</p></div></li>
             </ol>
-            <button class="lp-btn lp-btn--navy lp-btn--lg" type="button" @click="goToHomeScore">Check your HomeScore — free</button>
+            <button class="lp-btn lp-btn--navy lp-btn--lg" type="button" @click="goToHomeScore">See how my home compares</button>
           </div>
         </div>
       </section>
@@ -256,14 +260,14 @@
             <h2 class="lp-h2 lp-h2--sans">Find out now.<br />Not three weeks in<span class="lp-q">.</span></h2>
             <p class="lp-lede">
               This is where a sharpened HomeScore becomes move-ready. Everything a buyer's
-              solicitor needs — <span class="lp-hl">title deeds, searches, fixtures, boundaries and compliance</span> —
-              gathered into one verified record before you list. The questions that break sales
-              are answered on day one, and you stay in control of who sees what.
+              solicitor needs — and will ask for — title deeds, searches, fixtures, boundaries
+              and compliance, gathered into one verified record before you list. The questions
+              that break sales are answered on day one, and you stay in control of who sees what.
             </p>
             <div class="lp-feature-tiles">
               <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11H4z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg></span><strong>Title &amp; deeds</strong><p>Pulled automatically from HM Land Registry.</p></div>
               <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg></span><strong>Local searches</strong><p>Council, drainage and environmental, up front.</p></div>
-              <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13" /><path d="M9 21v-6h6v6" /></svg></span><strong>Fixtures &amp; boundaries</strong><p>The home and plans solicitors request.</p></div>
+              <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13" /><path d="M9 21v-6h6v6" /></svg></span><strong>Fixtures &amp; boundaries</strong><p>The forms and plans solicitors request.</p></div>
               <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg></span><strong>Compliance &amp; certs</strong><p>FENSA, building regs, gas — verified.</p></div>
             </div>
             <p class="lp-dark-foot"><span class="lp-star">★</span> Transferable, owned by you, accepted by your buyer's solicitor.</p>
@@ -289,19 +293,23 @@
       <section id="story" class="lp-section reveal" data-reveal>
         <div class="lp-shell lp-story">
           <p class="lp-story-eyebrow">A real story · Coventry, March 2026</p>
-          <h2 class="lp-story-title lp-serif">Aisha sold her two-bed<br />in <span class="lp-serif-italic">fourteen days.</span></h2>
+          <h2 class="lp-story-title">Aisha sold her two-bed<br />in <span class="lp-story-accent">fourteen days.</span></h2>
 
           <div class="lp-story-stats">
-            <article><strong class="teal">14</strong><span>Days, offer to completion</span></article>
-            <article><strong>£0</strong><span>Lost in survey fees</span></article>
-            <article><strong>£2.7k</strong><span>Saved vs UK average</span></article>
+            <article><strong class="teal" data-count="14">14</strong><span>Days, offer to completion</span></article>
+            <article><strong data-count="0" data-prefix="£">£0</strong><span>Lost in survey fees</span></article>
+            <article><strong data-count="2.7" data-prefix="£" data-suffix="k" data-decimals="1">£2.7k</strong><span>Saved vs UK average</span></article>
           </div>
 
           <div class="lp-timeline-toggle" :class="`mode-${timelineMode}`">
             <button type="button" :class="{ active: timelineMode === 'without' }" @click="timelineMode = 'without'">Without a Passport</button>
             <button type="button" :class="{ active: timelineMode === 'with' }" @click="timelineMode = 'with'">With UMU</button>
           </div>
-          <div class="lp-timeline" :class="`is-${timelineMode}`">
+          <div class="lp-tl-headline" :class="`is-${timelineMode}`">
+            <strong>{{ timelineHeadline.days }}<small>days</small></strong>
+            <span>{{ timelineHeadline.sub }}</span>
+          </div>
+          <div class="lp-timeline" :class="`is-${timelineMode}`" :key="`tl-bar-${timelineMode}`">
             <div v-for="(t, i) in timeline" :key="`tl-${timelineMode}-${i}`" class="lp-timeline-step">
               <span class="lp-tl-dot">{{ t.n }}</span>
               <strong>{{ t.day }}</strong>
@@ -366,8 +374,8 @@
             when you're ready to list — and <span class="lp-hl-dark">stay in control</span> the whole way.
           </p>
           <div class="lp-cta-actions">
-            <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScore">Check your HomeScore — free</button>
-            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg" type="button" @click="navigateTo('/passport/collections')">See a sample Passport</button>
+            <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScore">Get my free HomeScore</button>
+            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg lp-btn--icon" type="button" @click="navigateTo('/passport/collections')"><OPIcon name="passport" class="lp-btn-ic" />See a sample Passport</button>
           </div>
           <p class="lp-cta-foot">No card needed · Free HomeScore · Property Passport from day one</p>
         </div>
@@ -441,6 +449,89 @@ useHead({
 })
 
 const gaugeScore = 74
+// Number shown inside the HomeScore ring — counts up from 0 → gaugeScore
+// in step with the ring fill when the section first scrolls into view.
+const displayScore = ref(0)
+let scoreCounted = false
+
+// Rotating "buyer's solicitor asks" questions — each shown for a few seconds
+// then cross-faded to the next, looping forever.
+const solicitorQuestions = [
+  'Where are the title deeds?',
+  'Who maintains the side boundary?',
+  'FENSA certificate for the windows?',
+  'Building regs for the loft conversion?',
+  'Any disputes with the neighbours?',
+]
+const solicitorIndex = ref(0)
+const currentQuestion = computed(() => solicitorQuestions[solicitorIndex.value])
+let solicitorTimer: ReturnType<typeof setInterval> | null = null
+
+// Shared timing so every animated number (and the ring) decelerates in step.
+const COUNT_DURATION = 1400
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+function runScoreCountUp() {
+  if (scoreCounted || typeof window === 'undefined') return
+  scoreCounted = true
+
+  if (prefersReducedMotion()) {
+    displayScore.value = gaugeScore
+    return
+  }
+
+  const start = performance.now()
+  const tick = (now: number) => {
+    const t = Math.min((now - start) / COUNT_DURATION, 1)
+    displayScore.value = Math.round(easeOutCubic(t) * gaugeScore)
+    if (t < 1) requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
+// Count up every [data-count] number inside a section, all sharing one start
+// time so the values land together. data-prefix/-suffix/-decimals format it.
+const countedNodes = new WeakSet<HTMLElement>()
+function runCountUpIn(root: HTMLElement) {
+  if (typeof window === 'undefined') return
+  const nodes = Array.from(
+    root.querySelectorAll<HTMLElement>('[data-count]'),
+  ).filter((el) => !countedNodes.has(el))
+  if (!nodes.length) return
+
+  const targets = nodes.map((el) => {
+    countedNodes.add(el)
+    return {
+      el,
+      to: parseFloat(el.dataset.count || '0'),
+      prefix: el.dataset.prefix || '',
+      suffix: el.dataset.suffix || '',
+      decimals: parseInt(el.dataset.decimals || '0', 10),
+    }
+  })
+
+  const render = (tgt: (typeof targets)[number], value: number) => {
+    tgt.el.textContent = `${tgt.prefix}${value.toFixed(tgt.decimals)}${tgt.suffix}`
+  }
+
+  if (prefersReducedMotion()) {
+    targets.forEach((tgt) => render(tgt, tgt.to))
+    return
+  }
+
+  const start = performance.now()
+  const tick = (now: number) => {
+    const t = Math.min((now - start) / COUNT_DURATION, 1)
+    const eased = easeOutCubic(t)
+    targets.forEach((tgt) => render(tgt, eased * tgt.to))
+    if (t < 1) requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
 const showStickyCta = ref(false)
 const isCalmMode = ref(false)
 const ctaVariant = ref<'A' | 'B'>('A')
@@ -484,19 +575,18 @@ const timelineWithout = [
   { n: '74', day: 'DAY 74', label: 'Pulls out — start again' },
   { n: '179', day: 'DAY 179', label: 'Eventual completion' },
 ]
-const timelineMode = ref<'with' | 'without'>('with')
+const timelineMode = ref<'with' | 'without'>('without')
 const timeline = computed(() =>
   timelineMode.value === 'with' ? timelineWith : timelineWithout,
 )
+// Big figure above the timeline — switches with the toggle.
+const timelineHeadline = computed(() =>
+  timelineMode.value === 'with'
+    ? { days: '14', sub: 'offer to completion, with a Passport ready' }
+    : { days: '179', sub: 'offer to completion — the UK average sale' },
+)
 
 let revealObserver: IntersectionObserver | null = null
-
-const heroTilt = reactive({ x: 0, y: 0 })
-
-const heroStyleVars = computed(() => ({
-  '--tilt-x': `${heroTilt.x}px`,
-  '--tilt-y': `${heroTilt.y}px`,
-}))
 
 const gaugeLabel = computed(() => {
   if (gaugeScore >= 80) return 'Excellent'
@@ -512,20 +602,6 @@ const stickyCtaLabel = computed(() =>
   ctaVariant.value === 'A' ? 'Check your HomeScore' : 'Start your Property Passport',
 )
 
-function onHeroMove(e: MouseEvent) {
-  const target = e.currentTarget as HTMLElement
-  if (!target) return
-  const rect = target.getBoundingClientRect()
-  const x = (e.clientX - rect.left) / rect.width
-  const y = (e.clientY - rect.top) / rect.height
-  heroTilt.x = (x - 0.5) * 12
-  heroTilt.y = (y - 0.5) * 10
-}
-
-function resetHeroMove() {
-  heroTilt.x = 0
-  heroTilt.y = 0
-}
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -640,6 +716,10 @@ onMounted(() => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible')
+            // Kick off the ring count-up + any [data-count] numbers in this
+            // section the first time it scrolls into view (all synchronized).
+            if (entry.target.id === 'homescore') runScoreCountUp()
+            runCountUpIn(entry.target as HTMLElement)
           }
         }
       },
@@ -654,12 +734,18 @@ onMounted(() => {
 
   onWindowScroll()
   window.addEventListener('scroll', onWindowScroll, { passive: true })
+
+  // Cycle the solicitor question every 3.2s.
+  solicitorTimer = setInterval(() => {
+    solicitorIndex.value = (solicitorIndex.value + 1) % solicitorQuestions.length
+  }, 3200)
 })
 
 onUnmounted(() => {
   revealObserver?.disconnect()
   revealObserver = null
   window.removeEventListener('scroll', onWindowScroll)
+  if (solicitorTimer) clearInterval(solicitorTimer)
 })
 </script>
 
@@ -684,7 +770,9 @@ onUnmounted(() => {
   background: var(--bg);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* `clip` prevents horizontal overflow without creating a scroll container,
+     which would break the sticky navbar (as `overflow-x: hidden` does). */
+  overflow-x: clip;
 }
 
 .lp-shell {
@@ -700,12 +788,12 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin: 0 0 18px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 1.6px;
+  /* margin: 0 0 18px; */
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 1.75px;
   text-transform: uppercase;
-  color: var(--teal-dark);
+  color: #00a19a;
 }
 .lp-eyebrow--teal { color: var(--teal-bright); }
 .lp-eyebrow-dash {
@@ -728,16 +816,20 @@ onUnmounted(() => {
 .lp-h2--sans {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  letter-spacing: -1.4px;
-  line-height: 1.02;
+  font-size: clamp(32px, 3.6vw, 50px);
+  letter-spacing: -.025em;
+  /* Looser leading + tiny vertical padding so ascenders/descenders of the
+     heavy 800 weight aren't visually clipped where the two lines meet. */
+  line-height: 1.15;
+  padding: 0.06em 0;
 }
 .lp-q { color: var(--teal); }
 
 .lp-lede {
-  margin: 0 0 26px;
-  font-size: 16px;
-  line-height: 1.7;
-  color: var(--ink-soft);
+  margin: 15px 0 26px;
+  font-size: 18px;
+  line-height: 1.65;
+  color: #a7a1c2;
   max-width: 46ch;
 }
 .lp-lede--wide { max-width: 60ch; }
@@ -776,6 +868,8 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 .lp-btn--lg { padding: 14px 22px; font-size: 15px; }
+.lp-btn--icon { display: inline-flex; align-items: center; gap: 8px; }
+.lp-btn-ic { width: 17px; height: 17px; }
 .lp-btn--block { width: 100%; }
 .lp-btn--solid {
   background: var(--teal);
@@ -931,16 +1025,16 @@ onUnmounted(() => {
   margin: 0 0 24px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  font-size: clamp(42px, 5.6vw, 72px);
-  line-height: 1.0;
-  letter-spacing: -2px;
+  font-size: clamp(44px, 5.8vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -2.4px;
   color: var(--navy);
 }
 .lp-hero-accent { color: var(--teal); }
 .lp-dot { color: var(--teal); }
 .lp-hero-sub {
   margin: 0 0 26px;
-  font-size: 16.5px;
+  font-size: 19px;
   line-height: 1.7;
   color: var(--ink-soft);
   max-width: 50ch;
@@ -1019,8 +1113,6 @@ onUnmounted(() => {
 .lp-hero-visual {
   position: relative;
   min-height: 360px;
-  transform: translate3d(var(--tilt-x, 0), var(--tilt-y, 0), 0);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .lp-passport-card {
   position: relative;
@@ -1034,6 +1126,25 @@ onUnmounted(() => {
   max-width: 380px;
   margin-left: auto;
   transform: rotate(6deg);
+  /* Gentle continuous rotate so the card feels alive. */
+  animation: lp-passport-sway 6s ease-in-out infinite;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* On hover: straighten, lift and deepen the shadow; the two badges drift
+   outward so the layered stack reads as in the reference image. */
+.lp-hero-visual:hover .lp-passport-card {
+  animation-play-state: paused;
+  transform: rotate(0deg) translateY(-6px) scale(1.02);
+  box-shadow: 0 46px 100px rgba(35, 29, 69, 0.5);
+}
+.lp-badge { transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.lp-hero-visual:hover .lp-badge--solicitor { transform: translate(8px, -8px) rotate(-1deg); }
+.lp-hero-visual:hover .lp-badge--score { transform: translate(-8px, 8px) rotate(1deg); }
+
+@keyframes lp-passport-sway {
+  0%, 100% { transform: rotate(6deg); }
+  50% { transform: rotate(3.5deg); }
 }
 .lp-passport-kicker {
   display: inline-block;
@@ -1044,17 +1155,17 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.55);
 }
 .lp-passport-logo {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: rgba(0, 161, 154, 0.16);
-  border: 1px solid rgba(0, 161, 154, 0.4);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(0, 161, 154, 0.12);
+  border: 2px solid var(--teal-bright);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
   display: grid;
   place-items: center;
   margin: 14px 0 18px;
 }
-.lp-passport-logo :deep(svg),
-.lp-passport-logo :deep(img) { width: 22px; height: 22px; color: var(--teal-bright); }
+.lp-passport-logo-mark { width: 28px; height: auto; display: block; }
 .lp-passport-addr strong { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
 .lp-passport-addr span { font-size: 13px; color: rgba(255, 255, 255, 0.55); }
 .lp-passport-stats {
@@ -1096,15 +1207,15 @@ onUnmounted(() => {
   position: absolute;
   background: #fff;
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   box-shadow: 0 18px 40px rgba(35, 29, 69, 0.16);
   border: 1px solid var(--line);
   z-index: 2;
 }
 .lp-badge--solicitor {
-  top: -18px;
-  right: -12px;
-  max-width: 216px;
+  top: -30px;
+  right: -26px;
+  max-width: 224px;
 }
 .lp-badge-eyebrow {
   display: flex;
@@ -1123,22 +1234,45 @@ onUnmounted(() => {
   border-radius: 50%;
   background: #d99a2b;
 }
+/* Reserve room for the tallest (two-line) question so the badge height
+   stays steady as questions cross-fade. */
+.lp-badge-q-wrap {
+  display: flex;
+  align-items: flex-start;
+  min-height: 38px;
+  margin-bottom: 10px;
+}
 .lp-badge-q {
   display: block;
   font-size: 13.5px;
   font-weight: 700;
   color: var(--navy);
   line-height: 1.35;
-  margin-bottom: 10px;
+}
+.lp-q-fade-enter-active,
+.lp-q-fade-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.lp-q-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+.lp-q-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 .lp-badge-line {
   display: flex;
-  align-items: center;
-  gap: 7px;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 2px;
   font-size: 12px;
   font-weight: 700;
   color: var(--teal-dark);
-  line-height: 1.35;
+  line-height: 1.4;
+}
+.lp-badge-line .lp-tick {
+  margin-top: 2px;
 }
 .lp-badge--score {
   bottom: -6px;
@@ -1155,6 +1289,9 @@ onUnmounted(() => {
 .lp-float-a { animation: lp-float 9s ease-in-out infinite; }
 .lp-float-b { animation: lp-float 7s ease-in-out infinite; }
 .lp-float-c { animation: lp-float 8s ease-in-out infinite 0.5s; }
+/* Pause the float so the hover transform on the badges isn't overridden. */
+.lp-hero-visual:hover .lp-float-b,
+.lp-hero-visual:hover .lp-float-c { animation-play-state: paused; }
 
 /* ── Property strip ──────────────────────────────────────────────── */
 .lp-strip { padding: 26px 0 40px; background: #efeeea; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -1289,7 +1426,14 @@ onUnmounted(() => {
   stroke: var(--teal);
   stroke-linecap: round;
   stroke-dasharray: 364;
-  stroke-dashoffset: 95; /* ~74% filled */
+  /* Start empty; the ring "draws" to ~74% when the section reveals. */
+  stroke-dashoffset: 364;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.25, 1, 0.3, 1);
+}
+/* When the section scrolls into view, fill the meter to ~74%. */
+.reveal.is-visible .lp-ring-meter { stroke-dashoffset: 95; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-ring-meter { transition: none; stroke-dashoffset: 95; }
 }
 .lp-score-center {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -1342,16 +1486,16 @@ onUnmounted(() => {
 .lp-score-note p strong { color: var(--navy); font-weight: 800; }
 
 /* Steps */
-.lp-steps { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 18px; }
-.lp-steps li { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start; }
+.lp-steps { list-style: none; margin: 36px 0 40px; padding: 0; display: grid; gap: 30px; }
+.lp-steps li { display: grid; grid-template-columns: 30px 1fr; gap: 18px; align-items: start; }
 .lp-step-n {
   width: 28px; height: 28px; border-radius: 9px;
   display: grid; place-items: center;
-  background: var(--navy); color: #fff;
+  background: var(--navy); color: var(--teal-bright);
   font-size: 13px; font-weight: 800;
 }
-.lp-steps strong { display: block; font-size: 15px; color: var(--navy); margin-bottom: 3px; }
-.lp-steps p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.lp-steps strong { display: block; font-size: 15px; color: var(--navy); margin-bottom: 6px; }
+.lp-steps p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
 
 /* ── Dark sections ───────────────────────────────────────────────── */
 .lp-dark { background: var(--navy); color: #fff; }
@@ -1360,20 +1504,31 @@ onUnmounted(() => {
 .lp-dark .lp-lede { color: rgba(255, 255, 255, 0.68); }
 .lp-hl { color: var(--teal-bright); font-weight: 600; }
 
-/* Passport split: narrower copy, card column vertically centered so the
-   left text (top-aligned) and the right card read as a balanced pair. */
+/* Passport split: narrower copy, card top-aligned with the left copy so the
+   two columns read as a balanced, top-aligned pair (matches design). */
 .lp-split--passport {
-  grid-template-columns: 1fr 0.82fr;
-  gap: 64px;
-  align-items: center;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 56px;
+  /* Pin both columns to the top so the card sits next to the heading
+     instead of being vertically centered against the taller copy column. */
+  align-items: start;
 }
-.lp-split--passport .lp-copy { align-self: center; }
-.lp-dark-card-col { display: flex; align-items: center; justify-content: center; }
+.lp-split--passport .lp-copy { align-self: start; }
+.lp-dark-card-col {
+  display: flex;
+  align-self: start;          /* don't stretch to the copy column's height */
+  align-items: flex-start;
+  justify-content: flex-end;  /* push the card to the right of its column */
+  /* Drop the card down so its top lines up with the lede paragraph
+     (below the eyebrow + two-line heading), as in the design. */
+  margin-top: 132px;
+}
 .lp-feature-tiles {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 22px;
+  /* margin-bottom: 22px; */
+  /* margin-top:162px */
 }
 .lp-feature-tiles > div {
   background: rgba(255, 255, 255, 0.05);
@@ -1389,15 +1544,15 @@ onUnmounted(() => {
 .lp-ft-ic svg { width: 17px; height: 17px; }
 .lp-feature-tiles strong { display: block; font-size: 14px; color: #fff; margin-bottom: 4px; }
 .lp-feature-tiles p { margin: 0; font-size: 12px; line-height: 1.5; color: rgba(255, 255, 255, 0.6); }
-.lp-dark-foot { font-size: 12.5px; color: rgba(255, 255, 255, 0.55); margin: 0; }
-.lp-star { color: var(--teal-bright); }
+.lp-dark-foot { font-size: 13.5px; font-weight: 700; color: #c18a38; margin-top: 30px; gap: 8px; display: inline-flex; align-items: center; }
+.lp-star { color: #c18a38; }
 
 .lp-dark-card {
   background: #fff;
   width: 100%;
-  max-width: 400px;
+  max-width: 480px;
   padding: 20px;
-  border-radius: 22px;
+  border-radius: 24px;
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28);
 }
 /* Navy header bar inside the card */
@@ -1407,40 +1562,51 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   background: var(--navy);
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 16px;
+  padding: 18px 20px;
 }
-.lp-dark-card-head strong { display: block; font-size: 16px; font-weight: 800; color: #fff; }
-.lp-dark-card-head span { font-size: 12px; color: rgba(255, 255, 255, 0.55); }
+.lp-dark-card-head strong { display: block; font-size: 18px; font-weight: 800; color: #fff; }
+.lp-dark-card-head span { font-size: 12.5px; color: rgba(255, 255, 255, 0.55); margin-top: 2px; display: block; }
 .lp-issued {
   flex-shrink: 0;
-  font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
   background: rgba(217, 154, 43, 0.16); color: #e0a93f;
   border: 1px solid rgba(217, 154, 43, 0.4);
-  padding: 4px 10px; border-radius: 7px;
+  padding: 5px 11px; border-radius: 8px;
 }
 .lp-dark-card-body {
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 13.5px;
+  line-height: 1.7;
   color: var(--ink-soft);
   text-align: center;
-  margin: 16px 0 16px;
-  padding: 0 6px;
+  margin: 18px 0 18px;
+  padding: 0 10px;
 }
 .lp-dark-card-body .lp-hl { color: var(--teal-dark); font-weight: 700; }
+.lp-dark-card .lp-btn--block { padding: 15px 18px; font-size: 15px; border-radius: 14px; }
 
 /* ── Story ───────────────────────────────────────────────────────── */
 .lp-story { text-align: center; }
 .lp-story-eyebrow {
-  font-size: 12px; font-weight: 700; font-style: italic;
-  color: var(--teal-dark); margin: 0 0 14px; font-family: var(--serif);
+  font-size: 14px; font-weight: 600;
+  color: #c18a38; margin: 0 0 14px; font-family: 'Plus Jakarta Sans';;
 }
 .lp-story-title {
   margin: 0 0 36px;
-  font-size: clamp(32px, 4.6vw, 52px);
-  line-height: 1.05;
-  letter-spacing: -0.6px;
-  color: var(--navy);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-style: normal;
+  font-size: clamp(34px, 4.9vw, 58px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -.025em;
+  color: var(--ink);
+}
+/* Teal accent inside the story title — upright bold sans, matching the image */
+.lp-story-accent {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--teal);
 }
 .lp-story-stats {
   display: flex;
@@ -1458,7 +1624,7 @@ onUnmounted(() => {
   min-width: 168px;
 }
 .lp-story-stats article + article { border-left: 1px solid var(--line); }
-.lp-story-stats strong { display: block; font-size: 36px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+.lp-story-stats strong { display: block; font-size: 40px; font-weight: 800; color: var(--navy); letter-spacing: -1.3px; }
 .lp-story-stats strong.teal { color: var(--teal); }
 .lp-story-stats span { font-size: 12.5px; color: var(--ink-soft); }
 
@@ -1491,6 +1657,26 @@ onUnmounted(() => {
 .lp-timeline-toggle.mode-with button.active { background: var(--teal); }
 .lp-timeline-toggle.mode-without button.active { background: #a23a5b; }
 
+/* Big figure above the timeline — colour follows the toggle state. */
+.lp-tl-headline { text-align: center; margin: 0 0 36px; }
+.lp-tl-headline strong {
+  display: block;
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.lp-tl-headline strong small {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--ink-faint);
+  margin-left: 6px;
+}
+.lp-tl-headline span { display: block; margin-top: 8px; font-size: 13px; color: var(--ink-soft); }
+.lp-tl-headline.is-with strong { color: var(--teal); }
+.lp-tl-headline.is-without strong { color: #a23a5b; }
+
 .lp-timeline {
   display: flex;
   justify-content: space-between;
@@ -1498,17 +1684,43 @@ onUnmounted(() => {
   max-width: 720px;
   margin: 0 auto 44px;
 }
+/* Faded track — runs full-bleed past the first/last dots, like the image. */
 .lp-timeline::before {
   content: '';
   position: absolute;
-  top: 23px;
-  left: 9%;
-  right: 9%;
-  height: 2px;
-  background: #ddd6d9;
+  top: 26px;
+  left: -2%;
+  right: -2%;
+  height: 3px;
+  background: rgba(162, 58, 91, 0.18);
   z-index: 0;
 }
-.lp-timeline.is-with::before { background: #d3e7e3; }
+.lp-timeline.is-with::before { background: rgba(0, 161, 154, 0.16); }
+
+/* Animated fill — draws from the start to the last dot when the section scrolls in. */
+.lp-timeline::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: -2%;
+  width: 0;
+  height: 3px;
+  background: #a23a5b;
+  z-index: 0;
+}
+.lp-timeline.is-with::after { background: var(--teal); }
+/* Keyframe (not transition) so it replays on every re-mount, including re-toggles.
+   Linear + timed so the line reaches each dot exactly as it pops (0.25s → 1.45s). */
+.reveal.is-visible .lp-timeline::after {
+  animation: tlBarDraw 1.2s linear 0.25s forwards;
+}
+@keyframes tlBarDraw {
+  from { width: 0; }
+  to   { width: 104%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal.is-visible .lp-timeline::after { animation: none; width: 104%; }
+}
 .lp-timeline-step {
   position: relative;
   z-index: 1;
@@ -1519,40 +1731,101 @@ onUnmounted(() => {
   flex: 1;
 }
 .lp-tl-dot {
-  width: 46px; height: 46px; border-radius: 50%;
+  width: 54px; height: 54px; border-radius: 50%;
   background: #fff;
   display: grid; place-items: center;
-  font-size: 14px; font-weight: 800;
+  font-size: 17px; font-weight: 800;
   transition: all 0.2s;
 }
+
+/* Each dot pops in as the bar fill reaches it — keeps the line and dots in sync. */
+.reveal.is-visible .lp-tl-dot {
+  animation: tlDotIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+.reveal.is-visible .lp-timeline-step:nth-child(1) .lp-tl-dot { animation-delay: 0.25s; }
+.reveal.is-visible .lp-timeline-step:nth-child(2) .lp-tl-dot { animation-delay: 0.54s; }
+.reveal.is-visible .lp-timeline-step:nth-child(3) .lp-tl-dot { animation-delay: 0.83s; }
+.reveal.is-visible .lp-timeline-step:nth-child(4) .lp-tl-dot { animation-delay: 1.12s; }
+.reveal.is-visible .lp-timeline-step:nth-child(5) .lp-tl-dot { animation-delay: 1.45s; }
+@keyframes tlDotIn {
+  0%   { opacity: 0; transform: scale(0.4); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal.is-visible .lp-tl-dot { animation: none; }
+}
 /* With UMU — calm teal */
-.lp-timeline.is-with .lp-tl-dot { border: 2px solid #9fd6cf; color: var(--teal-dark); }
-.lp-timeline.is-with .lp-timeline-step:last-child .lp-tl-dot { background: var(--teal); border-color: var(--teal); color: #fff; }
+.lp-timeline.is-with .lp-tl-dot { border: 2px solid #9fd6cf; color: var(--teal-dark); background: #fff; }
+.lp-timeline.is-with .lp-timeline-step:last-child .lp-tl-dot { background: var(--teal); border-color: var(--teal); color: #fff; box-shadow: 0 0 0 6px rgba(0, 161, 154, 0.1); }
 /* Without — slow maroon, deepening toward the painful end */
-.lp-timeline.is-without .lp-tl-dot { border: 2px solid #d9a9b8; color: #a23a5b; }
-.lp-timeline.is-without .lp-timeline-step:nth-child(1) .lp-tl-dot { color: var(--ink-faint); border-color: #e0dadd; }
-.lp-timeline.is-without .lp-timeline-step:last-child .lp-tl-dot { background: #7d2742; border-color: #7d2742; color: #fff; }
-.lp-timeline-step strong { font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px; color: var(--navy); }
-.lp-timeline-step > span { font-size: 11.5px; color: var(--ink-soft); text-align: center; max-width: 100px; line-height: 1.35; }
+.lp-timeline.is-without .lp-tl-dot {
+  border: 2px solid #d9a9b8;
+  color: #a23a5b;
+  background: #faf2f4;
+  box-shadow: 0 0 0 5px rgba(162, 58, 91, 0.06);
+}
+.lp-timeline.is-without .lp-timeline-step:first-child .lp-tl-dot {
+  color: var(--ink-faint);
+  border-color: #e0dadd;
+  background: #fff;
+  box-shadow: none;
+}
+.lp-timeline.is-without .lp-timeline-step:last-child .lp-tl-dot {
+  background: #7d2742;
+  border-color: #7d2742;
+  color: #fff;
+  box-shadow: 0 0 0 6px rgba(125, 39, 66, 0.1);
+}
+.lp-timeline-step strong { font-size: 12.5px; font-weight: 800; letter-spacing: 0.5px; color: var(--navy); }
+.lp-timeline-step > span { font-size: 14px; color: var(--ink-soft); text-align: center; max-width: 130px; line-height: 1.4; }
+
+/* Labels fade up in step with their dot. */
+.reveal.is-visible .lp-timeline-step strong,
+.reveal.is-visible .lp-timeline-step > span {
+  animation: tlLabelIn 0.5s ease backwards;
+}
+.reveal.is-visible .lp-timeline-step:nth-child(1) strong,
+.reveal.is-visible .lp-timeline-step:nth-child(1) > span { animation-delay: 0.35s; }
+.reveal.is-visible .lp-timeline-step:nth-child(2) strong,
+.reveal.is-visible .lp-timeline-step:nth-child(2) > span { animation-delay: 0.64s; }
+.reveal.is-visible .lp-timeline-step:nth-child(3) strong,
+.reveal.is-visible .lp-timeline-step:nth-child(3) > span { animation-delay: 0.93s; }
+.reveal.is-visible .lp-timeline-step:nth-child(4) strong,
+.reveal.is-visible .lp-timeline-step:nth-child(4) > span { animation-delay: 1.22s; }
+.reveal.is-visible .lp-timeline-step:nth-child(5) strong,
+.reveal.is-visible .lp-timeline-step:nth-child(5) > span { animation-delay: 1.55s; }
+@keyframes tlLabelIn {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal.is-visible .lp-timeline-step strong,
+  .reveal.is-visible .lp-timeline-step > span { animation: none; }
+}
 
 .lp-quote {
-  margin: 0;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: clamp(17px, 2.2vw, 22px);
-  line-height: 1.55;
+  margin: 60px auto 0;
+  font-family: plus-jakarta-sans,;
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(22px, 2.6vw, 30px);
+  line-height: 1.4;
+  /* letter-spacing: -.01em; */
   color: var(--navy);
-  max-width: 50ch;
+  text-align: center;
+  max-width: 760px;
   margin-inline: auto;
 }
 .lp-quote cite {
   display: block;
   margin-top: 16px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: plus-jakarta-sans,;
   font-style: normal;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--ink-soft);
+  margin-top: 20px;
+  letter-spacing:.02em;
+  color: #6f6a82;
 }
 
 /* ── Market ──────────────────────────────────────────────────────── */
@@ -1588,13 +1861,13 @@ onUnmounted(() => {
 }
 .lp-market-card strong {
   display: block;
-  font-size: 42px;
+  font-size: 46px;
   font-weight: 800;
-  letter-spacing: -1.5px;
+  letter-spacing: -1.8px;
   color: #fff;
   line-height: 1;
 }
-.lp-market-card strong small { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.55); margin: 0 2px; letter-spacing: 0; }
+.lp-market-card strong small { font-size: 20px; font-weight: 600; color: rgba(255, 255, 255, 0.5); margin: 0 1px 0 4px; letter-spacing: 0; }
 .lp-market-card em {
   display: block;
   font-style: normal;
@@ -1628,7 +1901,16 @@ onUnmounted(() => {
 /* ── CTA ─────────────────────────────────────────────────────────── */
 .lp-cta { text-align: center; background: #efeeea; }
 .lp-cta-inner { max-width: 640px; margin: 0 auto; }
-.lp-cta-title { margin-bottom: 16px; }
+/* The title's two lines (set by an explicit <br>) are wider than the 640px
+   lede column, so let the title break out and never auto-wrap mid-line. */
+.lp-cta-title {
+  margin-bottom: 16px;
+  max-width: none;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  white-space: nowrap;
+}
 .lp-cta .lp-lede { margin-inline: auto; }
 .lp-hl-dark { color: var(--teal-dark); font-weight: 600; }
 .lp-cta-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 18px; }
@@ -1709,7 +1991,7 @@ onUnmounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
-  .lp-float-a, .lp-float-b, .lp-float-c, .lp-strip-track { animation: none; }
+  .lp-float-a, .lp-float-b, .lp-float-c, .lp-strip-track, .lp-passport-card { animation: none; }
 }
 
 /* ── Responsive ──────────────────────────────────────────────────── */
@@ -1717,7 +1999,7 @@ onUnmounted(() => {
   .lp-hero-grid, .lp-split, .lp-split--passport { grid-template-columns: 1fr; gap: 40px; }
   .lp-hero-visual { min-height: 320px; max-width: 420px; margin: 0 auto; }
   .lp-market-grid { grid-template-columns: 1fr; }
-  .lp-dark-card-col { justify-content: flex-start; }
+  .lp-dark-card-col { justify-content: flex-start; margin-top: 0; }
   .lp-dark-card { max-width: 100%; }
   .lp-footer-grid { grid-template-columns: 1fr 1fr; }
 
@@ -1731,6 +2013,9 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .lp-shell { width: calc(100% - 32px); }
   .lp-section { padding: 52px 0; }
+  /* Let the CTA title wrap naturally on small screens instead of forcing
+     the single-line width (which would overflow horizontally). */
+  .lp-cta-title { white-space: normal; width: auto; }
   .lp-nav-inner { min-height: 60px; gap: 12px; }
   .lp-nav-actions { gap: 8px; }
   .lp-hero { padding: 36px 0 44px; }

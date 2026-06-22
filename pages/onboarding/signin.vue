@@ -1,66 +1,63 @@
 <template>
-  <div class="mobile-container auth-screen signin-futuristic">
-    <div class="signin-bg">
-      <div class="signin-orb signin-orb-a" />
-      <div class="signin-orb signin-orb-b" />
-      <div class="signin-grid" />
-      <div class="signin-vignette" />
-    </div>
+  <div class="signin-split">
+    <!-- ── Left brand panel (dark) ── -->
+    <aside class="signin-aside">
+      <div class="signin-aside-top">
+        <div class="signin-logo">
+          <span class="signin-logo-mark"><img src="/op-icons/logo.svg" alt="umu" /></span>
+          <strong>umovingu</strong>
+        </div>
+        <button class="signin-website-btn" type="button" @click="navigateTo('/')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to website
+        </button>
+      </div>
 
-    <!-- Topbar -->
-    <div class="auth-topbar signin-topbar">
-      <button class="auth-back-btn signin-back-btn" @click="handleBack" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6" />
+      <div class="signin-aside-body">
+        <h1 class="signin-welcome">{{ heroTitle }}</h1>
+        <p class="signin-welcome-sub">Good to see you again — your Property Passport is right where you left it.</p>
+
+        <div class="signin-home-card">
+          <div class="signin-home-thumb">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- roof -->
+              <path d="M24 9 8 22h32L24 9Z" fill="#231d45" />
+              <!-- house body -->
+              <path d="M11 21h26v17a1 1 0 0 1-1 1H12a1 1 0 0 1-1-1V21Z" fill="#00a19a" />
+              <!-- door -->
+              <rect x="17" y="28" width="7" height="11" rx="1" fill="#2f6df0" />
+              <!-- window -->
+              <rect x="27" y="27" width="6" height="6" rx="1" fill="#bfe6e1" />
+            </svg>
+          </div>
+          <div class="signin-home-meta">
+            <span class="signin-home-kicker">Your home</span>
+            <strong class="signin-home-addr">55, Woodfield Road</strong>
+            <div class="signin-home-tags">
+              <span class="signin-home-tag signin-home-tag--score">HomeScore 74</span>
+              <span class="signin-home-tag signin-home-tag--passport">Passport ready</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="signin-aside-foot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
-      </button>
-      <div class="signin-topbar-copy">
-        <span class="signin-topbar-kicker">Neural access</span>
-        <strong>{{ heroEyebrow }}</strong>
-      </div>
-      <div class="auth-brand-mini signin-brand-mini">
-        <OPIcon name="logo" class="w-[26px] h-[26px]" />
-      </div>
-    </div>
+        End-to-end encrypted. Your data stays yours.
+      </p>
+    </aside>
+
+    <!-- ── Right form panel (light) ── -->
+    <main class="signin-main">
+      <div class="signin-main-inner">
 
     <!-- ── Sign-in / forgot-password (entry) / verify code / new password ── -->
     <template v-if="resetStep !== 'sent' && resetStep !== 'success'">
       <div class="signin-shell">
-        <section class="signin-visual">
-          <div class="signin-badge-row">
-            <span class="signin-chip">Encrypted</span>
-            <span class="signin-chip signin-chip--alt">Property passport ready</span>
-          </div>
-
-          <h1 class="signin-title">{{ heroTitle }}</h1>
-          <p class="signin-sub">{{ heroSub }}</p>
-
-          <div class="signin-image-stack">
-            <article class="signin-image-card signin-image-card--solo signin-float-a">
-              <img src="/welcome-house.png" alt="Sample house" />
-              <div class="signin-image-overlay">
-                <span>HomeScore-ready flow</span>
-                <strong>See the home before the login</strong>
-              </div>
-            </article>
-          </div>
-
-          <div class="signin-metrics">
-            <div>
-              <strong>74</strong>
-              <span>Typical HomeScore preview</span>
-            </div>
-            <div>
-              <strong>24/7</strong>
-              <span>Secure account access</span>
-            </div>
-            <div>
-              <strong>1 min</strong>
-              <span>Average sign-in flow</span>
-            </div>
-          </div>
-        </section>
-
         <section class="signin-panel-wrap">
           <!-- Logout / session toast -->
           <div
@@ -72,6 +69,11 @@
               <polyline points="20 6 9 17 4 12" />
             </svg>
             {{ bannerMessage }}
+          </div>
+
+          <div class="signin-form-head">
+            <h2 class="signin-form-title">{{ formTitle }}</h2>
+            <p class="signin-form-sub">{{ formSub }}</p>
           </div>
 
           <form class="auth-form signin-panel" @submit.prevent="onPrimary">
@@ -258,8 +260,10 @@
             </template>
           </form>
 
+          <div v-if="resetStep === 'idle'" class="signin-divider"><span>new to UMU?</span></div>
+
           <div v-if="resetStep === 'idle'" class="auth-footer signin-footer">
-            Don't have an account? <NuxtLink to="/onboarding/signup">Create one</NuxtLink>
+            Don't have an account? <NuxtLink to="/onboarding/signup">Get started</NuxtLink>
           </div>
         </section>
       </div>
@@ -300,6 +304,8 @@
         <button class="btn-primary" @click="resetStep = 'idle'">Back to sign in</button>
       </div>
     </template>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -337,6 +343,22 @@ const heroTitle = computed(() => {
 })
 const heroSub = computed(() => {
   if (resetStep.value === 'idle') return 'Good to see you again.'
+  if (resetStep.value === 'email') return "Enter your email and we'll send you a code to set a new password."
+  if (resetStep.value === 'otp') return 'Enter the 6-digit code we just sent you.'
+  if (resetStep.value === 'newPassword') return 'At least 8 characters. Mix in a number for extra strength.'
+  return ''
+})
+
+// Heading shown above the form (right panel)
+const formTitle = computed(() => {
+  if (resetStep.value === 'idle') return 'Sign in to UMU'
+  if (resetStep.value === 'email') return 'Reset your password'
+  if (resetStep.value === 'otp') return 'Verify the code'
+  if (resetStep.value === 'newPassword') return 'Set a new password'
+  return ''
+})
+const formSub = computed(() => {
+  if (resetStep.value === 'idle') return 'Enter your details to pick up where you left off.'
   if (resetStep.value === 'email') return "Enter your email and we'll send you a code to set a new password."
   if (resetStep.value === 'otp') return 'Enter the 6-digit code we just sent you.'
   if (resetStep.value === 'newPassword') return 'At least 8 characters. Mix in a number for extra strength.'
@@ -538,455 +560,333 @@ const onPrimary = () => {
 </script>
 
 <style scoped>
-.auth-screen {
-  --fx-aqua: #00a19a;
-  --fx-blue: #2f9bdf;
-  --fx-indigo: #4f4ff2;
-  --fx-panel-border: #d8e3ef;
-  background:
-    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+/* ── Split-screen layout ── */
+.signin-split {
   min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #231d45;
+}
+
+/* ── Left brand panel ── */
+.signin-aside {
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
+  padding: 40px 48px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 90% 95%, rgba(0, 161, 154, 0.22) 0%, rgba(0, 161, 154, 0) 42%),
+    linear-gradient(165deg, #2c2456 0%, #231d45 55%, #1a1535 100%);
   overflow: hidden;
-  color: #1f2b3f;
-  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.signin-bg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.signin-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
-  background-size: 38px 38px;
-  opacity: 0.04;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.75), transparent 90%);
-}
-
-.signin-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(248, 251, 255, 0.66) 64%, rgba(238, 244, 249, 0.88) 100%);
-}
-
-.signin-orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(36px);
-  animation: drift 16s ease-in-out infinite;
-}
-
-.signin-orb-a {
-  top: 8%;
-  left: 2%;
-  width: 280px;
-  height: 280px;
-  background: rgba(0, 161, 154, 0.3);
-}
-
-.signin-orb-b {
-  right: -3%;
-  top: 18%;
-  width: 340px;
-  height: 340px;
-  background: rgba(95, 139, 255, 0.26);
-  animation-duration: 21s;
-}
-
-.signin-topbar,
-.signin-shell,
-.confirm-state--futuristic {
-  position: relative;
-  z-index: 1;
-}
-
-.signin-topbar {
-  padding: 16px 20px 6px;
-}
-
-.signin-back-btn {
-  background: rgba(255, 255, 255, 0.88);
-  color: #1f2b3f;
-  border-color: #d4dfeb;
-  backdrop-filter: blur(12px);
-}
-
-.signin-topbar-copy {
-  flex: 1;
-  text-align: center;
-  color: #50637f;
-}
-
-.signin-topbar-kicker {
-  display: block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #00857f;
-  margin-bottom: 2px;
-}
-
-.signin-topbar-copy strong {
-  display: block;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.signin-brand-mini {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid #d4dfeb;
-  border-radius: 999px;
-  width: 38px;
-  height: 38px;
-  backdrop-filter: blur(12px);
-}
-
-.signin-shell {
-  width: min(1180px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 18px 0 30px;
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 28px;
-  align-items: start;
-}
-
-.signin-visual {
-  padding: 14px 0 0;
-}
-
-.signin-badge-row {
+.signin-aside-top {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 64px;
 }
 
-.signin-chip {
+.signin-logo {
   display: inline-flex;
   align-items: center;
-  padding: 6px 11px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #1f2b3f;
-  font-size: 10px;
+  gap: 12px;
+}
+.signin-logo-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #2fd0c6;
+  background: rgba(0, 161, 154, 0.12);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+  display: grid;
+  place-items: center;
+}
+.signin-logo-mark :deep(img),
+.signin-logo-mark :deep(svg),
+.signin-logo-mark img,
+.signin-logo-mark svg { width: 23px; height: auto; display: block; }
+.signin-logo strong {
+  font-size: 19px;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid #d8e3ef;
+  letter-spacing: -0.3px;
+  color: #fff;
 }
 
-.signin-chip--alt {
-  background: #eafaf7;
+.signin-website-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.signin-website-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+.signin-website-btn svg { width: 15px; height: 15px; }
+
+.signin-aside-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 440px;
+}
+
+.signin-welcome {
+  margin: 0;
+  font-size: clamp(44px, 5vw, 64px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -2px;
+  color: #fff;
+}
+.signin-welcome-sub {
+  margin: 20px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.62);
+  max-width: 34ch;
+}
+
+/* Dark home card */
+.signin-home-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.signin-home-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #fff;
+  color: #231d45;
+  display: grid;
+  place-items: center;
+}
+.signin-home-thumb svg { width: 38px; height: 38px; }
+.signin-home-meta { min-width: 0; }
+.signin-home-kicker {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 4px;
+}
+.signin-home-addr {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.signin-home-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.signin-home-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 7px;
+}
+.signin-home-tag--score {
+  background: rgba(0, 161, 154, 0.2);
+  color: #2fd0c6;
+  border: 1px solid rgba(0, 161, 154, 0.4);
+}
+.signin-home-tag--passport {
+  background: rgba(217, 154, 43, 0.16);
+  color: #e0a93f;
+  border: 1px solid rgba(217, 154, 43, 0.4);
+}
+
+.signin-aside-foot {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 56px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+.signin-aside-foot svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── Right form panel ── */
+.signin-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: #f3f2ef;
+}
+.signin-main-inner {
+  width: 100%;
+  max-width: 400px;
+}
+
+.signin-shell { width: 100%; }
+.signin-panel-wrap { width: 100%; }
+
+/* Reuse the plain panel/form look — strip the card chrome */
+.signin-panel {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.signin-form-head { margin-bottom: 24px; }
+.signin-form-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: #231d45;
+}
+.signin-form-sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6b6783;
+}
+
+/* Logout / session toast */
+.logged-out-toast {
+  margin: 0 0 24px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.signin-panel-wrap .logged-out-toast--teal {
+  background: #e9f7f5;
+  border: 1px solid #c3e7e2;
   color: #00857f;
 }
 
-.signin-title {
-  margin: 0;
-  font-size: clamp(34px, 4.8vw, 56px);
-  line-height: 1;
-  letter-spacing: -1.3px;
-  color: #18263b;
-  font-weight: 650;
-  max-width: 12ch;
-  font-family: inherit;
+/* Inputs */
+.signin-panel-wrap .form-input {
+  background: #fcfcfb;
+  border: 1.5px solid #e3e1ea;
+  border-radius: 12px;
+  padding: 15px 14px;
+  font-size: 14.5px;
+  color: #231d45;
 }
-
-.signin-sub {
-  margin: 14px 0 0;
-  max-width: 50ch;
-  color: #586a83;
-  font-size: 15px;
-  line-height: 1.65;
-}
-
-.signin-image-stack {
-  margin-top: 18px;
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-.signin-image-card {
-  position: relative;
-  border-radius: 22px;
-  overflow: hidden;
-  border: 1px solid #d8e3ee;
-  box-shadow: 0 18px 32px rgba(33, 61, 98, 0.08);
-  backdrop-filter: blur(8px);
-  transition:
-    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.34s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.signin-image-card::before {
-  content: '';
-  position: absolute;
-  inset: -150% auto auto -42%;
-  width: 54%;
-  height: 320%;
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.38) 45%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: rotate(16deg);
-  transition: transform 0.78s ease;
-  pointer-events: none;
-}
-
-.signin-image-card:hover {
-  transform: translateY(-8px) scale(1.012);
-  border-color: #b9d5ea;
-  box-shadow: 0 26px 40px rgba(31, 64, 102, 0.18);
-}
-
-.signin-image-card:hover::before {
-  transform: translateX(220%) rotate(16deg);
-}
-
-.signin-image-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.signin-image-card:hover img {
-  transform: scale(1.05);
-}
-
-.signin-image-card--solo {
-  width: 100%;
-  max-width: 460px;
-  aspect-ratio: 16 / 11;
-  border-color: rgba(0, 161, 154, 0.25);
-  box-shadow: 0 22px 44px rgba(35, 29, 69, 0.16);
-}
-
-.signin-image-card--solo img {
-  object-position: center;
-}
-
-.signin-image-overlay {
-  position: absolute;
-  inset: auto 16px 16px 16px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(24, 38, 59, 0.16), rgba(24, 38, 59, 0.72));
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.signin-image-overlay span {
-  display: block;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #9beee9;
-  font-weight: 800;
-}
-
-.signin-image-overlay strong {
-  display: block;
-  margin-top: 6px;
-  font-size: 18px;
-  line-height: 1.15;
-  letter-spacing: -0.4px;
-  font-weight: 700;
-}
-
-.signin-float-a {
-  animation: float 8s ease-in-out infinite;
-}
-
-.signin-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.signin-metrics > div {
-  padding: 13px 12px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid #d9e4ee;
-  backdrop-filter: blur(12px);
-  transition:
-    transform 0.26s ease,
-    border-color 0.26s ease,
-    box-shadow 0.26s ease;
-}
-
-.signin-metrics > div:hover {
-  transform: translateY(-3px);
-  border-color: #c4dbef;
-  box-shadow: 0 14px 24px rgba(35, 64, 102, 0.14);
-}
-
-.signin-metrics strong {
-  display: block;
-  font-size: 23px;
-  line-height: 1;
-  letter-spacing: -0.7px;
-  color: #18293f;
-}
-
-.signin-metrics span {
-  display: block;
-  margin-top: 6px;
-  color: #60728c;
-  font-size: 11px;
-}
-
-.signin-panel-wrap {
-  position: relative;
-  padding-top: 8px;
-}
-
-.signin-panel {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--fx-panel-border);
-  border-radius: 28px;
-  padding: 24px;
-  box-shadow: 0 20px 34px rgba(32, 60, 96, 0.08);
-  backdrop-filter: blur(18px);
-  transition:
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.signin-panel:hover {
-  transform: translateY(-4px);
-  border-color: #bdd6ea;
-  box-shadow: 0 24px 38px rgba(32, 60, 96, 0.14);
-}
-
-.signin-panel .form-label,
-.signin-panel .btn-text,
-.signin-panel .reset-helper-text,
-.signin-panel .password-strength p,
-.signin-panel .terms-text,
-.signin-panel .auth-footer {
-  color: #586a83;
-}
-
-.signin-panel .form-label {
-  color: #18263b;
-}
-
-.signin-panel .form-input {
-  background: #ffffff;
-  border-color: #d2dcea;
-  color: #1f2b3f;
-}
-
-.signin-panel .form-input::placeholder {
-  color: #8ea3bc;
-}
-
-.signin-panel .form-input:focus {
-  border-color: #8ab4db;
+.signin-panel-wrap .form-input.with-icon { padding-left: 42px; }
+.signin-panel-wrap .form-input::placeholder { color: #a39fb2; font-weight: 500; }
+.signin-panel-wrap .form-input:focus {
+  background: #fff;
+  border-color: #00a19a;
   box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
 }
-
-.signin-panel .form-input-icon,
-.signin-panel .form-input-action {
-  color: #60728c;
+.signin-panel-wrap .form-input-icon,
+.signin-panel-wrap .form-input-action { color: #a39fb2; }
+.signin-panel-wrap .form-label {
+  color: #231d45;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
+.signin-panel-wrap .form-field { margin-bottom: 18px; }
 
+/* Solid teal primary button */
 .signin-panel .btn-primary--futuristic {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
-  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+  background: #00a19a;
+  border-radius: 14px;
+  padding: 17px 18px;
+  font-size: 15.5px;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.22);
+  margin-top: 4px;
 }
+.signin-panel .btn-primary--futuristic::before { display: none; }
+.signin-panel .btn-primary--futuristic:hover { background: #00857f; }
 
-.signin-panel .btn-primary--futuristic::before {
+/* Forgot password link */
+.signin-panel .btn-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #231d45;
+}
+.signin-panel .btn-text:hover { color: #00857f; }
+
+/* Divider */
+.signin-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 22px 0 6px;
+  color: #a39fb2;
+  font-size: 12px;
+}
+.signin-divider::before,
+.signin-divider::after {
   content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.16) 50%, transparent 100%);
-  transform: translateX(-120%);
-  animation: sheen 4.8s ease-in-out infinite;
+  flex: 1;
+  height: 1px;
+  background: #dddbe4;
 }
-
-.signin-panel .btn-primary--futuristic:hover {
-  background: linear-gradient(135deg, #00aba4, #2384d8);
-}
-
-.signin-panel .btn-text:hover {
-  color: #1e2b41;
-}
-
-.signin-panel .error-banner {
-  background: #fff1f2;
-  border-color: #fecdd3;
-  color: #be123c;
-}
-
-.signin-panel .logged-out-toast--teal {
-  background: #eafaf7;
-  color: #00857f;
-}
+.signin-divider span { padding: 0 14px; }
 
 .signin-footer {
-  padding-top: 14px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b6783;
+  padding: 8px 0 0;
 }
-
-.signin-panel .auth-footer a {
+.signin-footer a {
   color: #00a19a;
+  font-weight: 800;
+  text-decoration: none;
 }
+.signin-footer a:hover { color: #00857f; }
 
+/* Confirm states reuse the right panel look */
 .confirm-state--futuristic {
-  min-height: 100dvh;
-  background:
-    radial-gradient(circle at 0% 8%, rgba(0, 161, 154, 0.1), transparent 28%),
-    radial-gradient(circle at 92% 6%, rgba(81, 129, 255, 0.12), transparent 25%),
-    linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #eef4f9 100%);
+  min-height: auto;
+  background: transparent;
 }
-
 .confirm-state--futuristic .confirm-icon {
-  background: #ffffff;
-  border-color: #d8e3ef;
+  background: #e9f7f5;
+  border-color: #bfe6e1;
   color: #00a19a;
 }
-
 .confirm-state--futuristic .confirm-h,
-.confirm-state--futuristic .confirm-sub strong {
-  color: #18263b;
-}
+.confirm-state--futuristic .confirm-sub strong { color: #231d45; }
+.confirm-state--futuristic .confirm-sub { color: #6b6783; }
 
-.confirm-state--futuristic .confirm-sub {
-  color: #586a83;
-}
-
-@keyframes sheen {
-  0%,
-  55% {
-    transform: translateX(-120%);
-  }
-  80%,
-  100% {
-    transform: translateX(120%);
-  }
+/* ── Responsive: stack to single column ── */
+@media (max-width: 880px) {
+  .signin-split { grid-template-columns: 1fr; }
+  .signin-aside { padding: 28px 28px 36px; }
+  .signin-aside-top { margin-bottom: 36px; }
+  .signin-aside-body { justify-content: flex-start; }
+  .signin-welcome { font-size: clamp(38px, 11vw, 52px); }
+  .signin-home-card { margin-top: 28px; }
+  .signin-aside-foot { margin-top: 32px; }
+  .signin-main { padding: 32px 24px 48px; }
 }
 
 /* Topbar */
@@ -1047,7 +947,7 @@ const onPrimary = () => {
 
 /* Logged-out / session toast */
 .logged-out-toast {
-  margin: 6px 24px 0;
+  margin: 6px 24px 18px 3px;
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 12px;
@@ -1314,45 +1214,4 @@ const onPrimary = () => {
   50% { transform: translateY(-10px); }
 }
 
-@media (max-width: 1040px) {
-  .signin-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .signin-image-card--solo {
-    max-width: 520px;
-  }
-}
-
-@media (max-width: 760px) {
-  .signin-topbar {
-    padding: 14px 16px 6px;
-  }
-
-  .signin-shell {
-    width: calc(100% - 24px);
-    padding-bottom: 20px;
-  }
-
-  .signin-visual {
-    padding-top: 10px;
-  }
-
-  .signin-title {
-    font-size: 38px;
-  }
-
-  .signin-image-card--solo {
-    max-width: 100%;
-  }
-
-  .signin-metrics {
-    grid-template-columns: 1fr;
-  }
-
-  .signin-panel {
-    padding: 18px;
-    border-radius: 24px;
-  }
-}
 </style>

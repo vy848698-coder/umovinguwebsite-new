@@ -2,23 +2,22 @@
   <div class="hs-ring-wrap">
     <svg viewBox="0 0 200 200" width="200" height="200">
       <!-- Track -->
-      <circle cx="100" cy="100" r="80" fill="none" stroke="#e8e8ee" stroke-width="18" stroke-dasharray="376.99" stroke-dashoffset="94.25" stroke-linecap="round" transform="rotate(135 100 100)" />
+      <circle cx="100" cy="100" r="82" fill="none" stroke="#e7e4dc" stroke-width="13" />
       <!-- Progress -->
       <circle
-        cx="100" cy="100" r="80" fill="none"
+        cx="100" cy="100" r="82" fill="none"
         :stroke="ratingColor"
-        stroke-width="18"
-        :stroke-dasharray="`${progressArc} 376.99`"
+        stroke-width="13"
+        :stroke-dasharray="`${progressArc} ${circumference}`"
         stroke-linecap="round"
-        stroke-dashoffset="0"
-        transform="rotate(135 100 100)"
+        transform="rotate(-90 100 100)"
         style="transition: stroke-dasharray 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
       />
       <!-- Score -->
-      <text x="100" y="90" text-anchor="middle" :font-size="score >= 100 ? 38 : 46" font-weight="800" :fill="ratingColor" font-family="sans-serif">
+      <text x="100" y="96" text-anchor="middle" :font-size="score >= 100 ? 46 : 58" font-weight="800" :fill="scoreColor" font-family="sans-serif" letter-spacing="-2">
         {{ displayScore }}
       </text>
-      <text x="100" y="115" text-anchor="middle" font-size="15" fill="#8e8e93" font-family="sans-serif" font-weight="500">
+      <text x="100" y="126" text-anchor="middle" font-size="16" fill="#6b7280" font-family="sans-serif" font-weight="500">
         {{ rating }}
       </text>
     </svg>
@@ -27,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const props = defineProps<{
   score: number
@@ -35,10 +34,20 @@ const props = defineProps<{
   ratingColor: string
 }>()
 
+const circumference = 2 * Math.PI * 82 // ≈ 515.22
+
 const displayScore = ref(0)
-const progressArc = computed(() => {
-  const maxArc = 376.99 * 0.75 // 270 degrees
-  return (displayScore.value / 100) * maxArc
+const progressArc = computed(() => (displayScore.value / 100) * circumference)
+
+// Darker shade of the rating colour for the big number, to match the design.
+const scoreColor = computed(() => {
+  const c = props.ratingColor
+  if (!/^#[0-9a-f]{6}$/i.test(c)) return c
+  const f = 0.62 // mix toward black
+  const r = Math.round(parseInt(c.slice(1, 3), 16) * f)
+  const g = Math.round(parseInt(c.slice(3, 5), 16) * f)
+  const b = Math.round(parseInt(c.slice(5, 7), 16) * f)
+  return `rgb(${r}, ${g}, ${b})`
 })
 
 onMounted(() => {
@@ -66,7 +75,9 @@ onMounted(() => {
 }
 .hs-ring-label {
   font-size: 12px;
-  color: #aeaeb2;
-  margin-top: -8px;
+  color: #b0b0bc;
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="hs-root">
-    <div class="ambient ambient-a" />
-    <div class="ambient ambient-b" />
+    <div class="ambient ambient-a" :style="ambientAStyle" />
+    <div class="ambient ambient-b" :style="ambientBStyle" />
     <div class="mesh" />
 
     <!-- ── Web nav ──────────────────────────────────────────────────── -->
@@ -14,16 +14,16 @@
         </button>
 
         <nav class="web-links" aria-label="Primary navigation">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
           <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
-          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
-          <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
-          <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
+          <button type="button" @click="navigateTo('/#passport')">Passport</button>
+          <button type="button" @click="navigateTo('/#story')">Story</button>
+          <button type="button" @click="navigateTo('/#market')">Market</button>
+          <button type="button" @click="navigateTo('/#reviews')">Reviews</button>
         </nav>
 
         <div class="web-actions">
-          <button class="web-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
-          <button class="web-btn solid" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          <button class="web-btn ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+          <button class="web-btn solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
         </div>
 
         <button
@@ -42,13 +42,13 @@
       <div class="hs-web-shell">
         <div class="web-mobile-backdrop" :class="{ open: mobileNavOpen }" @click="mobileNavOpen = false" />
         <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
           <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
-          <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Passport</button>
-          <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="goMobile('/marketplace')">Marketplace</button>
-          <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="goMobile('/profile/learn')">Learn</button>
-          <button type="button" :class="{ active: navIsActive('/profile') }" @click="goMobile('/profile')">Profile</button>
-          <button type="button" class="claim" @click="goMobile('/claim')">Claim Passport</button>
+          <button type="button" @click="goMobile('/#passport')">Passport</button>
+          <button type="button" @click="goMobile('/#story')">Story</button>
+          <button type="button" @click="goMobile('/#market')">Market</button>
+          <button type="button" @click="goMobile('/#reviews')">Reviews</button>
+          <button type="button" @click="goMobile('/onboarding/signin')">Sign in</button>
+          <button type="button" class="claim" @click="goMobile('/onboarding/signup')">Get started</button>
         </div>
       </div>
     </header>
@@ -58,7 +58,7 @@
       <section class="hs-hero">
         <div class="hero-content">
           <p class="section-kicker"><span class="kicker-dot" />HomeScore</p>
-          <h1>How energy efficient is any UK property?</h1>
+          <h1>How energy<br class="h1-br-mobile" /> efficient is any UK<br class="h1-br-mobile" /> property?</h1>
           <p class="hero-description">
             Instantly scored from public EPC data — for any address, anyone.
             See how a property compares to its street in seconds.
@@ -94,7 +94,7 @@
         <aside class="hero-visual" aria-label="HomeScore preview">
           <div class="visual-glow" />
           <div class="house-stage">
-            <img src="/images/uk-houses/house-6.jpg" alt="Modern UK home" class="hero-house" />
+            <img src="/images/uk-houses/house-1.jpg" alt="Modern UK home" class="hero-house" />
             <div class="score-card">
               <div class="score-card-eyebrow">HomeScore</div>
               <div class="score-ring-holder">
@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import ScoreRing from '~/components/homescore/ScoreRing.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
@@ -234,6 +234,26 @@ import SiteFooter from '~/components/homescore/SiteFooter.vue'
 const route = useRoute()
 const router = useRouter()
 const mobileNavOpen = ref(false)
+
+// ── Parallax background blobs ────────────────────────────────────────
+const scrollY = ref(0)
+
+const ambientAStyle = computed(() => ({
+  transform: `translateY(${scrollY.value * 0.28}px) translateX(${scrollY.value * 0.06}px)`,
+  transition: 'transform 0.12s linear',
+}))
+
+const ambientBStyle = computed(() => ({
+  transform: `translateY(${scrollY.value * 0.14}px)`,
+  transition: 'transform 0.12s linear',
+}))
+
+function onScroll() {
+  scrollY.value = window.scrollY
+}
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 const heroMeta = ['Free', 'Instant', 'No account needed']
 const chartBars = [38, 52, 30, 60, 44, 72, 50, 66, 40, 84, 58, 96]
@@ -336,9 +356,9 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   min-height: 100dvh;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.12), transparent 34%),
-    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.08), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.05), transparent 30%),
+    linear-gradient(180deg, #faf7f0 0%, #f5f1e8 46%, #f3efe6 100%);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   /* `clip` keeps the sticky nav working (vs `hidden`, which makes this a
      scroll container and breaks position: sticky). */
@@ -502,14 +522,18 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 .web-btn.solid {
   color: #fff;
-  background: linear-gradient(120deg, var(--color-teal), var(--color-blue) 48%, var(--color-purple));
-  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  background: #00a19a;
+  box-shadow: 0 10px 20px rgba(0, 161, 154, 0.22);
+}
+
+.web-btn.solid:hover {
+  background: #00857f;
 }
 
 .web-btn.ghost {
-  color: #0c2342;
-  background: rgba(255, 255, 255, 0.9);
-  border-color: #d8e3ee;
+  color: #231d45;
+  background: #fff;
+  border-color: #e3e1ea;
 }
 
 .web-mobile-toggle,
@@ -540,7 +564,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 /* ── Layout ───────────────────────────────────────────────────────── */
 .hs-main {
-  padding: 64px 0 54px;
+  padding: 54px 0 18px;
 }
 
 .section-kicker {
@@ -570,10 +594,13 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 /* ── Hero ─────────────────────────────────────────────────────────── */
 .hs-hero {
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(520px, 1.08fr);
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 46px;
+  gap: clamp(40px, 5vw, 72px);
   min-height: 500px;
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 clamp(24px, 4vw, 64px);
 }
 
 .hero-content {
@@ -582,11 +609,16 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 .hero-content h1 {
   margin: 0;
-  color: #08102f;
-  font-size: clamp(40px, 4.6vw, 56px);
-  font-weight: 900;
-  line-height: 1.08;
+  color: #231d45;
+  font-size: clamp(38px, 5vw, 62px);
+  font-weight: 800;
+  line-height: 1.07;
   letter-spacing: -0.02em;
+}
+
+/* Forced line breaks only on narrow/mobile widths; desktop wraps naturally. */
+.h1-br-mobile {
+  display: none;
 }
 
 .hero-description {
@@ -705,7 +737,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 /* ── Hero visual / score card ─────────────────────────────────────── */
 .hero-visual {
   position: relative;
-  min-height: 500px;
+  min-height: 520px;
 }
 
 .visual-glow {
@@ -720,16 +752,16 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 }
 
 .house-stage {
-  position: absolute;
-  inset: 30px 0 0 0;
+  position: relative;
+  /* inset: 30px 0 0 0; */
 }
 
 .hero-house {
   position: absolute;
-  right: 0;
-  top: 24px;
-  width: min(460px, 74%);
-  height: 360px;
+  right: 41px;
+  top: 31px;
+  width: min(560px, 88%);
+  height: 410px;
   border-radius: 24px;
   object-fit: cover;
   object-position: center;
@@ -738,88 +770,92 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 }
 
 .score-card {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 300px;
-  padding: 22px 22px 20px;
-  border: 1px solid rgba(231, 236, 242, 0.9);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
+  position: relative;
+  /* left: 0; */
+  /* top: 14px; */
+  max-width: 372px;
+  padding: 26px 26px 24px;
+  border: 1px solid rgba(20, 40, 70, 0.06);
+  border-radius: 26px;
+  background: #ffffff;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 32px 56px rgba(23, 52, 92, 0.18);
-  z-index: 4;
+    0 2px 0 rgba(255, 255, 255, 0.95) inset,
+    0 30px 60px rgba(23, 52, 92, 0.18),
+    0 6px 16px rgba(0, 0, 0, 0.06);
+  z-index: 2;
 }
 
 .score-card-eyebrow {
   text-align: center;
   font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.16em;
+  font-weight: 800;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #007e78;
-  margin-bottom: 4px;
+  color: #009b93;
+  margin-bottom: 6px;
 }
 
 .score-ring-holder {
   display: flex;
   justify-content: center;
-  margin: -4px 0 6px;
+  margin: 2px 0 6px;
 }
 
 .score-ring-holder :deep(svg) {
-  width: 150px;
-  height: 150px;
+  width: 168px;
+  height: 168px;
 }
 
 .score-ring-holder :deep(.hs-ring-label) {
-  font-size: 11px;
-  margin-top: -14px;
+  font-size: 12px;
+  color: #9e9ea7;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 .score-breakdown {
   list-style: none;
-  margin: 6px 0 16px;
-  padding: 14px 0 0;
-  border-top: 1px solid #eef2f6;
+  margin: 6px 0 18px;
+  padding: 18px 2px 0;
+  border-top: 1px solid #ebeef2;
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .score-breakdown li {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 12.5px;
+  gap: 11px;
+  font-size: 14.5px;
 }
 
 .sb-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 999px;
   flex-shrink: 0;
 }
 
-.sb-dot.teal { background: #00a19a; }
-.sb-dot.amber { background: #f5a623; }
-.sb-dot.blue { background: #2f9bdf; }
+.sb-dot.teal { background: #12b3a6; }
+.sb-dot.amber { background: #d99a2b; }
+.sb-dot.blue { background: #8b8ff5; }
 
 .sb-label {
   flex: 1;
-  color: #4a5570;
+  color: #231d45;
   font-weight: 600;
+  gap: 10px;
+  line-height: 1.5;
 }
 
 .sb-value {
   font-weight: 800;
-  color: #231d45;
+  color: #1a2340;
   white-space: nowrap;
 }
 
-.sb-value.good { color: #00857f; }
-.sb-value.avg { color: #d98300; }
+.sb-value.good { color: #009b8f; }
+.sb-value.avg { color: #d6921f; }
 
 .score-breakdown-btn {
   display: flex;
@@ -827,26 +863,26 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px;
-  border: 1px solid rgba(0, 161, 154, 0.2);
-  border-radius: 12px;
-  background: rgba(0, 161, 154, 0.07);
-  color: #007e78;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  background: #d7efea;
+  color: #017a72;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s;
+  letter-spacing: 0.01em;
 }
 
 .score-breakdown-btn:hover {
-  background: rgba(0, 161, 154, 0.12);
-  border-color: rgba(0, 161, 154, 0.4);
+  background: #c7e8e1;
 }
 
 .score-breakdown-btn svg {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
 }
 
 /* ── Real story + activity ────────────────────────────────────────── */
@@ -998,21 +1034,22 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 .hs-how-head h2 {
   margin: 0;
-  color: #08102f;
-  font-size: clamp(28px, 3vw, 36px);
+  color: #1a1340;
+  font-size: clamp(32px, 3.6vw, 44px);
   font-weight: 900;
-  line-height: 1.16;
-  letter-spacing: -0.01em;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 .hs-how-tabs {
   display: inline-flex;
-  background: rgba(250, 250, 252, 0.9);
-  border: 1px solid #ececef;
+  background: #ffffff;
+  border: 1px solid #ece8df;
   border-radius: 100px;
-  padding: 5px;
+  padding: 6px;
   gap: 4px;
   margin: 30px 0 44px;
+  box-shadow: 0 6px 18px rgba(26, 19, 64, 0.06);
 }
 
 .hs-how-tab {
@@ -1021,22 +1058,23 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   background: transparent;
   color: #6b6783;
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 26px;
   border-radius: 100px;
   cursor: pointer;
   transition: all 0.18s;
 }
 
 .hs-how-tab:hover {
-  color: #231d45;
+  color: #1a1340;
 }
 
 .hs-how-tab.active {
-  background: #fff;
-  color: #231d45;
-  box-shadow: 0 4px 12px rgba(35, 29, 69, 0.1);
+  background: #1a1340;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(26, 19, 64, 0.28);
 }
 
 .hs-steps-grid {
@@ -1435,7 +1473,11 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 
   .hero-content h1 {
-    font-size: 34px;
+    font-size: 38px;
+  }
+
+  .hero-content h1 .h1-br-mobile {
+    display: inline;
   }
 
   .hero-description {
