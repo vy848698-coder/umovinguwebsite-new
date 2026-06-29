@@ -42,6 +42,9 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/offline',
       navigateFallbackDenylist: [/^\/api\//],
+      // Default precache cap is 2 MiB; some images (e.g. Exp.png ~2.16 MB)
+      // exceed it. Raise to 3 MiB so they're still precached.
+      maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
       globIgnores: ['op-icons/temp/**'],
       runtimeCaching: [
