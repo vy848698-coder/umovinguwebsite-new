@@ -32,8 +32,8 @@
     </div>
 
     <div class="offline-brand">
-      <img src="/logo.png" alt="UmovingU" class="offline-logo" />
-      <span>umovingu</span>
+      <img src="/logo-new.png" alt="UmovingU" class="offline-logo" />
+      <span>umovingu</span><span class="offline-beta">BETA</span>
     </div>
   </div>
 </template>
@@ -150,6 +150,7 @@ function retry() {
   z-index: 1;
 }
 .offline-logo { width: 24px; height: 24px; object-fit: contain; }
+.offline-beta { font-size: 9px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 6px; margin-left: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   .offline-btn { transition: none; }

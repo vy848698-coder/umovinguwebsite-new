@@ -15,11 +15,6 @@
     </WebTopNav>
 
     <main class="learn-shell learn-main">
-      <button class="learn-back-btn" type="button" @click="goBack">
-        <span aria-hidden="true">&larr;</span>
-        Back
-      </button>
-
       <!-- ── Hero ─────────────────────────────────────────── -->
       <section class="learn-hero">
         <div class="learn-hero-copy">
@@ -243,11 +238,14 @@
         </button>
       </section>
     </main>
+
+    <SiteFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 definePageMeta({ title: 'Learn & Ask AI - UmovingU', middleware: 'auth' })
 
 const { profile, fetchProfile } = useProfile()
@@ -393,8 +391,6 @@ function askWith(text: string) {
   if (!q) return
   navigateTo(`/profile/chat?prefill=${encodeURIComponent(q)}`)
 }
-
-const goBack = useGoBack('/profile')
 </script>
 
 <style scoped>
@@ -409,9 +405,9 @@ const goBack = useGoBack('/profile')
   color: var(--learn-ink);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.14) 0%, rgba(13, 191, 181, 0) 32%),
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.13) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f8fbff 0%, #f0f5ff 48%, #effaf8 100%);
+    radial-gradient(circle at 8% 34%, rgba(0, 161, 154, 0.08) 0%, rgba(0, 161, 154, 0) 32%),
+    radial-gradient(circle at 92% 26%, rgba(0, 161, 154, 0.05) 0%, rgba(0, 161, 154, 0) 38%),
+    #f2efe6;
   position: relative;
 }
 
@@ -432,10 +428,10 @@ const goBack = useGoBack('/profile')
   border-radius: 999px;
   filter: blur(44px);
   pointer-events: none;
-  opacity: 0.24;
+  opacity: 0.18;
 }
-.ambient-a { width: 260px; height: 260px; top: 120px; left: -60px; background: rgba(0, 161, 154, 0.3); }
-.ambient-b { width: 280px; height: 280px; top: 160px; right: -80px; background: rgba(95, 139, 255, 0.26); }
+.ambient-a { width: 260px; height: 260px; top: 340px; left: -80px; background: rgba(0, 161, 154, 0.3); }
+.ambient-b { width: 280px; height: 280px; top: 380px; right: -100px; background: rgba(47, 191, 182, 0.26); }
 
 .learn-shell {
   width: min(1180px, calc(100% - 40px));
@@ -455,14 +451,15 @@ const goBack = useGoBack('/profile')
 }
 .learn-btn.solid {
   color: #fff;
-  background: linear-gradient(120deg, var(--learn-aqua) 0%, var(--learn-blue) 48%, var(--learn-indigo) 100%);
-  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+  background: #00a19a;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
 }
-.learn-btn.ghost { background: #fff; color: #1f2b3f; border-color: #d4dfeb; }
+.learn-btn.solid:hover { background: #00857f; }
+.learn-btn.ghost { background: #fff; color: #231d45; border-color: #e7e2d6; }
 .learn-mobile-chat {
   border: 0;
   color: #fff;
-  background: linear-gradient(120deg, var(--learn-aqua) 0%, var(--learn-blue) 48%, var(--learn-indigo) 100%);
+  background: #00a19a;
 }
 
 .learn-main { padding: 22px 0 40px; }
@@ -1087,11 +1084,11 @@ const goBack = useGoBack('/profile')
   display: flex;
   align-items: center;
   gap: 20px;
-  border: 1px solid rgba(173, 201, 231, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   padding: 26px 30px;
-  background: linear-gradient(120deg, rgba(232, 248, 244, 0.95) 0%, rgba(238, 244, 255, 0.95) 100%);
-  box-shadow: 0 14px 32px rgba(18, 55, 88, 0.08);
+  background: #231d45;
+  box-shadow: 0 14px 32px rgba(35, 29, 69, 0.22);
 }
 .learn-cta-shield {
   width: 58px;
@@ -1110,13 +1107,13 @@ const goBack = useGoBack('/profile')
   display: block;
   font-size: 18px;
   font-weight: 800;
-  color: #10263d;
+  color: #fff;
   letter-spacing: -0.3px;
 }
 .learn-cta-copy p {
   margin: 4px 0 0;
   font-size: 14px;
-  color: #5e7186;
+  color: rgba(255, 255, 255, 0.62);
   font-weight: 500;
 }
 .learn-cta-btn {

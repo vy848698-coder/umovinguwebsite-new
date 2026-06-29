@@ -8,8 +8,8 @@
     <header class="hsw-nav">
       <div class="hsw-shell hsw-nav-inner">
         <button class="hsw-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo.png" alt="" class="hsw-brand-logo" />
-          <span>umovingu</span>
+          <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">
           <button type="button" class="active" @click="navigateTo('/explore')">Explore</button>
@@ -397,7 +397,6 @@
       @tier-changed="onTierChanged"
     />
     <SiteFooter />
-    <BottomNav active="explore" />
   </div>
 </template>
 
@@ -415,7 +414,6 @@ import { useProfile } from '~/composables/useProfile'
 import { useAppToast } from '~/composables/useCustomToast'
 import TierUpgradeDrawer from '~/components/buyer-profile/TierUpgradeDrawer.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({ title: 'Buyer Profile — UmovingU', middleware: 'auth' })
 
@@ -621,7 +619,8 @@ function goEdit() { router.push('/buyer-profile/build') }
 .hsw-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; }
 .hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #10263d; background: none; border: none; cursor: pointer; flex-shrink: 0; }
-.hsw-brand-logo { width: 28px; height: 28px; border-radius: 8px; object-fit: cover; }
+.hsw-brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
 .hsw-links { display: flex; align-items: center; gap: 4px; }
 .hsw-links button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: #516070; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
 .hsw-links button:hover { color: #10263d; background: rgba(0,0,0,0.05); }

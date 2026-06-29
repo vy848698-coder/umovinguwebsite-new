@@ -1,43 +1,66 @@
 <template>
-  <footer class="ex-footer">
-    <div class="ex-footer-inner">
-      <div class="web-footer-grid">
-        <div class="web-footer-intro">
-          <div class="web-footer-brand">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" />
-            </svg>
+  <footer class="uf">
+    <div class="uf-shell">
+      <div class="uf-grid">
+        <!-- Brand / intro -->
+        <div class="uf-intro">
+          <button class="uf-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo-new.png" alt="umovingu" class="uf-brand-logo" />
             <strong>umovingu</strong>
-          </div>
-          <span class="web-footer-chip">Built for UK property journeys</span>
-          <p>
+          </button>
+
+          <span class="uf-chip">Built for UK property journeys</span>
+
+          <p class="uf-tagline">
             Professional property intelligence for sellers, buyers, and landlords.
             Start with HomeScore and progress with confidence.
           </p>
-          <button type="button" class="web-footer-cta" @click="navigateTo('/homescore')">Run a HomeScore check</button>
+
+          <button class="uf-cta" type="button" @click="navigateTo('/homescore')">
+            Run a HomeScore check
+          </button>
+
+          <div class="uf-social">
+            <a class="uf-social-btn" href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3l.4-3H14V4.5c0-.9.3-1.5 1.6-1.5H17V.3C16.7.2 15.8.1 14.7.1 12.3.1 10.7 1.6 10.7 4.2V6H8v3h2.7v9H14z"/></svg>
+            </a>
+            <a class="uf-social-btn" href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 3h3l-6.6 7.5L21.8 21h-6.1l-4.3-5.6L6.4 21H3.3l7.1-8L2.6 3h6.2l3.9 5.1zm-1.1 16h1.7L7.7 4.8H5.9z"/></svg>
+            </a>
+            <a class="uf-social-btn" href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM3 8.5h3.8V21H3zM9.5 8.5h3.6v1.7h.05c.5-.9 1.7-1.9 3.6-1.9 3.8 0 4.5 2.5 4.5 5.8V21h-3.8v-5.4c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21H9.5z"/></svg>
+            </a>
+            <a class="uf-social-btn" href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>
+            </a>
+          </div>
         </div>
 
-        <div class="web-footer-col">
-          <h5><span class="footer-hicon footer-hicon--product" aria-hidden="true" />Product</h5>
+        <!-- Product -->
+        <div class="uf-col">
+          <h5><span class="uf-hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>Product</h5>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" @click="navigateTo('/passport/collections')">Property Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
         </div>
 
-        <div class="web-footer-col">
-          <h5><span class="footer-hicon footer-hicon--legal" aria-hidden="true" />Legal</h5>
+        <!-- Legal -->
+        <div class="uf-col">
+          <h5><span class="uf-hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 9 8 9s8-4 8-9V6z"/></svg></span>Legal</h5>
           <button type="button" @click="navigateTo('/legal/privacy')">Privacy</button>
           <button type="button" @click="navigateTo('/legal/terms')">Terms</button>
           <button type="button" @click="navigateTo('/legal/cookies')">Cookies</button>
         </div>
 
-        <div class="web-footer-col">
-          <h5><span class="footer-hicon footer-hicon--account" aria-hidden="true" />Account</h5>
-          <button type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+        <!-- Account -->
+        <div class="uf-col">
+          <h5><span class="uf-hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>Account</h5>
+          <button type="button" @click="navigateTo('/onboarding/signin')">Sign In</button>
           <button type="button" @click="navigateTo('/onboarding/signup')">Create account</button>
         </div>
       </div>
-      <div class="web-footer-bottom">© 2026 UMU. All rights reserved.</div>
+
+      <div class="uf-bottom">© 2026 UMU. All rights reserved.</div>
     </div>
   </footer>
 </template>
@@ -47,217 +70,245 @@
 </script>
 
 <style scoped>
-.ex-footer {
-  margin-top: 40px;
-  padding: 16px 0 24px;
-  background: #231d45;
-  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+.uf {
+  --teal: #00a19a;
+  --teal-bright: #2fd0c6;
   position: relative;
   z-index: 2;
+  margin-top: 48px;
+  background: linear-gradient(180deg, #231d45 0%, #1c1738 100%);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
-.ex-footer-inner {
-  width: min(1260px, calc(100% - 48px));
+
+.uf-shell {
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
+  padding: 56px 0 26px;
 }
 
-.web-footer-grid {
+.uf-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr;
-  gap: 40px;
-  padding: 44px 0 0;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 36px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.web-footer-intro {
+/* ── Brand intro ──────────────────────────────────────────────────── */
+.uf-intro {
   display: grid;
-  gap: 14px;
   align-content: start;
+  gap: 16px;
 }
-.web-footer-brand {
+
+.uf-brand {
   display: inline-flex;
   align-items: center;
   gap: 9px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
 }
-.web-footer-brand img,
-.web-footer-brand svg {
-  width: 24px;
-  height: 24px;
+
+.uf-brand-logo {
+  height: 30px;
+  width: auto;
   object-fit: contain;
 }
-.web-footer-brand strong {
-  font-size: 21px;
-  color: #fff;
+
+.uf-brand strong {
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.4px;
+  color: #fff;
 }
-.web-footer-chip {
+
+.uf-chip {
   justify-self: start;
   font-size: 10.5px;
-  text-transform: uppercase;
+  font-weight: 800;
   letter-spacing: 1.2px;
-  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.04);
   border-radius: 999px;
   padding: 6px 12px;
-  font-weight: 800;
-}
-.web-footer-intro p {
-  margin: 0;
-  max-width: 300px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  line-height: 1.6;
-}
-.web-footer-cta {
-  display: inline-flex;
-  justify-self: start;
-  align-items: center;
-  border: 0;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  color: rgba(255, 255, 255, 0.85);
-  background: transparent;
-  cursor: pointer;
-  transition: color 0.18s ease;
-}
-.web-footer-cta:hover {
-  color: #2fd0c6;
+  margin-top: -2px;
 }
 
-.web-footer-col {
+.uf-tagline {
+  margin: 0;
+  max-width: 36ch;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.uf-cta {
+  justify-self: start;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.18s ease;
+}
+
+.uf-cta::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1.5px;
+  background: var(--teal-bright);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.22s ease;
+}
+
+.uf-cta:hover {
+  color: var(--teal-bright);
+}
+
+.uf-cta:hover::after {
+  transform: scaleX(1);
+}
+
+.uf-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.uf-social-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.66);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.uf-social-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.uf-social-btn:hover {
+  color: #fff;
+  border-color: var(--teal);
+  background: rgba(0, 161, 154, 0.18);
+  transform: translateY(-2px);
+}
+
+/* ── Link columns ─────────────────────────────────────────────────── */
+.uf-col {
   display: grid;
   align-content: start;
 }
-.web-footer-col h5 {
+
+.uf-col h5 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 12px;
-  font-size: 12px;
+  margin: 2px 0 16px;
+  font-size: 11.5px;
   font-weight: 800;
-  color: #fff;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  letter-spacing: 1.1px;
+  color: rgba(255, 255, 255, 0.92);
 }
-.web-footer-grid button {
-  appearance: none;
+
+.uf-hicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.uf-hicon svg {
+  width: 11px;
+  height: 11px;
+}
+
+.uf-col button {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
   border: 0;
-  display: block;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.62);
   padding: 0;
-  margin-top: 11px;
-  font-size: 14px;
-  font-weight: 600;
+  margin-bottom: 12px;
+  background: transparent;
   font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.66);
   cursor: pointer;
   text-align: left;
   transition: color 0.18s ease;
 }
-.web-footer-grid button:hover {
+
+.uf-col button::before {
+  content: '';
+  width: 0;
+  border-radius: 2px;
+  height: 1.5px;
+  background: var(--teal-bright);
+  transition: width 0.18s ease, margin-right 0.18s ease;
+}
+
+.uf-col button:hover {
   color: #fff;
 }
 
-/* Sits directly on the dark #231d45 footer background, so keep it light */
-.web-footer-bottom {
-  margin-top: 44px;
-  padding: 22px 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 13px;
+.uf-col button:hover::before {
+  width: 12px;
+  margin-right: 7px;
 }
 
-/* ── Header icons ──────────────────────────────────────────────────── */
-.footer-hicon {
-  width: 18px;
-  height: 18px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
-}
-.footer-hicon::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: currentColor;
-}
-.footer-hicon--product {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.7);
-}
-.footer-hicon--product::before {
-  width: 4px;
-  height: 4px;
-  border-radius: 1px;
-  box-shadow:
-    5px 0 0 currentColor,
-    0 5px 0 currentColor,
-    5px 5px 0 currentColor;
-  transform: translate(-2px, -2px);
-}
-.footer-hicon--legal {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.7);
-}
-.footer-hicon--legal::before {
-  width: 9px;
-  height: 10px;
-  border-radius: 2px 2px 5px 5px;
-  clip-path: polygon(50% 0%, 95% 18%, 82% 100%, 18% 100%, 5% 18%);
-}
-.footer-hicon--account {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.7);
-}
-.footer-hicon--account::before {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  transform: translateY(-3px);
-}
-.footer-hicon--account::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 6px;
-  border-radius: 6px 6px 4px 4px;
-  background: currentColor;
-  transform: translateY(4px);
+/* ── Bottom bar ───────────────────────────────────────────────────── */
+.uf-bottom {
+  padding-top: 22px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.42);
 }
 
+/* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 980px) {
-  .web-footer-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .uf-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
   }
-  .web-footer-intro {
+  .uf-intro {
     grid-column: 1 / -1;
   }
 }
+
 @media (max-width: 640px) {
-  .ex-footer-inner {
-    width: calc(100% - 28px);
+  .uf-shell {
+    width: calc(100% - 32px);
+    padding: 40px 0 22px;
   }
-  .web-footer-grid {
+  .uf-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 16px;
-    border-radius: 18px;
-  }
-  .web-footer-cta {
-    width: 100%;
-    justify-content: center;
+    gap: 26px;
   }
 }
 </style>

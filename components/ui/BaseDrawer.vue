@@ -91,6 +91,10 @@ const lockScroll = (lock) => {
   if (container) {
     container.style.overflow = lock ? 'hidden' : ''
   }
+  // Fall back to locking the body on full-page (desktop) layouts
+  if (document.body) {
+    document.body.style.overflow = lock ? 'hidden' : ''
+  }
 }
 
 watch(
@@ -110,21 +114,34 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Drawer Overlay */
+/* Drawer Overlay — centered modal on desktop, bottom-sheet on mobile */
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 50;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  animation: drawer-overlay-in 0.22s ease-out;
+}
+
+@keyframes drawer-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .drawer-overlay--fullscreen {
   align-items: stretch;
   justify-content: stretch;
   background-color: rgba(0, 0, 0, 0.9);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
   top: 0;
   left: 0;
   right: 0;
@@ -136,18 +153,22 @@ onUnmounted(() => {
 
 /* Drawer Container */
 .drawer {
-  background-color: #f3f4f6;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 90vh;
-  border-radius: 1rem 1rem 0 0;
+  background-color: #fff;
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: min(90vh, 760px);
+  border-radius: 1.25rem;
   display: flex;
   flex-direction: column;
-  transform: translateY(100%);
-  transition: transform 0.3s ease-out;
   overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 44, 76, 0.28);
+  animation: drawer-pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes drawer-pop-in {
+  from { transform: translateY(14px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .drawer--fullscreen {
@@ -156,11 +177,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 0;
-  transform: translateY(0) !important;
-}
-
-.drawer--open {
-  transform: translateY(0);
+  animation: none;
 }
 
 /* Header */
@@ -168,9 +185,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem 0.5rem;
+  padding: 1.125rem 1.5rem;
   background-color: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eef1f5;
   min-height: 3.5rem; /* Ensure consistent height */
 }
 
@@ -267,13 +284,19 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   background-color: white;
-  border-radius: 0.75rem 0.75rem 0 0;
-  padding: 16px;
-  min-height: 200px;
+  padding: 1.25rem 1.5rem;
+  min-height: 0;
 }
 
 .drawer__content--large {
   min-height: 300px;
+}
+
+/* Footer */
+.drawer__footer {
+  background-color: #fff;
+  border-top: 1px solid #eef1f5;
+  padding: 1rem 1.5rem 1.25rem;
 }
 
 /* Scrollbar Styling */
@@ -294,16 +317,30 @@ onUnmounted(() => {
   background: #9ca3af;
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
-  .drawer {
+/* Responsive — collapse to a bottom-sheet on phones */
+@media (max-width: 560px) {
+  .drawer-overlay:not(.drawer-overlay--fullscreen) {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .drawer:not(.drawer--fullscreen) {
     max-width: 100%;
     margin: 0;
-    max-height: 85vh; /* Adjust for mobile */
+    max-height: 90vh;
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 -10px 40px rgba(15, 44, 76, 0.18);
+    /* Slide up from the bottom on mobile */
+    animation: drawer-slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes drawer-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
   }
 
   .drawer__header {
-    padding: 0.75rem 1rem 0.5rem;
+    padding: 0.875rem 1.125rem;
   }
 
   .drawer__illustration {
@@ -311,16 +348,20 @@ onUnmounted(() => {
   }
 
   .drawer__content {
-    padding: 1rem;
+    padding: 1.125rem;
   }
 
   .drawer__footer {
-    padding: 0.75rem 1rem 1rem;
-    margin: 16px;
+    padding: 0.875rem 1.125rem 1.125rem;
   }
 
   .drawer__back-placeholder {
     width: 60px; /* Smaller placeholder on mobile */
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-overlay,
+  .drawer { animation: none; }
 }
 </style>

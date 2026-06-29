@@ -8,8 +8,8 @@
     <header class="hsw-nav">
       <div class="hsw-shell hsw-nav-inner">
         <button class="hsw-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo.png" alt="" class="hsw-brand-logo" />
-          <span>umovingu</span>
+          <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">
           <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -107,6 +107,7 @@ const goNextStep = () => {
 .hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 10px; color: #0d1835; cursor: pointer; font-size: 20px; font-weight: 800; flex-shrink: 0; font-family: inherit; }
 .hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
+.hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
 .hsw-links { display: flex; gap: 6px; }
 .hsw-links button { border: 0; background: transparent; color: #475a7b; cursor: pointer; font-size: 14px; font-weight: 700; padding: 10px 14px; border-radius: 10px; white-space: nowrap; font-family: inherit; transition: background 0.18s, color 0.18s; }
 .hsw-links button:hover { color: #0c2342; background: rgba(0, 161, 154, 0.08); }

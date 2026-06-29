@@ -589,7 +589,7 @@ onMounted(async () => {
 .cal-nav-title {
   flex: 1;
   text-align: center;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.35px;
@@ -638,7 +638,7 @@ onMounted(async () => {
 .cal-monthnav h2 {
   margin: 0;
   flex: 1;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 22px;
   line-height: 1.06;
   letter-spacing: -0.55px;
@@ -733,7 +733,7 @@ onMounted(async () => {
   cursor: default;
 }
 .cal-day-num {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 800;
   color: #17314a;

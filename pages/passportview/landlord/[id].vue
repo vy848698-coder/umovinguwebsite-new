@@ -8,8 +8,8 @@
     <header class="hsw-nav">
       <div class="hsw-shell hsw-nav-inner">
         <button class="hsw-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo.png" alt="" class="hsw-brand-logo" />
-          <span>umovingu</span>
+          <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">
           <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -1262,6 +1262,19 @@ const SectionCard = defineComponent({
   object-fit: contain;
 }
 
+.hsw-brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 2px;
+}
+
 .hsw-links {
   display: flex;
   gap: 6px;
@@ -1933,23 +1946,43 @@ const SectionCard = defineComponent({
   background: rgba(14, 40, 64, 0.55);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
   z-index: 70;
+  animation: lp-fade 0.2s ease;
 }
+@keyframes lp-fade { from { opacity: 0; } to { opacity: 1; } }
 .lp-modal {
   width: 100%;
   max-width: 28rem;
   background: #fafaf8;
-  border-radius: 24px 24px 0 0;
+  border-radius: 22px;
   display: flex;
   flex-direction: column;
-  max-height: 92vh;
+  max-height: min(88vh, 720px);
   overflow: hidden;
-  animation: lp-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 30px 80px rgba(14, 40, 64, 0.34);
+  animation: lp-pop 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes lp-pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* Drag handle only on the mobile bottom-sheet */
+.lp-modal-handle { display: none; }
+
+@media (max-width: 640px) {
+  .lp-overlay { align-items: flex-end; padding: 0; }
+  .lp-modal {
+    max-width: none;
+    border-radius: 24px 24px 0 0;
+    max-height: 92vh;
+    animation: lp-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .lp-modal-handle { display: block; width: 36px; height: 4px; background: #d9dae0; border-radius: 100px; margin: 8px auto 0; }
 }
 @keyframes lp-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.lp-modal-handle { width: 36px; height: 4px; background: #d9dae0; border-radius: 100px; margin: 8px auto 0; }
 .lp-modal-header { display: flex; align-items: center; padding: 12px 18px 10px; }
 .lp-modal-title { flex: 1; font-size: 16px; font-weight: 800; color: #0e2840; letter-spacing: -0.4px; }
 .lp-modal-close {

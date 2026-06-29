@@ -832,20 +832,22 @@ const goBack = useGoBack('/profile')
 .pi-wp-pct { font-size: 30px; font-weight: 800; color: #00a19a; letter-spacing: -0.5px; line-height: 1; margin-bottom: 10px; }
 .pi-wp-hint { font-size: 12px; color: #6f8398; line-height: 1.5; margin-top: 8px; }
 .pi-welcome-cta {
-  border-radius: 18px; background: #fff; border: 1px solid #e7eef8;
-  padding: 16px 18px; box-shadow: 0 8px 22px rgba(15, 44, 76, 0.06);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #1b1b4b 0%, #14143a 55%, #191641 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 20px; box-shadow: 0 16px 34px rgba(17, 18, 56, 0.32);
 }
-.pi-wc-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #10263d; margin-bottom: 4px; }
-.pi-wc-gem { width: 18px; height: 18px; color: #6c5cf0; }
-.pi-wc-sub { font-size: 12.5px; color: #6f8398; line-height: 1.45; margin-bottom: 12px; }
+.pi-wc-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.pi-wc-gem { width: 18px; height: 18px; color: #a99bff; }
+.pi-wc-sub { font-size: 12.5px; color: #c3c8e6; line-height: 1.45; margin-bottom: 14px; }
 .pi-wc-btn {
-  width: 100%; height: 42px; border-radius: 12px; border: none; cursor: pointer;
-  background: linear-gradient(120deg, #5b5bf0, #6c5cf0); color: #fff;
+  width: 100%; height: 44px; border-radius: 12px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, #00a99a 0%, #0c8f74 100%); color: #fff;
   font-family: inherit; font-size: 13.5px; font-weight: 800;
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  box-shadow: 0 10px 22px rgba(92, 76, 240, 0.28); transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32); transition: transform 0.2s, box-shadow 0.2s;
 }
-.pi-wc-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(92, 76, 240, 0.34); }
+.pi-wc-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(0, 161, 154, 0.4); }
 .pi-wc-btn-ic { width: 15px; height: 15px; }
 
 /* ── Card grids ────────────────────────────────────────────────── */

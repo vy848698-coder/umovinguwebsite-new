@@ -303,13 +303,11 @@ watch(isLoading, async (val) => {
   --chat-violet: #6c5ce7;
   --chat-ink: #1f2b3f;
   --chat-border: #d8e3ee;
+  --bg: #f3f2ef;
   min-height: 100dvh;
   color: var(--chat-ink);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background:
-    radial-gradient(circle at 8% 11%, rgba(13, 191, 181, 0.14) 0%, rgba(13, 191, 181, 0) 32%),
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.13) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f8fbff 0%, #f0f5ff 48%, #effaf8 100%);
+  background: var(--bg);
   position: relative;
 }
 

@@ -612,7 +612,7 @@ const securityLabel = computed(() => {
 }
 .st-header-icon svg { width: 26px; height: 26px; }
 .st-h1 {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 40px;
   font-weight: 750;
   color: #10263d;
