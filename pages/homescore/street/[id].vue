@@ -7,8 +7,8 @@
     <header class="hss-nav">
       <div class="hss-shell hss-nav-inner">
         <button class="hss-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo.png" alt="" class="hss-brand-logo" />
-          <span>umovingu</span>
+          <img src="/logo-new.png" alt="" class="hss-brand-logo" />
+          <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hss-links" aria-label="Primary navigation">
           <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -613,6 +613,19 @@ const tour = useHomescoreTour({
   width: 28px;
   height: 28px;
   object-fit: contain;
+}
+
+.hsw-brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 2px;
 }
 .hss-links {
   display: flex;

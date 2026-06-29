@@ -1,74 +1,85 @@
 <template>
-  <div class="cl-page mobile-container">
-    <!-- Nav bar — matches prototype -->
-    <div class="cl-nav-bar">
-      <button class="cl-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="cl-nav-title">Collaborators</div>
-      <button class="cl-nav-icon-btn" aria-label="Search" @click="openSearch">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.2"
-          stroke-linecap="round"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="21" y2="21" />
-        </svg>
-      </button>
-    </div>
+  <div class="cl-page">
+    <WebTopNav>
+      <template #actions>
+        <button class="cl-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
+        <button class="cl-quick-btn solid" type="button" @click="openCollaboratorTypeModal">+ Add</button>
+      </template>
+    </WebTopNav>
 
     <main class="cl-body">
       <div class="atm-bg atm-bg-teal" />
 
-      <!-- Hero -->
-      <div class="cl-hero">
-        <div class="hero-greeting">Your team</div>
-        <div class="cl-h1">
-          People you work with<span class="cl-h1-count">{{
-            collaborators.length
-          }}</span>
+      <!-- Page head -->
+      <div class="cl-head">
+        <div class="cl-head-copy">
+          <h1 class="cl-title">Collaborators</h1>
+          <p class="cl-subtitle">Invite and manage the people you work with.</p>
         </div>
-        <div class="hero-stats">
-          <span
-            ><span class="stat-num">{{ collaborators.length }}</span
-            >collaborators</span
-          >
-          <span class="stat-sep" />
-          <span
-            ><span class="stat-num">{{ propertyCount }}</span
-            >properties</span
-          >
-          <span class="stat-sep" />
-          <span
-            ><span class="stat-num teal">{{ partnerCount }}</span
-            >partners</span
-          >
+
+        <!-- Orbital illustration -->
+        <div class="cl-orbit" aria-hidden="true">
+          <div class="cl-orbit-ring cl-orbit-ring-outer" />
+          <div class="cl-orbit-ring cl-orbit-ring-inner" />
+          <span class="cl-orbit-dot cl-orbit-dot-a" />
+          <span class="cl-orbit-dot cl-orbit-dot-b" />
+          <span class="cl-orbit-dot cl-orbit-dot-c" />
+          <div class="cl-orbit-chip cl-orbit-chip-indigo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
+          </div>
+          <div class="cl-orbit-chip cl-orbit-chip-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
+          </div>
+          <div class="cl-orbit-core">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+          </div>
         </div>
       </div>
 
-      <!-- Filter chips -->
-      <div class="cl-filter-row">
-        <button
-          v-for="chip in filterChips"
-          :key="chip.value"
-          class="cl-chip"
-          :class="{ active: activeFilter === chip.value }"
-          @click="activeFilter = chip.value"
-        >
-          {{ chip.label }}
-          <span class="cl-chip-num">{{ chip.count }}</span>
+      <!-- Team banner -->
+      <div class="cl-banner">
+        <div class="cl-banner-glow" />
+        <div class="cl-banner-copy">
+          <div class="cl-banner-label">Your team</div>
+          <div class="cl-banner-title">
+            People you work with<span class="cl-banner-count">{{ collaborators.length }}</span>
+          </div>
+          <div class="cl-banner-stats">
+            <span><span class="cl-stat-num">{{ collaborators.length }}</span> Collaborators</span>
+            <span class="cl-stat-sep" />
+            <span><span class="cl-stat-num">{{ propertyCount }}</span> Properties</span>
+            <span class="cl-stat-sep" />
+            <span><span class="cl-stat-num">{{ partnerCount }}</span> Partners</span>
+          </div>
+        </div>
+        <button class="cl-banner-cta" type="button" @click="openCollaboratorTypeModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Add collaborator
         </button>
+      </div>
+
+      <!-- Toolbar: filter chips + search -->
+      <div class="cl-toolbar">
+        <div class="cl-filter-row">
+          <button
+            v-for="chip in filterChips"
+            :key="chip.value"
+            class="cl-chip"
+            :class="{ active: activeFilter === chip.value }"
+            @click="activeFilter = chip.value"
+          >
+            <svg v-if="chip.icon === 'scale'" class="cl-chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18" /><path d="M5 7h14" /><path d="m5 7-3 6a3 3 0 0 0 6 0z" /><path d="m19 7-3 6a3 3 0 0 0 6 0z" /><path d="M8 21h8" /></svg>
+            <svg v-else-if="chip.icon === 'user'" class="cl-chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
+            <svg v-else-if="chip.icon === 'partner'" class="cl-chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 0 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 0 0 3-3l-3.9-3.9a2 2 0 0 0-1.7-.5l-3.2.5a2 2 0 0 1-1.6-.5L5 7" /><path d="m21 3-3 3" /><path d="m3 21 3-3" /></svg>
+            {{ chip.label }}
+            <span class="cl-chip-num">{{ chip.count }}</span>
+          </button>
+        </div>
+
+        <label class="cl-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></svg>
+          <input v-model="searchText" type="text" placeholder="Search collaborators..." />
+        </label>
       </div>
 
       <!-- Collaborator cards -->
@@ -149,6 +160,9 @@
       <!-- Empty-state suggestion -->
       <div v-if="!filteredCollaborators.length" class="empty-state">
         <div class="empty-state-icon">
+          <span class="empty-spark empty-spark-1" />
+          <span class="empty-spark empty-spark-2" />
+          <span class="empty-spark empty-spark-3" />
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -167,14 +181,17 @@
         <div class="empty-state-sub">
           Invite an agent, broker or partner to share your property journey.
         </div>
-        <button class="btn-secondary" @click="openCollaboratorTypeModal">
-          + Add collaborator
+        <button class="btn-primary" @click="openCollaboratorTypeModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Add collaborator
         </button>
       </div>
     </main>
 
-    <!-- Floating add button -->
+    <!-- Floating add button — only when there are collaborators (avoids
+         overlapping the empty-state card) -->
     <button
+      v-if="filteredCollaborators.length"
       class="fab"
       aria-label="Add collaborator"
       @click="openCollaboratorTypeModal"
@@ -230,12 +247,16 @@
         </button>
       </template>
     </BaseDrawer>
+
+    <SiteFooter />
   </div>
 </template>
 
 <script setup>
 import BaseDrawer from '@/components/ui/BaseDrawer.vue'
 import ProfilePageTitle from '~/components/profile/ProfilePageTitle.vue'
+import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({
   title: 'Collaborators - UmovingU',
@@ -305,10 +326,11 @@ const pendingCount = computed(
 const activeFilter = ref('all')
 
 const filterChips = computed(() => [
-  { value: 'all', label: 'Everyone', count: collaborators.value.length },
+  { value: 'all', label: 'Everyone', icon: null, count: collaborators.value.length },
   {
     value: 'solicitor',
     label: 'Solicitors',
+    icon: 'scale',
     count: collaborators.value.filter((p) =>
       /solicitor/i.test(p.role || p.roleLabel || ''),
     ).length,
@@ -316,6 +338,7 @@ const filterChips = computed(() => [
   {
     value: 'agent',
     label: 'Agents',
+    icon: 'user',
     count: collaborators.value.filter((p) =>
       /agent|estate agent/i.test(p.role || p.roleLabel || ''),
     ).length,
@@ -323,6 +346,7 @@ const filterChips = computed(() => [
   {
     value: 'partner',
     label: 'Partners',
+    icon: 'partner',
     count: collaborators.value.filter((p) =>
       /partner|owner|co-owner/i.test(p.role || p.roleLabel || ''),
     ).length,
@@ -371,13 +395,6 @@ function collabInitials(person) {
   const parts = (person.name || '').trim().split(/\s+/)
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
 }
-function openSearch() {
-  // Lightweight inline search prompt. The chips above already filter the
-  // list; this just exposes the text filter.
-  const q = window.prompt('Search collaborators', searchText.value || '')
-  if (q !== null) searchText.value = q.trim()
-}
-
 const summaryCollaborators = computed(() => collaborators.value.slice(0, 4))
 
 const showCollaboratorTypeModal = ref(false)
@@ -440,69 +457,52 @@ const goBack = useGoBack('/profile')
     linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 96px;
+  display: flex;
+  flex-direction: column;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.cl-nav-bar {
-  display: flex;
-  align-items: center;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 12px 18px 10px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
-  position: relative;
-  z-index: 2;
+/* Match the shared top-nav background to this page's light gradient
+   (default is a beige tone that clashes with the blue backdrop). */
+.cl-page :deep(.webtop-nav) {
+  background: rgba(247, 251, 255, 0.85);
+  border-bottom: 1px solid rgba(173, 201, 231, 0.3);
 }
-.cl-nav-icon-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #143047;
-  flex-shrink: 0;
-  box-shadow:
-    0 8px 22px rgba(19, 48, 71, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transition:
-    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.cl-nav-icon-btn:hover {
-  transform: translateY(-2px);
-  border-color: rgba(183, 209, 236, 0.9);
-  box-shadow:
-    0 12px 24px rgba(19, 48, 71, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-.cl-nav-icon-btn svg {
-  width: 18px;
-  height: 18px;
-}
-.cl-nav-title {
-  flex: 1;
-  text-align: center;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 20px;
+
+.cl-quick-btn {
+  border: 1px solid #d6e3f0;
+  background: rgba(255, 255, 255, 0.85);
+  color: #2b3c56;
+  font-family: inherit;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: -0.35px;
-  color: #10263d;
+  padding: 9px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s, background 0.18s;
+}
+.cl-quick-btn:hover {
+  transform: translateY(-1px);
+  border-color: #b9d5ea;
+  color: #143047;
+}
+.cl-quick-btn.solid {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 10px 20px rgba(48, 98, 214, 0.24);
+}
+.cl-quick-btn.solid:hover {
+  filter: saturate(1.06);
 }
 
 .cl-body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1080px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0 14px;
+  padding: 34px 24px 48px;
 }
 
 .atm-bg {
@@ -510,152 +510,312 @@ const goBack = useGoBack('/profile')
   top: 0;
   left: 0;
   right: 0;
-  height: 280px;
+  height: 320px;
   pointer-events: none;
   z-index: 0;
 }
 .atm-bg.atm-bg-teal {
-  background: radial-gradient(circle at 92% 8%, rgba(208, 236, 255, 0.32) 0%, rgba(208, 236, 255, 0) 48%);
+  background: radial-gradient(circle at 88% 6%, rgba(0, 161, 154, 0.1) 0%, rgba(0, 161, 154, 0) 46%);
 }
 
-.cl-hero {
-  margin-top: 8px;
-  border-radius: 28px;
-  padding: 24px 18px 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+/* ── Page head ── */
+.cl-head {
   position: relative;
   z-index: 1;
-  overflow: hidden;
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
 }
-.cl-hero::before {
-  content: '';
+.cl-head-copy {
+  min-width: 0;
+}
+.cl-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  color: #10263d;
+  letter-spacing: -1.4px;
+  line-height: 1.04;
+  margin: 0 0 8px;
+}
+.cl-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #627891;
+  margin: 0;
+  letter-spacing: -0.1px;
+}
+
+/* ── Orbital illustration ── */
+.cl-orbit {
+  position: relative;
+  width: 300px;
+  height: 150px;
+  flex-shrink: 0;
+}
+.cl-orbit-ring {
   position: absolute;
-  inset: -145% auto auto -40%;
-  width: 54%;
-  height: 320%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 46%, rgba(255, 255, 255, 0) 100%);
-  transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+  top: 50%;
+  left: 58%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1.4px dashed rgba(0, 161, 154, 0.22);
+}
+.cl-orbit-ring-outer {
+  width: 250px;
+  height: 250px;
+}
+.cl-orbit-ring-inner {
+  width: 150px;
+  height: 150px;
+  border-color: rgba(79, 79, 242, 0.2);
+}
+.cl-orbit-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.cl-orbit-dot-a { top: 24%; left: 38%; background: #4f4ff2; }
+.cl-orbit-dot-b { top: 70%; left: 46%; background: #2dd4bf; }
+.cl-orbit-dot-c { top: 30%; left: 82%; background: #00a19a; }
+.cl-orbit-core {
+  position: absolute;
+  top: 50%;
+  left: 58%;
+  transform: translate(-50%, -50%);
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #19c2b3 0%, #00a19a 52%, #00857f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(0, 161, 154, 0.34);
+}
+.cl-orbit-core svg { width: 30px; height: 30px; }
+.cl-orbit-chip {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(15, 44, 76, 0.12);
+}
+.cl-orbit-chip svg { width: 20px; height: 20px; }
+.cl-orbit-chip-indigo {
+  top: 8px;
+  left: 18%;
+  color: #4f4ff2;
+  background: linear-gradient(150deg, #eef0ff, #ffffff);
+}
+.cl-orbit-chip-amber {
+  bottom: 10px;
+  right: 4%;
+  color: #e0992f;
+  background: linear-gradient(150deg, #fff5e6, #ffffff);
+}
+
+/* ── Team banner ── */
+.cl-banner {
+  position: relative;
+  z-index: 1;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #211c4d 0%, #1c1a40 60%, #181734 100%);
+  padding: 30px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -18px rgba(20, 18, 56, 0.5);
+}
+.cl-banner-glow {
+  position: absolute;
+  top: -40%;
+  right: -4%;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.22) 0%, transparent 64%);
   pointer-events: none;
 }
-.cl-hero:hover {
-  transform: translateY(-4px);
-  border-color: rgba(172, 203, 233, 0.7);
-  box-shadow:
-    0 20px 44px rgba(18, 55, 88, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-.cl-hero:hover::before {
-  transform: translateX(220%) rotate(16deg);
-}
-.hero-greeting {
+.cl-banner-copy { position: relative; z-index: 2; min-width: 0; }
+.cl-banner-label {
   font-size: 11px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: #70839c;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-.cl-h1 {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 34px;
-  font-weight: 750;
-  color: #10263d;
-  letter-spacing: -0.9px;
-  line-height: 1.06;
-  margin-bottom: 12px;
-}
-.cl-h1-count {
-  display: inline-block;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #067a74;
-  vertical-align: 6px;
-  margin-left: 6px;
-  letter-spacing: -0.2px;
-}
-.hero-stats {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(229, 255, 248, 0.92);
-  border: 1px solid rgba(0, 161, 154, 0.35);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #50637a;
-  letter-spacing: -0.2px;
-  flex-wrap: nowrap;
-}
-.hero-stats .stat-num {
-  color: #17314a;
   font-weight: 800;
-  margin-right: 4px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2dd4bf;
+  margin-bottom: 8px;
 }
-.hero-stats .stat-num.teal {
-  color: #067a74;
+.cl-banner-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin-bottom: 14px;
 }
-.hero-stats .stat-sep {
+.cl-banner-count {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #2dd4bf;
+  vertical-align: 2px;
+}
+.cl-banner-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.62);
+}
+.cl-banner-stats .cl-stat-num {
+  color: #2dd4bf;
+  font-weight: 800;
+  margin-right: 3px;
+}
+.cl-banner-stats .cl-stat-sep {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #9ab0c9;
-  display: inline-block;
+  background: rgba(255, 255, 255, 0.28);
+}
+.cl-banner-cta {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #14b8a6 0%, #00a19a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(0, 161, 154, 0.34);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+.cl-banner-cta svg { width: 17px; height: 17px; }
+.cl-banner-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(0, 161, 154, 0.42);
+  filter: saturate(1.05);
 }
 
-.cl-filter-row {
+/* ── Toolbar ── */
+.cl-toolbar {
   display: flex;
-  gap: 8px;
-  padding: 14px 2px 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 22px 2px 18px;
   position: relative;
   z-index: 1;
+}
+.cl-filter-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .cl-filter-row::-webkit-scrollbar {
   display: none;
 }
 .cl-chip {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   color: #4c627b;
-  border: 1px solid #d6e3f0;
+  border: 1px solid #dbe6f1;
   border-radius: 100px;
-  padding: 8px 13px;
-  font-size: 12.5px;
+  padding: 10px 16px;
+  font-size: 13.5px;
   font-weight: 700;
   font-family: inherit;
   white-space: nowrap;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
   flex-shrink: 0;
   transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   letter-spacing: -0.1px;
 }
+.cl-chip:hover {
+  border-color: #b9d5ea;
+  transform: translateY(-1px);
+}
+.cl-chip-ic {
+  width: 15px;
+  height: 15px;
+  color: #00a19a;
+}
 .cl-chip.active {
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: linear-gradient(135deg, #14b8a6 0%, #00a19a 100%);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 10px 20px rgba(48, 98, 214, 0.24);
+  box-shadow: 0 10px 20px rgba(0, 161, 154, 0.26);
 }
+.cl-chip.active .cl-chip-ic { color: #fff; }
 .cl-chip-num {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  color: #8aa0b8;
+  color: #94a8bf;
 }
 .cl-chip.active .cl-chip-num {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.78);
+}
+.cl-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dbe6f1;
+  border-radius: 100px;
+  padding: 0 18px;
+  height: 46px;
+  min-width: 280px;
+  flex: 0 1 320px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cl-search:focus-within {
+  border-color: #7fd0c9;
+  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12);
+}
+.cl-search svg {
+  width: 17px;
+  height: 17px;
+  color: #94a8bf;
+  flex-shrink: 0;
+}
+.cl-search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #17314a;
+  width: 100%;
+}
+.cl-search input::placeholder {
+  color: #94a8bf;
+  font-weight: 600;
 }
 
 .collaborator-card {
@@ -807,65 +967,80 @@ const goBack = useGoBack('/profile')
 }
 
 .empty-state {
-  margin: 16px 0;
-  padding: 26px 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
-  border: 1px dashed #c7d8ea;
-  border-radius: 20px;
+  margin: 4px 0 24px;
+  padding: 64px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 252, 255, 0.5) 100%);
+  border: 1.5px dashed #cfdded;
+  border-radius: 26px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .empty-state-icon {
-  width: 52px;
-  height: 52px;
+  position: relative;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: rgba(228, 247, 243, 0.96);
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.18) 0%, rgba(45, 212, 191, 0.06) 70%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #067a74;
-  margin-bottom: 10px;
-  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.08);
+  color: #00a19a;
+  margin-bottom: 22px;
 }
 .empty-state-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 38px;
+  height: 38px;
 }
+.empty-spark {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #2dd4bf;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  opacity: 0.85;
+}
+.empty-spark-1 { top: 6px; left: 10px; }
+.empty-spark-2 { top: 14px; right: 6px; width: 5px; height: 5px; background: #4f4ff2; }
+.empty-spark-3 { bottom: 12px; left: 18px; width: 5px; height: 5px; }
 .empty-state-title {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 800;
   color: #17314a;
-  margin-bottom: 4px;
-  letter-spacing: -0.2px;
+  margin-bottom: 8px;
+  letter-spacing: -0.4px;
 }
 .empty-state-sub {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: #627891;
-  margin-bottom: 14px;
-  line-height: 1.4;
-  max-width: 280px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  max-width: 340px;
 }
-.btn-secondary {
+.btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  border: 1px solid #d6e3f0;
-  color: #17314a;
+  gap: 8px;
+  background: linear-gradient(135deg, #14b8a6 0%, #00a19a 100%);
+  border: none;
+  color: #fff;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 9px 15px;
-  border-radius: 100px;
+  padding: 14px 26px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: 0 12px 24px rgba(0, 161, 154, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
 }
-.btn-secondary:hover {
-  border-color: #7fb7de;
-  transform: translateY(-1px);
-  color: #067a74;
+.btn-primary svg { width: 17px; height: 17px; }
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(0, 161, 154, 0.4);
+  filter: saturate(1.05);
 }
 
 .fab {
@@ -935,12 +1110,16 @@ const goBack = useGoBack('/profile')
 }
 
 .cl-type-card {
-  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 184px;
   border-radius: 20px;
   border: 1px solid #dfe8f3;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   text-align: center;
-  padding: 18px 14px;
+  padding: 22px 18px;
   box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
   transition:
     transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
@@ -963,14 +1142,17 @@ const goBack = useGoBack('/profile')
 }
 
 .cl-type-icon {
-  width: 18px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
-  color: #57708b;
+  color: #2f9bdf;
 }
 
 .cl-type-title {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 16px;
   line-height: 1.25;
   font-weight: 700;
@@ -980,10 +1162,17 @@ const goBack = useGoBack('/profile')
 
 .cl-type-desc {
   margin-top: 8px;
+  max-width: 19ch;
   font-size: 12.5px;
-  line-height: 1.35;
+  line-height: 1.5;
   color: #627891;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  text-wrap: balance;
+}
+
+.cl-type-card--active .cl-type-icon {
+  color: #00a19a;
 }
 
 .cl-drawer-cta {
@@ -1010,60 +1199,60 @@ const goBack = useGoBack('/profile')
   filter: saturate(1.04);
 }
 
-@media (min-width: 768px) {
-  .cl-nav-bar {
-    padding: 14px 22px 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
+@media (max-width: 860px) {
   .cl-body {
-    padding: 0 18px;
+    padding: 24px 16px 0;
   }
-
-  .cl-hero {
-    padding: 28px 24px 24px;
+  .cl-orbit {
+    display: none;
   }
-
-  .cl-filter-row {
-    padding: 16px 0 18px;
+  .cl-title {
+    font-size: 34px;
   }
-
-  .cl-h1 {
-    font-size: 36px;
+  .cl-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 26px 24px;
+    gap: 20px;
   }
-
-  .collaborator-card {
-    padding: 18px;
+  .cl-banner-cta {
+    width: 100%;
+    justify-content: center;
+  }
+  .cl-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cl-search {
+    flex: 1 1 auto;
+    width: 100%;
   }
 }
 
-@media (max-width: 430px) {
-  .cl-nav-title {
-    font-size: 18px;
+@media (max-width: 480px) {
+  .cl-title {
+    font-size: 28px;
   }
-
-  .cl-h1 {
-    font-size: 30px;
+  .cl-banner-title {
+    font-size: 25px;
   }
-
-  .hero-stats {
-    gap: 8px;
-    padding: 7px 12px;
-    font-size: 11.5px;
+  .empty-state {
+    padding: 48px 18px;
   }
-
+  .empty-state-title {
+    font-size: 19px;
+  }
   .cl-drawer-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cl-nav-icon-btn,
-  .cl-hero,
   .cl-chip,
   .collaborator-card,
   .collab-action-btn,
-  .btn-secondary,
+  .cl-banner-cta,
+  .btn-primary,
   .fab,
   .cl-type-card,
   .cl-drawer-cta {
@@ -1071,7 +1260,6 @@ const goBack = useGoBack('/profile')
     animation: none;
   }
 
-  .cl-hero::before,
   .collaborator-card::before {
     display: none;
   }

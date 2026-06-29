@@ -2,8 +2,8 @@
   <header class="bpnav">
     <div class="bpnav-shell bpnav-inner">
       <button class="bpnav-brand" type="button" @click="navigateTo('/')">
-        <img src="/logo.png" alt="" class="bpnav-logo" />
-        <span>umovingu</span>
+        <img src="/logo-new.png" alt="" class="bpnav-logo" />
+        <span>umovingu</span><span class="bpnav-beta">BETA</span>
       </button>
       <nav class="bpnav-links" aria-label="Primary navigation">
         <button type="button" class="active" @click="navigateTo('/explore')">Explore</button>
@@ -44,7 +44,8 @@ defineEmits<{ (e: 'back'): void }>()
 .bpnav-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; }
 .bpnav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .bpnav-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #10263d; background: none; border: none; cursor: pointer; flex-shrink: 0; }
-.bpnav-logo { width: 28px; height: 28px; border-radius: 8px; object-fit: cover; }
+.bpnav-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.bpnav-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
 .bpnav-links { display: flex; align-items: center; gap: 4px; }
 .bpnav-links button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: #516070; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
 .bpnav-links button:hover { color: #10263d; background: rgba(0, 0, 0, 0.05); }

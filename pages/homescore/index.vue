@@ -416,8 +416,9 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
+  background: rgba(242, 239, 230, 0.86);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+  backdrop-filter: blur(14px);
 }
 
 .nav-inner {

@@ -2,8 +2,9 @@
   <header class="webtop-nav">
     <div class="webtop-shell webtop-inner">
       <button class="webtop-brand" type="button" @click="navigateTo('/')">
-        <img src="/logo.png" alt="" class="webtop-brand-logo" />
-        <span>umovingu</span>
+        <img src="/logo-new.png" alt="" class="webtop-brand-logo" />
+        <span class="webtop-brand-name">umovingu</span>
+        <span class="webtop-brand-beta">BETA</span>
       </button>
 
       <nav class="webtop-links" aria-label="Primary navigation">
@@ -87,9 +88,9 @@ watch(
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
-  backdrop-filter: blur(12px);
+  background: rgba(242, 239, 230, 0.86);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+  backdrop-filter: blur(14px);
 }
 
 .webtop-shell {
@@ -112,45 +113,63 @@ watch(
   background: transparent;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: #1e2b41;
+  gap: 9px;
+  color: #231d45;
   cursor: pointer;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  flex-shrink: 0;
 }
 
 .webtop-brand-logo {
-  width: 28px;
-  height: 28px;
+  height: 32px;
+  width: auto;
   object-fit: contain;
+}
+
+.webtop-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #231d45;
+}
+
+.webtop-brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
 }
 
 .webtop-links {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .webtop-links button {
   border: 0;
   background: transparent;
-  color: #52627e;
+  color: #5a5570;
   font-size: 14px;
   font-weight: 600;
-  padding: 10px 12px;
+  padding: 9px 13px;
   border-radius: 10px;
   cursor: pointer;
+  transition: background 0.18s, color 0.18s;
 }
 
 .webtop-links button:hover {
-  background: rgba(20, 53, 98, 0.06);
-  color: #1e2b41;
+  background: rgba(35, 29, 69, 0.05);
+  color: #231d45;
 }
 
 .webtop-links button.active {
-  background: linear-gradient(120deg, rgba(0, 161, 154, 0.14) 0%, rgba(47, 155, 223, 0.14) 100%);
-  color: #153457;
-  box-shadow: inset 0 0 0 1px rgba(44, 125, 203, 0.18);
+  background: rgba(0, 161, 154, 0.1);
+  color: #00857f;
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
 }
 
 .webtop-actions {
@@ -259,9 +278,9 @@ watch(
   }
 
   .webtop-mobile-panel button.active {
-    border-color: rgba(44, 125, 203, 0.34);
-    background: linear-gradient(120deg, rgba(0, 161, 154, 0.1) 0%, rgba(47, 155, 223, 0.1) 100%);
-    color: #17365a;
+    border-color: rgba(0, 161, 154, 0.34);
+    background: rgba(0, 161, 154, 0.1);
+    color: #00857f;
   }
 }
 

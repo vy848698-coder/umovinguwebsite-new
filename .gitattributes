@@ -1,0 +1,26 @@
+# Treat all text files as UTF-8 and normalize line endings on commit.
+* text=auto working-tree-encoding=UTF-8
+
+# Source files are explicitly text (UTF-8).
+*.vue   text
+*.js    text
+*.ts    text
+*.json  text
+*.css   text
+*.scss  text
+*.html  text
+*.md    text
+*.svg   text
+
+# Binary assets — never touch encoding/EOL.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.pdf   binary

@@ -7,8 +7,9 @@
     <header class="marketplace-web-nav">
       <div class="marketplace-web-shell nav-inner">
         <button class="brand" type="button" @click="navigateTo('/')">
-          <img src="/logo.png" alt="" class="brand-logo" />
-          <span>umovingu</span>
+          <img src="/logo-new.png" alt="" class="brand-logo" />
+          <span class="brand-name">umovingu</span>
+          <span class="brand-beta">BETA</span>
         </button>
 
         <nav class="web-links" aria-label="Marketplace navigation">
@@ -95,7 +96,7 @@
           <div class="house-stage">
             <img src="/images/uk-houses/house-6.jpg" alt="Modern UK home" class="hero-house" />
             <div class="passport-card">
-              <div class="passport-logo"><img src="/logo.png" alt="" /></div>
+              <div class="passport-logo"><img src="/logo-new.png" alt="" /></div>
               <p>Property Passport</p>
               <h2>12 Bott Road</h2>
               <span>Coventry, CV5 6AZ</span>
@@ -411,9 +412,9 @@ async function submitNotify() {
   min-height: 100dvh;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 72% 12%, rgba(84, 111, 255, 0.11), transparent 32%),
-    radial-gradient(circle at 12% 15%, rgba(0, 161, 154, 0.1), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #f9fcff 45%, #ffffff 100%);
+    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.08), transparent 34%),
+    radial-gradient(circle at 8% 14%, rgba(0, 161, 154, 0.05), transparent 30%),
+    linear-gradient(180deg, #f5f1e8 0%, #f3efe6 46%, #f5f1e8 100%);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow: hidden;
   position: relative;
@@ -444,7 +445,7 @@ async function submitNotify() {
   height: 320px;
   right: -120px;
   top: 180px;
-  background: #5a4cf0;
+  background: #2fbfb6;
 }
 
 .mesh {
@@ -468,8 +469,9 @@ async function submitNotify() {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
+  background: rgba(242, 239, 230, 0.86);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+  backdrop-filter: blur(14px);
 }
 
 .nav-inner {
@@ -491,42 +493,64 @@ async function submitNotify() {
   background: transparent;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: #0d1835;
+  gap: 9px;
+  color: #231d45;
   cursor: pointer;
-  font-size: 20px;
-  font-weight: 800;
   flex-shrink: 0;
 }
 
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #231d45;
+}
+
+.brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
 .brand-logo {
-  width: 28px;
-  height: 28px;
+  height: 32px;
+  width: auto;
   object-fit: contain;
 }
 
 .web-links {
   display: flex;
-  gap: 20px;
+  gap: 4px;
 }
 
 .web-links button {
   border: 0;
   background: transparent;
-  color: #475a7b;
+  color: #5a5570;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 700;
-  padding: 10px 14px;
+  font-weight: 600;
+  padding: 9px 13px;
   border-radius: 10px;
   white-space: nowrap;
+  transition: background 0.18s, color 0.18s;
 }
 
-.web-links button:hover,
+.web-links button:hover {
+  color: #231d45;
+  background: rgba(35, 29, 69, 0.05);
+}
+
 .web-links button.active {
-  color: #0c2342;
+  color: #00857f;
   background: rgba(0, 161, 154, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(47, 155, 223, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
 }
 
 .web-actions {
@@ -554,15 +578,19 @@ async function submitNotify() {
 
 .web-btn.solid {
   color: #fff;
-  background: linear-gradient(120deg, var(--color-teal), var(--color-blue) 48%, var(--color-purple));
-  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  background: #00a19a;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
+}
+
+.web-btn.solid:hover {
+  background: #00857f;
 }
 
 .web-btn.ghost,
 .web-btn.secondary {
-  color: #0c2342;
+  color: #231d45;
   background: rgba(255, 255, 255, 0.9);
-  border-color: #d8e3ee;
+  border-color: #e7e2d6;
 }
 
 .web-btn.primary {
@@ -1369,8 +1397,8 @@ async function submitNotify() {
   margin-bottom: 26px;
   padding: 42px 46px;
   border-radius: 16px;
-  background: linear-gradient(120deg, #00a19a 0%, #168fc8 52%, #573ee8 100%);
-  box-shadow: 0 24px 44px rgba(36, 72, 151, 0.18);
+  background: #231d45;
+  box-shadow: 0 24px 44px rgba(35, 29, 69, 0.22);
   color: #fff;
 }
 
@@ -1673,7 +1701,7 @@ async function submitNotify() {
   .web-mobile-panel button.claim {
     border: 0;
     color: #fff;
-    background: linear-gradient(120deg, var(--color-teal), var(--color-blue) 48%, var(--color-purple));
+    background: #00a19a;
   }
 
   .marketplace-main {
@@ -1725,8 +1753,8 @@ async function submitNotify() {
   }
 
   .brand-logo {
-    width: 24px;
-    height: 24px;
+    height: 28px;
+    width: auto;
   }
 
   .marketplace-main {

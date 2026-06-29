@@ -5,7 +5,7 @@
       <div class="ex-shell ex-nav-inner">
         <button class="ex-brand" type="button" @click="navigateTo('/')">
           <img src="/logo-new.png" alt="" class="ex-brand-img" />
-          <span class="ex-brand-name">umovingu</span>
+          <span class="ex-brand-name">umovingu</span><span class="ex-brand-beta">BETA</span>
         </button>
 
         <nav class="ex-nav-links" aria-label="Explore navigation">
@@ -905,6 +905,7 @@ onMounted(async () => {
 }
 .ex-brand-img { height: 32px; width: auto; display: block; object-fit: contain; }
 .ex-brand-name { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; color: var(--navy); }
+.ex-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: var(--teal-dark); background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
 
 .ex-nav-links { display: flex; gap: 4px; }
 .ex-nav-links button {

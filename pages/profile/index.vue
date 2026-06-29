@@ -528,7 +528,7 @@ const deleteAccount = async () => {
 }
 
 .profile-title {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.35px;
@@ -638,7 +638,7 @@ const deleteAccount = async () => {
 
 .hero-name {
   margin-top: 8px;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 30px;
   line-height: 1.08;
   letter-spacing: -0.85px;

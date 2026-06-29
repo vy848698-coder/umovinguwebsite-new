@@ -485,7 +485,7 @@ const filteredProperties = computed(() => {
   margin-bottom: 4px;
 }
 .sp-h1 {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 34px;
   font-weight: 750;
   color: #10263d;
@@ -495,7 +495,7 @@ const filteredProperties = computed(() => {
 }
 .sp-h1-count {
   display: inline-block;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #067a74;

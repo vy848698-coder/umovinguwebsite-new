@@ -583,7 +583,7 @@ const goBack = useGoBack('/profile')
 .dc-nav-title {
   flex: 1;
   text-align: center;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.35px;
@@ -656,7 +656,7 @@ const goBack = useGoBack('/profile')
   margin-bottom: 4px;
 }
 .dc-h1 {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 34px;
   font-weight: 750;
   color: #10263d;
@@ -666,7 +666,7 @@ const goBack = useGoBack('/profile')
 }
 .dc-h1-count {
   display: inline-block;
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #067a74;

@@ -36,8 +36,8 @@
       <header class="hsw-nav">
         <div class="hsw-shell hsw-nav-inner">
           <button class="hsw-brand" type="button" @click="navigateTo('/')">
-            <img src="/logo.png" alt="" class="hsw-brand-logo" />
-            <span>umovingu</span>
+            <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
           <nav class="hsw-links" aria-label="Primary navigation">
             <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -93,8 +93,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -501,8 +501,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -803,8 +803,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -1033,8 +1033,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -1159,8 +1159,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -1272,8 +1272,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -1413,8 +1413,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -1798,8 +1798,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -2120,8 +2120,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -2298,8 +2298,8 @@
         <header class="hsw-nav">
           <div class="hsw-shell hsw-nav-inner">
             <button class="hsw-brand" type="button" @click="navigateTo('/')">
-              <img src="/logo.png" alt="" class="hsw-brand-logo" />
-              <span>umovingu</span>
+              <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
               <button type="button" @click="navigateTo('/explore')">Explore</button>
@@ -5372,6 +5372,19 @@ watch(screen, (s) => {
   width: 28px;
   height: 28px;
   object-fit: contain;
+}
+
+.hsw-brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 2px;
 }
 
 .hsw-links {

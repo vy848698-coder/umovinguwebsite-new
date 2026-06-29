@@ -313,7 +313,7 @@ const goBack = useGoBack('/profile')
   margin-bottom: 8px;
 }
 .hs-h1 {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 46px;
   font-weight: 750;
   color: #10263d;
@@ -579,7 +579,7 @@ const goBack = useGoBack('/profile')
   line-height: 1.35;
 }
 .faq-num {
-  font-family: 'SF Pro Display', 'Avenir Next', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 13px;
   color: #067a74;
   font-weight: 800;
