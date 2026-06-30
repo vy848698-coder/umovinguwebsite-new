@@ -1,64 +1,101 @@
 <template>
   <div class="cal-page mobile-container">
-    <!-- Nav bar -->
-    <div class="cal-nav-bar">
-      <button class="cal-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="cal-nav-title">Calendar</div>
-      <button class="cal-nav-icon-btn" aria-label="Filter">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="21" y2="21" />
-        </svg>
-      </button>
-    </div>
+    <WebTopNav>
+      <template #actions>
+        <button class="cal-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
+        <button class="cal-quick-btn solid" type="button" @click="navigateTo('/profile/support')">Support</button>
+      </template>
+    </WebTopNav>
 
     <main class="cal-body">
       <div class="atm-bg atm-bg-violet" />
 
-      <!-- Hero -->
-      <div class="cal-hero">
-        <div class="cal-monthnav">
-          <button class="cal-arrow" @click="prevMonth" aria-label="Previous month">
+      <!-- Toolbar: month title + controls -->
+      <div class="cal-toolbar">
+        <div class="cal-toolbar-left">
+          <h1 class="cal-month-title">{{ monthLabel }}</h1>
+          <div class="cal-stats">
+            <span class="cal-stat">
+              <span class="stat-num">{{ countThisWeek }}</span>this week
+            </span>
+            <span class="cal-stat">
+              <span class="stat-num teal">{{ countViewings }}</span>viewings
+            </span>
+            <span class="cal-stat">
+              <span class="stat-num coral">{{ countDeadlines }}</span>deadlines
+            </span>
+          </div>
+        </div>
+
+        <div class="cal-controls">
+          <button class="cal-ctrl-icon" @click="prevMonth" aria-label="Previous month">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <h2>{{ monthLabel }}</h2>
-          <button class="cal-arrow" @click="nextMonth" aria-label="Next month">
+          <button class="cal-ctrl-today" @click="goToday" type="button">Today</button>
+          <button class="cal-ctrl-icon" @click="nextMonth" aria-label="Next month">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-        </div>
-        <div class="hero-stats hero-stats--compact">
-          <span><span class="stat-num">{{ countThisWeek }}</span>this week</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num teal">{{ countViewings }}</span>viewings</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num coral">{{ countDeadlines }}</span>deadlines</span>
+          <button class="cal-ctrl-view" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            Month
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <!-- Mini month grid -->
-      <div class="cal-grid">
-        <div v-for="d in DAY_HEADERS" :key="d" class="cal-dow">{{ d }}</div>
-        <template v-for="(cell, i) in calendarCells" :key="i">
+      <!-- Full month grid -->
+      <div class="cal-month">
+        <div class="cal-week-head">
+          <div v-for="d in DAY_HEADERS" :key="d" class="cal-week-head-cell">{{ d }}</div>
+        </div>
+        <div class="cal-month-grid">
           <button
-            v-if="cell"
+            v-for="(cell, i) in calendarCells"
+            :key="i"
             type="button"
-            class="cal-day"
+            class="cal-cell"
             :class="cellClasses(cell)"
             @click="selectDate(cell)"
           >
-            <span class="cal-day-num">{{ cell.day }}</span>
-            <span v-if="reminderDateSet.has(cell.dateStr)" class="cal-day-dot" :class="dayDotTone(cell.dateStr)" />
+            <span class="cal-cell-num">{{ cell.day }}</span>
+            <span
+              v-if="isSelectedCell(cell)"
+              class="cal-cell-add"
+              role="button"
+              aria-label="Add event"
+              @click.stop="openAddDrawer(cell.dateStr)"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </span>
+            <div v-if="cellReminders(cell.dateStr).length" class="cal-cell-events">
+              <span
+                v-for="r in cellReminders(cell.dateStr).slice(0, 3)"
+                :key="r.id"
+                class="cal-cell-chip"
+                :class="eventTone(r)"
+              >
+                <span v-if="r.time" class="cal-cell-chip-time">{{ r.time }}</span>{{ r.title }}
+              </span>
+              <span v-if="cellReminders(cell.dateStr).length > 3" class="cal-cell-more">
+                +{{ cellReminders(cell.dateStr).length - 3 }} more
+              </span>
+            </div>
           </button>
-          <div v-else class="cal-day muted" />
-        </template>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -103,7 +140,18 @@
         </div>
       </template>
 
-      <div v-else class="cal-empty">Nothing scheduled</div>
+      <div v-else class="cal-empty cal-empty--state">
+        <div class="cal-empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        </div>
+        <div class="cal-empty-title">Nothing scheduled</div>
+        <div class="cal-empty-sub">Your schedule is clear. Add a new event to get started.</div>
+      </div>
     </main>
 
     <!-- Floating add button -->
@@ -216,10 +264,53 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- ───────────────────────────── FOOTER ───────────────────────────── -->
+    <footer class="cal-footer">
+      <div class="cal-footer-grid">
+        <div class="cal-footer-intro">
+          <div class="cal-footer-brand">
+            <img src="/logo-new.png" alt="" class="cal-footer-logo" />
+            <strong>umovingu</strong>
+          </div>
+          <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
+          <div class="cal-footer-chips">
+            <span>OPDA standard</span>
+            <span>Property Redress Scheme</span>
+            <span>HM Land Registry</span>
+          </div>
+        </div>
+
+        <div class="cal-footer-col">
+          <h5>Product</h5>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Property Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+        </div>
+
+        <div class="cal-footer-col">
+          <h5>Account</h5>
+          <button type="button" @click="navigateTo('/profile')">Profile</button>
+          <button type="button" @click="navigateTo('/profile/personal-information')">Personal info</button>
+          <button type="button" @click="navigateTo('/profile/support')">Support</button>
+        </div>
+
+        <div class="cal-footer-col">
+          <h5>Legal</h5>
+          <button type="button" @click="navigateTo('/legal/terms')">Terms of Service</button>
+          <button type="button" @click="navigateTo('/legal/privacy')">Privacy Policy</button>
+          <button type="button" @click="navigateTo('/legal/cookies')">Cookie preferences</button>
+        </div>
+      </div>
+      <div class="cal-footer-bottom">© 2026 umovingu. All rights reserved.</div>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import WebTopNav from '~/components/core/WebTopNav.vue'
+
 definePageMeta({ title: 'Calendar - UmovingU', middleware: 'auth' })
 
 const {
@@ -274,29 +365,78 @@ const todayStr = computed(
 interface CalCell {
   day: number
   dateStr: string
+  outside: boolean
 }
 
-const calendarCells = computed<(CalCell | null)[]>(() => {
+const pad = (n: number) => String(n).padStart(2, '0')
+
+const calendarCells = computed<CalCell[]>(() => {
   const firstDay = new Date(Date.UTC(viewYear.value, viewMonth.value - 1, 1))
   const startOffset = (firstDay.getUTCDay() + 6) % 7
   const daysInMonth = new Date(
     Date.UTC(viewYear.value, viewMonth.value, 0),
   ).getUTCDate()
 
-  const cells: (CalCell | null)[] = []
-  for (let i = 0; i < startOffset; i++) cells.push(null)
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = `${viewYear.value}-${String(viewMonth.value).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    cells.push({ day: d, dateStr: ds })
+  const cells: CalCell[] = []
+
+  // Leading days from the previous month
+  if (startOffset > 0) {
+    const prevDays = new Date(
+      Date.UTC(viewYear.value, viewMonth.value - 1, 0),
+    ).getUTCDate()
+    let pm = viewMonth.value - 1
+    let py = viewYear.value
+    if (pm === 0) {
+      pm = 12
+      py--
+    }
+    for (let i = startOffset - 1; i >= 0; i--) {
+      const d = prevDays - i
+      cells.push({ day: d, dateStr: `${py}-${pad(pm)}-${pad(d)}`, outside: true })
+    }
   }
-  while (cells.length % 7 !== 0) cells.push(null)
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({
+      day: d,
+      dateStr: `${viewYear.value}-${pad(viewMonth.value)}-${pad(d)}`,
+      outside: false,
+    })
+  }
+
+  // Trailing days from the next month to complete the final week
+  let nm = viewMonth.value + 1
+  let ny = viewYear.value
+  if (nm === 13) {
+    nm = 1
+    ny++
+  }
+  let nd = 1
+  while (cells.length % 7 !== 0) {
+    cells.push({ day: nd, dateStr: `${ny}-${pad(nm)}-${pad(nd)}`, outside: true })
+    nd++
+  }
+
   return cells
 })
 
 const isSelectedCell = (cell: CalCell) => cell.dateStr === selectedDateStr.value
 
+const cellReminders = (dateStr: string) => remindersByDate.value[dateStr] ?? []
+
 const selectDate = (cell: CalCell) => {
   selectedDateStr.value = selectedDateStr.value === cell.dateStr ? null : cell.dateStr
+}
+
+const goToday = async () => {
+  const changed =
+    viewYear.value !== today.getFullYear() ||
+    viewMonth.value !== today.getMonth() + 1
+  viewYear.value = today.getFullYear()
+  viewMonth.value = today.getMonth() + 1
+  selectedDateStr.value = todayStr.value
+  if (changed) await fetchReminders(viewYear.value, viewMonth.value)
 }
 
 const prevMonth = async () => {
@@ -400,6 +540,7 @@ const dayDotTone = (dateStr: string) => {
 
 const cellClasses = (cell: CalCell) => {
   const classes: string[] = []
+  if (cell.outside) classes.push('outside')
   if (cell.dateStr === todayStr.value) classes.push('today')
   if (isSelectedCell(cell)) classes.push('selected')
   if (reminderDateSet.value.has(cell.dateStr)) classes.push('has-event')
@@ -521,8 +662,6 @@ const saveReminder = async () => {
 }
 
 // ─── Init ──────────────────────────────────────────────────────────────────
-const goBack = useGoBack('/profile')
-
 onMounted(async () => {
   // Request notification permission on first open (iOS/Android only — no-op on web)
   await requestPermission()
@@ -546,63 +685,17 @@ onMounted(async () => {
     linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 96px;
   display: flex;
   flex-direction: column;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.cal-nav-bar {
-  display: flex;
-  align-items: center;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 12px 18px 10px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
-  position: relative;
-  z-index: 2;
-}
-.cal-nav-icon-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #143047;
-  flex-shrink: 0;
-  transition:
-    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.cal-nav-icon-btn:hover {
-  transform: translateY(-2px);
-  border-color: rgba(183, 209, 236, 0.9);
-  box-shadow: 0 12px 24px rgba(19, 48, 71, 0.12);
-}
-.cal-nav-icon-btn svg { width: 18px; height: 18px; }
-.cal-nav-title {
-  flex: 1;
-  text-align: center;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.35px;
-  color: #10263d;
-}
-
 .cal-body {
   position: relative;
-  flex: 1;
   width: 100%;
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 14px;
+  padding: 22px 28px 96px;
 }
 .atm-bg {
   position: absolute;
@@ -617,176 +710,226 @@ onMounted(async () => {
   background: radial-gradient(circle at 92% 8%, rgba(208, 236, 255, 0.32) 0%, rgba(208, 236, 255, 0) 48%);
 }
 
-.cal-hero {
-  margin-top: 6px;
-  border-radius: 28px;
-  padding: 14px 14px 12px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+/* ── Toolbar ─────────────────────────────────────────────── */
+.cal-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
   position: relative;
   z-index: 1;
 }
-.cal-monthnav {
+.cal-toolbar-left {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 12px;
 }
-.cal-monthnav h2 {
+.cal-month-title {
   margin: 0;
-  flex: 1;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 22px;
-  line-height: 1.06;
-  letter-spacing: -0.55px;
-  font-weight: 750;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.9px;
+  font-weight: 800;
   color: #10263d;
 }
-.cal-arrow {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  border: 1px solid rgba(213, 225, 238, 0.86);
-  background: rgba(255, 255, 255, 0.86);
-  color: #17314a;
-  cursor: pointer;
-  display: inline-flex;
+.cal-stats {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.cal-arrow svg { width: 14px; height: 14px; }
-
-.hero-stats {
+.cal-stat {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(229, 255, 248, 0.92);
-  border: 1px solid rgba(0, 161, 154, 0.35);
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dfe8f3;
   border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 6px 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #50637a;
   letter-spacing: -0.2px;
-  flex-wrap: wrap;
 }
-.hero-stats .stat-num {
+.cal-stat .stat-num {
   color: #17314a;
   font-weight: 800;
   font-feature-settings: 'tnum';
-  margin-right: 4px;
 }
-.hero-stats .stat-num.teal { color: #067a74; }
-.hero-stats .stat-num.coral { color: #b85b36; }
-.hero-stats .stat-sep {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #9ab0c9;
-  display: inline-block;
-}
+.cal-stat .stat-num.teal { color: #067a74; }
+.cal-stat .stat-num.coral { color: #b85b36; }
 
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 3px;
-  margin: 10px 0 12px;
-  padding: 10px 8px 8px;
-  border-radius: 18px;
+.cal-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cal-ctrl-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #dde7f2;
+  background: #fff;
+  color: #17314a;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cal-ctrl-icon:hover { border-color: #b9d5ea; box-shadow: 0 8px 16px rgba(19, 48, 71, 0.08); }
+.cal-ctrl-icon svg { width: 16px; height: 16px; }
+.cal-ctrl-today {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid #dde7f2;
+  background: #fff;
+  color: #1a6cc4;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cal-ctrl-today:hover { border-color: #b9d5ea; box-shadow: 0 8px 16px rgba(19, 48, 71, 0.08); }
+.cal-ctrl-view {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #dde7f2;
+  background: #fff;
+  color: #17314a;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cal-ctrl-view:hover { border-color: #b9d5ea; box-shadow: 0 8px 16px rgba(19, 48, 71, 0.08); }
+.cal-ctrl-view svg { width: 16px; height: 16px; }
+.cal-ctrl-view .chev { width: 14px; height: 14px; color: #7f91a8; }
+
+/* ── Month grid ──────────────────────────────────────────── */
+.cal-month {
+  border-radius: 20px;
   border: 1px solid #dfe8f3;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 14px 40px rgba(18, 55, 88, 0.08);
   position: relative;
   z-index: 1;
 }
-.cal-dow {
-  font-size: 8px;
-  font-weight: 800;
-  color: #7f91a8;
-  text-align: center;
-  padding: 1px 0 4px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+.cal-week-head {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  background: #141a38;
 }
-.cal-day {
-  aspect-ratio: 1;
-  min-height: 38px;
-  border-radius: 11px;
-  border: 1px solid transparent;
+.cal-week-head-cell {
+  padding: 16px 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+}
+.cal-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.cal-cell {
+  position: relative;
+  min-height: 116px;
+  border: none;
+  border-right: 1px solid #eef3f9;
+  border-bottom: 1px solid #eef3f9;
   background: #fff;
+  text-align: left;
+  cursor: pointer;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.16s;
-  padding: 3px 2px;
+  gap: 6px;
+  font-family: inherit;
+  transition: background 0.15s;
 }
-.cal-day:hover { background: #f3f8fd; border-color: #b9d5ea; }
-.cal-day.muted {
-  background: transparent;
-  cursor: default;
-}
-.cal-day-num {
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell:hover { background: #f6faff; }
+.cal-cell-num {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   color: #17314a;
   line-height: 1;
 }
-.cal-day-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #3dbda3;
+.cal-cell.outside { background: #fafbfd; }
+.cal-cell.outside .cal-cell-num { color: #b6c2d2; }
+.cal-cell.outside:hover { background: #f3f6fb; }
+.cal-cell.today .cal-cell-num { color: #067a74; }
+.cal-cell.selected {
+  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 120%);
 }
-.cal-day-dot.warn { background: #ff8b5a; }
-.cal-day.today {
-  background: rgba(229, 255, 248, 0.88);
-  border-color: rgba(0, 161, 154, 0.26);
+.cal-cell.selected:hover {
+  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 120%);
 }
-.cal-day.today .cal-day-num {
-  color: #067a74;
+.cal-cell.selected .cal-cell-num { color: #fff; }
+.cal-cell-add {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fff;
+  color: #0a8b84;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  box-shadow: 0 6px 14px rgba(8, 50, 80, 0.18);
+  transition: transform 0.16s;
 }
-.cal-day.selected {
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
-  border-color: transparent;
-  box-shadow: 0 10px 20px rgba(48, 98, 214, 0.24);
-}
-.cal-day.selected .cal-day-num,
-.cal-day.selected .cal-day-dot {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.9);
-}
-.cal-day.has-event {
-  box-shadow: inset 0 0 0 1px rgba(61, 189, 163, 0.18);
-}
-.cal-day.has-event-warn {
-  box-shadow: inset 0 0 0 1px rgba(255, 139, 90, 0.18);
-}
-.cal-strip {
+.cal-cell-add:hover { transform: scale(1.06); }
+.cal-cell-add svg { width: 16px; height: 16px; }
+.cal-cell-events {
   display: flex;
-  align-items: stretch;
-  gap: 8px;
-  margin: 0 0 14px;
-  padding: 12px;
-  border-radius: 18px;
-  border: 1px solid #dfe8f3;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
-  position: relative;
-  z-index: 1;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
 }
-.cal-strip::-webkit-scrollbar { display: none; }
+.cal-cell-chip {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1f7a66;
+  background: #e2f1ea;
+  border-radius: 6px;
+  padding: 3px 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+.cal-cell-chip-time { font-weight: 800; margin-right: 4px; opacity: 0.8; }
+.cal-cell-chip.viewing { background: #e2f1ea; color: #1f7a66; }
+.cal-cell-chip.compliance { background: #ffe9dd; color: #b85b36; }
+.cal-cell-chip.deadline { background: #fef3c7; color: #92400e; }
+.cal-cell-chip.personal { background: #ede5ff; color: #6b4e9f; }
+.cal-cell.selected .cal-cell-chip {
+  background: rgba(255, 255, 255, 0.92);
+  color: #17314a;
+}
+.cal-cell-more {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7f91a8;
+}
+.cal-cell.selected .cal-cell-more { color: rgba(255, 255, 255, 0.85); }
 
 .cal-agenda-heading {
+  margin-top: 24px;
   padding: 3px 2px 8px;
   font-size: 11px;
   font-weight: 800;
@@ -892,16 +1035,45 @@ onMounted(async () => {
   position: relative;
   z-index: 1;
 }
+.cal-empty--state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 4px 40px;
+}
+.cal-empty-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #18a99c;
+  margin-bottom: 4px;
+}
+.cal-empty-icon svg { width: 32px; height: 32px; }
+.cal-empty-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #17314a;
+  letter-spacing: -0.3px;
+}
+.cal-empty-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8294aa;
+}
 
 .fab {
   position: fixed;
   right: max(18px, env(safe-area-inset-right));
   bottom: calc(18px + env(safe-area-inset-bottom));
   z-index: 20;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #16b3a6 0%, #0a8f9a 100%);
   color: #fff;
   border: none;
   display: flex;
@@ -922,30 +1094,42 @@ onMounted(async () => {
 .fab svg { width: 22px; height: 22px; }
 
 .modal-overlay {
+  /* The modal is teleported to <body>, outside .cal-page — redeclare the
+     brand variables here so the gradient buttons render correctly. */
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
   position: fixed;
   inset: 0;
   background: rgba(14, 40, 64, 0.42);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 20px;
   z-index: 70;
 }
 .modal {
   width: 100%;
   max-width: 28rem;
   background: linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
-  border-radius: 24px 24px 0 0;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
-  max-height: 92vh;
+  max-height: min(92vh, 760px);
   overflow: hidden;
-  animation: modal-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 30px 60px rgba(14, 40, 64, 0.28);
+  animation: modal-pop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes modal-pop {
+  from { transform: translateY(12px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 @keyframes modal-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
 .modal-handle {
+  display: none;
   width: 36px;
   height: 4px;
   background: #ccd7e6;
@@ -1127,81 +1311,179 @@ onMounted(async () => {
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 .btn-primary svg { width: 14px; height: 14px; }
 
-@media (min-width: 768px) {
-  .cal-nav-bar {
-    padding: 14px 22px 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-  }
-
-  .cal-body {
-    padding: 0 18px;
-  }
-
-  .cal-hero {
-    padding: 22px 24px 18px;
-  }
-
-  .cal-monthnav h2 {
-    font-size: 28px;
-  }
-
-  .cal-grid {
-    padding: 14px 12px;
-    gap: 5px;
-  }
+/* match the page's light-blue background on the navbar */
+.cal-page :deep(.webtop-nav) {
+  background: rgba(247, 251, 255, 0.86);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
-@media (max-width: 430px) {
+.cal-quick-btn {
+  border-radius: 12px;
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.cal-quick-btn.solid {
+  border: 1px solid transparent;
+  color: #fff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.cal-footer {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  background: linear-gradient(155deg, #1a1838 0%, #15132e 100%);
+  color: #fff;
+  padding: 56px 0 28px;
+}
+.cal-footer-grid,
+.cal-footer-bottom {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+.cal-footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.cal-footer-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cal-footer-logo {
+  height: 38px; width: 38px; display: block; object-fit: contain; flex-shrink: 0;
+  background: #fff; border-radius: 50%; padding: 3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.cal-footer-brand strong { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.cal-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
+.cal-footer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cal-footer-chips span {
+  font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 7px; padding: 5px 9px;
+}
+.cal-footer-col h5 {
+  margin: 2px 0 14px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.cal-footer-col button {
+  display: block;
+  border: 0; background: transparent;
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0; margin-bottom: 11px; cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+}
+.cal-footer-col button:hover { color: #2fe0bd; }
+.cal-footer-bottom {
+  padding-top: 22px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@media (max-width: 1024px) {
+  .cal-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .cal-footer-grid { grid-template-columns: 1fr; gap: 22px; }
+  .cal-footer-grid, .cal-footer-bottom { padding-left: 16px; padding-right: 16px; }
+}
+
+@media (max-width: 720px) {
   .cal-body {
-    padding: 0 16px;
+    padding: 16px 14px 96px;
   }
-
-  .cal-nav-title {
-    font-size: 18px;
+  .cal-toolbar {
+    flex-direction: column;
+    gap: 14px;
   }
-
-  .cal-monthnav h2 {
-    font-size: 22px;
+  .cal-controls {
+    align-self: stretch;
   }
+  .cal-ctrl-today { flex: 1; }
+  .cal-ctrl-view { margin-left: auto; }
+  .cal-month-title { font-size: 26px; }
 
-  .cal-grid {
+  .cal-week-head-cell {
+    padding: 10px 6px;
+    font-size: 9px;
+    letter-spacing: 0.6px;
+    text-align: center;
+  }
+  .cal-cell {
+    min-height: 64px;
+    padding: 6px 6px;
     gap: 3px;
-    padding: 10px 8px;
-    margin: 10px 0 12px;
+    align-items: center;
   }
-
-  .cal-day {
-    min-height: 38px;
-    border-radius: 10px;
+  .cal-cell-num { font-size: 12px; }
+  .cal-cell-add {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
   }
-
-  .cal-day-num {
-    font-size: 12px;
+  .cal-cell-add svg { width: 13px; height: 13px; }
+  /* Event chips get noisy at phone widths — collapse to dots */
+  .cal-cell-events {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
   }
+  .cal-cell-chip {
+    width: 5px;
+    height: 5px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    overflow: hidden;
+  }
+  .cal-cell-chip-time { display: none; }
+  .cal-cell-more { display: none; }
 
   .cal-event {
-    margin: 0 0 12px;
     padding: 13px 13px;
     gap: 11px;
     border-radius: 17px;
   }
-
-  .cal-event-time {
-    width: 52px;
-  }
-
-  .cal-event-title {
-    line-height: 1.28;
-  }
+  .cal-event-time { width: 52px; }
 
   .mform-when-row--bottom {
     grid-template-columns: 1fr;
   }
+
+  /* Bottom-sheet treatment on phones */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal {
+    max-width: none;
+    border-radius: 24px 24px 0 0;
+    max-height: 92vh;
+    animation: modal-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .modal-handle {
+    display: block;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cal-nav-icon-btn,
-  .cal-day,
+  .cal-ctrl-icon,
+  .cal-cell,
+  .cal-cell-add,
   .cal-event,
   .fab,
   .mform-radio,

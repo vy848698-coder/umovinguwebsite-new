@@ -266,6 +266,8 @@
         </div>
     </main>
 
+    <SiteFooter />
+
     <!-- Contact Edit Drawer -->
     <BaseDrawer
       v-model="isContactDrawerOpen"
@@ -506,6 +508,7 @@
 import BaseDrawer from '@/components/ui/BaseDrawer.vue'
 import PhoneInput from '@/components/form/PhoneInput.vue'
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 definePageMeta({ title: 'Personal Information - UmovingU', middleware: 'auth' })
 
 const {
@@ -802,9 +805,15 @@ const goBack = useGoBack('/profile')
   --fx-text: #1f2b3f;
   --fx-muted: #6f8199;
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* match landing-page cream navbar on this page */
+.pi-shell :deep(.bpnav) {
+  background: rgba(243, 242, 239, 0.88);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
 /* Body */

@@ -12,16 +12,11 @@
     </WebTopNav>
 
     <main class="hs-body">
-      <button class="hs-back-btn" type="button" @click="goBack">
-        <span aria-hidden="true">&larr;</span>
-        Back
-      </button>
-
       <!-- Hero -->
       <section class="hs-hero">
         <div class="hs-hero-copy">
           <div class="hero-greeting">We're here for you</div>
-          <h1 class="hs-h1">How can we help?</h1>
+          <h1 class="hs-h1">How can we <span class="accent">help?</span></h1>
           <p class="hs-hero-sub">Find answers, get support, and make the most of your UMU experience.</p>
 
           <div class="hs-online">
@@ -68,30 +63,82 @@
       <div class="hs-section-heading">Get in touch</div>
       <div class="hs-contact-grid">
         <button class="hs-contact-card violet" type="button" @click="navigateTo('/profile/chat')">
-          <div class="hs-contact-icon violet">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9 12 2" />
+          <div class="hs-contact-main">
+            <div class="hs-contact-icon violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9 12 2" />
+              </svg>
+            </div>
+            <div class="hs-contact-body">
+              <div class="hs-contact-name">Ask AI first</div>
+              <div class="hs-contact-meta">Instant answers · 24/7</div>
+            </div>
+            <span class="hs-contact-pill violet">Ask a question <span class="chev">›</span></span>
+          </div>
+          <div class="hs-contact-art robot" aria-hidden="true">
+            <svg viewBox="0 0 120 120" fill="none">
+              <!-- chat bubble -->
+              <g>
+                <rect x="14" y="12" width="34" height="24" rx="9" fill="#fff" />
+                <path d="M22 36l-3 8 12-6z" fill="#fff" />
+                <circle cx="24" cy="24" r="2.4" fill="#7c72f5" />
+                <circle cx="31" cy="24" r="2.4" fill="#7c72f5" />
+                <circle cx="38" cy="24" r="2.4" fill="#7c72f5" />
+              </g>
+              <!-- robot body -->
+              <rect x="44" y="74" width="44" height="30" rx="14" fill="#e7e1ff" />
+              <!-- robot head -->
+              <circle cx="66" cy="58" r="30" fill="#f4f1ff" />
+              <circle cx="66" cy="58" r="30" fill="url(#robotGlow)" />
+              <rect x="48" y="44" width="36" height="28" rx="14" fill="#2b2660" />
+              <circle cx="59" cy="58" r="4.4" fill="#5fe9ff" />
+              <circle cx="73" cy="58" r="4.4" fill="#5fe9ff" />
+              <path d="M59 66q7 5 14 0" stroke="#5fe9ff" stroke-width="2.4" stroke-linecap="round" />
+              <!-- antenna -->
+              <line x1="66" y1="44" x2="66" y2="34" stroke="#cdc5ff" stroke-width="3" stroke-linecap="round" />
+              <circle cx="66" cy="32" r="3.4" fill="#7c72f5" />
+              <defs>
+                <radialGradient id="robotGlow" cx="0.5" cy="0.35" r="0.7">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+                  <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                </radialGradient>
+              </defs>
             </svg>
           </div>
-          <div class="hs-contact-body">
-            <div class="hs-contact-name">Ask AI first</div>
-            <div class="hs-contact-meta">Instant answers · 24/7</div>
-          </div>
-          <span class="hs-contact-pill violet">Ask a question <span class="chev">›</span></span>
         </button>
 
         <a class="hs-contact-card teal" href="mailto:help@umovingu.com">
-          <div class="hs-contact-icon teal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <polyline points="22 6 12 13 2 6" />
+          <div class="hs-contact-main">
+            <div class="hs-contact-icon teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <polyline points="22 6 12 13 2 6" />
+              </svg>
+            </div>
+            <div class="hs-contact-body">
+              <div class="hs-contact-name">Email us</div>
+              <div class="hs-contact-meta">We'll get back to you as soon as possible</div>
+            </div>
+            <span class="hs-contact-pill teal">Send an email <span class="chev">›</span></span>
+          </div>
+          <div class="hs-contact-art mail" aria-hidden="true">
+            <svg viewBox="0 0 120 120" fill="none">
+              <!-- letter sticking out -->
+              <rect x="40" y="30" width="34" height="40" rx="4" fill="#fff" />
+              <line x1="47" y1="40" x2="67" y2="40" stroke="#bfe5dc" stroke-width="2.6" stroke-linecap="round" />
+              <line x1="47" y1="47" x2="67" y2="47" stroke="#bfe5dc" stroke-width="2.6" stroke-linecap="round" />
+              <line x1="47" y1="54" x2="60" y2="54" stroke="#bfe5dc" stroke-width="2.6" stroke-linecap="round" />
+              <!-- envelope back -->
+              <rect x="26" y="58" width="60" height="42" rx="8" fill="#0fae7e" />
+              <!-- envelope front flap -->
+              <path d="M26 64l30 22 30-22v36a8 8 0 0 1-8 8H34a8 8 0 0 1-8-8z" fill="#17c08e" />
+              <path d="M26 64l30 22 30-22" stroke="#0c9a6f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <!-- paper plane -->
+              <path d="M88 30l16 6-12 9-1-6z" fill="#bcdcff" />
+              <path d="M104 36l-11 9-4-3z" fill="#9cc6f7" />
+              <path d="M99 52q6 6 0 12" stroke="#bcdcff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="2 5" fill="none" />
             </svg>
           </div>
-          <div class="hs-contact-body">
-            <div class="hs-contact-name">Email us</div>
-            <div class="hs-contact-meta">We'll get back to you as soon as possible</div>
-          </div>
-          <span class="hs-contact-pill teal">Send an email <span class="chev">›</span></span>
         </a>
       </div>
 
@@ -141,6 +188,47 @@
         <span class="hs-status-arrow">›</span>
       </div>
     </main>
+
+    <!-- ───────────────────────────── FOOTER ───────────────────────────── -->
+    <footer class="hs-footer">
+      <div class="hs-footer-grid">
+        <div class="hs-footer-intro">
+          <div class="hs-footer-brand">
+            <img src="/logo-new.png" alt="" class="hs-footer-logo" />
+            <strong>umovingu</strong>
+          </div>
+          <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
+          <div class="hs-footer-chips">
+            <span>OPDA standard</span>
+            <span>Property Redress Scheme</span>
+            <span>HM Land Registry</span>
+          </div>
+        </div>
+
+        <div class="hs-footer-col">
+          <h5>Product</h5>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Property Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+        </div>
+
+        <div class="hs-footer-col">
+          <h5>Account</h5>
+          <button type="button" @click="navigateTo('/profile')">Profile</button>
+          <button type="button" @click="navigateTo('/profile/personal-information')">Personal info</button>
+          <button type="button" @click="navigateTo('/profile/support')">Support</button>
+        </div>
+
+        <div class="hs-footer-col">
+          <h5>Legal</h5>
+          <button type="button" @click="navigateTo('/legal/terms')">Terms of Service</button>
+          <button type="button" @click="navigateTo('/legal/privacy')">Privacy Policy</button>
+          <button type="button" @click="navigateTo('/legal/cookies')">Cookie preferences</button>
+        </div>
+      </div>
+      <div class="hs-footer-bottom">© 2026 umovingu. All rights reserved.</div>
+    </footer>
   </div>
 </template>
 
@@ -149,7 +237,7 @@ import WebTopNav from '~/components/core/WebTopNav.vue'
 
 definePageMeta({ title: 'Help & Support - UmovingU', middleware: 'auth' })
 
-const openIdx = ref<number>(0)
+const openIdx = ref<number>(-1)
 
 function toggleFaq(idx: number) {
   if (openIdx.value === -2) {
@@ -189,8 +277,6 @@ const faqs = [
     a: 'Yes — Settings → Delete account. Your passports, documents, and personal data are removed within 30 days; verifiable share links are revoked immediately.',
   },
 ]
-
-const goBack = useGoBack('/profile')
 </script>
 
 <style scoped>
@@ -202,13 +288,16 @@ const goBack = useGoBack('/profile')
   --fx-text: #1f2b3f;
   --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 48px;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* match landing-page cream navbar on this page */
+.hs-page :deep(.webtop-nav) {
+  background: rgba(243, 242, 239, 0.86);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
 .mesh {
@@ -226,9 +315,9 @@ const goBack = useGoBack('/profile')
 .ambient {
   position: fixed;
   border-radius: 999px;
-  filter: blur(44px);
+  filter: blur(60px);
   pointer-events: none;
-  opacity: 0.24;
+  opacity: 0.1;
 }
 .ambient-a {
   width: 260px;
@@ -272,34 +361,19 @@ const goBack = useGoBack('/profile')
   padding: 20px 22px 0;
 }
 
-.hs-back-btn {
-  border: 1px solid #d4dfeb;
-  background: #fff;
-  color: #1f2b3f;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 9px 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  margin-bottom: 18px;
-}
-
 /* ── Hero ───────────────────────────────────────────────── */
 .hs-hero {
   position: relative;
   border-radius: 28px;
   padding: 38px 40px;
-  border: 1px solid rgba(173, 201, 231, 0.5);
+  border: 1px solid rgba(58, 74, 130, 0.5);
   background:
-    radial-gradient(circle at 88% 14%, rgba(0, 161, 154, 0.1) 0%, rgba(0, 161, 154, 0) 42%),
-    linear-gradient(150deg, rgba(232, 248, 244, 0.95) 0%, rgba(238, 244, 255, 0.95) 55%, rgba(238, 236, 255, 0.95) 100%);
+    radial-gradient(circle at 86% 12%, rgba(0, 161, 154, 0.22) 0%, rgba(0, 161, 154, 0) 46%),
+    radial-gradient(circle at 12% 100%, rgba(79, 79, 242, 0.18) 0%, rgba(79, 79, 242, 0) 50%),
+    linear-gradient(150deg, #1b1b46 0%, #201a4f 52%, #161533 100%);
   box-shadow:
-    0 18px 48px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 24px 56px rgba(13, 18, 51, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   overflow: hidden;
   margin-bottom: 28px;
 }
@@ -308,7 +382,7 @@ const goBack = useGoBack('/profile')
   font-size: 12px;
   letter-spacing: 1.8px;
   text-transform: uppercase;
-  color: var(--fx-aqua);
+  color: #2fd4c4;
   font-weight: 800;
   margin-bottom: 8px;
 }
@@ -316,40 +390,41 @@ const goBack = useGoBack('/profile')
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 46px;
   font-weight: 750;
-  color: #10263d;
+  color: #ffffff;
   letter-spacing: -1.3px;
   line-height: 1.02;
 }
+.hs-h1 .accent { color: #2fd4c4; }
 .hs-hero-sub {
   font-size: 15px;
   font-weight: 600;
-  color: #5b6f88;
+  color: rgba(214, 222, 245, 0.78);
   margin-top: 12px;
 }
 
 .hs-online {
   margin-top: 26px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 10px 26px rgba(15, 44, 76, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   max-width: 720px;
 }
 .hs-online-icon {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #eaf6f2;
+  background: rgba(47, 212, 196, 0.14);
   display: grid;
   place-items: center;
   flex-shrink: 0;
   position: relative;
-  color: #067a74;
+  color: #2fd4c4;
 }
 .hs-online-icon::after {
   content: '';
@@ -359,7 +434,7 @@ const goBack = useGoBack('/profile')
   width: 12px;
   height: 12px;
   background: #14c08a;
-  border: 2px solid #fff;
+  border: 2px solid #1b1b46;
   border-radius: 50%;
   animation: ss-pulse 2s ease-in-out infinite;
 }
@@ -369,8 +444,8 @@ const goBack = useGoBack('/profile')
 }
 .hs-online-icon svg { width: 20px; height: 20px; }
 .hs-online-info { flex: 1; min-width: 0; }
-.hs-online-headline { font-size: 15px; font-weight: 800; color: #17314a; }
-.hs-online-sub { font-size: 12.5px; font-weight: 600; color: #627891; margin-top: 2px; }
+.hs-online-headline { font-size: 15px; font-weight: 800; color: #ffffff; }
+.hs-online-sub { font-size: 12.5px; font-weight: 600; color: rgba(198, 208, 235, 0.7); margin-top: 2px; }
 .hs-chat-btn {
   border: none;
   border-radius: 100px;
@@ -401,19 +476,21 @@ const goBack = useGoBack('/profile')
 }
 .hs-art-glow {
   position: absolute;
-  inset: 10%;
+  inset: 6%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(220, 245, 240, 0) 70%);
+  background: radial-gradient(circle, rgba(47, 212, 196, 0.4) 0%, rgba(47, 212, 196, 0) 70%);
 }
 .hs-art-headset {
   position: absolute;
   inset: 18%;
   border-radius: 50%;
-  background: linear-gradient(150deg, #ffffff 0%, #eafaf5 100%);
-  color: var(--fx-aqua);
+  background: linear-gradient(150deg, #1bb6a6 0%, #0a8f86 100%);
+  color: #ffffff;
   display: grid;
   place-items: center;
-  box-shadow: 0 18px 40px rgba(0, 150, 130, 0.18);
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.25);
 }
 .hs-art-headset svg { width: 64px; height: 64px; }
 .hs-art-bubble {
@@ -496,13 +573,34 @@ const goBack = useGoBack('/profile')
   text-decoration: none;
   color: inherit;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   border: 1px solid transparent;
+  overflow: hidden;
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s;
 }
 .hs-contact-card:hover { transform: translateY(-3px); }
+.hs-contact-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.hs-contact-art {
+  flex-shrink: 0;
+  width: 128px;
+  height: 128px;
+  margin: -14px -8px -14px 0;
+  align-self: center;
+  filter: drop-shadow(0 14px 22px rgba(15, 44, 76, 0.16));
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hs-contact-art svg { width: 100%; height: 100%; }
+.hs-contact-card:hover .hs-contact-art { transform: translateY(-4px) scale(1.04); }
 .hs-contact-card.violet {
   background: linear-gradient(150deg, rgba(243, 240, 255, 0.96), rgba(233, 226, 255, 0.92));
   border-color: rgba(112, 92, 240, 0.22);
@@ -666,7 +764,69 @@ const goBack = useGoBack('/profile')
 }
 .live-dot { width: 6px; height: 6px; background: #14c08a; border-radius: 50%; }
 
+/* ── Footer ─────────────────────────────────────────────── */
+.hs-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 56px;
+  background: linear-gradient(155deg, #1a1838 0%, #15132e 100%);
+  color: #fff;
+  padding: 56px 0 28px;
+}
+.hs-footer-grid,
+.hs-footer-bottom {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+.hs-footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.hs-footer-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.hs-footer-logo {
+  height: 38px; width: 38px; display: block; object-fit: contain; flex-shrink: 0;
+  background: #fff; border-radius: 50%; padding: 3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.hs-footer-brand strong { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.hs-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
+.hs-footer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hs-footer-chips span {
+  font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 7px; padding: 5px 9px;
+}
+.hs-footer-col h5 {
+  margin: 2px 0 14px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.hs-footer-col button {
+  display: block;
+  border: 0; background: transparent;
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0; margin-bottom: 11px; cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+}
+.hs-footer-col button:hover { color: #2fe0bd; }
+.hs-footer-bottom {
+  padding-top: 22px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hs-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
 @media (max-width: 920px) {
   .hs-hero-art { display: none; }
   .hs-contact-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -675,10 +835,13 @@ const goBack = useGoBack('/profile')
 
 @media (max-width: 560px) {
   .hs-body { padding: 16px 14px 0; }
+  .hs-contact-art { display: none; }
   .hs-hero { padding: 26px 22px; }
   .hs-h1 { font-size: 34px; }
   .hs-online { flex-wrap: wrap; }
   .hs-chat-btn { width: 100%; justify-content: center; }
+  .hs-footer-grid { grid-template-columns: 1fr; gap: 22px; }
+  .hs-footer-grid, .hs-footer-bottom { padding-left: 16px; padding-right: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
