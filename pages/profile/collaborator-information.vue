@@ -452,9 +452,7 @@ const goBack = useGoBack('/profile')
   --fx-muted: #6f8199;
   --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   position: relative;
   display: flex;
@@ -462,11 +460,10 @@ const goBack = useGoBack('/profile')
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Match the shared top-nav background to this page's light gradient
-   (default is a beige tone that clashes with the blue backdrop). */
+/* match landing-page cream navbar on this page */
 .cl-page :deep(.webtop-nav) {
-  background: rgba(247, 251, 255, 0.85);
-  border-bottom: 1px solid rgba(173, 201, 231, 0.3);
+  background: rgba(243, 242, 239, 0.86);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
 .cl-quick-btn {

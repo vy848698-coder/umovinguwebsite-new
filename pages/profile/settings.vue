@@ -12,11 +12,6 @@
     </WebTopNav>
 
     <main class="st-body">
-      <button class="st-back-btn" type="button" @click="goBack">
-        <span aria-hidden="true">&larr;</span>
-        Back
-      </button>
-
       <!-- Header: title + security card -->
       <header class="st-header">
         <div class="st-header-intro">
@@ -217,10 +212,8 @@
             </button>
           </div>
         </section>
-      </div>
 
-      <!-- Legal + promo -->
-      <div class="st-legal-row">
+        <!-- Legal -->
         <section class="st-card st-legal-card">
           <div class="st-card-head">
             <span class="st-card-chip blue">
@@ -288,7 +281,7 @@
             <div class="st-trust-text">Manage your preferences and stay in control.</div>
           </div>
         </div>
-        <div class="st-trust-card">
+        <div class="st-trust-card st-trust-card--link" role="button" tabindex="0" @click="navigateTo('/profile/support')" @keydown.enter="navigateTo('/profile/support')">
           <span class="st-trust-icon blue">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -307,6 +300,47 @@
         <div v-if="toast" class="st-toast">{{ toast }}</div>
       </Transition>
     </main>
+
+    <!-- ───────────────────────────── FOOTER ───────────────────────────── -->
+    <footer class="st-footer">
+      <div class="st-footer-grid">
+        <div class="st-footer-intro">
+          <div class="st-footer-brand">
+            <img src="/logo-new.png" alt="" class="st-footer-logo" />
+            <strong>umovingu</strong>
+          </div>
+          <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
+          <div class="st-footer-chips">
+            <span>OPDA standard</span>
+            <span>Property Redress Scheme</span>
+            <span>HM Land Registry</span>
+          </div>
+        </div>
+
+        <div class="st-footer-col">
+          <h5>Product</h5>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Property Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+        </div>
+
+        <div class="st-footer-col">
+          <h5>Account</h5>
+          <button type="button" @click="navigateTo('/profile')">Profile</button>
+          <button type="button" @click="navigateTo('/profile/personal-information')">Personal info</button>
+          <button type="button" @click="navigateTo('/profile/support')">Support</button>
+        </div>
+
+        <div class="st-footer-col">
+          <h5>Legal</h5>
+          <button type="button" @click="navigateTo('/legal/terms')">Terms of Service</button>
+          <button type="button" @click="navigateTo('/legal/privacy')">Privacy Policy</button>
+          <button type="button" @click="navigateTo('/legal/cookies')">Cookie preferences</button>
+        </div>
+      </div>
+      <div class="st-footer-bottom">© 2026 umovingu. All rights reserved.</div>
+    </footer>
 
     <!-- Change password drawer -->
     <Teleport to="body">
@@ -372,7 +406,6 @@ definePageMeta({ title: 'Settings - UmovingU', middleware: 'auth' })
 const config = useRuntimeConfig()
 const { profile, fetchProfile } = useProfile()
 const { theme, setTheme: applyTheme } = useTheme()
-const goBack = useGoBack('/profile')
 
 const themeOptions = [
   { value: 'light', label: 'Light' },
@@ -500,13 +533,16 @@ const securityLabel = computed(() => {
   --fx-text: #1f2b3f;
   --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 48px;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* match landing-page cream navbar on this page */
+.st-page :deep(.webtop-nav) {
+  background: rgba(243, 242, 239, 0.86);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
 .mesh {
@@ -524,9 +560,9 @@ const securityLabel = computed(() => {
 .ambient {
   position: fixed;
   border-radius: 999px;
-  filter: blur(44px);
+  filter: blur(60px);
   pointer-events: none;
-  opacity: 0.24;
+  opacity: 0.1;
 }
 .ambient-a {
   width: 260px;
@@ -568,22 +604,6 @@ const securityLabel = computed(() => {
   max-width: 1120px;
   margin: 0 auto;
   padding: 20px 22px 0;
-}
-
-.st-back-btn {
-  border: 1px solid #d4dfeb;
-  background: #fff;
-  color: #1f2b3f;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 9px 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  margin-bottom: 18px;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -630,11 +650,11 @@ const securityLabel = computed(() => {
 
 .st-strength-card {
   border-radius: 22px;
-  border: 1px solid rgba(173, 201, 231, 0.5);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.96) 0%, rgba(241, 250, 255, 0.92) 52%, rgba(236, 255, 249, 0.96) 100%);
+  border: 1px solid rgba(46, 40, 92, 0.5);
+  background: linear-gradient(155deg, #211d44 0%, #1a1838 55%, #15132e 100%);
   box-shadow:
-    0 16px 40px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 18px 44px rgba(18, 22, 60, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   padding: 22px 24px;
   display: flex;
   gap: 18px;
@@ -646,11 +666,11 @@ const securityLabel = computed(() => {
   height: 64px;
   border-radius: 18px;
   flex-shrink: 0;
-  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  background: linear-gradient(150deg, #16b8a6 0%, #0e9c92 100%);
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 14px 26px rgba(0, 150, 160, 0.32);
+  box-shadow: 0 14px 26px rgba(0, 150, 160, 0.35);
 }
 .st-strength-shield svg { width: 32px; height: 32px; }
 .st-strength-check {
@@ -666,18 +686,18 @@ const securityLabel = computed(() => {
   font-weight: 800;
   display: grid;
   place-items: center;
-  border: 2px solid #fff;
+  border: 2px solid #1a1838;
 }
 .st-strength-body { flex: 1; min-width: 0; }
 .st-strength-title {
   font-size: 17px;
   font-weight: 800;
-  color: #17314a;
+  color: #ffffff;
   letter-spacing: -0.3px;
 }
 .st-strength-sub {
   font-size: 13px;
-  color: #627891;
+  color: rgba(214, 221, 245, 0.72);
   font-weight: 600;
   margin-top: 3px;
 }
@@ -687,13 +707,13 @@ const securityLabel = computed(() => {
   gap: 7px;
   font-size: 13px;
   font-weight: 700;
-  color: #4a8f6a;
+  color: rgba(214, 221, 245, 0.72);
   margin-top: 12px;
 }
-.st-strength-pct { color: #14a36e; font-weight: 800; font-size: 14px; }
+.st-strength-pct { color: #2fe0bd; font-weight: 800; font-size: 14px; }
 .st-strength-bar {
   height: 6px;
-  background: rgba(131, 228, 213, 0.35);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 100px;
   overflow: hidden;
   margin-top: 8px;
@@ -708,9 +728,10 @@ const securityLabel = computed(() => {
 /* ── Card grid ──────────────────────────────────────────── */
 .st-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 22px;
   margin-bottom: 22px;
+  align-items: stretch;
 }
 .st-card {
   border-radius: 22px;
@@ -718,6 +739,8 @@ const securityLabel = computed(() => {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 252, 255, 0.95) 100%);
   box-shadow: 0 12px 30px rgba(15, 44, 76, 0.07);
   padding: 22px;
+  display: flex;
+  flex-direction: column;
 }
 .st-card-head {
   display: flex;
@@ -751,12 +774,16 @@ const securityLabel = computed(() => {
   border: 1px solid rgba(216, 230, 244, 0.8);
   background: #fff;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .st-row {
   display: flex;
   align-items: center;
   gap: 13px;
   padding: 15px 16px;
+  flex: 1 1 auto;
   border: none;
   background: transparent;
   border-bottom: 1px solid rgba(216, 230, 244, 0.72);
@@ -852,19 +879,14 @@ const securityLabel = computed(() => {
   box-shadow: 0 2px 6px rgba(15, 44, 76, 0.12);
 }
 
-/* ── Legal + promo ──────────────────────────────────────── */
-.st-legal-row {
-  display: grid;
-  grid-template-columns: 1fr minmax(280px, 360px);
-  gap: 22px;
-  margin-bottom: 22px;
-}
+/* ── Privacy promo card (dark) ──────────────────────────── */
 .st-legal-card { margin: 0; }
 .st-promo {
   border-radius: 22px;
   padding: 28px 26px;
-  background: linear-gradient(160deg, rgba(0, 161, 154, 0.1) 0%, rgba(47, 155, 223, 0.1) 55%, rgba(79, 79, 242, 0.1) 100%);
-  border: 1px solid rgba(173, 201, 231, 0.5);
+  background: linear-gradient(155deg, #211d44 0%, #1a1838 55%, #15132e 100%);
+  border: 1px solid rgba(46, 40, 92, 0.6);
+  box-shadow: 0 18px 44px rgba(18, 22, 60, 0.28);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -875,38 +897,38 @@ const securityLabel = computed(() => {
   width: 60px;
   height: 60px;
   border-radius: 18px;
-  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  background: linear-gradient(150deg, #16b8a6 0%, #0e9c92 100%);
   color: #fff;
   display: grid;
   place-items: center;
   margin-bottom: 16px;
-  box-shadow: 0 14px 26px rgba(0, 150, 160, 0.28);
+  box-shadow: 0 14px 26px rgba(0, 150, 160, 0.32);
 }
 .st-promo-shield svg { width: 30px; height: 30px; }
 .st-promo-title {
   font-size: 18px;
   font-weight: 800;
-  color: #10263d;
+  color: #ffffff;
   letter-spacing: -0.3px;
 }
 .st-promo-text {
   font-size: 13px;
   font-weight: 600;
-  color: #5e7186;
+  color: rgba(214, 221, 245, 0.7);
   line-height: 1.5;
   margin: 8px 0 18px;
 }
 .st-promo-btn {
   border: none;
   border-radius: 12px;
-  background: #fff;
-  color: #16314a;
+  background: linear-gradient(120deg, #16b8a6 0%, #0e9c92 100%);
+  color: #ffffff;
   font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   padding: 10px 18px;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(15, 44, 76, 0.1);
+  box-shadow: 0 10px 22px rgba(0, 150, 160, 0.3);
 }
 
 /* ── Trust strip ────────────────────────────────────────── */
@@ -914,6 +936,7 @@ const securityLabel = computed(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
+  margin-bottom: 48px;
 }
 .st-trust-card {
   display: flex;
@@ -924,6 +947,14 @@ const securityLabel = computed(() => {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.94) 100%);
   box-shadow: 0 10px 24px rgba(15, 44, 76, 0.06);
   padding: 18px 20px;
+}
+.st-trust-card--link {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.st-trust-card--link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 44, 76, 0.1);
 }
 .st-trust-icon {
   width: 44px;
@@ -980,6 +1011,9 @@ const securityLabel = computed(() => {
 
 /* ── Change password modal ──────────────────────────────── */
 .st-overlay {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
   position: fixed;
   inset: 0;
   background: rgba(14, 40, 64, 0.42);
@@ -1093,18 +1127,84 @@ const securityLabel = computed(() => {
 }
 .st-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
+/* ── Footer ─────────────────────────────────────────────── */
+.st-footer {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(155deg, #1a1838 0%, #15132e 100%);
+  color: #fff;
+  padding: 56px 0 28px;
+}
+.st-footer-grid,
+.st-footer-bottom {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+.st-footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.st-footer-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.st-footer-logo {
+  height: 38px; width: 38px; display: block; object-fit: contain; flex-shrink: 0;
+  background: #fff; border-radius: 50%; padding: 3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.st-footer-brand strong { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.st-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
+.st-footer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.st-footer-chips span {
+  font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 7px; padding: 5px 9px;
+}
+.st-footer-col h5 {
+  margin: 2px 0 14px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.st-footer-col button {
+  display: block;
+  border: 0; background: transparent;
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0; margin-bottom: 11px; cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+}
+.st-footer-col button:hover { color: #2fe0bd; }
+.st-footer-bottom {
+  padding-top: 22px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .st-grid { grid-template-columns: repeat(2, 1fr); }
+  .st-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
 @media (max-width: 920px) {
   .st-header { grid-template-columns: 1fr; }
-  .st-grid { grid-template-columns: 1fr; }
-  .st-legal-row { grid-template-columns: 1fr; }
   .st-trust { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .st-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
   .st-body { padding: 16px 14px 0; }
   .st-h1 { font-size: 32px; }
   .st-card, .st-strength-card { padding: 18px; }
+  .st-footer-grid { grid-template-columns: 1fr; gap: 22px; }
+  .st-footer-grid, .st-footer-bottom { padding-left: 16px; padding-right: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

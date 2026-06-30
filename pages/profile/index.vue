@@ -496,10 +496,7 @@ const deleteAccount = async () => {
   --fx-text: #1f2b3f;
   --fx-panel-border: rgba(193, 215, 237, 0.7);
   position: relative;
-  background:
-    radial-gradient(circle at 8% 12%, rgba(13, 191, 181, 0.2) 0%, rgba(13, 191, 181, 0) 32%),
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.18) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }

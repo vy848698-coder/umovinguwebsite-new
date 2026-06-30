@@ -1,51 +1,67 @@
 <template>
   <div class="dc-page mobile-container">
-    <!-- Nav bar -->
-    <div class="dc-nav-bar">
-      <button class="dc-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="dc-nav-title">Your Documents</div>
-      <button class="dc-nav-icon-btn" aria-label="Filter">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
-    </div>
+    <BuyerProfileNav back-label="Back" @back="goBack" />
 
     <main class="dc-body">
-      <div class="atm-bg atm-bg-warm" />
-
       <!-- Hero -->
       <div class="dc-hero">
-        <div class="hero-greeting">Everything you've stored</div>
-        <div class="dc-h1">
-          Documents<span class="dc-h1-count">{{ totalDocs }}</span>
+        <div class="dc-hero-text">
+          <div class="hero-greeting">Everything you've stored</div>
+          <div class="dc-h1">
+            Documents<span class="dc-h1-count">{{ totalDocs }}</span>
+          </div>
+          <div class="hero-stats">
+            <span><span class="stat-num">{{ totalDocs }}</span> total</span>
+            <span class="stat-sep" />
+            <span><span class="stat-num teal">{{ verifiedDocs }}</span> verified</span>
+            <span class="stat-sep" />
+            <span><span class="stat-num coral">{{ expiringDocs }}</span> expiring soon</span>
+          </div>
         </div>
-        <div class="hero-stats">
-          <span><span class="stat-num">{{ totalDocs }}</span>total</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num teal">{{ verifiedDocs }}</span>verified</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num coral">{{ expiringDocs }}</span>expiring soon</span>
+        <div class="dc-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="92" cy="132" rx="78" ry="13" fill="#0c1a3a" />
+            <g>
+              <rect x="58" y="34" width="62" height="80" rx="5" fill="#fff" />
+              <rect x="68" y="46" width="42" height="4" rx="2" fill="#cfe0f5" />
+              <rect x="68" y="56" width="42" height="4" rx="2" fill="#cfe0f5" />
+              <rect x="68" y="66" width="30" height="4" rx="2" fill="#cfe0f5" />
+              <rect x="78" y="28" width="62" height="80" rx="5" fill="#f4f8ff" />
+              <rect x="88" y="40" width="42" height="4" rx="2" fill="#bcd2ee" />
+              <rect x="88" y="50" width="42" height="4" rx="2" fill="#bcd2ee" />
+              <rect x="88" y="60" width="30" height="4" rx="2" fill="#bcd2ee" />
+            </g>
+            <path d="M44 60h44l10 12h52a8 8 0 0 1 8 8v44a8 8 0 0 1-8 8H44a8 8 0 0 1-8-8V68a8 8 0 0 1 8-8z" fill="#0f9b8e" />
+            <path d="M44 76h112a8 8 0 0 1 8 8v40a8 8 0 0 1-8 8H44a8 8 0 0 1-8-8V84a8 8 0 0 1 8-8z" fill="#1fb6a6" />
+            <circle cx="170" cy="58" r="20" fill="#16a394" />
+            <path d="M162 58l5 5 11-11" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </div>
       </div>
 
-      <!-- Search -->
-      <div class="dc-search">
-        <span class="dc-search-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-            <circle cx="11" cy="11" r="7" />
-            <line x1="16.5" y1="16.5" x2="21" y2="21" />
+      <!-- Search + Filter -->
+      <div class="dc-search-row">
+        <div class="dc-search">
+          <span class="dc-search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="16.5" y1="16.5" x2="21" y2="21" />
+            </svg>
+          </span>
+          <input
+            v-model="searchQuery"
+            class="dc-search-input"
+            placeholder="Search documents…"
+          />
+        </div>
+        <button class="dc-filter-btn" type="button" aria-label="Filter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="7" x2="20" y2="7" />
+            <line x1="7" y1="12" x2="17" y2="12" />
+            <line x1="10" y1="17" x2="14" y2="17" />
           </svg>
-        </span>
-        <input
-          v-model="searchQuery"
-          class="dc-search-input"
-          placeholder="Search documents…"
-        />
+          Filter
+        </button>
       </div>
 
       <!-- Categories grid -->
@@ -54,24 +70,24 @@
           v-for="cat in categories"
           :key="cat.key"
           class="dc-cat"
-          :class="cat.tone"
+          :class="[cat.tone, { active: activeCategory === cat.key }]"
           @click="activeCategory = activeCategory === cat.key ? '' : cat.key"
         >
           <div class="dc-cat-icon">
             <span v-html="cat.icon" />
           </div>
-          <div class="dc-cat-name">{{ cat.name }}</div>
-          <div class="dc-cat-count">
-            {{ cat.count }} {{ cat.count === 1 ? 'document' : 'documents' }}
+          <div class="dc-cat-body">
+            <div class="dc-cat-name">{{ cat.name }}</div>
+            <div class="dc-cat-count">
+              {{ cat.count }} {{ cat.count === 1 ? 'document' : 'documents' }}
+            </div>
           </div>
+          <div class="dc-cat-chevron">›</div>
         </button>
       </div>
 
-      <!-- Loading -->
-      <div v-if="loading" class="dc-loading">Loading…</div>
-
-      <template v-else>
-        <!-- Section heading: Recently uploaded -->
+      <!-- Recently uploaded card -->
+      <div class="dc-recent-card">
         <div class="dc-section-heading">
           Recently uploaded
           <span
@@ -83,27 +99,51 @@
           </span>
         </div>
 
-        <div v-if="filteredAllDocs.length === 0" class="dc-empty">
-          No documents yet
-        </div>
+        <!-- Loading -->
+        <div v-if="loading" class="dc-loading">Loading…</div>
 
-        <div
-          v-for="doc in (showAllDocs ? filteredAllDocs : filteredAllDocs.slice(0, 5))"
-          :key="doc.id"
-          class="dc-doc"
-        >
-          <div class="dc-doc-icon" :class="docIconClass(doc)">
-            {{ docIconLabel(doc) }}
-          </div>
-          <div class="dc-doc-info">
-            <div class="dc-doc-name">{{ doc.title }}</div>
-            <div class="dc-doc-meta">
-              {{ docMeta(doc) }}
+        <template v-else>
+          <!-- Empty state -->
+          <div v-if="filteredAllDocs.length === 0" class="dc-empty">
+            <div class="dc-empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
             </div>
+            <div class="dc-empty-title">No documents yet</div>
+            <div class="dc-empty-sub">
+              Upload your first document to keep everything organised and secure.
+            </div>
+            <button class="dc-empty-btn" type="button" @click="openUploadModal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Upload document
+            </button>
           </div>
-          <div class="dc-doc-action">›</div>
-        </div>
-      </template>
+
+          <!-- Document list -->
+          <div
+            v-for="doc in (showAllDocs ? filteredAllDocs : filteredAllDocs.slice(0, 5))"
+            :key="doc.id"
+            class="dc-doc"
+          >
+            <div class="dc-doc-icon" :class="docIconClass(doc)">
+              {{ docIconLabel(doc) }}
+            </div>
+            <div class="dc-doc-info">
+              <div class="dc-doc-name">{{ doc.title }}</div>
+              <div class="dc-doc-meta">
+                {{ docMeta(doc) }}
+              </div>
+            </div>
+            <div class="dc-doc-action">›</div>
+          </div>
+        </template>
+      </div>
     </main>
 
     <!-- Floating upload button -->
@@ -114,6 +154,8 @@
         <line x1="12" y1="3" x2="12" y2="15" />
       </svg>
     </button>
+
+    <SiteFooter />
 
     <!-- Upload Document Modal -->
     <Teleport to="body">
@@ -233,7 +275,7 @@
             <button
               class="btn-primary"
               type="button"
-              :disabled="!selectedFile || uploading"
+              :disabled="uploading"
               @click="submitDocument"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -252,6 +294,8 @@
 
 <script setup>
 import BaseDrawer from '@/components/ui/BaseDrawer.vue'
+import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({ title: 'Your Documents - UmovingU', middleware: 'auth' })
 
@@ -338,7 +382,7 @@ const categories = computed(() => {
   const counts = { title: 0, energy: 0, legal: 0, surveys: 0, financial: 0, other: 0 }
   for (const d of allDocs.value) counts[docCategory(d)]++
   return [
-    { key: 'title', name: 'Title', tone: 'identity', count: counts.title, icon: '🪪' },
+    { key: 'title', name: 'Title', tone: 'identity', count: counts.title, icon: '📘' },
     { key: 'energy', name: 'Energy', tone: 'property', count: counts.energy, icon: '⚡' },
     { key: 'legal', name: 'Legal', tone: 'identity', count: counts.legal, icon: '⚖️' },
     { key: 'surveys', name: 'Surveys', tone: 'property', count: counts.surveys, icon: '🏠' },
@@ -498,7 +542,10 @@ const onExpiryChange = (e) => {
 }
 
 const submitDocument = async () => {
-  if (!selectedFile.value) return
+  if (!selectedFile.value) {
+    uploadError.value = 'Please attach a file before uploading.'
+    return
+  }
   uploading.value = true
   uploadError.value = ''
   try {
@@ -532,13 +579,17 @@ const goBack = useGoBack('/profile')
   --fx-muted: #6f8199;
   --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 96px;
+  padding-bottom: 0;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* match landing-page cream navbar on this page */
+.dc-page :deep(.bpnav) {
+  background: rgba(243, 242, 239, 0.88);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
 .dc-nav-bar {
@@ -596,115 +647,123 @@ const goBack = useGoBack('/profile')
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 0 14px;
-}
-.atm-bg {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 280px;
-  pointer-events: none;
-  z-index: 0;
-}
-.atm-bg.atm-bg-warm {
-  background: radial-gradient(circle at 92% 8%, rgba(208, 236, 255, 0.32) 0%, rgba(208, 236, 255, 0) 48%);
+  padding: 8px 14px 0;
 }
 
 .dc-hero {
   margin-top: 8px;
   border-radius: 28px;
-  padding: 24px 18px 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 28px 32px;
+  border: 1px solid rgba(28, 46, 92, 0.6);
+  background:
+    radial-gradient(circle at 88% 18%, rgba(31, 182, 166, 0.22) 0%, rgba(31, 182, 166, 0) 46%),
+    linear-gradient(135deg, #1a1f4d 0%, #161a40 55%, #11173a 100%);
+  box-shadow: 0 18px 44px rgba(12, 22, 52, 0.28);
   position: relative;
   z-index: 1;
   overflow: hidden;
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
-.dc-hero::before {
-  content: '';
-  position: absolute;
-  inset: -145% auto auto -40%;
-  width: 54%;
-  height: 320%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 46%, rgba(255, 255, 255, 0) 100%);
-  transform: translateX(-130%) rotate(16deg);
-  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
+.dc-hero-text { position: relative; z-index: 1; }
+.dc-hero-art {
+  flex-shrink: 0;
+  width: 240px;
+  max-width: 38%;
 }
-.dc-hero:hover {
-  transform: translateY(-4px);
-  border-color: rgba(172, 203, 233, 0.7);
-  box-shadow:
-    0 20px 44px rgba(18, 55, 88, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-.dc-hero:hover::before {
-  transform: translateX(220%) rotate(16deg);
-}
+.dc-hero-art svg { width: 100%; height: auto; display: block; }
 .hero-greeting {
   font-size: 11px;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: #70839c;
-  font-weight: 700;
-  margin-bottom: 4px;
+  color: #2fd2bf;
+  font-weight: 800;
+  margin-bottom: 6px;
 }
 .dc-h1 {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 34px;
+  font-size: 40px;
   font-weight: 750;
-  color: #10263d;
-  letter-spacing: -0.9px;
-  line-height: 1.06;
-  margin-bottom: 12px;
+  color: #ffffff;
+  letter-spacing: -1px;
+  line-height: 1.04;
+  margin-bottom: 16px;
 }
 .dc-h1-count {
   display: inline-block;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
-  color: #067a74;
-  vertical-align: 6px;
-  margin-left: 6px;
+  color: #2fd2bf;
+  vertical-align: 8px;
+  margin-left: 8px;
   letter-spacing: -0.2px;
 }
 .hero-stats {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: rgba(229, 255, 248, 0.92);
-  border: 1px solid rgba(0, 161, 154, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #50637a;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #c3cde6;
   letter-spacing: -0.2px;
   flex-wrap: nowrap;
 }
-.hero-stats .stat-num { color: #17314a; font-weight: 800; margin-right: 4px; }
-.hero-stats .stat-num.teal { color: #067a74; }
-.hero-stats .stat-num.coral { color: #b85b36; }
-.hero-stats .stat-sep { width: 4px; height: 4px; border-radius: 50%; background: #9ab0c9; display: inline-block; }
+.hero-stats .stat-num { color: #6fc8ff; font-weight: 800; margin-right: 4px; }
+.hero-stats .stat-num.teal { color: #2fd2bf; }
+.hero-stats .stat-num.coral { color: #f0a35a; }
+.hero-stats .stat-sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.32); display: inline-block; }
 
-.dc-search { margin: 14px 0 16px; position: relative; z-index: 1; }
+.dc-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  position: relative;
+  z-index: 1;
+}
+.dc-search { position: relative; flex: 1; }
+.dc-filter-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e9f3;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b3a52;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(19, 51, 82, 0.05);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+.dc-filter-btn:hover {
+  border-color: #b9d5ea;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(19, 51, 82, 0.1);
+}
+.dc-filter-btn svg { width: 16px; height: 16px; color: #50637a; }
 .dc-search-input {
   width: 100%;
-  background: #f8fbff;
-  border: 1px solid #d9e4f0;
+  background: #ffffff;
+  border: 1px solid #e2e9f3;
   border-radius: 14px;
-  padding: 12px 14px 12px 40px;
+  padding: 13px 16px 13px 42px;
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
   color: #15273d;
   outline: none;
+  box-shadow: 0 6px 14px rgba(19, 51, 82, 0.05);
   transition: border-color 0.15s ease;
 }
 .dc-search-input::placeholder { color: #8c9cb2; font-weight: 500; }
@@ -722,8 +781,8 @@ const goBack = useGoBack('/profile')
 
 .dc-cats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 12px;
   padding: 0;
   margin-bottom: 18px;
   position: relative;
@@ -733,55 +792,77 @@ const goBack = useGoBack('/profile')
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   border: 1px solid #dfe8f3;
   border-radius: 18px;
-  padding: 14px;
+  padding: 18px 20px;
   cursor: pointer;
   transition: all 0.24s;
   position: relative;
   overflow: hidden;
   font-family: inherit;
   text-align: left;
-  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.06);
+  box-shadow: 0 8px 16px rgba(19, 51, 82, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 .dc-cat:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 24px rgba(21, 58, 95, 0.12);
 }
-.dc-cat.identity { background: linear-gradient(135deg, rgba(229, 255, 248, 0.95), rgba(220, 246, 240, 0.92)); border-color: rgba(61, 189, 163, 0.24); }
-.dc-cat.property { background: linear-gradient(135deg, rgba(238, 248, 255, 0.96), rgba(220, 236, 255, 0.94)); border-color: rgba(78, 147, 227, 0.24); }
-.dc-cat.financial { background: linear-gradient(135deg, rgba(255, 243, 237, 0.96), rgba(255, 226, 214, 0.94)); border-color: rgba(220, 129, 92, 0.24); }
-.dc-cat.other { background: linear-gradient(135deg, rgba(240, 237, 255, 0.96), rgba(227, 219, 255, 0.94)); border-color: rgba(131, 111, 220, 0.24); }
+.dc-cat.active { border-width: 1.5px; }
+.dc-cat.identity { background: linear-gradient(135deg, rgba(229, 255, 248, 0.95), rgba(220, 246, 240, 0.92)); border-color: rgba(61, 189, 163, 0.3); }
+.dc-cat.property { background: linear-gradient(135deg, rgba(238, 248, 255, 0.96), rgba(220, 236, 255, 0.94)); border-color: rgba(78, 147, 227, 0.3); }
+.dc-cat.financial { background: linear-gradient(135deg, rgba(255, 243, 237, 0.96), rgba(255, 226, 214, 0.94)); border-color: rgba(220, 129, 92, 0.3); }
+.dc-cat.other { background: linear-gradient(135deg, rgba(240, 237, 255, 0.96), rgba(227, 219, 255, 0.94)); border-color: rgba(131, 111, 220, 0.3); }
 .dc-cat-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.7);
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  font-size: 18px;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(19, 51, 82, 0.06);
 }
+.dc-cat-body { flex: 1; min-width: 0; }
 .dc-cat-name {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: #17314a;
   letter-spacing: -0.2px;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 .dc-cat-count {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 600;
   color: #627891;
+}
+.dc-cat-chevron {
+  font-size: 22px;
+  color: #9fb1c8;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dc-recent-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #e2e9f3;
+  border-radius: 22px;
+  padding: 20px 22px 26px;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 10px 28px rgba(19, 51, 82, 0.05);
 }
 
 .dc-section-heading {
-  margin-top: 10px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.4px;
   text-transform: uppercase;
   color: #71849b;
-  padding: 4px 4px 10px;
+  padding: 0 0 14px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -867,8 +948,7 @@ const goBack = useGoBack('/profile')
   flex-shrink: 0;
 }
 
-.dc-loading,
-.dc-empty {
+.dc-loading {
   text-align: center;
   padding: 28px 0;
   color: #7388a1;
@@ -877,6 +957,64 @@ const goBack = useGoBack('/profile')
   position: relative;
   z-index: 1;
 }
+
+.dc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 44px 20px 40px;
+}
+.dc-empty-icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(31, 182, 166, 0.16) 0%, rgba(31, 182, 166, 0.05) 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1fb6a6;
+  margin-bottom: 18px;
+}
+.dc-empty-icon svg { width: 34px; height: 34px; }
+.dc-empty-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #17314a;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+.dc-empty-sub {
+  font-size: 14px;
+  font-weight: 500;
+  color: #7388a1;
+  max-width: 320px;
+  line-height: 1.45;
+  margin-bottom: 22px;
+}
+.dc-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, #12b0a2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 13px 22px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  box-shadow: 0 12px 22px rgba(0, 161, 154, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.dc-empty-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(0, 161, 154, 0.34);
+  filter: saturate(1.05);
+}
+.dc-empty-btn svg { width: 17px; height: 17px; }
 
 .fab {
   position: fixed;
@@ -904,6 +1042,10 @@ const goBack = useGoBack('/profile')
 .fab svg { width: 22px; height: 22px; }
 
 .modal-overlay {
+  /* Teleported to <body>, so re-declare the theme vars it relies on */
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
   position: fixed;
   inset: 0;
   background: rgba(14, 40, 64, 0.5);
@@ -911,7 +1053,7 @@ const goBack = useGoBack('/profile')
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: 60;
+  z-index: 200;
 }
 .modal {
   width: 100%;
@@ -920,10 +1062,28 @@ const goBack = useGoBack('/profile')
   border-radius: 24px 24px 0 0;
   display: flex;
   flex-direction: column;
-  max-height: 92vh;
+  max-height: 88vh;
   overflow: hidden;
   animation: modal-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+}
+/* Centered card on larger screens so it doesn't stretch top-to-bottom */
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 24px;
+  }
+  .modal {
+    border-radius: 24px;
+    max-height: min(88vh, 680px);
+    box-shadow: 0 30px 70px rgba(12, 22, 52, 0.32);
+    animation: modal-pop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .modal-handle { display: none; }
+}
+@keyframes modal-pop {
+  from { transform: translateY(16px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 @keyframes modal-up {
   from { transform: translateY(100%); }
@@ -946,7 +1106,22 @@ const goBack = useGoBack('/profile')
   justify-content: center;
 }
 .modal-close:hover { background: rgba(205, 240, 232, 0.96); }
-.modal-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
+.modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 18px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #c4d3e6 transparent;
+}
+.modal-body::-webkit-scrollbar { width: 6px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb {
+  background: #c4d3e6;
+  border-radius: 100px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover { background: #a7bcd6; }
 .modal-footer {
   padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
   border-top: 1px solid #dfe8f3;
@@ -1187,7 +1362,12 @@ const goBack = useGoBack('/profile')
   box-shadow: 0 18px 30px rgba(58, 87, 206, 0.34);
   filter: saturate(1.04);
 }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: progress;
+  box-shadow: none;
+  filter: none;
+}
 .btn-primary svg { width: 14px; height: 14px; }
 
 .dc-doc,
@@ -1217,20 +1397,23 @@ const goBack = useGoBack('/profile')
   }
 
   .dc-body {
-    padding: 0 18px;
-  }
-
-  .dc-hero {
-    padding: 28px 24px 24px;
-  }
-
-  .dc-h1 {
-    font-size: 36px;
+    padding: 8px 18px 0;
   }
 
   .dc-cats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dc-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 22px;
+  }
+  .dc-hero-art {
+    display: none;
   }
 }
 
@@ -1239,8 +1422,23 @@ const goBack = useGoBack('/profile')
     font-size: 18px;
   }
 
+  .dc-hero {
+    padding: 22px 20px;
+  }
+
   .dc-h1 {
-    font-size: 30px;
+    font-size: 32px;
+  }
+  .dc-h1-count {
+    font-size: 22px;
+    vertical-align: 6px;
+  }
+
+  .dc-search-row {
+    gap: 8px;
+  }
+  .dc-filter-btn {
+    padding: 12px 14px;
   }
 
   .hero-stats {

@@ -11,74 +11,98 @@
       </template>
     </WebTopNav>
 
-    <!-- Inline expanding search (navbar-style) -->
-    <div class="sp-shell sp-top-controls">
-      <button class="sp-back-btn" type="button" @click="goBack">
-        <span aria-hidden="true">&larr;</span>
-        Back
-      </button>
-      <h1 class="sp-title">Saved Properties</h1>
-      <button
-        class="sp-search-btn"
-        aria-label="Search"
-        @click="onToggleSearch"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="21" y2="21" />
-        </svg>
-      </button>
-    </div>
-
-    <div v-if="searchOpen" class="sp-shell sp-nav-search">
-      <input
-        ref="searchInputRef"
-        v-model="search"
-        type="text"
-        class="sp-nav-search-input"
-        placeholder="Search saved properties…"
-        @keyup.escape="searchOpen = false"
-      />
-      <button
-        v-if="search"
-        class="sp-nav-search-clear"
-        aria-label="Clear"
-        @click="search = ''"
-      >
-        ×
-      </button>
-    </div>
-
     <main class="sp-shell sp-body">
       <div class="atm-bg atm-bg-coral" />
 
       <!-- Hero -->
       <div class="sp-hero">
-        <div class="hero-greeting">Properties you've hearted</div>
-        <div class="sp-h1">
-          Saved<span class="sp-h1-count">{{ properties.length }}</span>
+        <div class="sp-hero-copy">
+          <div class="hero-greeting">Properties you've hearted</div>
+          <div class="sp-h1">
+            Saved<span class="sp-h1-count">{{ properties.length }}</span>
+          </div>
+          <div class="hero-stats">
+            <span><span class="stat-num teal">{{ countPassportReady }}</span>passport ready</span>
+            <span class="stat-sep" />
+            <span><span class="stat-num coral">{{ countPriceChanged }}</span>price changes</span>
+            <span class="stat-sep" />
+            <span><span class="stat-num teal">{{ countActiveOwners }}</span>owner active</span>
+          </div>
         </div>
-        <div class="hero-stats">
-          <span><span class="stat-num teal">{{ countPassportReady }}</span>passport ready</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num coral">{{ countPriceChanged }}</span>price changes</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num">{{ countActiveOwners }}</span>owner active</span>
+        <div class="sp-hero-art">
+          <div class="sp-hero-frame">
+            <img src="/welcome-house.png" alt="" />
+            <span class="sp-hero-badge"><span class="dot" />Your saved homes</span>
+          </div>
         </div>
       </div>
 
-      <!-- Filter chips -->
-      <div class="sp-filter-row">
-        <button
-          v-for="chip in filterChips"
-          :key="chip.value"
-          class="sp-chip"
-          :class="{ active: activeFilter === chip.value }"
-          @click="activeFilter = chip.value"
-        >
-          {{ chip.label }}
-          <span class="sp-chip-num">{{ chip.count }}</span>
-        </button>
+      <!-- Controls: filter chips + sort / view toggle -->
+      <div class="sp-controls">
+        <div class="sp-filter-row">
+          <button
+            v-for="chip in filterChips"
+            :key="chip.value"
+            class="sp-chip"
+            :class="{ active: activeFilter === chip.value }"
+            @click="activeFilter = chip.value"
+          >
+            <span v-if="chip.icon" class="sp-chip-ic" v-html="chip.icon" />
+            {{ chip.label }}
+            <span class="sp-chip-num">{{ chip.count }}</span>
+          </button>
+        </div>
+
+        <div class="sp-controls-right">
+          <div class="sp-sort">
+            <div v-if="sortOpen" class="sp-sort-backdrop" @click="sortOpen = false" />
+            <button class="sp-sort-btn" type="button" @click="sortOpen = !sortOpen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="4" y1="7" x2="14" y2="7" /><line x1="4" y1="12" x2="11" y2="12" /><line x1="4" y1="17" x2="8" y2="17" />
+                <polyline points="16 9 19 6 22 9" /><line x1="19" y1="6" x2="19" y2="18" />
+              </svg>
+              {{ sortLabels[sortMode] }}
+              <svg class="sp-sort-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div v-if="sortOpen" class="sp-sort-menu">
+              <button
+                v-for="opt in sortOptions"
+                :key="opt.value"
+                class="sp-sort-opt"
+                :class="{ active: sortMode === opt.value }"
+                @click="sortMode = opt.value; sortOpen = false"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="sp-view-toggle">
+            <button
+              class="sp-view-btn"
+              :class="{ active: viewMode === 'grid' }"
+              aria-label="Grid view"
+              @click="viewMode = 'grid'"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+            </button>
+            <button
+              class="sp-view-btn"
+              :class="{ active: viewMode === 'list' }"
+              aria-label="List view"
+              @click="viewMode = 'list'"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -89,10 +113,10 @@
         No saved properties yet
       </div>
 
-      <!-- 2-up grid -->
-      <div v-else class="sp-grid">
+      <!-- 2-up grid / list -->
+      <div v-else class="sp-grid" :class="`view-${viewMode}`">
         <article
-          v-for="item in filteredProperties"
+          v-for="item in sortedProperties"
           :key="item.id"
           class="sp-tile"
           @click="navigateTo(`/property/${item.id}`)"
@@ -151,6 +175,8 @@
         </article>
       </div>
     </main>
+
+    <SiteFooter />
   </div>
 </template>
 
@@ -158,18 +184,29 @@
 import { usePropertyActions } from '~/composables/usePropertyActions'
 import PropertyImage from '~/components/property/PropertyImage.vue'
 import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({ middleware: 'auth' })
 
-const router = useRouter()
 const search = ref('')
 const loading = ref(true)
 const properties = ref<any[]>([])
 type FilterValue = 'all' | 'passport' | 'price' | 'recent'
 
 const activeFilter = ref<FilterValue>('all')
-const searchOpen = ref(false)
-const searchInputRef = ref<HTMLInputElement | null>(null)
+
+type SortValue = 'newest' | 'oldest' | 'price-high' | 'price-low'
+const sortMode = ref<SortValue>('newest')
+const sortOpen = ref(false)
+const viewMode = ref<'grid' | 'list'>('grid')
+
+const sortOptions: { value: SortValue; label: string }[] = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+  { value: 'price-high', label: 'Price: high to low' },
+  { value: 'price-low', label: 'Price: low to high' },
+]
+const sortLabels = Object.fromEntries(sortOptions.map((o) => [o.value, o.label])) as Record<SortValue, string>
 
 const { fetchSavedProperties } = usePropertyActions()
 
@@ -180,18 +217,6 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
-function goBack() {
-  router.back()
-}
-
-async function onToggleSearch() {
-  searchOpen.value = !searchOpen.value
-  if (searchOpen.value) {
-    await nextTick()
-    searchInputRef.value?.focus?.()
-  }
-}
 
 function onUnsave(item: any) {
   // Optimistic remove from local list — wire to backend later
@@ -251,12 +276,25 @@ const countActiveOwners = computed(
   () => properties.value.filter(ownerActive).length,
 )
 
-const filterChips = computed<{ value: FilterValue; label: string; count: number }[]>(() => [
+const ICON_PASSPORT =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.6"/><line x1="9" y1="16" x2="15" y2="16"/></svg>'
+const ICON_PRICE =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6.5C16 5 14.7 4 13 4c-2 0-3.4 1.3-3.4 3 0 3.6 6.4 2.4 6.4 6 0 1.8-1.6 3-3.6 3-1.9 0-3.4-1-3.4-2.7"/><line x1="6" y1="11" x2="13" y2="11"/></svg>'
+const ICON_OWNER =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/></svg>'
+
+const filterChips = computed<{ value: FilterValue; label: string; count: number; icon?: string }[]>(() => [
   { value: 'all', label: 'All', count: properties.value.length },
-  { value: 'passport', label: 'Passport ready', count: countPassportReady.value },
-  { value: 'price', label: 'Price changed', count: countPriceChanged.value },
-  { value: 'recent', label: 'Owner active', count: countActiveOwners.value },
+  { value: 'passport', label: 'Passport ready', count: countPassportReady.value, icon: ICON_PASSPORT },
+  { value: 'price', label: 'Price changed', count: countPriceChanged.value, icon: ICON_PRICE },
+  { value: 'recent', label: 'Owner active', count: countActiveOwners.value, icon: ICON_OWNER },
 ])
+
+function listedTime(item: any): number {
+  const d = item.listedAt ?? item.createdAt ?? item.savedAt
+  const t = d ? new Date(d).getTime() : NaN
+  return Number.isFinite(t) ? t : 0
+}
 
 const filteredProperties = computed(() => {
   let list = properties.value
@@ -273,6 +311,21 @@ const filteredProperties = computed(() => {
       .includes(q),
   )
 })
+
+const sortedProperties = computed(() => {
+  const list = [...filteredProperties.value]
+  switch (sortMode.value) {
+    case 'oldest':
+      return list.sort((a, b) => listedTime(a) - listedTime(b))
+    case 'price-high':
+      return list.sort((a, b) => Number(b.estimatedPrice || 0) - Number(a.estimatedPrice || 0))
+    case 'price-low':
+      return list.sort((a, b) => Number(a.estimatedPrice || 0) - Number(b.estimatedPrice || 0))
+    case 'newest':
+    default:
+      return list.sort((a, b) => listedTime(b) - listedTime(a))
+  }
+})
 </script>
 
 <style scoped>
@@ -283,13 +336,18 @@ const filteredProperties = computed(() => {
   --fx-text: #1f2b3f;
   --fx-panel-border: rgba(193, 215, 237, 0.72);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   position: relative;
-  padding-bottom: 34px;
+  display: flex;
+  flex-direction: column;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* match landing-page cream navbar on this page */
+.sp-page :deep(.webtop-nav) {
+  background: rgba(243, 242, 239, 0.86);
+  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
 }
 
 .mesh {
@@ -307,9 +365,9 @@ const filteredProperties = computed(() => {
 .ambient {
   position: fixed;
   border-radius: 999px;
-  filter: blur(44px);
+  filter: blur(60px);
   pointer-events: none;
-  opacity: 0.24;
+  opacity: 0.1;
 }
 
 .ambient-a {
@@ -354,100 +412,12 @@ const filteredProperties = computed(() => {
   box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
 }
 
-.sp-top-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 18px;
-}
-
-.sp-back-btn {
-  border: 1px solid #d4dfeb;
-  background: #fff;
-  color: #1f2b3f;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 9px 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.sp-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  color: #10263d;
-  letter-spacing: -0.4px;
-  flex: 1;
-}
-
-.sp-search-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(235, 245, 255, 0.92) 100%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #143047;
-  flex-shrink: 0;
-}
-
-.sp-search-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.sp-nav-search {
-  margin: 8px auto 10px;
-  padding: 0;
-  position: relative;
-  z-index: 2;
-}
-.sp-nav-search-input {
-  width: 100%;
-  background: #f8fbff;
-  border: 1px solid #d9e4f0;
-  border-radius: 14px;
-  padding: 11px 38px 11px 14px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  color: #15273d;
-  outline: none;
-}
-.sp-nav-search-input:focus {
-  border-color: #7da7cf;
-}
-.sp-nav-search-clear {
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 999px;
-  background: #e8edf3;
-  color: #4d5d72;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 .sp-body {
   position: relative;
   z-index: 1;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0;
+  padding-top: 8px;
+  flex: 1;
+  padding-bottom: 28px;
 }
 
 .atm-bg {
@@ -466,98 +436,271 @@ const filteredProperties = computed(() => {
 .sp-hero {
   margin-top: 8px;
   border-radius: 28px;
-  padding: 24px 18px 20px;
-  border: 1px solid rgba(173, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 42px rgba(18, 55, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 30px 30px 28px;
+  border: 1px solid rgba(40, 42, 96, 0.6);
+  background: linear-gradient(145deg, #1b1b4b 0%, #15153c 55%, #191641 100%);
+  box-shadow: 0 20px 48px rgba(18, 24, 64, 0.28);
   position: relative;
   z-index: 1;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.sp-hero-copy {
+  position: relative;
+  z-index: 1;
+}
+.sp-hero-art {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+}
+.sp-hero-art::before {
+  content: '';
+  position: absolute;
+  inset: -30% -20%;
+  background: radial-gradient(circle at 60% 50%, rgba(46, 198, 182, 0.28) 0%, rgba(46, 198, 182, 0) 64%);
+  pointer-events: none;
+}
+.sp-hero-frame {
+  position: relative;
+  z-index: 1;
+  width: 248px;
+  max-width: 42vw;
+  aspect-ratio: 16 / 10;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 1px;
+  background: linear-gradient(150deg, rgba(46, 198, 182, 0.65), rgba(255, 255, 255, 0.08) 45%, rgba(95, 139, 255, 0.5));
+  box-shadow:
+    0 22px 44px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.sp-hero-frame img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 19px;
+}
+.sp-hero-frame::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 19px;
+  background: linear-gradient(180deg, rgba(21, 21, 60, 0) 55%, rgba(21, 21, 60, 0.45) 100%);
+  pointer-events: none;
+}
+.sp-hero-badge {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(10, 12, 38, 0.55);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+.sp-hero-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2ec6b6;
+  box-shadow: 0 0 0 3px rgba(46, 198, 182, 0.25);
 }
 .hero-greeting {
   font-size: 11px;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: #70839c;
-  font-weight: 700;
-  margin-bottom: 4px;
+  color: #4fd6c8;
+  font-weight: 800;
+  margin-bottom: 6px;
 }
 .sp-h1 {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 34px;
-  font-weight: 750;
-  color: #10263d;
-  letter-spacing: -0.9px;
-  line-height: 1.06;
-  margin-bottom: 12px;
+  font-size: 40px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  line-height: 1.04;
+  margin-bottom: 16px;
 }
 .sp-h1-count {
   display: inline-block;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
-  color: #067a74;
-  vertical-align: 6px;
-  margin-left: 6px;
+  color: #2ec6b6;
+  vertical-align: 8px;
+  margin-left: 8px;
 }
 .hero-stats {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: rgba(229, 255, 248, 0.92);
-  border: 1px solid rgba(0, 161, 154, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 9px 16px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: #50637a;
+  color: #aeb6d6;
 }
-.hero-stats .stat-num { color: #17314a; font-weight: 800; margin-right: 4px; }
-.hero-stats .stat-num.teal { color: #067a74; }
-.hero-stats .stat-num.coral { color: #b85b36; }
-.hero-stats .stat-sep { width: 4px; height: 4px; border-radius: 50%; background: #9ab0c9; display: inline-block; }
+.hero-stats .stat-num { color: #fff; font-weight: 800; margin-right: 4px; }
+.hero-stats .stat-num.teal { color: #2ec6b6; }
+.hero-stats .stat-num.coral { color: #ff8b5a; }
+.hero-stats .stat-sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); display: inline-block; }
 
-.sp-filter-row {
+.sp-controls {
   display: flex;
-  gap: 8px;
-  padding: 14px 2px 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 2px 18px;
   position: relative;
   z-index: 1;
 }
+.sp-filter-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+  flex: 1;
+}
 .sp-filter-row::-webkit-scrollbar { display: none; }
 .sp-chip {
-  background: rgba(255, 255, 255, 0.85);
+  background: #fff;
   color: #4c627b;
   border: 1px solid #d6e3f0;
   border-radius: 100px;
-  padding: 8px 13px;
-  font-size: 12.5px;
+  padding: 9px 15px;
+  font-size: 13px;
   font-weight: 700;
   font-family: inherit;
   white-space: nowrap;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
   flex-shrink: 0;
   transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.sp-chip:hover { border-color: #b9d5ea; }
+.sp-chip-ic { display: inline-flex; }
+.sp-chip-ic :deep(svg) { width: 15px; height: 15px; display: block; }
 .sp-chip.active {
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
   color: #fff;
   border-color: transparent;
   box-shadow: 0 10px 20px rgba(48, 98, 214, 0.24);
 }
 .sp-chip-num {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
+  color: #2ec6b6;
+}
+.sp-chip.active .sp-chip-num { color: rgba(255, 255, 255, 0.85); }
+
+.sp-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.sp-sort {
+  position: relative;
+}
+.sp-sort-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+}
+.sp-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #d6e3f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2b3c56;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sp-sort-btn:hover { border-color: #b9d5ea; }
+.sp-sort-btn svg { width: 16px; height: 16px; }
+.sp-sort-caret { width: 14px !important; height: 14px !important; color: #7388a1; }
+.sp-sort-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10;
+  min-width: 190px;
+  background: #fff;
+  border: 1px solid #e2ecf6;
+  border-radius: 14px;
+  box-shadow: 0 16px 32px rgba(21, 58, 95, 0.16);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sp-sort-opt {
+  text-align: left;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4c627b;
+  padding: 9px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.sp-sort-opt:hover { background: #f1f7fd; color: #17314a; }
+.sp-sort-opt.active { background: rgba(0, 161, 154, 0.1); color: #067a74; }
+
+.sp-view-toggle {
+  display: inline-flex;
+  gap: 2px;
+  background: #fff;
+  border: 1px solid #d6e3f0;
+  border-radius: 12px;
+  padding: 3px;
+}
+.sp-view-btn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   color: #8aa0b8;
 }
-.sp-chip.active .sp-chip-num { color: rgba(255, 255, 255, 0.7); }
+.sp-view-btn svg { width: 17px; height: 17px; }
+.sp-view-btn.active {
+  background: rgba(0, 161, 154, 0.12);
+  color: #067a74;
+}
 
 .sp-empty {
   text-align: center;
@@ -621,9 +764,10 @@ const filteredProperties = computed(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #ff8b5a;
+  color: #ff4d6d;
+  box-shadow: 0 4px 10px rgba(16, 27, 43, 0.16);
 }
-.sp-heart svg { width: 14px; height: 14px; fill: #ff8b5a; }
+.sp-heart svg { width: 15px; height: 15px; fill: #ff4d6d; }
 
 .sp-status {
   position: absolute;
@@ -643,9 +787,9 @@ const filteredProperties = computed(() => {
 }
 .sp-status.passport-ready { background: linear-gradient(135deg, #1f4b43, #0f2e29); }
 .sp-status.no-passport {
-  background: rgba(255, 255, 255, 0.92);
-  color: #4a5868;
-  border-color: #d9e4f0;
+  background: rgba(20, 27, 56, 0.82);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 .sp-status svg { width: 8px; height: 8px; }
 
@@ -672,7 +816,7 @@ const filteredProperties = computed(() => {
 }
 .sp-priceflag.priceflag--neutral {
   background: rgba(255, 255, 255, 0.95);
-  color: #4a5868;
+  color: #067a74;
 }
 .sp-flag-ic { font-size: 10px; }
 
@@ -698,28 +842,62 @@ const filteredProperties = computed(() => {
   letter-spacing: -0.3px;
 }
 
-@media (min-width: 768px) {
-  .sp-hero {
-    padding: 28px 24px 24px;
-  }
+/* List view: single-column horizontal tiles */
+.sp-grid.view-list {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.sp-grid.view-list .sp-tile {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+}
+.sp-grid.view-list .sp-photo {
+  width: 168px;
+  flex-shrink: 0;
+  aspect-ratio: 16 / 11;
+}
+.sp-grid.view-list .sp-info {
+  flex: 1;
+  padding: 0;
+}
 
-  .sp-grid {
+@media (min-width: 768px) {
+  .sp-grid.view-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 430px) {
-  .sp-title {
-    font-size: 18px;
+@media (max-width: 640px) {
+  .sp-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px 20px;
   }
+  .sp-hero-art {
+    display: none;
+  }
+  .sp-h1 { font-size: 34px; }
+  .sp-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sp-controls-right {
+    justify-content: space-between;
+  }
+  .sp-grid.view-list .sp-photo {
+    width: 124px;
+  }
+}
 
+@media (max-width: 430px) {
   .sp-h1 {
     font-size: 30px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sp-search-btn,
   .sp-tile,
   .sp-chip {
     transition: none;

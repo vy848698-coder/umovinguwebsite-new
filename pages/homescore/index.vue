@@ -1,6 +1,5 @@
 <template>
   <div class="hs-root">
-    <div class="ambient ambient-a" :style="ambientAStyle" />
     <div class="ambient ambient-b" :style="ambientBStyle" />
     <div class="mesh" />
 
@@ -238,11 +237,6 @@ const mobileNavOpen = ref(false)
 // ── Parallax background blobs ────────────────────────────────────────
 const scrollY = ref(0)
 
-const ambientAStyle = computed(() => ({
-  transform: `translateY(${scrollY.value * 0.28}px) translateX(${scrollY.value * 0.06}px)`,
-  transition: 'transform 0.12s linear',
-}))
-
 const ambientBStyle = computed(() => ({
   transform: `translateY(${scrollY.value * 0.14}px)`,
   transition: 'transform 0.12s linear',
@@ -356,7 +350,6 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   min-height: 100dvh;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.08), transparent 34%),
     radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.05), transparent 30%),
     linear-gradient(180deg, #faf7f0 0%, #f5f1e8 46%, #f3efe6 100%);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -376,14 +369,6 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   border-radius: 999px;
   filter: blur(48px);
   opacity: 0.16;
-}
-
-.ambient-a {
-  width: 300px;
-  height: 300px;
-  left: -100px;
-  top: 120px;
-  background: #00a19a;
 }
 
 .ambient-b {
@@ -416,7 +401,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(242, 239, 230, 0.86);
+  background: rgba(250, 247, 240, 0.86);
   border-bottom: 1px solid rgba(35, 29, 69, 0.07);
   backdrop-filter: blur(14px);
 }

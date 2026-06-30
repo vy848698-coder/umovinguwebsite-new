@@ -1,21 +1,25 @@
 <template>
-  <div class="lg-page mobile-container">
-    <div class="lg-nav-bar">
-      <button class="lg-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="lg-nav-title">Cookie Policy</div>
-      <div style="width: 38px" />
-    </div>
+  <div class="lg-page">
+    <div class="ambient ambient-a" />
+    <div class="ambient ambient-b" />
+    <div class="mesh" />
+
+    <WebTopNav>
+      <template #actions>
+        <button class="lg-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
+        <button class="lg-quick-btn solid" type="button" @click="navigateTo('/profile/settings')">Settings</button>
+      </template>
+    </WebTopNav>
 
     <main class="lg-body">
-      <div class="atm-bg teal" />
+      <button class="lg-back-btn" type="button" @click="goBack">
+        <span aria-hidden="true">&larr;</span>
+        Back
+      </button>
 
       <div class="lg-hero">
         <div class="lg-greeting">No tracking nonsense</div>
-        <div class="lg-h1">Cookie Policy</div>
+        <h1 class="lg-h1">Cookie Policy</h1>
         <div class="lg-meta">Last updated March 2025 · No advertising · ICO ZC111880</div>
       </div>
 
@@ -103,95 +107,239 @@
           fresh choice.
         </p>
 
-        <p class="lg-footer">umovingu Limited · ICO registration ZC111880</p>
+        <p class="lg-fineprint">umovingu Limited · ICO registration ZC111880</p>
       </div>
     </main>
+
+    <!-- ───────────────────────────── FOOTER ───────────────────────────── -->
+    <footer class="lg-site-foot">
+      <div class="lg-foot-grid">
+        <div class="lg-foot-intro">
+          <div class="lg-foot-brand">
+            <img src="/logo-new.png" alt="" class="lg-foot-logo" />
+            <strong>umovingu</strong>
+          </div>
+          <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
+          <div class="lg-foot-chips">
+            <span>OPDA standard</span>
+            <span>Property Redress Scheme</span>
+            <span>HM Land Registry</span>
+          </div>
+        </div>
+
+        <div class="lg-foot-col">
+          <h5>Product</h5>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Property Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+        </div>
+
+        <div class="lg-foot-col">
+          <h5>Account</h5>
+          <button type="button" @click="navigateTo('/profile')">Profile</button>
+          <button type="button" @click="navigateTo('/profile/settings')">Settings</button>
+          <button type="button" @click="navigateTo('/profile/support')">Support</button>
+        </div>
+
+        <div class="lg-foot-col">
+          <h5>Legal</h5>
+          <button type="button" @click="navigateTo('/legal/terms')">Terms of Service</button>
+          <button type="button" @click="navigateTo('/legal/privacy')">Privacy Policy</button>
+          <button type="button" @click="navigateTo('/legal/cookies')">Cookie preferences</button>
+        </div>
+      </div>
+      <div class="lg-foot-bottom">© 2026 umovingu. All rights reserved.</div>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import WebTopNav from '~/components/core/WebTopNav.vue'
+
 definePageMeta({ title: 'Cookie Policy · UMovingU' })
+
 const goBack = useGoBack('/profile/settings')
 </script>
 
 <style scoped>
 .lg-page {
+  --fx-aqua: #00a19a;
+  --fx-blue: #2f9bdf;
+  --fx-indigo: #4f4ff2;
   min-height: 100dvh;
-  background: #fafaf8;
-  color: #0e2840;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
+    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  color: #1f2b3f;
   position: relative;
-  padding-bottom: 32px;
+  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
-.lg-nav-bar {
-  display: flex;
-  align-items: center;
-  padding: 10px 22px 8px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
-  position: relative;
-  z-index: 2;
+
+.mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image:
+    linear-gradient(rgba(90, 126, 170, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 126, 170, 0.7) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
 }
-.lg-nav-icon-btn {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #0e2840;
-  flex-shrink: 0;
+.ambient {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(44px);
+  pointer-events: none;
+  opacity: 0.24;
+}
+.ambient-a { width: 260px; height: 260px; top: 120px; left: -60px; background: rgba(0, 161, 154, 0.3); }
+.ambient-b { width: 280px; height: 280px; top: 160px; right: -80px; background: rgba(95, 139, 255, 0.26); }
+
+/* ── Nav action buttons ─────────────────────────────────── */
+.lg-quick-btn {
+  border-radius: 12px;
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
   font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 14px;
 }
-.lg-nav-icon-btn:hover { background: #f0f2f1; }
-.lg-nav-icon-btn svg { width: 18px; height: 18px; }
-.lg-nav-title { flex: 1; text-align: center; font-size: 16px; font-weight: 800; color: #0e2840; letter-spacing: -0.4px; }
+.lg-quick-btn.solid {
+  border: 1px solid transparent;
+  color: #fff;
+  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+}
 
-.lg-body { position: relative; }
-.atm-bg { position: absolute; top: 0; left: 0; right: 0; height: 240px; pointer-events: none; z-index: 0; }
-.atm-bg.teal { background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(0, 161, 154, 0.12), transparent 65%); }
+/* ── Body ───────────────────────────────────────────────── */
+.lg-body {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 22px 56px;
+}
+.lg-back-btn {
+  border: 1px solid #d4dfeb;
+  background: #fff;
+  color: #1f2b3f;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 22px;
+}
 
-.lg-hero { padding: 8px 22px 20px; position: relative; z-index: 1; }
+/* ── Hero ───────────────────────────────────────────────── */
+.lg-hero { margin-bottom: 24px; }
 .lg-greeting {
-  font-family: 'Instrument Serif', 'Times New Roman', Georgia, serif;
-  font-style: italic;
-  font-size: 16px;
-  color: #1f7a66;
-  margin-bottom: 4px;
+  font-size: 12px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--fx-aqua);
+  font-weight: 800;
+  margin-bottom: 8px;
 }
-.lg-h1 { font-size: 28px; font-weight: 800; color: #0e2840; letter-spacing: -1px; line-height: 1.05; }
-.lg-meta { font-size: 11.5px; font-weight: 700; color: #4a5868; margin-top: 6px; }
+.lg-h1 {
+  font-size: 42px;
+  font-weight: 750;
+  color: #10263d;
+  letter-spacing: -1.3px;
+  line-height: 1.03;
+  margin: 0;
+}
+.lg-meta {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b6f88;
+  margin-top: 12px;
+}
 
-.lg-content { position: relative; z-index: 1; padding: 0 22px; max-width: 720px; margin: 0 auto; }
-.lg-content h2 { font-size: 14px; font-weight: 800; color: #0e2840; letter-spacing: -0.3px; margin: 22px 0 8px; }
-.lg-content p { font-size: 13px; font-weight: 500; color: #4a5868; line-height: 1.6; margin-bottom: 10px; }
-.lg-content ul { margin: 0 0 10px 18px; padding: 0; }
-.lg-content li { font-size: 13px; font-weight: 500; color: #4a5868; line-height: 1.55; margin-bottom: 6px; }
-.lg-content a { color: #1f7a66; font-weight: 700; text-decoration: none; border-bottom: 1px dashed #1f7a66; }
-.lg-content strong { color: #0e2840; font-weight: 800; }
+/* ── Content ────────────────────────────────────────────── */
+.lg-content {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(173, 201, 231, 0.5);
+  border-radius: 22px;
+  padding: 28px 30px;
+  box-shadow: 0 18px 48px rgba(18, 55, 88, 0.08);
+}
+.lg-content h2 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #10263d;
+  letter-spacing: -0.4px;
+  margin: 28px 0 10px;
+}
+.lg-content h2:first-child { margin-top: 0; }
+.lg-content p {
+  font-size: 15px;
+  font-weight: 500;
+  color: #4a5868;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.lg-content ul { margin: 0 0 12px 20px; padding: 0; }
+.lg-content li {
+  font-size: 15px;
+  font-weight: 500;
+  color: #4a5868;
+  line-height: 1.65;
+  margin-bottom: 8px;
+}
+.lg-content a {
+  color: #067a74;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(6, 122, 116, 0.4);
+}
+.lg-content a:hover { border-bottom-color: #067a74; }
+.lg-content strong { color: #10263d; font-weight: 800; }
 .lg-content code {
   background: #f1f9f4;
-  color: #1f7a66;
+  color: #067a74;
   font-family: 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 11.5px;
+  font-size: 12.5px;
   padding: 1px 6px;
   border-radius: 6px;
 }
+.lg-fineprint {
+  margin-top: 30px !important;
+  padding-top: 18px;
+  border-top: 1px solid #e8eceb;
+  font-size: 12.5px !important;
+  color: #8a95a0 !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
 
+/* ── Cookie table ───────────────────────────────────────── */
 .lg-table {
   background: #fff;
   border: 1px solid #e8eceb;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  margin: 12px 0 8px;
-  font-size: 12px;
+  margin: 14px 0 10px;
+  font-size: 13px;
 }
 .lg-table-row {
   display: grid;
   grid-template-columns: 1.2fr 1fr 2.4fr 1fr;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 12px 14px;
   border-bottom: 1px solid #f0f2f1;
   align-items: start;
 }
@@ -200,11 +348,11 @@ const goBack = useGoBack('/profile/settings')
   background: #f5f4f0;
   font-weight: 800;
   color: #4a5868;
-  font-size: 10px;
+  font-size: 10.5px;
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
-.lg-table-row > div { color: #4a5868; line-height: 1.45; }
+.lg-table-row > div { color: #4a5868; line-height: 1.5; }
 .pill {
   display: inline-block;
   font-size: 10px;
@@ -214,34 +362,82 @@ const goBack = useGoBack('/profile/settings')
   border-radius: 100px;
   text-transform: uppercase;
 }
-.pill.ess { background: #e2f1ea; color: #1f7a66; }
+.pill.ess { background: #e2f1ea; color: #067a74; }
 .pill.ana { background: #fdf4dc; color: #6f4d14; }
-
 .lg-note {
-  font-size: 11.5px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
-  color: #1f7a66 !important;
-}
-.lg-footer {
-  margin-top: 28px;
-  padding-top: 14px;
-  border-top: 1px solid #e8eceb;
-  font-size: 11px !important;
-  color: #8a95a0 !important;
-  font-weight: 600 !important;
-  text-align: center;
+  color: #067a74 !important;
 }
 
-@media (max-width: 480px) {
-  .lg-table { font-size: 11px; }
-  .lg-table-row {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
+/* ── Footer ─────────────────────────────────────────────── */
+.lg-site-foot {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(155deg, #1a1838 0%, #15132e 100%);
+  color: #fff;
+  padding: 56px 0 28px;
+}
+.lg-foot-grid,
+.lg-foot-bottom {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+.lg-foot-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.lg-foot-brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+.lg-foot-logo { height: 26px; width: auto; display: block; object-fit: contain; }
+.lg-foot-brand strong { font-size: 18px; font-weight: 800; color: #fff; }
+.lg-foot-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
+.lg-foot-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.lg-foot-chips span {
+  font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 7px; padding: 5px 9px;
+}
+.lg-foot-col h5 {
+  margin: 2px 0 14px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.lg-foot-col button {
+  display: block;
+  border: 0; background: transparent;
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0; margin-bottom: 11px; cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+}
+.lg-foot-col button:hover { color: #2fe0bd; }
+.lg-foot-bottom {
+  padding-top: 22px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .lg-foot-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .lg-body { padding: 16px 14px 40px; }
+  .lg-h1 { font-size: 32px; }
+  .lg-content { padding: 22px 18px; }
+  .lg-table { font-size: 12px; }
+  .lg-table-row { grid-template-columns: 1fr; gap: 4px; }
   .lg-table-head { display: none; }
   .lg-table-row > div:nth-child(1)::before { content: 'Cookie · '; color: #8a95a0; font-weight: 800; }
-  .lg-table-row > div:nth-child(2)::before { content: ''; }
   .lg-table-row > div:nth-child(3)::before { content: 'Purpose · '; color: #8a95a0; font-weight: 800; }
   .lg-table-row > div:nth-child(4)::before { content: 'Duration · '; color: #8a95a0; font-weight: 800; }
+  .lg-foot-grid { grid-template-columns: 1fr; gap: 22px; }
+  .lg-foot-grid, .lg-foot-bottom { padding-left: 16px; padding-right: 16px; }
 }
 </style>
