@@ -680,9 +680,7 @@ onMounted(async () => {
   --fx-indigo: #4f4ff2;
   --fx-text: #1f2b3f;
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   position: relative;
   display: flex;
@@ -873,10 +871,10 @@ onMounted(async () => {
 .cal-cell.outside:hover { background: #f3f6fb; }
 .cal-cell.today .cal-cell-num { color: #067a74; }
 .cal-cell.selected {
-  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 120%);
+  background: #00a19a;
 }
 .cal-cell.selected:hover {
-  background: linear-gradient(150deg, var(--fx-aqua) 0%, var(--fx-blue) 120%);
+  background: #00a19a;
 }
 .cal-cell.selected .cal-cell-num { color: #fff; }
 .cal-cell-add {
@@ -1311,10 +1309,11 @@ onMounted(async () => {
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 .btn-primary svg { width: 14px; height: 14px; }
 
-/* match the page's light-blue background on the navbar */
+/* match the explore page's cream background on the navbar */
 .cal-page :deep(.webtop-nav) {
-  background: rgba(247, 251, 255, 0.86);
-  border-bottom: 1px solid rgba(40, 95, 150, 0.08);
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
 
 .cal-quick-btn {
@@ -1331,8 +1330,8 @@ onMounted(async () => {
 .cal-quick-btn.solid {
   border: 1px solid transparent;
   color: #fff;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
-  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+  background: #00a19a;
+  box-shadow: 0 12px 24px rgba(0, 161, 154, 0.2);
 }
 
 /* ── Footer ─────────────────────────────────────────────── */
@@ -1359,11 +1358,9 @@ onMounted(async () => {
   padding-bottom: 36px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-.cal-footer-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cal-footer-brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px; }
 .cal-footer-logo {
-  height: 38px; width: 38px; display: block; object-fit: contain; flex-shrink: 0;
-  background: #fff; border-radius: 50%; padding: 3px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  height: 32px; width: auto; display: block; object-fit: contain; flex-shrink: 0;
 }
 .cal-footer-brand strong { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
 .cal-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }

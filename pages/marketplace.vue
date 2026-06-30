@@ -1,7 +1,5 @@
 <template>
   <div class="marketplace-root">
-    <div class="ambient ambient-a" />
-    <div class="ambient ambient-b" />
     <div class="mesh" />
 
     <header class="marketplace-web-nav">
@@ -412,40 +410,15 @@ async function submitNotify() {
   min-height: 100dvh;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.08), transparent 34%),
-    radial-gradient(circle at 8% 14%, rgba(0, 161, 154, 0.05), transparent 30%),
     linear-gradient(180deg, #f5f1e8 0%, #f3efe6 46%, #f5f1e8 100%);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow: hidden;
   position: relative;
 }
 
-.ambient,
 .mesh {
   pointer-events: none;
   position: fixed;
-}
-
-.ambient {
-  border-radius: 999px;
-  filter: blur(48px);
-  opacity: 0.16;
-}
-
-.ambient-a {
-  width: 280px;
-  height: 280px;
-  left: -90px;
-  top: 130px;
-  background: #00a19a;
-}
-
-.ambient-b {
-  width: 320px;
-  height: 320px;
-  right: -120px;
-  top: 180px;
-  background: #2fbfb6;
 }
 
 .mesh {

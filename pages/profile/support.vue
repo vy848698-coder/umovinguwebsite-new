@@ -788,11 +788,9 @@ const faqs = [
   padding-bottom: 36px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-.hs-footer-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.hs-footer-brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px; }
 .hs-footer-logo {
-  height: 38px; width: 38px; display: block; object-fit: contain; flex-shrink: 0;
-  background: #fff; border-radius: 50%; padding: 3px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  height: 32px; width: auto; display: block; object-fit: contain; flex-shrink: 0;
 }
 .hs-footer-brand strong { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
 .hs-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
