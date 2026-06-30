@@ -363,8 +363,8 @@ watch(isLoading, async (val) => {
 }
 .chat-btn.solid {
   color: #fff;
-  background: linear-gradient(120deg, var(--chat-aqua) 0%, var(--chat-blue) 48%, var(--chat-indigo) 100%);
-  box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
+  background: #00a19a;
+  box-shadow: 0 12px 24px rgba(0, 161, 154, 0.2);
 }
 .chat-btn.ghost {
   background: #fff;
@@ -374,7 +374,7 @@ watch(isLoading, async (val) => {
 .chat-mobile-clear {
   border: 0;
   color: #fff;
-  background: linear-gradient(120deg, var(--chat-aqua) 0%, var(--chat-blue) 48%, var(--chat-indigo) 100%);
+  background: #00a19a;
 }
 
 .chat-main {

@@ -1,7 +1,5 @@
 <template>
   <div class="mp-page">
-    <div class="mp-ambient mp-ambient-a" />
-    <div class="mp-ambient mp-ambient-b" />
     <div class="mp-mesh" />
 
     <!-- ── Web nav ──────────────────────────────────────────────────── -->
@@ -290,7 +288,7 @@ onMounted(async () => {
   --fx-indigo: #4f4ff2;
   --fx-text: #1f2b3f;
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: var(--fx-text);
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
@@ -299,24 +297,6 @@ onMounted(async () => {
   overflow-x: hidden;
 }
 
-/* ── Ambient orbs ── */
-.mp-ambient {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-}
-.mp-ambient-a {
-  width: 560px; height: 560px;
-  top: -140px; left: -160px;
-  background: radial-gradient(circle, rgba(0,161,154,0.13) 0%, transparent 70%);
-}
-.mp-ambient-b {
-  width: 480px; height: 480px;
-  bottom: 10%; right: -120px;
-  background: radial-gradient(circle, rgba(90,76,240,0.11) 0%, transparent 70%);
-}
 .mp-mesh {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image: radial-gradient(rgba(0,161,154,0.04) 1px, transparent 1px);
@@ -326,7 +306,7 @@ onMounted(async () => {
 /* ── Web nav (shared hsw-nav block) ── */
 .hsw-nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(247,251,255,0.88);
+  background: rgba(243, 242, 239, 0.88);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(173,201,231,0.3);
 }
@@ -763,7 +743,7 @@ onMounted(async () => {
 .mp-cta-wrap { padding: 20px 0 0; }
 .cta-btn {
   width: 100%;
-  background: linear-gradient(100deg, #231d45 0%, #173f43 52%, #00a19a 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   border-radius: 18px;
