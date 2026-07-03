@@ -1,7 +1,5 @@
 <template>
   <div class="hs-root">
-    <div class="ambient ambient-b" :style="ambientBStyle" />
-    <div class="mesh" />
 
     <!-- ── Web nav ──────────────────────────────────────────────────── -->
     <header class="hs-web-nav">
@@ -225,7 +223,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import ScoreRing from '~/components/homescore/ScoreRing.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
@@ -233,21 +231,6 @@ import SiteFooter from '~/components/homescore/SiteFooter.vue'
 const route = useRoute()
 const router = useRouter()
 const mobileNavOpen = ref(false)
-
-// ── Parallax background blobs ────────────────────────────────────────
-const scrollY = ref(0)
-
-const ambientBStyle = computed(() => ({
-  transform: `translateY(${scrollY.value * 0.14}px)`,
-  transition: 'transform 0.12s linear',
-}))
-
-function onScroll() {
-  scrollY.value = window.scrollY
-}
-
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 const heroMeta = ['Free', 'Instant', 'No account needed']
 const chartBars = [38, 52, 30, 60, 44, 72, 50, 66, 40, 84, 58, 96]
@@ -349,9 +332,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   --color-border: #e7ecf2;
   min-height: 100dvh;
   color: var(--color-ink);
-  background:
-    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.05), transparent 30%),
-    linear-gradient(180deg, #faf7f0 0%, #f5f1e8 46%, #f3efe6 100%);
+  background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   /* `clip` keeps the sticky nav working (vs `hidden`, which makes this a
      scroll container and breaks position: sticky). */
@@ -401,9 +382,9 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(250, 247, 240, 0.86);
+  background: rgba(243, 242, 239, 0.88);
   border-bottom: 1px solid rgba(35, 29, 69, 0.07);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
 }
 
 .nav-inner {

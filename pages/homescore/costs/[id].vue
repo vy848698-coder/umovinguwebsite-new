@@ -1,7 +1,5 @@
 <template>
   <div class="rc-screen">
-    <div class="rc-ambient rc-ambient-a" />
-    <div class="rc-ambient rc-ambient-b" />
 
     <!-- ── Web nav ──────────────────────────────────────────────── -->
     <header class="rc-nav">
@@ -893,10 +891,7 @@ function onUpload() {
 
   min-height: 100dvh;
   color: var(--navy);
-  background:
-    radial-gradient(circle at 80% 6%, rgba(0, 161, 154, 0.1), transparent 32%),
-    radial-gradient(circle at 6% 12%, rgba(90, 76, 240, 0.07), transparent 28%),
-    linear-gradient(180deg, #ffffff 0%, #f6fbfa 48%, #ffffff 100%);
+  background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   position: relative;
@@ -931,9 +926,9 @@ function onUpload() {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(28, 43, 65, 0.07);
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
 .rc-nav-shell {
   width: min(1140px, calc(100% - 48px));

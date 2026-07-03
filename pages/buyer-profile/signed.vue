@@ -1,7 +1,5 @@
 <template>
   <div class="sn-page">
-    <div class="sn-ambient sn-ambient-a" />
-    <div class="sn-ambient sn-ambient-b" />
 
     <BuyerProfileNav back-label="My profile" @back="goView" />
 
@@ -159,7 +157,7 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sn-page {
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #231d45;
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;

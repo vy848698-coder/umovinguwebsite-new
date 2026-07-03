@@ -1,8 +1,5 @@
 <template>
   <div class="bt-root">
-    <div class="bt-ambient bt-ambient-a" />
-    <div class="bt-ambient bt-ambient-b" />
-    <div class="bt-mesh" />
 
     <!-- ── Web nav ──────────────────────────────────────────────────── -->
     <header class="hsw-nav">
@@ -809,10 +806,7 @@ function downloadFile(url: string, name: string) {
   --color-border: #e7ecf2;
   min-height: 100dvh;
   color: #231d45;
-  background:
-    radial-gradient(circle at 78% 8%, rgba(0, 161, 154, 0.1), transparent 34%),
-    radial-gradient(circle at 8% 14%, rgba(90, 76, 240, 0.08), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #f8fdfb 46%, #ffffff 100%);
+  background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: clip;
@@ -836,9 +830,9 @@ function downloadFile(url: string, name: string) {
 .hsw-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; position: relative; z-index: 2; }
 .hsw-nav {
   position: sticky; top: 0; z-index: 40;
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
 .hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 10px; color: #0d1835; cursor: pointer; font-size: 20px; font-weight: 800; flex-shrink: 0; font-family: inherit; }

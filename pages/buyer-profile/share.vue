@@ -1,7 +1,5 @@
 <template>
   <div class="sh-page">
-    <div class="sh-ambient sh-ambient-a" />
-    <div class="sh-ambient sh-ambient-b" />
 
     <BuyerProfileNav back-label="Back" @back="goBack" />
 
@@ -432,7 +430,7 @@ function goSign() { router.push('/buyer-profile/sign') }
 <style scoped>
 .sh-page {
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #231d45;
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
