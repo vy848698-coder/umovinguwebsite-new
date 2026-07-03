@@ -1,5 +1,24 @@
+// Local dev only: the backend's CORS allowlist doesn't include localhost:3000,
+// so the browser blocks direct cross-origin calls to Railway. In dev we instead
+// point apiBase at a same-origin path (`/__backend`) and let Nitro's dev server
+// proxy it to the real backend — the browser makes a same-origin request, so CORS
+// never applies. Production (Vercel) is unaffected: it keeps calling Railway
+// directly via NUXT_PUBLIC_API_BASE (Vercel's origin IS in the allowlist).
+const isDev = process.env.NODE_ENV !== 'production'
+const proxyTarget =
+  process.env.NUXT_PROXY_TARGET ||
+  'https://demo-umu-backend-production.up.railway.app'
+
 export default defineNuxtConfig({
   devtools: { enabled: false },
+
+  // Dev-only reverse proxy so local requests to `/__backend/**` are forwarded
+  // to the real backend server-side (no CORS). Not included in the prod build.
+  $development: {
+    routeRules: {
+      '/__backend/**': { proxy: `${proxyTarget}/**` },
+    },
+  },
   modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt'],
   css: ['~/assets/css/main.css'],
 
@@ -141,7 +160,12 @@ export default defineNuxtConfig({
     apiSecret: process.env.API_SECRET || '123',
     // Public keys (exposed to client-side)
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3002',
+      // In dev, default to the same-origin proxy path so browser calls avoid
+      // CORS (see $development.routeRules above). In prod, NUXT_PUBLIC_API_BASE
+      // is set to the real backend URL on Vercel.
+      apiBase:
+        process.env.NUXT_PUBLIC_API_BASE ||
+        (isDev ? '/__backend' : 'http://localhost:3002'),
       googleClientId:
         process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID ||
         '869780740735-rlucf6t174rb3dljniqfj3ri2r0kg9cj.apps.googleusercontent.com',

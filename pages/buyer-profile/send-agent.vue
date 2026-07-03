@@ -1,7 +1,5 @@
 <template>
   <div class="sa-page">
-    <div class="sa-ambient sa-ambient-a" />
-    <div class="sa-ambient sa-ambient-b" />
 
     <BuyerProfileNav back-label="Back" @back="goBack" />
 
@@ -204,7 +202,7 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sa-page {
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #231d45; width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased; position: relative; overflow-x: hidden;

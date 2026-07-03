@@ -1,6 +1,5 @@
 <template>
   <div class="marketplace-root">
-    <div class="mesh" />
 
     <header class="marketplace-web-nav">
       <div class="marketplace-web-shell nav-inner">
@@ -409,8 +408,7 @@ async function submitNotify() {
   --color-border: #dde8f3;
   min-height: 100dvh;
   color: var(--color-ink);
-  background:
-    linear-gradient(180deg, #f5f1e8 0%, #f3efe6 46%, #f5f1e8 100%);
+  background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow: hidden;
   position: relative;
@@ -442,9 +440,9 @@ async function submitNotify() {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(242, 239, 230, 0.86);
+  background: rgba(243, 242, 239, 0.88);
   border-bottom: 1px solid rgba(35, 29, 69, 0.07);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
 }
 
 .nav-inner {

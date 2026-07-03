@@ -1,8 +1,5 @@
 <template>
   <div class="learn-page">
-    <div class="ambient ambient-a" />
-    <div class="ambient ambient-b" />
-    <div class="mesh" />
 
     <WebTopNav>
       <template #actions>
@@ -404,10 +401,7 @@ function askWith(text: string) {
   min-height: 100dvh;
   color: var(--learn-ink);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background:
-    radial-gradient(circle at 8% 34%, rgba(0, 161, 154, 0.08) 0%, rgba(0, 161, 154, 0) 32%),
-    radial-gradient(circle at 92% 26%, rgba(0, 161, 154, 0.05) 0%, rgba(0, 161, 154, 0) 38%),
-    #f2efe6;
+  background: #f3f2ef;
   position: relative;
 }
 

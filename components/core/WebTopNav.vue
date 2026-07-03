@@ -88,9 +88,9 @@ watch(
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(247, 251, 255, 0.82);
-  border-bottom: 1px solid rgba(40, 95, 150, 0.1);
-  backdrop-filter: blur(14px);
+  background: rgba(243, 242, 239, 0.88);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+  backdrop-filter: blur(12px);
 }
 
 .webtop-shell {

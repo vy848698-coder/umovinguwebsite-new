@@ -1,8 +1,5 @@
 <template>
   <div class="bp-page">
-    <div class="bp-ambient bp-ambient-a" />
-    <div class="bp-ambient bp-ambient-b" />
-    <div class="bp-mesh" />
 
     <!-- ── Web nav ──────────────────────────────────────────────────── -->
     <header class="hsw-nav">
@@ -600,7 +597,7 @@ function goEdit() { router.push('/buyer-profile/build') }
 <style scoped>
 .bp-page {
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #231d45;
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
@@ -615,7 +612,7 @@ function goEdit() { router.push('/buyer-profile/build') }
 .bp-mesh { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(rgba(0,161,154,0.04) 1px, transparent 1px); background-size: 28px 28px; }
 
 /* ── Web nav ── */
-.hsw-nav { position: sticky; top: 0; z-index: 100; background: rgba(247,251,255,0.88); backdrop-filter: blur(18px); border-bottom: 1px solid rgba(173,201,231,0.3); }
+.hsw-nav { position: sticky; top: 0; z-index: 100; background: rgba(243,242,239,0.88); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(35,29,69,0.07); }
 .hsw-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; }
 .hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #10263d; background: none; border: none; cursor: pointer; flex-shrink: 0; }

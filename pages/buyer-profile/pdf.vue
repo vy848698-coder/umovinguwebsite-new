@@ -1,7 +1,5 @@
 <template>
   <div class="pv-page">
-    <div class="pv-ambient pv-ambient-a" />
-    <div class="pv-ambient pv-ambient-b" />
 
     <BuyerProfileNav back-label="Back" @back="goBack" />
 
@@ -346,7 +344,7 @@ function downloadPdf() {
 <style scoped>
 .pv-page {
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #231d45;
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;

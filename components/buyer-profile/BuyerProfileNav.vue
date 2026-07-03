@@ -37,9 +37,9 @@ defineEmits<{ (e: 'back'): void }>()
 <style scoped>
 .bpnav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(247, 251, 255, 0.88);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(173, 201, 231, 0.3);
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
 .bpnav-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; }
 .bpnav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }

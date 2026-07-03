@@ -5326,10 +5326,7 @@ watch(screen, (s) => {
    ResultDetail's internal shell lay its cards out in a two-column grid. */
 .hs-page--web {
   max-width: none;
-  background:
-    radial-gradient(circle at 80% 6%, rgba(0, 161, 154, 0.1), transparent 32%),
-    radial-gradient(circle at 6% 12%, rgba(90, 76, 240, 0.07), transparent 28%),
-    linear-gradient(180deg, #ffffff 0%, #f6fbfa 48%, #ffffff 100%);
+  background: #f3f2ef;
 }
 
 .hsw-shell {
@@ -5341,9 +5338,9 @@ watch(screen, (s) => {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(28, 43, 65, 0.08);
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
 
 .hsw-nav-inner {

@@ -1,8 +1,5 @@
 <template>
   <div class="st-page">
-    <div class="ambient ambient-a" />
-    <div class="ambient ambient-b" />
-    <div class="mesh" />
 
     <WebTopNav>
       <template #actions>

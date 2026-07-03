@@ -1,8 +1,5 @@
 <template>
   <div class="lg-page">
-    <div class="ambient ambient-a" />
-    <div class="ambient ambient-b" />
-    <div class="mesh" />
 
     <WebTopNav>
       <template #actions>
@@ -188,9 +185,7 @@ const goBack = useGoBack('/profile/settings')
   --fx-blue: #2f9bdf;
   --fx-indigo: #4f4ff2;
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 90% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #1f2b3f;
   position: relative;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

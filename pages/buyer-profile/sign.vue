@@ -1,7 +1,5 @@
 <template>
   <div class="sd-page">
-    <div class="sd-ambient sd-ambient-a" />
-    <div class="sd-ambient sd-ambient-b" />
 
     <BuyerProfileNav back-label="Back" @back="goBack" />
 
@@ -282,7 +280,7 @@ const goBack = useGoBack('/buyer-profile/pdf')
 <style scoped>
 .sd-page {
   min-height: 100dvh;
-  background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   color: #231d45;
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;

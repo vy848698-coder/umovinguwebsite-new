@@ -1,7 +1,5 @@
 <template>
   <div class="offline-root">
-    <div class="offline-ambient offline-ambient-a" />
-    <div class="offline-ambient offline-ambient-b" />
 
     <div class="offline-card">
       <div class="offline-icon">
@@ -54,10 +52,7 @@ function retry() {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background:
-    radial-gradient(circle at 80% 10%, rgba(0, 161, 154, 0.08), transparent 40%),
-    radial-gradient(circle at 10% 90%, rgba(90, 76, 240, 0.06), transparent 40%),
-    #f8fdfb;
+  background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   position: relative;
