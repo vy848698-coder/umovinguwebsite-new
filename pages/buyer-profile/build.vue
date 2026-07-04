@@ -1,5 +1,28 @@
 <template>
   <div class="bp-page">
+
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="navigateTo('/buyer-profile')">
+            My Profile
+          </button>
+        </div>
+      </div>
+    </header>
+
     <!-- Sticky header (hidden on the celebration screen) -->
     <div v-if="step <= 5" class="bp-header">
       <button class="bp-back" @click="goBack" aria-label="Back">
@@ -951,6 +974,8 @@
       </div>
     </div>
 
+    <SiteFooter />
+
     <!-- Tier upgrade drawer (Stripe checkout) -->
     <TierUpgradeDrawer
       :open="tierDrawerOpen"
@@ -969,6 +994,7 @@ import { useProfile } from '~/composables/useProfile'
 import { useKyc } from '~/composables/useKyc'
 import { useAppToast } from '~/composables/useCustomToast'
 import TierUpgradeDrawer from '~/components/buyer-profile/TierUpgradeDrawer.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 type Tier = 'BASIC' | 'VERIFIED' | 'PREMIUM'
 
@@ -976,6 +1002,16 @@ const router = useRouter()
 const { getBuyerProfile, updateBuyerProfile, publishBuyerProfile } =
   useBuyerProfile()
 const { showToast } = useAppToast()
+
+// Editorial serif for the page heading — matches the rest of the app.
+useHead({
+  link: [
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap',
+    },
+  ],
+})
 
 // step=6 is the post-publish celebration screen (matches prototype `complete`).
 const step = ref<1 | 2 | 3 | 4 | 5 | 6>(1)
@@ -2855,38 +2891,72 @@ onBeforeUnmount(() => {
  * ════════════════════════════════════════════════════════════════════════ */
 
 .bp-page {
-  background:
-    radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
-    linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
+  background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   color: #231d45;
   width: 100%;
   max-width: none;
+  min-height: 100dvh;
   margin: 0;
-  padding: 0 14px 34px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* Push the footer to the bottom so short screens (e.g. the celebration
+   step) don't leave a cream gap under it. */
+.bp-scroll { flex: 1 0 auto; }
+
+/* ── Web nav (app standard) ─────────────────────────────────────── */
+.hsw-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+.hsw-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+  margin-bottom: 20px;
+}
+.hsw-nav-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 9px; color: #231d45; cursor: pointer; font-size: 19px; font-weight: 800; letter-spacing: -0.4px; flex-shrink: 0; font-family: inherit; }
+.hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
+.hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
+.hsw-links { display: flex; gap: 4px; }
+.hsw-links button { border: 0; background: transparent; color: #5a5570; cursor: pointer; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 9px; white-space: nowrap; font-family: inherit; transition: background 0.15s, color 0.15s; }
+.hsw-links button:hover { color: #231d45; background: rgba(35, 29, 69, 0.05); }
+.hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #ececf2; background: #fff; color: #231d45; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
+.hsw-back:hover { border-color: #00a19a; transform: translateY(-1px); }
+@media (max-width: 900px) {
+  .hsw-links { display: none; }
+  .hsw-shell { width: calc(100% - 32px); }
+  .hsw-nav-inner { min-height: 60px; }
 }
 
-/* ── Top header → prototype top-nav + eyebrow pill ── */
+/* ── Page header → clean title row + eyebrow pill ── */
 .bp-header {
-  width: min(100%, 980px);
+  width: min(980px, calc(100% - 40px));
   margin: 0 auto;
-  background: rgba(249, 252, 255, 0.92);
-  border: 1px solid rgba(187, 211, 235, 0.58);
-  border-radius: 20px;
-  padding: 14px 18px 6px;
-  padding-top: calc(14px + env(safe-area-inset-top));
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 4px 4px 0;
+  display: flex;
   align-items: center;
-  box-shadow:
-    0 12px 28px rgba(17, 52, 88, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(8px);
+  gap: 14px;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 .bp-header-body {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
 }
 .bp-header-title {
-  display: none;
+  display: block;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: #231d45;
+  line-height: 1;
 }
 .bp-header-sub {
   display: inline-flex; align-items: center; gap: 7px;
@@ -2899,13 +2969,16 @@ onBeforeUnmount(() => {
   content: ''; width: 5px; height: 5px; border-radius: 50%; background: #00a19a;
 }
 .bp-back {
-  width: 36px; height: 36px; border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 50%;
   background: #fff; border: 1px solid #ececef;
+  cursor: pointer; transition: border-color 0.16s, transform 0.16s;
+  flex-shrink: 0;
 }
+.bp-back:hover { border-color: #00a19a; transform: translateY(-1px); }
 
 /* ── 5-segment progress bar → prototype step-bar ── */
 .bp-progress {
-  width: min(100%, 980px);
+  width: min(980px, calc(100% - 40px));
   margin: 0 auto;
   background: transparent;
   padding: 10px 22px 4px;
@@ -2923,22 +2996,19 @@ onBeforeUnmount(() => {
 }
 
 .bp-scroll {
-  width: min(100%, 980px);
+  width: min(980px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 0 0 42px;
-  overflow-y: auto;
+  padding: 0 0 16px;
 }
 
 /* ── Step hero → centered, step-icon-box + h2 + p ── */
 .bp-step {
-  margin-top: 10px;
-  padding: 22px 22px 32px;
+  margin-top: 14px;
+  padding: 26px 26px 34px;
   border-radius: 24px;
-  border: 1px solid rgba(174, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 34px rgba(17, 52, 88, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  border: 1px solid #ececf2;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(35, 29, 69, 0.08);
   animation: bp-fadeSlideUp 0.4s 0.05s both;
 }
 @keyframes bp-fadeSlideUp {
@@ -3173,7 +3243,7 @@ onBeforeUnmount(() => {
 }
 .bp-tier-helper-ic { width: 36px; height: 36px; border-radius: 10px; background: #eef6f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .bp-tier-helper-svg { width: 20px; height: 20px; color: #00a19a; }
-.bp-tier-helper-t { font-size: 13px; font-weight: 800; color: #10263d; }
+.bp-tier-helper-t { font-size: 13px; font-weight: 800; color: #231d45; }
 .bp-tier-helper-s { font-size: 11.5px; color: #627891; }
 .bp-tier-helper-chev { width: 16px; height: 16px; color: #b5bdc9; }
 .bp-tier-cta {
@@ -3233,11 +3303,11 @@ onBeforeUnmount(() => {
 .bp-tier-radio-star { width: 16px; height: 16px; color: #e6a23c; }
 .bp-tier-card.premium .bp-tier-radio { border: none; background: #fbeed4; }
 
-.bp-tier-title { font-size: 18px; font-weight: 800; color: #10263d; margin-bottom: 6px; letter-spacing: -0.3px; }
+.bp-tier-title { font-size: 18px; font-weight: 800; color: #231d45; margin-bottom: 6px; letter-spacing: -0.3px; }
 .bp-tier-sub { font-size: 13px; font-weight: 500; color: #627891; line-height: 1.5; margin-bottom: 16px; }
 .bp-tier-price-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-.bp-tier-price { font-size: 30px; font-weight: 900; color: #10263d; letter-spacing: -1px; }
-.bp-tier-card.verified .bp-tier-price { color: #10263d; }
+.bp-tier-price { font-size: 30px; font-weight: 900; color: #231d45; letter-spacing: -1px; }
+.bp-tier-card.verified .bp-tier-price { color: #231d45; }
 .bp-tier-card.premium .bp-tier-price { color: #d4822a; }
 .bp-tier-paid-pill {
   display: inline-flex; align-items: center; gap: 3px;
@@ -3289,7 +3359,7 @@ onBeforeUnmount(() => {
 .bp-tier-secure-ic { width: 46px; height: 46px; border-radius: 50%; background: #e3f4f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .bp-tier-secure-svg { width: 24px; height: 24px; color: #00a19a; }
 .bp-tier-secure-body { flex: 1; min-width: 0; }
-.bp-tier-secure-t { font-size: 15px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.bp-tier-secure-t { font-size: 15px; font-weight: 800; color: #231d45; margin-bottom: 2px; }
 .bp-tier-secure-s { font-size: 13px; color: #627891; line-height: 1.45; }
 .bp-tier-secure-link { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #007e78; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 .bp-tier-secure-link-ic { width: 15px; height: 15px; }
@@ -3303,7 +3373,7 @@ onBeforeUnmount(() => {
 .bp-tier-reassure-item { display: flex; align-items: flex-start; gap: 12px; }
 .bp-tier-reassure-ic { width: 40px; height: 40px; border-radius: 50%; background: #eef6f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .bp-tier-reassure-svg { width: 20px; height: 20px; color: #00a19a; }
-.bp-tier-reassure-t { font-size: 14px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.bp-tier-reassure-t { font-size: 14px; font-weight: 800; color: #231d45; margin-bottom: 2px; }
 .bp-tier-reassure-s { font-size: 12.5px; color: #627891; line-height: 1.45; }
 
 /* ── Tier responsive ── */
@@ -3536,20 +3606,19 @@ onBeforeUnmount(() => {
 
 /* ── DONE screen (prototype `complete`) ──────────────────────── */
 .bp-complete {
-  margin-top: 10px;
-  padding: 18px 22px 34px;
-  border-radius: 24px;
-  border: 1px solid rgba(174, 201, 231, 0.48);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 250, 255, 0.9) 52%, rgba(236, 255, 249, 0.95) 100%);
-  box-shadow:
-    0 14px 34px rgba(17, 52, 88, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  max-width: 600px;
+  margin: 18px auto 32px;
+  padding: 28px 30px 32px;
+  border-radius: 26px;
+  border: 1px solid #ececf2;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.1);
 }
 .bp-complete-hero {
-  text-align: center; padding: 12px 0 16px;
+  text-align: center; padding: 6px 0 18px;
 }
 .bp-complete-emoji {
-  font-size: 52px; line-height: 1; margin-bottom: 12px;
+  font-size: 60px; line-height: 1; margin-bottom: 12px;
   display: inline-block;
   animation: bp-pop 0.5s ease-out 0.1s both;
 }
@@ -3559,12 +3628,13 @@ onBeforeUnmount(() => {
   100% { transform: scale(1); opacity: 1; }
 }
 .bp-complete-title {
-  font-size: 24px; font-weight: 800; color: #231d45;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 30px; font-weight: 600; color: #231d45;
   letter-spacing: -0.5px; margin-bottom: 6px;
   animation: bp-fadeSlideUp 0.4s 0.2s both;
 }
 .bp-complete-sub {
-  font-size: 13px; color: #6b6783;
+  font-size: 13.5px; color: #6b6783;
   animation: bp-fadeSlideUp 0.4s 0.25s both;
 }
 
@@ -3871,7 +3941,7 @@ onBeforeUnmount(() => {
 
 @media (min-width: 900px) {
   .bp-page {
-    padding: 0 20px 42px;
+    padding: 0;
   }
 
   .bp-header {
@@ -3903,7 +3973,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 700px) {
   .bp-page {
-    padding: 0 10px 28px;
+    padding: 0;
   }
 
   .bp-header {

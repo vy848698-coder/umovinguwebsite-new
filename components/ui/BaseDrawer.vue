@@ -128,6 +128,21 @@ onUnmounted(() => {
   padding: 24px;
   overflow-y: auto;
   animation: drawer-overlay-in 0.22s ease-out;
+  /* Keep the fallback overlay scrollbar slim and unobtrusive */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, 0.28) transparent;
+}
+.drawer-overlay::-webkit-scrollbar {
+  width: 10px;
+}
+.drawer-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+.drawer-overlay::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.22);
+  border-radius: 100px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 @keyframes drawer-overlay-in {
@@ -157,7 +172,9 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   max-width: 480px;
-  max-height: min(90vh, 760px);
+  /* Subtract the overlay's 24px top+bottom padding so the drawer fits and
+     scrolling stays inside .drawer__content (not the overlay). */
+  max-height: min(760px, calc(100dvh - 48px));
   border-radius: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -286,6 +303,8 @@ onUnmounted(() => {
   background-color: white;
   padding: 1.25rem 1.5rem;
   min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, 0.25) transparent;
 }
 
 .drawer__content--large {
@@ -301,20 +320,23 @@ onUnmounted(() => {
 
 /* Scrollbar Styling */
 .drawer__content::-webkit-scrollbar {
-  width: 4px;
+  width: 10px;
 }
 
 .drawer__content::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: transparent;
 }
 
 .drawer__content::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 2px;
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 100px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 .drawer__content::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: rgba(15, 23, 42, 0.35);
+  background-clip: padding-box;
 }
 
 /* Responsive — collapse to a bottom-sheet on phones */

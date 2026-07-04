@@ -147,7 +147,7 @@ const goNextStep = () => {
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  background: linear-gradient(120deg, #00a19a, #2f9bdf 52%, #5a4cf0);
+  background: #00857f;
   box-shadow: 0 10px 22px rgba(47, 93, 223, 0.2);
   transition: transform 0.18s;
 }

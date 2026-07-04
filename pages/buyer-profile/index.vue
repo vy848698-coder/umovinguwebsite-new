@@ -311,18 +311,18 @@ onMounted(async () => {
 }
 .hsw-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; }
 .hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #10263d; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+.hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #231d45; background: none; border: none; cursor: pointer; flex-shrink: 0; }
 .hsw-brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
 .hsw-links { display: flex; align-items: center; gap: 4px; }
 .hsw-links button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: #516070; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
-.hsw-links button:hover { color: #10263d; background: rgba(0,0,0,0.05); }
+.hsw-links button:hover { color: #231d45; background: rgba(0,0,0,0.05); }
 .hsw-links button.active { color: #00a19a; font-weight: 700; background: rgba(0,161,154,0.08); }
 .hsw-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .hsw-back { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #516070; background: rgba(255,255,255,0.8); border: 1px solid rgba(173,201,231,0.5); border-radius: 10px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
 .hsw-back svg { width: 15px; height: 15px; flex-shrink: 0; }
-.hsw-back:hover { color: #10263d; border-color: #b9d5ea; }
-.hsw-cta { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: linear-gradient(120deg, #00a19a, #2f9bdf); border: none; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-back:hover { color: #231d45; border-color: #b9d5ea; }
+.hsw-cta { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: #00857f; border: none; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
 .hsw-cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
 /* ── Main body + layout ── */
@@ -345,7 +345,7 @@ onMounted(async () => {
 }
 .mp-hero-title {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 80px; font-weight: 800; color: #10263d;
+  font-size: 80px; font-weight: 800; color: #231d45;
   line-height: 1.02; margin-bottom: 16px; letter-spacing: -1.8px;
 }
 .mp-hero-title-accent { color: #00a19a; }
@@ -729,7 +729,7 @@ onMounted(async () => {
 }
 .mp-safety-ic-svg { width: 22px; height: 22px; color: #4f4ff2; }
 .mp-safety-text { flex: 1; min-width: 0; }
-.mp-safety-title { font-size: 15px; font-weight: 800; color: #10263d; margin-bottom: 2px; }
+.mp-safety-title { font-size: 15px; font-weight: 800; color: #231d45; margin-bottom: 2px; }
 .mp-safety-sub { font-size: 13px; color: #627891; font-weight: 600; }
 .mp-safety-badge {
   display: inline-flex; align-items: center; gap: 6px;

@@ -335,21 +335,46 @@ onBeforeUnmount(() => {
 .tu-overlay {
   position: fixed; inset: 0; z-index: 9999;
   background: rgba(35, 29, 69, 0.45);
-  display: flex; align-items: flex-end; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
   font-family: inherit;
 }
 .tu-sheet {
   background: #fff;
   width: 100%; max-width: 480px;
-  border-radius: 22px 22px 0 0;
-  padding: 12px 22px 28px;
-  max-height: 92vh; overflow-y: auto;
+  border-radius: 22px;
+  padding: 22px 22px 24px;
+  max-height: 90vh; overflow-y: auto;
   position: relative;
+  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.28);
+  /* Thin, subtle scrollbar (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: #d5d3df transparent;
 }
-.tu-handle {
-  width: 44px; height: 5px;
-  background: #ececef; border-radius: 100px;
-  margin: 0 auto 14px;
+/* Thin, subtle scrollbar (Chrome / Safari / Edge) */
+.tu-sheet::-webkit-scrollbar { width: 6px; }
+.tu-sheet::-webkit-scrollbar-track { background: transparent; }
+.tu-sheet::-webkit-scrollbar-thumb {
+  background: #d5d3df; border-radius: 100px;
+}
+.tu-sheet::-webkit-scrollbar-thumb:hover { background: #bfbcce; }
+/* Drag handle only makes sense as a bottom sheet — hide on the centered modal. */
+.tu-handle { display: none; }
+
+/* Dock to the bottom as a sheet on small screens. */
+@media (max-width: 560px) {
+  .tu-overlay { align-items: flex-end; padding: 0; }
+  .tu-sheet {
+    border-radius: 22px 22px 0 0;
+    max-height: 92vh;
+    padding-top: 12px;
+  }
+  .tu-handle {
+    display: block;
+    width: 44px; height: 5px;
+    background: #ececef; border-radius: 100px;
+    margin: 0 auto 14px;
+  }
 }
 .tu-eyebrow {
   font-size: 10px; font-weight: 800; letter-spacing: 1.5px;

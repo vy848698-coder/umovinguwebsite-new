@@ -445,7 +445,7 @@ function goSign() { router.push('/buyer-profile/sign') }
 .sh-head { margin-bottom: 22px; max-width: 640px; }
 .sh-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
 .sh-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
-.sh-h1 { font-size: 36px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.sh-h1 { font-size: 36px; font-weight: 800; color: #231d45; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
 .sh-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
 
 /* Tab switcher */
@@ -471,11 +471,11 @@ function goSign() { router.push('/buyer-profile/sign') }
   padding: 9px 16px; border-radius: 10px;
   cursor: pointer; transition: all 0.15s;
 }
-.how-tab:hover { color: #10263d; background: rgba(0,0,0,0.03); }
+.how-tab:hover { color: #231d45; background: rgba(0,0,0,0.03); }
 .how-tab-ic { width: 16px; height: 16px; }
 .how-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
 .how-tab.active {
-  background: linear-gradient(120deg, #00a19a, #2f9bdf); color: white;
+  background: #00857f; color: white;
   box-shadow: 0 4px 12px rgba(0, 161, 154, 0.3);
 }
 .how-tab.active:hover { color: #fff; }

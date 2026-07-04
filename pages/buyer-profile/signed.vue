@@ -189,7 +189,7 @@ function goView() { router.push('/buyer-profile/view') }
   animation: sn-fadeUp 0.4s 0.12s both;
 }
 .sn-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
-.sn-title { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.1; margin-bottom: 12px; animation: sn-fadeUp 0.4s 0.16s both; }
+.sn-title { font-size: 38px; font-weight: 800; color: #231d45; letter-spacing: -1px; line-height: 1.1; margin-bottom: 12px; animation: sn-fadeUp 0.4s 0.16s both; }
 .sn-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; animation: sn-fadeUp 0.4s 0.2s both; }
 @keyframes sn-fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -233,7 +233,7 @@ function goView() { router.push('/buyer-profile/view') }
   transition: all 0.18s cubic-bezier(.22,1,.36,1);
 }
 .sn-action:hover { transform: translateY(-2px); border-color: #a8d5c8; box-shadow: 0 10px 24px rgba(0,161,154,0.1); }
-.sn-action--primary { background: linear-gradient(120deg, #00a19a, #2f9bdf); border: none; color: #fff; }
+.sn-action--primary { background: #00857f; border: none; color: #fff; }
 .sn-action--primary:hover { box-shadow: 0 12px 26px rgba(0,161,154,0.3); }
 .sn-action-ic { width: 38px; height: 38px; border-radius: 11px; background: #eef6f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #007e78; }
 .sn-action-ic :deep(svg) { width: 20px; height: 20px; }
@@ -246,7 +246,7 @@ function goView() { router.push('/buyer-profile/view') }
 .sn-action-chev { width: 18px; height: 18px; color: #b5bdc9; flex-shrink: 0; }
 .sn-action--primary .sn-action-chev { color: rgba(255,255,255,0.85); }
 .sn-trust { display: flex; align-items: center; gap: 10px; font-size: 11.5px; font-weight: 600; color: #627891; background: #f0f4fa; border: 1px solid #dce6f0; border-radius: 14px; padding: 14px 16px; }
-.sn-trust-ic { width: 18px; height: 18px; color: #10263d; flex-shrink: 0; }
+.sn-trust-ic { width: 18px; height: 18px; color: #231d45; flex-shrink: 0; }
 
 @media (max-width: 940px) {
   .sn-grid { grid-template-columns: 1fr; gap: 20px; }

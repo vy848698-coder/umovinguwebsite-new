@@ -359,7 +359,7 @@ function downloadPdf() {
 .pv-head { margin-bottom: 28px; max-width: 640px; }
 .pv-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
 .pv-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
-.pv-h1 { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.pv-h1 { font-size: 38px; font-weight: 800; color: #231d45; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
 .pv-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
 
 .pv-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; }
@@ -602,7 +602,7 @@ function downloadPdf() {
 .pv-side-status-s { font-size: 11.5px; color: #6b6783; margin-top: 1px; }
 .cta-btn {
   width: 100%;
-  background: linear-gradient(120deg, #00a19a, #2f9bdf); color: white; border: none;
+  background: #00857f; color: white; border: none;
   border-radius: 13px; padding: 15px;
   font-family: inherit; font-size: 14px; font-weight: 800;
   box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
@@ -614,7 +614,7 @@ function downloadPdf() {
 .cta-btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .cta-ic { width: 17px; height: 17px; }
 .cta-btn.outline {
-  background: #fff; color: #10263d;
+  background: #fff; color: #231d45;
   border: 1.5px solid #d6dfeb; box-shadow: none;
 }
 .cta-btn.outline:hover { border-color: #00a19a; box-shadow: 0 8px 18px rgba(15,44,76,0.08); }
@@ -623,7 +623,7 @@ function downloadPdf() {
 }
 .cta-btn.ghost:hover { background: #eaf0f7; }
 .pv-trust { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 600; color: #627891; background: #f0f4fa; border: 1px solid #dce6f0; border-radius: 14px; padding: 13px 15px; }
-.pv-trust-ic { width: 18px; height: 18px; color: #10263d; flex-shrink: 0; }
+.pv-trust-ic { width: 18px; height: 18px; color: #231d45; flex-shrink: 0; }
 
 @media (max-width: 940px) {
   .pv-grid { grid-template-columns: 1fr; gap: 22px; }

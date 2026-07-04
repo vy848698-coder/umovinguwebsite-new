@@ -13,7 +13,7 @@
           <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Properties</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
           <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">Insights</button>
+          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
         </nav>
 
         <div class="ex-nav-actions">
@@ -53,7 +53,7 @@
             <button type="button" @click="goMobile('/passport')">Properties</button>
             <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
             <button type="button" @click="goMobile('/profile/learn')">Learn</button>
-            <button type="button" @click="goMobile('/homescore')">Insights</button>
+            <button type="button" @click="goMobile('/homescore')">HomeScore</button>
             <button type="button" @click="goMobile('/profile')">Profile</button>
             <button type="button" class="ex-mobile-claim" @click="goMobileClaim">Add Property</button>
           </div>
@@ -746,7 +746,8 @@ function prevTestimonial() { testimonialStart.value = (testimonialStart.value - 
 
 // ── Search ───────────────────────────────────────────────────────────
 function onSearchSelect(property: { id: string }) {
-  navigateTo(`/homescore/${property.id}`)
+  if (property?.id) navigateTo(`/property/${property.id}`)
+  else navigateTo('/marketplace')
 }
 function onSearchEnter(q: string) {
   searchQuery.value = q

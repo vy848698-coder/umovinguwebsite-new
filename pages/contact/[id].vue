@@ -1,91 +1,142 @@
 <template>
   <div class="contact-page">
-    <div class="header">
-      <button class="back-btn" @click="goBack">
-        <span class="back-arrow">←</span> <span>Back</span>
-      </button>
-      <button class="close-btn" @click="goHome">✕</button>
-    </div>
 
-    <div class="content">
-      <h1 class="title">Tap the Owner</h1>
-      <p class="subtitle">{{ subtitle }}</p>
-
-      <div class="house-illustration">
-        <img
-          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 180'%3E%3C!-- Base --%3E%3Cellipse cx='100' cy='160' rx='80' ry='15' fill='%2390c850' opacity='0.3'/%3E%3C!-- House base --%3E%3Crect x='60' y='90' width='80' height='70' fill='%23f5deb3'/%3E%3C!-- Roof --%3E%3Cpath d='M 50 90 L 100 50 L 150 90 Z' fill='%23c85050'/%3E%3Crect x='95' y='50' width='10' height='15' fill='%238b4513'/%3E%3Crect x='98' y='48' width='20' height='3' fill='%23654321'/%3E%3C!-- Door --%3E%3Crect x='85' y='120' width='30' height='40' rx='15' ry='15' fill='%238b4513'/%3E%3Ccircle cx='108' cy='140' r='2' fill='%23ffd700'/%3E%3C!-- Windows --%3E%3Crect x='68' y='100' width='15' height='15' fill='%2387ceeb' opacity='0.7'/%3E%3Crect x='117' y='100' width='15' height='15' fill='%2387ceeb' opacity='0.7'/%3E%3Cline x1='75.5' y1='100' x2='75.5' y2='115' stroke='%23654321' stroke-width='1'/%3E%3Cline x1='68' y1='107.5' x2='83' y2='107.5' stroke='%23654321' stroke-width='1'/%3E%3Cline x1='124.5' y1='100' x2='124.5' y2='115' stroke='%23654321' stroke-width='1'/%3E%3Cline x1='117' y1='107.5' x2='132' y2='107.5' stroke='%23654321' stroke-width='1'/%3E%3C!-- Trees --%3E%3Crect x='25' y='130' width='8' height='30' fill='%238b4513'/%3E%3Ccircle cx='29' cy='125' r='15' fill='%2354a854'/%3E%3Ccircle cx='25' cy='120' r='12' fill='%2354a854'/%3E%3Ccircle cx='33' cy='120' r='12' fill='%2354a854'/%3E%3Crect x='167' y='130' width='8' height='30' fill='%238b4513'/%3E%3Ccircle cx='171' cy='125' r='15' fill='%2354a854'/%3E%3Ccircle cx='167' cy='120' r='12' fill='%2354a854'/%3E%3Ccircle cx='175' cy='120' r='12' fill='%2354a854'/%3E%3C!-- Person 1 (left of door) --%3E%3Ccircle cx='75' cy='135' r='5' fill='%23ffdbac'/%3E%3Crect x='72' y='140' width='6' height='12' fill='%234169e1'/%3E%3Crect x='70' y='142' width='3' height='8' fill='%234169e1'/%3E%3Crect x='77' y='142' width='3' height='8' fill='%234169e1'/%3E%3C!-- Person 2 (right of door) --%3E%3Ccircle cx='125' cy='135' r='5' fill='%23ffdbac'/%3E%3Crect x='122' y='140' width='6' height='12' fill='%23ff69b4'/%3E%3Crect x='120' y='142' width='3' height='8' fill='%23ff69b4'/%3E%3Crect x='127' y='142' width='3' height='8' fill='%23ff69b4'/%3E%3C/svg%3E"
-          alt="House with owners"
-          class="house-img"
-        />
-      </div>
-
-      <p class="description">
-        Send a message or request to speak with the property owner directly
-      </p>
-
-      <div class="message-section">
-        <h2 class="section-title">Enter your message</h2>
-        <textarea
-          v-model="message"
-          class="message-input"
-          placeholder="e.g. who did your rendering...."
-          rows="6"
-        ></textarea>
-      </div>
-
-      <div class="options-section">
-        <div class="option-item" @click="togglePhone">
-          <span class="option-text">Share my phone number with owner</span>
-          <div class="checkbox" :class="{ checked: sharePhone }">
-            <span v-if="sharePhone" class="check-icon">✓</span>
-          </div>
-        </div>
-        <div class="option-item" @click="toggleEmail">
-          <span class="option-text">Send me an email copy of the message</span>
-          <div class="checkbox" :class="{ checked: sendEmailCopy }">
-            <span v-if="sendEmailCopy" class="check-icon">✓</span>
-          </div>
+    <!-- ── Web nav ──────────────────────────────────────────────────── -->
+    <header class="hsw-nav">
+      <div class="hsw-shell hsw-nav-inner">
+        <button class="hsw-brand" type="button" @click="navigateTo('/')">
+          <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+          <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+        </button>
+        <nav class="hsw-links" aria-label="Primary navigation">
+          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" @click="navigateTo('/passport')">Passport</button>
+          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+        </nav>
+        <div class="hsw-actions">
+          <button class="hsw-back" type="button" @click="goBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
         </div>
       </div>
+    </header>
 
-      <div class="info-section">
-        <h2 class="section-title">Safety information</h2>
-        <div class="info-card">
-          <div class="info-icon">🔒</div>
-          <div class="info-content">
-            <h3 class="info-title">Safe Messaging</h3>
-            <ul class="info-list">
-              <li>All messages are monitored for safety</li>
-              <li>Personal details kept private until you choose to share</li>
-              <li>Report inappropriate behavior anytime</li>
-            </ul>
+    <main class="cw-main">
+      <div class="cw-shell">
+
+        <!-- ── Header ─────────────────────────────────────────────────── -->
+        <div class="cw-head">
+          <div class="cw-eyebrow"><span class="cw-eyebrow-dash" />Direct message</div>
+          <h1 class="cw-title">Message the owner</h1>
+          <p class="cw-sub">
+            Ask anything you need before you offer — your message goes straight
+            to the owner, no estate agent in between.
+          </p>
+        </div>
+
+        <!-- ── Two-column body ────────────────────────────────────────── -->
+        <div class="cw-grid">
+
+          <!-- Main column -->
+          <div class="cw-col-main">
+            <div class="cw-card">
+              <h2 class="cw-card-title">Your message</h2>
+              <p class="cw-card-sub">
+                Owners respond best to specific, friendly questions.
+              </p>
+              <textarea
+                v-model="message"
+                class="cw-textarea"
+                placeholder="e.g. Who did your rendering, and roughly when was it done?"
+                rows="7"
+              ></textarea>
+
+              <div class="cw-options">
+                <button type="button" class="cw-option" @click="togglePhone">
+                  <div class="cw-option-body">
+                    <span class="cw-option-text">Share my phone number</span>
+                    <span class="cw-option-hint">Let the owner call you back directly</span>
+                  </div>
+                  <span class="cw-check" :class="{ checked: sharePhone }">
+                    <svg v-if="sharePhone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
+                </button>
+                <button type="button" class="cw-option" @click="toggleEmail">
+                  <div class="cw-option-body">
+                    <span class="cw-option-text">Email me a copy</span>
+                    <span class="cw-option-hint">Keep a record of what you sent</span>
+                  </div>
+                  <span class="cw-check" :class="{ checked: sendEmailCopy }">
+                    <svg v-if="sendEmailCopy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
+                </button>
+              </div>
+
+              <p v-if="errorMsg" class="cw-error">{{ errorMsg }}</p>
+
+              <button class="cw-send" @click="sendMessage" :disabled="!canSend">
+                <span v-if="sending" class="cw-spinner" />
+                {{ sending ? 'Sending…' : 'Send message' }}
+              </button>
+              <p class="cw-send-foot">
+                No fees · No commissions · Your details stay private until you share them
+              </p>
+            </div>
           </div>
+
+          <!-- Sidebar -->
+          <aside class="cw-col-side">
+            <!-- Property -->
+            <div class="cw-side-card cw-prop">
+              <div class="cw-prop-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </div>
+              <div class="cw-prop-body">
+                <div class="cw-prop-label">You're contacting about</div>
+                <div class="cw-prop-addr">{{ property?.addressLine1 || 'This property' }}</div>
+                <div class="cw-prop-sub">{{ propLocation }}</div>
+              </div>
+            </div>
+
+            <!-- Safety -->
+            <div class="cw-side-card">
+              <div class="cw-side-head">
+                <span class="cw-side-badge cw-side-badge--safe">🔒</span>
+                <h3 class="cw-side-title">Safe messaging</h3>
+              </div>
+              <ul class="cw-side-list">
+                <li>All messages are monitored for safety</li>
+                <li>Personal details kept private until you choose to share</li>
+                <li>Report inappropriate behaviour anytime</li>
+              </ul>
+            </div>
+
+            <!-- Response -->
+            <div class="cw-side-card">
+              <div class="cw-side-head">
+                <span class="cw-side-badge cw-side-badge--chat">💬</span>
+                <h3 class="cw-side-title">What happens next</h3>
+              </div>
+              <ul class="cw-side-list">
+                <li>Your message goes directly to the owner</li>
+                <li>Most owners respond within 4 hours</li>
+                <li>You'll be notified when they reply</li>
+              </ul>
+            </div>
+          </aside>
         </div>
       </div>
+    </main>
 
-      <div class="info-section">
-        <h2 class="section-title">Response Expectation</h2>
-        <div class="info-card">
-          <div class="info-icon">💬</div>
-          <div class="info-content">
-            <h3 class="info-title">What happens next?</h3>
-            <ul class="info-list">
-              <li>Your message goes directly to the owner</li>
-              <li>Most owners respond within 4 hours</li>
-              <li>You'll get notified when they reply</li>
-              <li>No estate agent fees or commissions</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <p v-if="errorMsg" class="form-error">{{ errorMsg }}</p>
-
-      <button class="send-btn" @click="sendMessage" :disabled="!canSend">
-        <span v-if="sending" class="send-spinner" />
-        {{ sending ? 'Sending…' : 'Send Message' }}
-      </button>
-    </div>
+    <SiteFooter />
 
     <Toast
       v-if="toastState.visible"
@@ -100,9 +151,20 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '~/components/ui/Toast.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { useAppToast } from '~/composables/useCustomToast'
 
 definePageMeta({ middleware: 'auth' })
+
+// Editorial serif for display headings — matches the rest of the app.
+useHead({
+  link: [
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap',
+    },
+  ],
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -111,19 +173,20 @@ const { toastState, showToast, hideToast } = useAppToast()
 
 const propertyId = route.params.id
 const property = ref(null)
-const message = ref('')
+// Prefill the message from the ?prefill= query (set by "Ask the seller").
+const message = ref(
+  typeof route.query.prefill === 'string' ? route.query.prefill : '',
+)
 const sharePhone = ref(true)
 const sendEmailCopy = ref(false)
 const sending = ref(false)
 const errorMsg = ref('')
 
-// Subtitle reflects the actual property — no more hardcoded "Maple Road".
-const subtitle = computed(() => {
+const propLocation = computed(() => {
   if (!property.value) return 'Loading property…'
-  const a1 = property.value.addressLine1 || ''
   const city = property.value.city || ''
   const pc = property.value.postcode || ''
-  return [a1, city, pc].filter(Boolean).join(', ')
+  return [city, pc].filter(Boolean).join(' · ') || '—'
 })
 
 const canSend = computed(
@@ -142,7 +205,6 @@ onMounted(async () => {
 })
 
 const goBack = () => router.back()
-const goHome = () => router.push('/')
 const togglePhone = () => (sharePhone.value = !sharePhone.value)
 const toggleEmail = () => (sendEmailCopy.value = !sendEmailCopy.value)
 
@@ -184,280 +246,256 @@ const sendMessage = async () => {
 
 <style scoped>
 .contact-page {
-  min-height: 100vh;
-  background: linear-gradient(to bottom, #f5f5f5 0%, #ffffff 200px);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  padding-bottom: 40px;
+  --navy: #231d45;
+  --teal: #00a19a;
+  --teal-dark: #00857f;
+  --ink: #231d45;
+  --ink-soft: #5a5570;
+  --ink-faint: #8b8799;
+  --line: #ececf2;
+  --bg: #f3f2ef;
+  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
+/* ── Web nav ──────────────────────────────────────────────────────── */
+.hsw-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+.hsw-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+}
+.hsw-nav-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 9px; color: var(--navy); cursor: pointer; font-size: 19px; font-weight: 800; letter-spacing: -0.4px; flex-shrink: 0; font-family: inherit; }
+.hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
+.hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
+.hsw-links { display: flex; gap: 4px; }
+.hsw-links button { border: 0; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 9px; white-space: nowrap; font-family: inherit; transition: background 0.15s, color 0.15s; }
+.hsw-links button:hover { color: var(--navy); background: rgba(35, 29, 69, 0.05); }
+.hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
+.hsw-back:hover { border-color: var(--teal); transform: translateY(-1px); }
+.hsw-back svg { width: 15px; height: 15px; }
+
+/* ── Shell ────────────────────────────────────────────────────────── */
+.cw-main { padding: 34px 0 72px; }
+.cw-shell { width: min(1040px, calc(100% - 48px)); margin: 0 auto; }
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.cw-head { margin-bottom: 26px; }
+.cw-eyebrow {
+  display: inline-flex;
   align-items: center;
-  padding: 16px 20px;
-  background: transparent;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #00a19a;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  padding: 8px;
-}
-
-.back-arrow {
-  font-size: 20px;
-}
-
-.close-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #e0e0e0;
-  border: none;
-  font-size: 18px;
-  color: #666;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.content {
-  padding: 0 20px;
-  max-width: 430px;
-  margin: 0 auto;
-}
-
-.title {
-  font-size: 28px;
-  font-weight: 700;
-  text-align: center;
+  gap: 9px;
   margin: 0 0 8px;
-  color: #1a1a1a;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.house-illustration {
-  display: flex;
-  justify-content: center;
-  margin: 32px 0;
-}
-
-.house-img {
-  width: 200px;
-  height: 180px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
-}
-
-.description {
-  font-size: 16px;
-  color: #00a19a;
-  text-align: center;
-  margin-bottom: 32px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.message-section {
-  margin-bottom: 24px;
-}
-
-.section-title {
-  font-size: 18px;
+  font-size: 11.5px;
   font-weight: 700;
-  margin-bottom: 12px;
-  color: #1a1a1a;
+  letter-spacing: 1.75px;
+  text-transform: uppercase;
+  color: var(--teal);
 }
-
-.message-input {
-  width: 100%;
-  padding: 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 16px;
-  font-size: 15px;
-  font-family: inherit;
-  resize: none;
-  background: white;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
+.cw-eyebrow-dash { width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
+.cw-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3.6vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.05;
+  margin: 0 0 8px;
+  color: var(--ink);
 }
-
-.message-input:focus {
-  outline: none;
-  border-color: #00a19a;
-}
-
-.message-input::placeholder {
-  color: #999;
-}
-
-.options-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.option-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.option-item:active {
-  transform: scale(0.98);
-  border-color: #00a19a;
-}
-
-.option-text {
-  font-size: 15px;
-  color: #1a1a1a;
-  font-weight: 500;
-  flex: 1;
-}
-
-.checkbox {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.checkbox.checked {
-  background: #00a19a;
-  border-color: #00a19a;
-}
-
-.check-icon {
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.info-section {
-  margin-bottom: 24px;
-}
-
-.info-card {
-  display: flex;
-  gap: 16px;
-  padding: 20px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 2px solid #e6f9f7;
-}
-
-.info-icon {
-  font-size: 32px;
-  flex-shrink: 0;
-}
-
-.info-content {
-  flex: 1;
-}
-
-.info-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 12px;
-}
-
-.info-list {
-  list-style: none;
-  padding: 0;
+.cw-sub {
+  font-size: 14.5px;
+  color: var(--ink-faint);
   margin: 0;
+  line-height: 1.55;
+  max-width: 60ch;
 }
 
-.info-list li {
-  font-size: 14px;
-  color: #00a19a;
-  padding: 4px 0;
-  padding-left: 20px;
-  position: relative;
-  line-height: 1.5;
+/* ── Grid ─────────────────────────────────────────────────────────── */
+.cw-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
 }
+.cw-col-side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 92px; }
 
-.info-list li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: #00a19a;
-  font-weight: 700;
+/* ── Compose card ─────────────────────────────────────────────────── */
+.cw-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 26px 26px 24px;
+  box-shadow: 0 14px 34px rgba(35, 29, 69, 0.07);
 }
-
-.send-btn {
+.cw-card-title { font-size: 17px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 4px; }
+.cw-card-sub { font-size: 13px; color: var(--ink-faint); margin: 0 0 16px; }
+.cw-textarea {
   width: 100%;
-  padding: 18px;
-  background: #00a19a;
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-size: 16px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0, 184, 169, 0.3);
-  transition: all 0.2s;
-  margin-top: 32px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 15px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #2a2540;
+  background: #fbfbfa;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.16s, background 0.16s;
+  color-scheme: light;
 }
+.cw-textarea:focus { border-color: var(--teal); background: #fff; }
+.cw-textarea::placeholder { color: #a5a1b4; }
 
-.send-btn:active:not(:disabled) {
-  transform: scale(0.98);
+/* Options */
+.cw-options { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.cw-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  background: #fbfbfa;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.16s, background 0.16s;
 }
-
-.send-btn:disabled {
-  background: #ccc;
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-.send-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-top-color: #fff;
+.cw-option:hover { border-color: rgba(0, 161, 154, 0.4); }
+.cw-option-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cw-option-text { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+.cw-option-hint { font-size: 12px; color: var(--ink-faint); }
+.cw-check {
+  width: 26px;
+  height: 26px;
+  border: 2px solid #d3d0dd;
   border-radius: 50%;
-  animation: contact-spin 0.6s linear infinite;
-  margin-right: 8px;
-  vertical-align: -2px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.16s, border-color 0.16s;
 }
-@keyframes contact-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+.cw-check.checked { background: var(--teal); border-color: var(--teal); }
 
-.form-error {
+/* Send */
+.cw-error {
   color: #c73e36;
   background: #fef2f1;
   border: 1px solid #fbcec9;
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13px;
-  margin: 0 0 12px;
+  margin: 16px 0 0;
   text-align: center;
+}
+.cw-send {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.3);
+  transition: transform 0.14s, box-shadow 0.16s, opacity 0.16s;
+}
+.cw-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(0, 161, 154, 0.4); }
+.cw-send:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.cw-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cw-spin 0.6s linear infinite;
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+@keyframes cw-spin { to { transform: rotate(360deg); } }
+.cw-send-foot { font-size: 11.5px; color: var(--ink-faint); text-align: center; margin: 12px 0 0; }
+
+/* ── Sidebar cards ────────────────────────────────────────────────── */
+.cw-side-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.06);
+}
+.cw-prop { display: flex; align-items: flex-start; gap: 13px; }
+.cw-prop-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  color: var(--teal);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.cw-prop-ic svg { width: 22px; height: 22px; }
+.cw-prop-body { min-width: 0; }
+.cw-prop-label { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); margin-bottom: 4px; }
+.cw-prop-addr { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; line-height: 1.2; }
+.cw-prop-sub { font-size: 12.5px; color: var(--ink-faint); margin-top: 3px; }
+.cw-side-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cw-side-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.cw-side-badge--safe { background: #e6f9f7; border: 1px solid #cdeee9; }
+.cw-side-badge--chat { background: #eef0ff; border: 1px solid #e0e3fb; }
+.cw-side-title { font-size: 14.5px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0; }
+.cw-side-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 7px; }
+.cw-side-list li {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  padding-left: 18px;
+  position: relative;
+}
+.cw-side-list li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hsw-links { display: none; }
+  .hsw-shell { width: calc(100% - 32px); }
+  .hsw-nav-inner { min-height: 60px; }
+  .cw-shell { width: calc(100% - 32px); }
+  .cw-grid { grid-template-columns: 1fr; }
+  .cw-col-side { position: static; }
 }
 </style>

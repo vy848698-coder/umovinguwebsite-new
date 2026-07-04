@@ -289,7 +289,7 @@ const goBack = () => router.back()
   font-size: 36px;
   font-weight: 800;
   letter-spacing: -1.2px;
-  color: #10263d;
+  color: #231d45;
   line-height: 1.1;
   margin: 0 0 8px;
 }
@@ -372,7 +372,7 @@ const goBack = () => router.back()
   font-family: inherit;
   transition: all 0.16s;
 }
-.ss-filter-pill:hover { border-color: #b9d5ea; color: #10263d; }
+.ss-filter-pill:hover { border-color: #b9d5ea; color: #231d45; }
 .ss-filter-pill.active { background: #00a19a; border-color: #00a19a; color: #fff; box-shadow: 0 6px 16px rgba(0,161,154,0.24); }
 
 /* ── Content area ── */
@@ -385,7 +385,7 @@ const goBack = () => router.back()
 .ss-section-title {
   font-size: 18px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -0.3px;
 }
 .ss-view-toggle {
@@ -455,13 +455,13 @@ const goBack = () => router.back()
   padding: 4px 10px;
   font-size: 11px;
   font-weight: 700;
-  color: #10263d;
+  color: #231d45;
   backdrop-filter: blur(8px);
 }
 .ss-card-heart { width: 12px; height: 12px; color: #ef5350; }
 
 .ss-card-body { padding: 14px 16px 10px; flex: 1; }
-.ss-card-address { font-size: 15px; font-weight: 800; color: #10263d; letter-spacing: -0.2px; margin-bottom: 5px; }
+.ss-card-address { font-size: 15px; font-weight: 800; color: #231d45; letter-spacing: -0.2px; margin-bottom: 5px; }
 .ss-card-location { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #6f8398; font-weight: 600; }
 .ss-card-loc-ic { width: 13px; height: 13px; flex-shrink: 0; }
 
@@ -508,7 +508,7 @@ const goBack = () => router.back()
 }
 .ss-row-icon :deep(svg) { width: 20px; height: 20px; }
 .ss-row-body { flex: 1; min-width: 0; }
-.ss-row-address { font-size: 15px; font-weight: 800; color: #10263d; letter-spacing: -0.2px; }
+.ss-row-address { font-size: 15px; font-weight: 800; color: #231d45; letter-spacing: -0.2px; }
 .ss-row-meta { font-size: 13px; color: #6f8398; font-weight: 600; margin-top: 2px; }
 .ss-row-dot { margin: 0 4px; }
 .ss-row-chev { width: 18px; height: 18px; color: #c0cfe0; flex-shrink: 0; }
@@ -551,7 +551,7 @@ const goBack = () => router.back()
   margin-bottom: 20px;
 }
 .ss-empty-ic { width: 38px; height: 38px; color: #00a19a; }
-.ss-empty-title { font-size: 20px; font-weight: 800; color: #10263d; margin: 0 0 8px; }
+.ss-empty-title { font-size: 20px; font-weight: 800; color: #231d45; margin: 0 0 8px; }
 .ss-empty-sub { font-size: 15px; color: #6f8398; line-height: 1.55; max-width: 340px; margin: 0 0 24px; }
 .ss-empty-cta {
   display: inline-flex;

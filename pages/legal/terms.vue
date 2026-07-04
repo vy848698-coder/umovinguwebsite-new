@@ -263,7 +263,7 @@ const goBack = useGoBack('/profile/settings')
 .lg-h1 {
   font-size: 42px;
   font-weight: 750;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -1.3px;
   line-height: 1.03;
   margin: 0;
@@ -289,7 +289,7 @@ const goBack = useGoBack('/profile/settings')
 .lg-content h2 {
   font-size: 17px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -0.4px;
   margin: 28px 0 10px;
 }

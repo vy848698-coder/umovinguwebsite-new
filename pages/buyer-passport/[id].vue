@@ -16,18 +16,23 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-iconbtn" type="button" title="Take a quick tour" aria-label="Take a quick tour" @click="buyerTourRef?.start?.()">?</button>
-          <button class="hsw-iconbtn" type="button" aria-label="Save to wishlist">
-            <OPIcon name="wishlist" class="w-[18px] h-[18px]" />
-          </button>
           <button class="hsw-iconbtn" type="button" aria-label="Share" @click="openShareSheet">
-            <OPIcon name="share" class="w-[18px] h-[18px]" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
           </button>
           <button class="hsw-back" type="button" @click="goBack">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
             Back
+          </button>
+          <button v-if="data" class="hsw-ask" type="button" @click="askSeller">
+            Ask the seller
           </button>
         </div>
       </div>
@@ -47,655 +52,507 @@
 
     <!-- Content -->
     <template v-else-if="data">
-      <!-- Hero Image -->
-      <!-- Hero Image — full slider with nav overlay -->
       <div class="bpw-shell">
-      <div class="buyer-hero">
-        <ImageSlider :images="propertyImagesArr" />
-      </div>
 
-      <!-- White content card -->
-      <div class="buyer-card">
-        <!-- Premium hero — passport book + identity + 3-cell stat strip -->
-        <div class="buyer-hero-card" data-tour="hero">
-          <div class="buyer-hero-glow" />
-          <div class="buyer-hero-book">
+        <!-- ── Passport hero ─────────────────────────────────────────── -->
+        <section class="bp-hero" data-tour="hero">
+          <div class="bp-hero-glow" />
+
+          <div class="bp-hero-book">
             <PassportCard
               :line1="data.passport.addressLine1"
               :line2="data.passport.postcode"
             />
           </div>
-          <div class="buyer-hero-info">
-            <div class="buyer-hero-eyebrow">Verified Property Passport</div>
-            <div class="buyer-hero-addr">{{ data.passport.addressLine1 }}</div>
-            <div class="buyer-hero-sub">{{ cityLine }}</div>
-            <div class="buyer-hero-stats">
-              <div class="buyer-hero-stat">
-                <div
-                  class="buyer-hero-stat-val"
-                  :class="{
-                    'buyer-hero-stat-val--brand':
-                      typeof heroHsScore === 'number',
-                  }"
-                >
+
+          <div class="bp-hero-main">
+            <div class="bp-hero-eyebrow">
+              <span class="bp-hero-eyebrow-dot">✓</span>
+              Verified Property Passport
+            </div>
+            <h1 class="bp-hero-title">{{ data.passport.addressLine1 }}</h1>
+            <p class="bp-hero-loc">{{ cityLine }}</p>
+
+            <div class="bp-hero-pricerow">
+              <span v-if="data.property?.estimatedPrice" class="bp-hero-price">
+                {{ formatPrice(data.property.estimatedPrice) }}
+              </span>
+              <span v-if="data.property?.propertyType" class="bp-hero-tag">
+                {{ data.property.propertyType }}
+              </span>
+              <span v-if="data.property?.epcRating" class="bp-hero-tag">
+                EPC {{ data.property.epcRating }}
+              </span>
+            </div>
+            <p class="bp-hero-metaline">
+              Estimated value · {{ overallProgressPct }}% complete ·
+              {{ redFlags.length }} red flag{{ redFlags.length === 1 ? '' : 's' }}
+            </p>
+
+            <div class="bp-hero-stats">
+              <div class="bp-hero-stat">
+                <div class="bp-hero-stat-val bp-hero-stat-val--brand">
                   {{ heroHsScore }}
                 </div>
-                <div class="buyer-hero-stat-lbl">HS</div>
+                <div class="bp-hero-stat-lbl">HomeScore</div>
               </div>
-              <div class="buyer-hero-stat">
-                <div class="buyer-hero-stat-val">{{ heroDocsCount }}</div>
-                <div class="buyer-hero-stat-lbl">Docs</div>
+              <div class="bp-hero-stat">
+                <div class="bp-hero-stat-val">{{ heroDocsCount }}</div>
+                <div class="bp-hero-stat-lbl">Documents</div>
               </div>
-              <div class="buyer-hero-stat">
-                <div
-                  class="buyer-hero-stat-val buyer-hero-stat-val--ready"
-                >
+              <div class="bp-hero-stat">
+                <div class="bp-hero-stat-val bp-hero-stat-val--ready">
                   {{ overallProgressPct }}%
                 </div>
-                <div class="buyer-hero-stat-lbl">Answered</div>
+                <div class="bp-hero-stat-lbl">Answered</div>
               </div>
             </div>
+
+            <div class="bp-hero-actions">
+              <button class="bp-hero-ask" data-tour="ask" @click="askSeller">
+                Ask the seller
+              </button>
+              <button
+                class="bp-hero-save"
+                :class="{ 'is-saved': isSavedToProfile }"
+                @click="toggleSaveToProfile"
+              >
+                <span class="bp-hero-save-heart">{{ isSavedToProfile ? '♥' : '♡' }}</span>
+                {{ isSavedToProfile ? 'Saved' : 'Save to profile' }}
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- Address / Price -->
-        <div class="buyer-title-block">
-          <h1 class="buyer-address">{{ data.passport.addressLine1 }}</h1>
-          <p class="buyer-city">
-            {{ cityLine }}
-          </p>
-          <p class="buyer-price" v-if="data.property?.estimatedPrice">
-            {{ formatPrice(data.property.estimatedPrice) }}
-            <span class="buyer-estimated">Estimated Value</span>
-          </p>
+          <div class="bp-hero-ring-wrap">
+            <div class="bp-hero-ring">
+              <svg viewBox="0 0 120 120" class="bp-ring-svg">
+                <circle class="bp-ring-bg" cx="60" cy="60" r="52" />
+                <circle
+                  class="bp-ring-fg"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  :stroke-dasharray="ringCircumference"
+                  :stroke-dashoffset="ringOffset"
+                />
+              </svg>
+              <div class="bp-ring-center">
+                <div class="bp-ring-pct">{{ overallProgressPct }}%</div>
+                <div class="bp-ring-lbl">Answered</div>
+              </div>
+            </div>
+            <div class="bp-hero-verified">
+              <span class="bp-hero-verified-dot" />Verified record
+            </div>
+          </div>
+        </section>
 
-          <!-- Confidence / red-flag inline pill — anchors to the red-flags
-               card lower down on tap -->
-          <button
-            class="buyer-risk-pill"
-            :class="riskPillClass"
-            @click="scrollToRedFlags"
-          >
-            <template v-if="redFlags.length === 0">
-              ✓ {{ overallProgressPct }}% complete · 0 red flags
-            </template>
-            <template v-else>
-              ⚠ {{ redFlags.length }} attention
-              {{ redFlags.length === 1 ? 'item' : 'items' }} ·
-              {{ overallProgressPct }}% complete
-            </template>
-          </button>
-        </div>
-
-        <!-- Resume — last viewed buyer section, persisted per-passport -->
+        <!-- ── Resume ────────────────────────────────────────────────── -->
         <button
           v-if="resumeSection"
-          class="buyer-resume"
+          class="bp-resume"
           @click="goToResumeSection"
         >
-          <div class="buyer-resume-ic">↪</div>
-          <div class="buyer-resume-body">
-            <div class="buyer-resume-eyebrow">Pick up where you left off</div>
-            <div class="buyer-resume-title">{{ resumeSection.title }}</div>
+          <div class="bp-resume-ic">↩</div>
+          <div class="bp-resume-body">
+            <div class="bp-resume-title">Pick up where you left off</div>
+            <div class="bp-resume-sub">{{ resumeSection.title }}</div>
           </div>
-          <div class="buyer-resume-chev">›</div>
+          <span class="bp-resume-cta">Continue →</span>
         </button>
 
-        <!-- Badges -->
-        <div class="buyer-badges" v-if="data.property">
-          <span v-if="data.property.bedrooms" class="buyer-badge">
-            <OPIcon name="bedroomWhite" class="w-[13px] h-[13px]" />
-            {{ data.property.bedrooms }}
-          </span>
-          <span v-if="data.property.bathrooms" class="buyer-badge">
-            <OPIcon name="bathroomWhite" class="w-[13px] h-[13px]" />
-            {{ data.property.bathrooms }}
-          </span>
-          <span v-if="data.property.propertyType" class="buyer-badge">
-            {{ data.property.propertyType }}
-          </span>
-          <span v-if="data.property.sqft" class="buyer-badge">
-            <OPIcon name="sqftWhite" class="w-[13px] h-[13px]" />
-            {{ data.property.sqft.toLocaleString() }} sqft
-          </span>
-        </div>
+        <!-- ── Two-column body ───────────────────────────────────────── -->
+        <div class="bp-grid">
 
-        <!-- Property Details -->
-        <div class="buyer-section">
-          <h2 class="buyer-section-title">Property Details</h2>
-          <p class="buyer-section-sub">
-            Key characteristics that define this property.
-          </p>
-          <div class="buyer-details-card" v-if="data.property">
-            <div class="buyer-details-grid">
-              <div class="buyer-detail-item">
-                <div class="buyer-detail-icon-wrap">
-                  <OPIcon name="buyerPropertyType" class="w-[20px] h-[20px]" />
+          <!-- ── Main column ──────────────────────────────────────── -->
+          <div class="bp-col-main">
+
+            <!-- Documents & forms -->
+            <section class="bp-block">
+              <div class="buyer-eyebrow"><span class="buyer-eyebrow-dash" />Solicitor-grade</div>
+              <h2 class="buyer-section-title">Documents &amp; forms</h2>
+              <p class="buyer-section-sub">
+                Ready-to-share packs — the paperwork a buyer's solicitor asks for
+                on day one.
+              </p>
+
+              <!-- PDF Download -->
+              <div class="buyer-pdf-row">
+                <div class="buyer-pdf-ic">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
                 </div>
-                <div>
-                  <p class="buyer-detail-label">Property type</p>
-                  <p class="buyer-detail-value">
-                    {{ data.property.propertyType || '—' }}
+                <div class="buyer-pdf-info">
+                  <p class="buyer-pdf-title">Full Property Report</p>
+                  <p class="buyer-pdf-sub">
+                    All questions &amp; answers — share with solicitors
                   </p>
                 </div>
+                <button
+                  class="buyer-pdf-btn"
+                  :disabled="generatingPdf"
+                  @click="downloadPdf"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                  {{ generatingPdf ? 'Opening…' : 'Download PDF' }}
+                </button>
               </div>
-              <div class="buyer-detail-item">
-                <div class="buyer-detail-icon-wrap">
-                  <OPIcon name="buyerTitleNumber" class="w-[20px] h-[20px]" />
+
+              <!-- TA6 Form Download -->
+              <div class="buyer-pdf-row buyer-ta6-row">
+                <div class="buyer-pdf-ic">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M5 9.5V21h14V9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9.5 21v-6h5v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
                 </div>
-                <div>
-                  <p class="buyer-detail-label">Title number</p>
-                  <p class="buyer-detail-value">
-                    {{ data.property.titleNumber || '—' }}
+                <div class="buyer-pdf-info">
+                  <p class="buyer-pdf-title">TA6 Property Information Form</p>
+                  <p class="buyer-pdf-sub">
+                    Law Society 6th edition — pre-filled with passport data
                   </p>
                 </div>
+                <button
+                  class="buyer-pdf-btn buyer-ta6-btn"
+                  :disabled="generatingTA6"
+                  @click="downloadTA6"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <polyline points="9,15 12,18 15,15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  {{ generatingTA6 ? 'Opening…' : 'Download TA6' }}
+                </button>
               </div>
-              <div class="buyer-detail-item">
-                <div class="buyer-detail-icon-wrap">
-                  <OPIcon name="buyerAreaSqft" class="w-[20px] h-[20px]" />
+
+              <!-- TA7 Form — leasehold only -->
+              <div
+                v-if="data?.property?.isLeasehold"
+                class="buyer-pdf-row buyer-ta7-row"
+              >
+                <div class="buyer-pdf-ic">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <circle cx="8" cy="15" r="4" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M11 12L20 3M16 7l3 3M13.5 9.5l2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
                 </div>
-                <div>
-                  <p class="buyer-detail-label">Area sqft</p>
-                  <p class="buyer-detail-value">
+                <div class="buyer-pdf-info">
+                  <p class="buyer-pdf-title">TA7 Leasehold Information Form</p>
+                  <p class="buyer-pdf-sub">
+                    Law Society 5th edition — lease, ground rent &amp; service charge
+                    details
+                  </p>
+                </div>
+                <button
+                  class="buyer-pdf-btn buyer-ta7-btn"
+                  :disabled="generatingTA7"
+                  @click="downloadTA7"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <polyline points="9,15 12,18 15,15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  {{ generatingTA7 ? 'Opening…' : 'Download TA7' }}
+                </button>
+              </div>
+
+              <!-- TA10 Fixtures & Fittings Form -->
+              <div class="buyer-pdf-row buyer-ta10-row">
+                <div class="buyer-pdf-ic">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 18v-6a2 2 0 012-2h12a2 2 0 012 2v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M4 18h16M6 18v2M18 18v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M6 10V7a2 2 0 012-2h8a2 2 0 012 2v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div class="buyer-pdf-info">
+                  <p class="buyer-pdf-title">TA10 Fixtures &amp; Fittings Form</p>
+                  <p class="buyer-pdf-sub">
+                    What stays, what goes — pre-filled from seller's passport
+                  </p>
+                </div>
+                <button
+                  class="buyer-pdf-btn buyer-ta10-btn"
+                  :disabled="generatingTA10"
+                  @click="downloadTA10"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <polyline points="9,15 12,18 15,15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  {{ generatingTA10 ? 'Opening…' : 'Download TA10' }}
+                </button>
+              </div>
+            </section>
+
+            <!-- Red Flags -->
+            <div
+              v-if="redFlags.length"
+              class="buyer-redflags-card"
+              data-tour="redflags"
+            >
+              <div class="buyer-redflags-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <line x1="12" y1="9" x2="12" y2="13" stroke="#dc2626" stroke-width="2" stroke-linecap="round" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" stroke="#dc2626" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span
+                  >{{ redFlags.length }} potential issue{{
+                    redFlags.length > 1 ? 's' : ''
+                  }}
+                  flagged</span
+                >
+              </div>
+              <ul class="buyer-redflags-list">
+                <li v-for="flag in redFlags" :key="flag">{{ flag }}</li>
+              </ul>
+            </div>
+
+            <!-- Official Records -->
+            <section class="bp-block">
+              <div class="buyer-eyebrow"><span class="buyer-eyebrow-dash" />Verified record</div>
+              <h2 class="buyer-section-title">Official records</h2>
+              <p class="buyer-section-sub">
+                Verified documents that define the legal and structural status of
+                the property.
+              </p>
+
+              <!-- Search -->
+              <div class="buyer-search-row">
+                <div class="buyer-search-input">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" class="buyer-search-icon">
+                    <circle cx="11" cy="11" r="8" stroke="#999" stroke-width="2" />
+                    <path d="M21 21l-4.35-4.35" stroke="#999" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search records..."
+                  />
+                </div>
+                <button class="buyer-sort-btn">
+                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                    <path d="M3 6h18M6 12h12M9 18h6" stroke="#00a19a" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Section completion summary -->
+              <div
+                v-if="data.sections?.length"
+                class="bp-summary-row"
+                data-tour="records"
+              >
+                <div class="bp-summary-card">
+                  <div class="bp-summary-num bp-summary-num--done">
+                    {{ summaryStats.done }}
+                  </div>
+                  <div class="bp-summary-lbl">Fully answered</div>
+                </div>
+                <div class="bp-summary-card">
+                  <div class="bp-summary-num bp-summary-num--partial">
+                    {{ summaryStats.partial }}
+                  </div>
+                  <div class="bp-summary-lbl">Partially answered</div>
+                </div>
+                <div class="bp-summary-card">
+                  <div class="bp-summary-num bp-summary-num--empty">
+                    {{ summaryStats.empty }}
+                  </div>
+                  <div class="bp-summary-lbl">Not yet shared</div>
+                </div>
+              </div>
+
+              <!-- Records grid -->
+              <div class="bp-records-grid">
+                <div
+                  v-for="section in filteredSections"
+                  :key="section.id"
+                  class="buyer-record-row"
+                  :class="'state-' + sectionCompletion(section)"
+                  @click="goToSection(section.id)"
+                >
+                  <div class="buyer-record-head">
+                    <div class="buyer-record-icon">
+                      <OPIcon
+                        :name="section.imageKey || 'fittingsContents'"
+                        class="w-[34px] h-[34px]"
+                      />
+                    </div>
+                    <button class="buyer-record-arrow">
+                      <OPIcon name="caretRight" class="w-[12px] h-[12px]" />
+                    </button>
+                  </div>
+                  <div class="buyer-record-info">
+                    <h3 class="buyer-record-title">{{ section.title }}</h3>
+                    <p
+                      v-if="section.subtitle || section.description"
+                      class="buyer-record-sub"
+                    >
+                      {{ section.subtitle || section.description }}
+                    </p>
+                    <div class="buyer-record-meta">
+                      <span
+                        class="buyer-record-pill"
+                        :class="'pill--' + sectionCompletion(section)"
+                      >
+                        <template v-if="sectionCompletion(section) === 'complete'">
+                          ✓ Fully answered
+                        </template>
+                        <template
+                          v-else-if="sectionCompletion(section) === 'partial'"
+                        >
+                          ⏳ Partially answered
+                        </template>
+                        <template v-else>○ Not started</template>
+                      </span>
+                    </div>
+                    <div class="buyer-record-progress">
+                      <div class="buyer-record-track">
+                        <div
+                          class="buyer-record-fill"
+                          :class="'fill--' + sectionCompletion(section)"
+                          :style="{ width: sectionPct(section) + '%' }"
+                        />
+                      </div>
+                      <span class="buyer-record-pct">
+                        {{ sectionPct(section) }}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Comparable Sales -->
+            <section v-if="comparables.length" class="bp-block">
+              <div class="buyer-eyebrow"><span class="buyer-eyebrow-dash" />Market context</div>
+              <h2 class="buyer-section-title">Nearby sold prices</h2>
+              <p class="buyer-section-sub">
+                Recent Land Registry sales in the same postcode area.
+              </p>
+              <div class="buyer-comparables-list">
+                <div
+                  v-for="(comp, i) in comparables"
+                  :key="i"
+                  class="buyer-comp-row"
+                >
+                  <div class="buyer-comp-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#00a19a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <polyline points="9,22 9,12 15,12 15,22" stroke="#00a19a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <div class="buyer-comp-info">
+                    <p class="buyer-comp-address">{{ comp.address }}</p>
+                    <p class="buyer-comp-meta">
+                      {{ comp.propertyType
+                      }}<template v-if="comp.tenure"> · {{ comp.tenure }}</template>
+                      · {{ formatSaleDate(comp.date) }}
+                    </p>
+                  </div>
+                  <span class="buyer-comp-price">{{
+                    formatSalePrice(comp.price)
+                  }}</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- ── Sidebar ──────────────────────────────────────────── -->
+          <aside class="bp-col-side">
+
+            <!-- Property details -->
+            <div class="bp-side-card" v-if="data.property">
+              <h3 class="bp-side-title">Property details</h3>
+              <p class="bp-side-sub">Key characteristics that define this property.</p>
+              <div class="bp-pd-grid">
+                <div class="bp-pd-item">
+                  <div class="bp-pd-label">Property type</div>
+                  <div class="bp-pd-value">{{ data.property.propertyType || '—' }}</div>
+                </div>
+                <div class="bp-pd-item">
+                  <div class="bp-pd-label">Title number</div>
+                  <div class="bp-pd-value">{{ data.property.titleNumber || '—' }}</div>
+                </div>
+                <div class="bp-pd-item">
+                  <div class="bp-pd-label">Area sqft</div>
+                  <div class="bp-pd-value">
                     {{
                       data.property.sqft
                         ? data.property.sqft.toLocaleString() + ' sqft'
                         : '—'
                     }}
-                  </p>
-                </div>
-              </div>
-              <div class="buyer-detail-item">
-                <div class="buyer-detail-icon-wrap">
-                  <OPIcon name="buyerEpcRating" class="w-[20px] h-[20px]" />
-                </div>
-                <div>
-                  <p class="buyer-detail-label">EPC Rating</p>
-                  <p class="buyer-detail-value">
-                    {{ data.property.epcRating || '—' }}
-                  </p>
-                </div>
-              </div>
-              <div class="buyer-detail-item">
-                <div class="buyer-detail-icon-wrap">
-                  <OPIcon name="buyerTenure" class="w-[20px] h-[20px]" />
-                </div>
-                <div>
-                  <p class="buyer-detail-label">Tenure</p>
-                  <p class="buyer-detail-value">
-                    {{ displayTenure }}
-                  </p>
-                </div>
-              </div>
-              <div class="buyer-detail-item">
-                <div class="buyer-detail-icon-wrap">
-                  <OPIcon name="buyerYearBuilt" class="w-[20px] h-[20px]" />
-                </div>
-                <div>
-                  <p class="buyer-detail-label">Year Built</p>
-                  <p class="buyer-detail-value">
-                    {{ data.property.yearBuilt || '—' }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Expert Guidance -->
-        <div class="buyer-section">
-          <!-- <h2 class="buyer-section-title">Need Expert Guidance?</h2>
-          <p class="buyer-section-sub">
-            Get professional advice from a qualified property expert.
-          </p> -->
-          <UnderReview
-            title="Connect with a Property Expert"
-            description="Our verified solicitors and surveyors are ready to review this passport with you."
-            minimumTime="1 Day"
-            @viewProfile="router.push('/passportview/expert')"
-          />
-        </div>
-
-        <!-- PDF Download -->
-        <div class="buyer-pdf-row">
-          <div class="buyer-pdf-info">
-            <p class="buyer-pdf-title">Full Property Report</p>
-            <p class="buyer-pdf-sub">
-              All questions &amp; answers — share with solicitors
-            </p>
-          </div>
-          <button
-            class="buyer-pdf-btn"
-            :disabled="generatingPdf"
-            @click="downloadPdf"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <polyline
-                points="7,10 12,15 17,10"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <line
-                x1="12"
-                y1="15"
-                x2="12"
-                y2="3"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-            {{ generatingPdf ? 'Opening…' : 'Download PDF' }}
-          </button>
-        </div>
-
-        <!-- TA6 Form Download -->
-        <div class="buyer-pdf-row buyer-ta6-row">
-          <div class="buyer-pdf-info">
-            <p class="buyer-pdf-title">TA6 Property Information Form</p>
-            <p class="buyer-pdf-sub">
-              Law Society 6th edition — pre-filled with passport data
-            </p>
-          </div>
-          <button
-            class="buyer-pdf-btn buyer-ta6-btn"
-            :disabled="generatingTA6"
-            @click="downloadTA6"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <polyline
-                points="14,2 14,8 20,8"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <line
-                x1="12"
-                y1="18"
-                x2="12"
-                y2="12"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <polyline
-                points="9,15 12,18 15,15"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            {{ generatingTA6 ? 'Opening…' : 'Download TA6' }}
-          </button>
-        </div>
-
-        <!-- TA7 Form — leasehold only -->
-        <div
-          v-if="data?.property?.isLeasehold"
-          class="buyer-pdf-row buyer-ta7-row"
-        >
-          <div class="buyer-pdf-info">
-            <p class="buyer-pdf-title">TA7 Leasehold Information Form</p>
-            <p class="buyer-pdf-sub">
-              Law Society 5th edition — lease, ground rent &amp; service charge
-              details
-            </p>
-          </div>
-          <button
-            class="buyer-pdf-btn buyer-ta7-btn"
-            :disabled="generatingTA7"
-            @click="downloadTA7"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <polyline
-                points="14,2 14,8 20,8"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <line
-                x1="12"
-                y1="18"
-                x2="12"
-                y2="12"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <polyline
-                points="9,15 12,18 15,15"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            {{ generatingTA7 ? 'Opening…' : 'Download TA7' }}
-          </button>
-        </div>
-
-        <!-- TA10 Fixtures & Fittings Form -->
-        <div class="buyer-pdf-row buyer-ta10-row">
-          <div class="buyer-pdf-info">
-            <p class="buyer-pdf-title">TA10 Fixtures &amp; Fittings Form</p>
-            <p class="buyer-pdf-sub">
-              What stays, what goes — pre-filled from seller's passport
-            </p>
-          </div>
-          <button
-            class="buyer-pdf-btn buyer-ta10-btn"
-            :disabled="generatingTA10"
-            @click="downloadTA10"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <polyline
-                points="14,2 14,8 20,8"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <line
-                x1="12"
-                y1="18"
-                x2="12"
-                y2="12"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <polyline
-                points="9,15 12,18 15,15"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            {{ generatingTA10 ? 'Opening…' : 'Download TA10' }}
-          </button>
-        </div>
-
-        <!-- Seller Progress -->
-        <div class="buyer-progress-card">
-          <div class="buyer-progress-header">
-            <span class="buyer-progress-label">Seller Completion</span>
-            <span class="buyer-progress-pct">{{ passportProgress }}%</span>
-          </div>
-          <div class="buyer-progress-track">
-            <div
-              class="buyer-progress-fill"
-              :style="{ width: passportProgress + '%' }"
-            />
-          </div>
-          <p class="buyer-progress-hint">
-            {{
-              passportProgress === 100
-                ? 'All sections completed by the seller.'
-                : 'The seller is still completing some sections.'
-            }}
-          </p>
-        </div>
-
-        <!-- Red Flags -->
-        <div
-          v-if="redFlags.length"
-          class="buyer-redflags-card"
-          data-tour="redflags"
-        >
-          <div class="buyer-redflags-header">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                stroke="#dc2626"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <line
-                x1="12"
-                y1="9"
-                x2="12"
-                y2="13"
-                stroke="#dc2626"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <line
-                x1="12"
-                y1="17"
-                x2="12.01"
-                y2="17"
-                stroke="#dc2626"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-            <span
-              >{{ redFlags.length }} potential issue{{
-                redFlags.length > 1 ? 's' : ''
-              }}
-              flagged</span
-            >
-          </div>
-          <ul class="buyer-redflags-list">
-            <li v-for="flag in redFlags" :key="flag">{{ flag }}</li>
-          </ul>
-        </div>
-
-        <!-- Official Records -->
-        <div class="buyer-section">
-          <h2 class="buyer-section-title">Official Records</h2>
-          <p class="buyer-section-sub">
-            Verified documents that define the legal and structural status of
-            the property.
-          </p>
-
-          <!-- Search -->
-          <div class="buyer-search-row">
-            <div class="buyer-search-input">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                class="buyer-search-icon"
-              >
-                <circle cx="11" cy="11" r="8" stroke="#999" stroke-width="2" />
-                <path
-                  d="M21 21l-4.35-4.35"
-                  stroke="#999"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search Records..."
-              />
-            </div>
-            <button class="buyer-sort-btn">
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M3 6h18M6 12h12M9 18h6"
-                  stroke="#00a19a"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Section completion summary — sets expectation for the list below -->
-          <div
-            v-if="data.sections?.length"
-            class="buyer-summary-card"
-            data-tour="records"
-          >
-            <div class="buyer-summary-row">
-              <div class="buyer-summary-stat">
-                <div class="buyer-summary-num buyer-summary-num--done">
-                  {{ summaryStats.done }}
-                </div>
-                <div class="buyer-summary-lbl">Fully answered</div>
-              </div>
-              <div class="buyer-summary-stat">
-                <div class="buyer-summary-num buyer-summary-num--partial">
-                  {{ summaryStats.partial }}
-                </div>
-                <div class="buyer-summary-lbl">Partially</div>
-              </div>
-              <div class="buyer-summary-stat">
-                <div class="buyer-summary-num buyer-summary-num--empty">
-                  {{ summaryStats.empty }}
-                </div>
-                <div class="buyer-summary-lbl">Not yet shared</div>
-              </div>
-            </div>
-            <p class="buyer-summary-hint">
-              Sellers earn the most from completing every section. Tap any
-              below to see what's been shared so far.
-            </p>
-          </div>
-
-          <!-- Records List — passportview-style section cards -->
-          <div class="buyer-records-list">
-            <div
-              v-for="section in filteredSections"
-              :key="section.id"
-              class="buyer-record-row"
-              :class="'state-' + sectionCompletion(section)"
-              @click="goToSection(section.id)"
-            >
-              <div class="buyer-record-icon">
-                <OPIcon
-                  :name="section.imageKey || 'fittingsContents'"
-                  class="w-[60px] h-[60px]"
-                />
-              </div>
-              <div class="buyer-record-info">
-                <h3 class="buyer-record-title">{{ section.title }}</h3>
-                <p
-                  v-if="section.subtitle || section.description"
-                  class="buyer-record-sub"
-                >
-                  {{ section.subtitle || section.description }}
-                </p>
-                <div class="buyer-record-meta">
-                  <span
-                    class="buyer-record-pill"
-                    :class="'pill--' + sectionCompletion(section)"
-                  >
-                    <template v-if="sectionCompletion(section) === 'complete'">
-                      ✓ Fully answered
-                    </template>
-                    <template
-                      v-else-if="sectionCompletion(section) === 'partial'"
-                    >
-                      ⏳ Partially answered
-                    </template>
-                    <template v-else>○ Not started</template>
-                  </span>
-                </div>
-                <div class="buyer-record-progress">
-                  <div class="buyer-record-track">
-                    <div
-                      class="buyer-record-fill"
-                      :class="'fill--' + sectionCompletion(section)"
-                      :style="{ width: sectionPct(section) + '%' }"
-                    />
                   </div>
-                  <span class="buyer-record-pct">
-                    {{ sectionPct(section) }}%
-                  </span>
+                </div>
+                <div class="bp-pd-item">
+                  <div class="bp-pd-label">EPC rating</div>
+                  <div class="bp-pd-value">
+                    <template v-if="data.property.epcRating">
+                      {{ data.property.epcRating }}
+                      <span class="bp-pd-chip">To improve</span>
+                    </template>
+                    <template v-else>—</template>
+                  </div>
+                </div>
+                <div class="bp-pd-item">
+                  <div class="bp-pd-label">Tenure</div>
+                  <div class="bp-pd-value">{{ displayTenure }}</div>
+                </div>
+                <div class="bp-pd-item">
+                  <div class="bp-pd-label">Year built</div>
+                  <div class="bp-pd-value">{{ data.property.yearBuilt || '—' }}</div>
                 </div>
               </div>
-              <button class="buyer-record-arrow">
-                <OPIcon name="caretRight" class="w-[13px] h-[13px]" />
-              </button>
             </div>
-          </div>
-        </div>
 
-        <!-- Comparable Sales -->
-        <div v-if="comparables.length" class="buyer-section">
-          <h2 class="buyer-section-title">Nearby Sold Prices</h2>
-          <p class="buyer-section-sub">
-            Recent Land Registry sales in the same postcode area.
-          </p>
-          <div class="buyer-comparables-list">
-            <div
-              v-for="(comp, i) in comparables"
-              :key="i"
-              class="buyer-comp-row"
-            >
-              <div class="buyer-comp-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                    stroke="#00a19a"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <polyline
-                    points="9,22 9,12 15,12 15,22"
-                    stroke="#00a19a"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+            <!-- Expert Guidance -->
+            <UnderReview
+              title="Connect with a Property Expert"
+              description="Our verified solicitors and surveyors are ready to review this passport with you."
+              minimumTime="1 Day"
+              @viewProfile="router.push('/passportview/expert')"
+            />
+
+            <!-- Seller completion -->
+            <div class="bp-side-card">
+              <h3 class="bp-side-title">Seller completion</h3>
+              <div class="bp-sc-row">
+                <span class="bp-sc-label">Sections answered</span>
+                <span class="bp-sc-pct">{{ passportProgress }}%</span>
               </div>
-              <div class="buyer-comp-info">
-                <p class="buyer-comp-address">{{ comp.address }}</p>
-                <p class="buyer-comp-meta">
-                  {{ comp.propertyType
-                  }}<template v-if="comp.tenure"> · {{ comp.tenure }}</template>
-                  · {{ formatSaleDate(comp.date) }}
-                </p>
+              <div class="buyer-progress-track">
+                <div
+                  class="buyer-progress-fill"
+                  :style="{ width: passportProgress + '%' }"
+                />
               </div>
-              <span class="buyer-comp-price">{{
-                formatSalePrice(comp.price)
-              }}</span>
+              <p class="bp-side-note">
+                {{
+                  passportProgress === 100
+                    ? 'All sections completed by the seller.'
+                    : "The seller is still completing some sections — you'll see updates here as they land."
+                }}
+              </p>
             </div>
-          </div>
+          </aside>
         </div>
-      </div>
       </div>
     </template>
     </main>
@@ -715,20 +572,8 @@
         "
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-            stroke="white"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-            stroke="white"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
         <span v-if="notes.length" class="notes-fab-badge">{{
           notes.length
@@ -747,12 +592,7 @@
             <h3 class="sheet-title">My Notes</h3>
             <button class="sheet-close" @click="showNotesSheet = false">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 6L6 18M6 6l12 12"
-                  stroke="#333"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
+                <path d="M18 6L6 18M6 6l12 12" stroke="#333" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </div>
@@ -787,27 +627,9 @@
                 }}</span>
                 <button class="note-delete" @click="deleteNote(note.id)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <polyline
-                      points="3,6 5,6 21,6"
-                      stroke="#dc2626"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"
-                      stroke="#dc2626"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M10 11v6M14 11v6M9 6V4h6v2"
-                      stroke="#dc2626"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
+                    <polyline points="3,6 5,6 21,6" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                 </button>
               </div>
@@ -828,12 +650,7 @@
             <h3 class="sheet-title">Share Passport</h3>
             <button class="sheet-close" @click="showShareSheet = false">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 6L6 18M6 6l12 12"
-                  stroke="#333"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
+                <path d="M18 6L6 18M6 6l12 12" stroke="#333" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </div>
@@ -872,26 +689,10 @@
       </div>
     </Teleport>
 
-    <!-- Sticky bottom action bar — Save / Ask seller — shown only when
-         data is loaded so it doesn't blink during the spinner state. -->
+    <!-- Save toast -->
     <Transition name="buyer-toast">
       <div v-if="saveToast" class="buyer-save-toast">{{ saveToast }}</div>
     </Transition>
-    <div v-if="data" class="buyer-action-bar">
-      <button
-        class="buyer-action-save"
-        :class="{ 'is-saved': isSavedToProfile }"
-        @click="toggleSaveToProfile"
-      >
-        <span class="buyer-action-heart">
-          {{ isSavedToProfile ? '♥' : '♡' }}
-        </span>
-        {{ isSavedToProfile ? 'Saved' : 'Save to Profile' }}
-      </button>
-      <button class="buyer-action-ask" data-tour="ask" @click="askSeller">
-        💬 Ask the seller
-      </button>
-    </div>
 
     <!-- Guided tour — auto-runs once per browser, replays from "?" in hero -->
     <OnboardingTour
@@ -904,7 +705,6 @@
 
 <script setup lang="ts">
 import OPIcon from '~/components/ui/OPIcon.vue'
-import ImageSlider from '~/components/ui/ImageSlider.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
@@ -918,7 +718,7 @@ const buyerTourSteps = [
     body: 'Address, HomeScore, document count and how much of the seller\'s record has been completed.',
   },
   {
-    selector: '.buyer-card',
+    selector: '.bp-col-main',
     title: 'Everything in one place',
     body: 'Documents, surveys, the seller\'s answers and the property history — no more chasing for paperwork.',
   },
@@ -941,6 +741,16 @@ const buyerTourSteps = [
 import UnderReview from '~/components/passport-view/UnderReview.vue'
 
 definePageMeta({ middleware: 'auth' })
+
+// Editorial serif for display headings — matches the landing page look.
+useHead({
+  link: [
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap',
+    },
+  ],
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -992,23 +802,6 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
-
-const propertyImagesArr = computed<string[]>(() => {
-  const uploaded = data.value?.property?.images as string[] | null
-  if (uploaded?.length) return uploaded
-  const imageUrl = data.value?.property?.imageUrl
-  if (imageUrl) return [imageUrl]
-  return []
-})
-
-const propertyImage = computed(() => {
-  const uploaded = data.value?.property?.images as string[] | null
-  if (uploaded?.length) return uploaded[0]
-  return (
-    data.value?.property?.imageUrl ||
-    'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'
-  )
 })
 
 const cityLine = computed(() => {
@@ -1070,22 +863,11 @@ const heroDocsCount = computed(() => {
   return n
 })
 
-// ── Risk pill (next to price) — anchors to red-flags card ────────
-const riskPillClass = computed(() =>
-  // declared lazily — `redFlags` is defined further down in the script
-  // but Vue's reactivity resolves at render time, so this is fine.
-  // eslint-disable-next-line
-  (typeof redFlags !== 'undefined' && redFlags.value?.length)
-    ? 'risk-pill--warn'
-    : 'risk-pill--ok',
+// ── Progress ring geometry (r = 52) ──────────────────────────────
+const ringCircumference = 2 * Math.PI * 52
+const ringOffset = computed(
+  () => ringCircumference - (overallProgressPct.value / 100) * ringCircumference,
 )
-function scrollToRedFlags() {
-  if (typeof document === 'undefined') return
-  const el = document.querySelector('.buyer-redflags-card')
-  if (el && 'scrollIntoView' in el) {
-    ;(el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
 
 // ── Section completion summary stats ─────────────────────────────
 const summaryStats = computed(() => {
@@ -1143,7 +925,7 @@ function goToResumeSection() {
   }
 }
 
-// ── Sticky bottom action bar ─────────────────────────────────────
+// ── Save to profile ──────────────────────────────────────────────
 const isSavedToProfile = ref(false)
 const saveToast = ref('')
 function toggleSaveToProfile() {
@@ -1412,29 +1194,26 @@ async function deleteNote(noteId: string) {
 <style scoped>
 /* ── Web canvas ───────────────────────────────────────────────────── */
 .buyer-page {
-  --color-border: #e7ecf2;
+  --navy: #231d45;
+  --navy-2: #2c2456;
+  --teal: #00a19a;
+  --teal-dark: #00857f;
+  --teal-bright: #2fd0c6;
+  --ink: #231d45;
+  --ink-soft: #5a5570;
+  --ink-faint: #8b8799;
+  --line: #ececf2;
+  --bg: #f3f2ef;
+  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --color-border: #ececf2;
   min-height: 100dvh;
-  color: #231d45;
-  background: #f3f2ef;
+  color: var(--ink);
+  background: var(--bg);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: clip;
   position: relative;
-}
-.bp-ambient,
-.bp-mesh { pointer-events: none; position: fixed; }
-.bp-ambient { border-radius: 999px; filter: blur(48px); opacity: 0.16; }
-.bp-ambient-a { width: 300px; height: 300px; left: -100px; top: 120px; background: #00a19a; }
-.bp-ambient-b { width: 320px; height: 320px; right: -120px; top: 160px; background: #5a4cf0; }
-.bp-mesh {
-  inset: 0;
-  opacity: 0.02;
-  background-image:
-    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(180deg, #000, transparent 86%);
 }
 
 /* ── Web nav ──────────────────────────────────────────────────────── */
@@ -1445,43 +1224,47 @@ async function deleteNote(noteId: string) {
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
-.hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 10px; color: #0d1835; cursor: pointer; font-size: 20px; font-weight: 800; flex-shrink: 0; font-family: inherit; }
+.hsw-nav-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hsw-brand { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 9px; color: var(--navy); cursor: pointer; font-size: 19px; font-weight: 800; letter-spacing: -0.4px; flex-shrink: 0; font-family: inherit; }
 .hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
 .hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
-.hsw-links { display: flex; gap: 6px; }
-.hsw-links button { border: 0; background: transparent; color: #475a7b; cursor: pointer; font-size: 14px; font-weight: 700; padding: 10px 14px; border-radius: 10px; white-space: nowrap; font-family: inherit; transition: background 0.18s, color 0.18s; }
-.hsw-links button:hover { color: #0c2342; background: rgba(0, 161, 154, 0.08); }
-.hsw-links button.active { color: #00857f; background: rgba(0, 161, 154, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24); }
-.hsw-actions { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.hsw-links { display: flex; gap: 4px; }
+.hsw-links button { border: 0; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 9px; white-space: nowrap; font-family: inherit; transition: background 0.15s, color 0.15s; }
+.hsw-links button:hover { color: var(--navy); background: rgba(35, 29, 69, 0.05); }
+.hsw-links button.active { color: var(--teal-dark); background: rgba(0, 161, 154, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24); }
+.hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .hsw-iconbtn {
-  width: 42px; height: 42px;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
   background: #fff;
-  color: #475a7b;
+  color: var(--ink-soft);
   cursor: pointer;
   display: grid;
   place-items: center;
-  font-size: 16px;
-  font-weight: 800;
   flex-shrink: 0;
-  transition: border-color 0.18s, background 0.18s, color 0.18s;
+  transition: border-color 0.16s, color 0.16s;
 }
-.hsw-iconbtn:hover { border-color: #bfd1e4; background: #f8fbff; color: #0c2342; }
-.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #d8e3ee; background: #fff; color: #0c2342; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.18s, background 0.18s; }
-.hsw-back:hover { border-color: #bfd1e4; background: #f8fbff; }
+.hsw-iconbtn svg { width: 17px; height: 17px; }
+.hsw-iconbtn:hover { border-color: var(--teal); color: var(--navy); }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
+.hsw-back:hover { border-color: var(--teal); transform: translateY(-1px); }
 .hsw-back svg { width: 15px; height: 15px; }
+.hsw-ask {
+  height: 40px; padding: 0 18px; border-radius: 999px; border: none;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: #fff; font-family: inherit; font-size: 14px; font-weight: 800;
+  letter-spacing: -0.01em; cursor: pointer; flex-shrink: 0;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
+  transition: transform 0.14s, box-shadow 0.16s;
+}
+.hsw-ask:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 161, 154, 0.34); }
 
 /* ── Centered content shell ───────────────────────────────────────── */
-.bpw-main { position: relative; z-index: 1; padding: 28px 0 64px; }
+.bpw-main { position: relative; z-index: 1; padding: 28px 0 72px; }
 .bpw-shell {
-  width: min(940px, calc(100% - 48px));
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  border-radius: 22px;
-  box-shadow: 0 22px 50px rgba(23, 52, 92, 0.1);
-  overflow: hidden;
-  border: 1px solid rgba(231, 236, 242, 0.9);
 }
 .bpw-main .buyer-loading { min-height: 50vh; }
 
@@ -1495,7 +1278,6 @@ async function deleteNote(noteId: string) {
   color: #666;
   font-size: 15px;
 }
-
 .buyer-spinner {
   width: 36px;
   height: 36px;
@@ -1504,363 +1286,492 @@ async function deleteNote(noteId: string) {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Hero */
-.buyer-hero {
+/* ── Passport hero ────────────────────────────────────────────────── */
+.bp-hero {
   position: relative;
-  width: 100%;
-  height: clamp(260px, 32vw, 380px);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 30px;
+  padding: 34px 38px;
+  border-radius: 26px;
+  background:
+    radial-gradient(120% 140% at 85% 10%, #2c2456 0%, transparent 55%),
+    linear-gradient(135deg, #1c1740 0%, #241d47 55%, #1a1638 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
+  box-shadow: 0 30px 70px rgba(28, 23, 64, 0.35);
 }
-
-.buyer-hero__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.bp-hero-glow {
+  position: absolute;
+  right: 8%;
+  top: -60px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(47, 208, 198, 0.18), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
+.bp-hero-book {
+  width: 150px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.42));
+  position: relative;
+  z-index: 1;
+}
+.bp-hero-book :deep(.passport-card) { margin: 0; padding: 0; }
+.bp-hero-book :deep(.passport-container) { width: 100%; height: 200px; }
 
-.buyer-hero__placeholder {
-  width: 100%;
-  height: 100%;
-  background: #e6e8e7;
+.bp-hero-main { position: relative; z-index: 1; min-width: 0; }
+.bp-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  margin-bottom: 10px;
+}
+.bp-hero-eyebrow-dot {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(47, 208, 198, 0.18);
+  font-size: 10px;
+}
+.bp-hero-title {
+  font-family: var(--serif);
+  font-size: clamp(30px, 3.4vw, 40px);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.5px;
+  line-height: 1.05;
+  margin: 0 0 6px;
+}
+.bp-hero-loc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0 0 16px;
+  font-weight: 500;
+}
+.bp-hero-pricerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.bp-hero-price {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.bp-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.bp-hero-metaline {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 20px;
+  font-weight: 500;
+}
+.bp-hero-stats {
+  display: flex;
+  gap: 34px;
+  padding: 16px 0 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 22px;
+}
+.bp-hero-stat { min-width: 0; }
+.bp-hero-stat-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.bp-hero-stat-val--brand { color: var(--teal-bright); }
+.bp-hero-stat-val--ready { color: var(--teal-bright); }
+.bp-hero-stat-lbl {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+  font-weight: 700;
+}
+.bp-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.bp-hero-ask {
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.3);
+  transition: transform 0.14s, box-shadow 0.16s;
+}
+.bp-hero-ask:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(0, 161, 154, 0.4); }
+.bp-hero-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.bp-hero-save:hover { border-color: rgba(255, 255, 255, 0.42); background: rgba(255, 255, 255, 0.08); }
+.bp-hero-save.is-saved { border-color: #fecdd3; color: #ffe4e6; }
+.bp-hero-save-heart { font-size: 15px; line-height: 1; }
+
+/* Ring */
+.bp-hero-ring-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.bp-hero-ring { position: relative; width: 150px; height: 150px; }
+.bp-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.bp-ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 8; }
+.bp-ring-fg {
+  fill: none;
+  stroke: var(--teal-bright);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+.bp-ring-center {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 2px;
 }
-
-.buyer-hero__placeholder-text {
-  text-align: center;
-  color: #3a4a48;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: -0.2px;
-  padding: 0 24px;
+.bp-ring-pct { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -0.02em; line-height: 1; }
+.bp-ring-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.5); }
+.bp-hero-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(47, 208, 198, 0.12);
+  border: 1px solid rgba(47, 208, 198, 0.28);
+  color: var(--teal-bright);
+  font-size: 11.5px;
+  font-weight: 700;
 }
+.bp-hero-verified-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal-bright); }
 
-.buyer-hero__badge {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  border-radius: 8px;
-  overflow: hidden;
-  width: 52px;
-  height: 72px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.buyer-hero__badge-passport {
+/* ── Resume ───────────────────────────────────────────────────────── */
+.bp-resume {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  margin: 16px 0 0;
+  padding: 16px 22px;
+  background:
+    radial-gradient(120% 200% at 100% 0%, #2c2456 0%, transparent 60%),
+    linear-gradient(135deg, #201a3f, #191533);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: transform 0.15s ease;
 }
-
-.buyer-hero__count {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  border-radius: 8px;
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: white;
-  font-size: 11px;
-}
-
-.buyer-hero__nav {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 16px 12px;
-  z-index: 2;
-}
-
-.hero-btn {
+.bp-resume:hover { transform: translateY(-1px); }
+.bp-resume-ic {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-
-/* ── Card / page surface — matches passportview theme ─────── */
-.buyer-card {
-  position: relative;
-  padding: 26px 28px 36px;
-  background: #fff;
-  color: #231d45;
-}
-
-/* Title block */
-.buyer-title-block {
-  margin-bottom: 14px;
-}
-.buyer-address {
-  color: #231d45;
-  font-weight: 800;
-  font-size: 22px;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  margin: 0 0 4px;
-}
-.buyer-city {
-  color: #94a3b8;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: -0.01em;
-  margin: 0 0 8px;
-}
-.buyer-price {
-  color: #00a19a;
-  font-weight: 800;
+  border-radius: 12px;
+  background: rgba(0, 161, 154, 0.2);
+  color: var(--teal-bright);
+  display: grid;
+  place-items: center;
   font-size: 18px;
-  letter-spacing: -0.01em;
-  margin: 0;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
+  font-weight: 800;
+  flex-shrink: 0;
 }
-.buyer-estimated {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+.bp-resume-body { flex: 1; min-width: 0; }
+.bp-resume-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+.bp-resume-sub { font-size: 12.5px; color: rgba(255, 255, 255, 0.55); margin-top: 2px; }
+.bp-resume-cta { color: var(--teal-bright); font-size: 13.5px; font-weight: 700; flex-shrink: 0; }
 
-/* Badges — pale brand pills (matches passportview's section-pct pill) */
-.buyer-badges {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 22px;
+/* ── Two-column grid ──────────────────────────────────────────────── */
+.bp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  margin-top: 28px;
+  align-items: start;
 }
-.buyer-badge {
+.bp-col-main { display: flex; flex-direction: column; gap: 34px; min-width: 0; }
+.bp-col-side { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 92px; }
+.bp-block { min-width: 0; }
+
+/* Section heading — eyebrow + serif */
+.buyer-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: #f1f9f4;
-  color: #00a19a;
-  border: 1px solid #e2f1ea;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
+  gap: 9px;
+  margin: 0 0 6px;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 1.75px;
+  text-transform: uppercase;
+  color: var(--teal);
 }
-
-/* Section heading — passportview typography */
-.buyer-section {
-  margin-bottom: 24px;
-}
+.buyer-eyebrow-dash { width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
 .buyer-section-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.01em;
-  margin: 0 0 4px;
-  line-height: 1.3;
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.4vw, 27px);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.4px;
+  margin: 0 0 6px;
+  line-height: 1.1;
 }
 .buyer-section-sub {
-  font-size: 12.5px;
-  color: #94a3b8;
-  margin: 0 0 12px;
-  line-height: 1.45;
+  font-size: 13.5px;
+  color: var(--ink-faint);
+  margin: 0 0 18px;
+  line-height: 1.55;
+  max-width: 62ch;
 }
 
-/* Details card — brand-pale gradient with brand-soft border */
-.buyer-details-card {
-  background: linear-gradient(140deg, #f3fbfa 0%, #f1f9f4 100%);
-  border: 1px solid #e2f1ea;
-  border-radius: 14px;
-  padding: 12px 14px;
-  box-shadow:
-    0 1px 3px rgba(35, 29, 69, 0.06),
-    0 2px 8px rgba(35, 29, 69, 0.04);
-}
-.buyer-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 14px;
-  padding: 4px 0;
-}
-.buyer-detail-item {
+/* ── Document & form rows ──────────────────────────────────────────── */
+.buyer-pdf-row {
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
-.buyer-detail-icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   background: #fff;
-  border: 1px solid #e2f1ea;
-  color: #00a19a;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+.buyer-pdf-row:hover { border-color: var(--teal); box-shadow: 0 10px 26px rgba(35, 29, 69, 0.08); }
+.buyer-pdf-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  color: var(--teal);
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-.buyer-detail-label {
-  font-size: 10px;
-  color: #94a3b8;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin: 0 0 2px;
-  line-height: 1.3;
-}
-.buyer-detail-value {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #231d45;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-/* Search */
-.buyer-search-row {
+.buyer-pdf-info { flex: 1; min-width: 0; }
+.buyer-pdf-title { font-size: 14.5px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 2px; }
+.buyer-pdf-sub { font-size: 12.5px; color: var(--ink-faint); margin: 0; line-height: 1.45; }
+.buyer-pdf-btn {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  align-items: center;
+  gap: 7px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 17px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.22);
+  transition: transform 0.16s ease, background 0.16s ease, opacity 0.15s;
 }
+.buyer-pdf-btn:hover:not(:disabled) { transform: translateY(-1px); background: var(--teal-dark); }
+.buyer-pdf-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+.buyer-pdf-btn:active:not(:disabled) { background: var(--teal-dark); }
+.buyer-ta6-btn,
+.buyer-ta7-btn,
+.buyer-ta10-btn { background: var(--navy); box-shadow: 0 10px 22px rgba(35, 29, 69, 0.22); }
+.buyer-ta6-btn:hover:not(:disabled),
+.buyer-ta7-btn:hover:not(:disabled),
+.buyer-ta10-btn:hover:not(:disabled),
+.buyer-ta6-btn:active:not(:disabled),
+.buyer-ta7-btn:active:not(:disabled),
+.buyer-ta10-btn:active:not(:disabled) { background: var(--navy-2); }
 
+/* ── Red Flags ────────────────────────────────────────────────────── */
+.buyer-redflags-card {
+  background: #fffbeb;
+  border: 1px solid #f5e3ad;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
+}
+.buyer-redflags-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #92400e;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+}
+.buyer-redflags-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.buyer-redflags-list li { font-size: 12px; color: #78350f; line-height: 1.5; }
+
+/* ── Search ───────────────────────────────────────────────────────── */
+.buyer-search-row { display: flex; gap: 8px; margin-bottom: 14px; }
 .buyer-search-input {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 24px;
-  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 15px;
+  box-shadow: 0 6px 18px rgba(35, 29, 69, 0.05);
+  transition: border-color 0.16s;
 }
-
-.buyer-search-input input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  color: #333;
-  background: transparent;
-}
-
-.buyer-search-input input::placeholder {
-  color: #999;
-}
-
-.buyer-search-icon {
-  flex-shrink: 0;
-}
-
+.buyer-search-input:focus-within { border-color: var(--teal); }
+.buyer-search-input input { flex: 1; border: none; outline: none; font-size: 14px; color: #333; background: transparent; font-family: inherit; }
+.buyer-search-input input::placeholder { color: #999; }
+.buyer-search-icon { flex-shrink: 0; }
 .buyer-sort-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid #e0e0e0;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: border-color 0.16s;
 }
+.buyer-sort-btn:hover { border-color: var(--teal); }
 
-/* Records list — passportview-style cards with description + progress */
-.buyer-records-list {
+/* ── Summary stat cards ───────────────────────────────────────────── */
+.bp-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.bp-summary-card {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: transparent;
-  border: none;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
+}
+.bp-summary-num { font-size: 22px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; }
+.bp-summary-num--done { color: #16a34a; }
+.bp-summary-num--partial { color: #d97706; }
+.bp-summary-num--empty { color: var(--ink-faint); }
+.bp-summary-lbl {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
 }
 
+/* ── Records grid ─────────────────────────────────────────────────── */
+.bp-records-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
 .buyer-record-row {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 14px 14px 12px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
   background: #fff;
-  border: 1px solid #eef0f6;
-  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   cursor: pointer;
-  transition:
-    border-color 0.18s,
-    background 0.18s,
-    transform 0.1s;
-  box-shadow:
-    0 1px 3px rgba(35, 29, 69, 0.06),
-    0 2px 8px rgba(35, 29, 69, 0.04);
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
 }
-.buyer-record-row:hover {
-  border-color: #e2f1ea;
-}
-.buyer-record-row:active {
-  transform: scale(0.99);
-}
-.buyer-record-row.state-complete {
-  border-color: #e2f1ea;
-}
-
+.buyer-record-row:hover { border-color: var(--teal); box-shadow: 0 12px 28px rgba(35, 29, 69, 0.09); }
+.buyer-record-row:active { transform: scale(0.99); }
+.buyer-record-head { display: flex; align-items: flex-start; justify-content: space-between; }
 .buyer-record-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
-  background: linear-gradient(140deg, #f3fbfa 0%, #f1f9f4 100%);
-  border: 1px solid #e2f1ea;
-  color: #00a19a;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  color: var(--teal);
   display: grid;
   place-items: center;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-
-.buyer-record-info {
-  flex: 1;
-  min-width: 0;
+.buyer-record-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f8f7fc;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--ink-faint);
 }
-
-.buyer-record-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-  margin: 0 0 3px;
+.buyer-record-row:hover .buyer-record-arrow {
+  background: rgba(0, 161, 154, 0.08);
+  border-color: rgba(0, 161, 154, 0.22);
+  color: var(--teal);
 }
-
-.buyer-record-sub {
-  font-size: 12px;
-  color: #94a3b8;
-  margin: 0 0 8px;
-  line-height: 1.45;
-}
-
-/* Status pill — sits above the progress bar */
-.buyer-record-meta {
-  margin-bottom: 6px;
-}
+.buyer-record-info { flex: 1; min-width: 0; }
+.buyer-record-title { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; line-height: 1.25; margin: 0 0 3px; }
+.buyer-record-sub { font-size: 12px; color: var(--ink-faint); margin: 0 0 10px; line-height: 1.45; }
+.buyer-record-meta { margin-bottom: 8px; }
 .buyer-record-pill {
   display: inline-flex;
   align-items: center;
@@ -1873,390 +1784,114 @@ async function deleteNote(noteId: string) {
   white-space: nowrap;
   line-height: 1.4;
 }
-.pill--complete {
-  background: #d1fae5;
-  color: #1f7a66;
-  border: 1px solid #a7f3d0;
-}
-.pill--partial {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fef3c7;
-}
-.pill--empty {
-  background: #f1f5f9;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
-}
+.pill--complete { background: #d1fae5; color: #1f7a66; border: 1px solid #a7f3d0; }
+.pill--partial { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.pill--empty { background: #f1f5f9; color: var(--ink-soft); border: 1px solid #e2e8f0; }
+.buyer-record-progress { display: flex; align-items: center; gap: 8px; }
+.buyer-record-track { flex: 1; height: 5px; background: #eef0f6; border-radius: 999px; overflow: hidden; }
+.buyer-record-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+.fill--complete { background: linear-gradient(90deg, #16a34a, #34d399); }
+.fill--partial { background: linear-gradient(90deg, #f59e0b, #f5c44c); }
+.fill--empty { background: #e2e8f0; }
+.buyer-record-pct { font-size: 11px; font-weight: 800; color: var(--ink-soft); min-width: 32px; text-align: right; letter-spacing: -0.01em; }
 
-/* Thin progress bar matching passportview's section-progress */
-.buyer-record-progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.buyer-record-track {
-  flex: 1;
-  height: 5px;
-  background: #eef0f6;
-  border-radius: 999px;
-  overflow: hidden;
-}
-.buyer-record-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.5s ease;
-}
-.fill--complete {
-  background: linear-gradient(90deg, #16a34a, #34d399);
-}
-.fill--partial {
-  background: linear-gradient(90deg, #f59e0b, #f5c44c);
-}
-.fill--empty {
-  background: #e2e8f0;
-}
-.buyer-record-pct {
-  font-size: 11px;
-  font-weight: 800;
-  color: #4a5568;
-  min-width: 32px;
-  text-align: right;
-  letter-spacing: -0.01em;
-}
-
-.buyer-record-arrow {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #f8f7fc;
-  border: 1px solid #eef0f6;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  color: #94a3b8;
-  margin-top: 18px;
-}
-.buyer-record-row:hover .buyer-record-arrow {
-  background: #f1f9f4;
-  border-color: #e2f1ea;
-  color: #00a19a;
-}
-
-/* PDF download row */
-.buyer-pdf-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #f0fffe;
-  border: 1.5px solid #b2e4e1;
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 24px;
-}
-
-.buyer-pdf-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.buyer-pdf-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 2px;
-}
-
-.buyer-pdf-sub {
-  font-size: 12px;
-  color: #666;
-  margin: 0;
-}
-
-.buyer-pdf-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: #00a19a;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition:
-    background 0.15s,
-    opacity 0.15s;
-}
-
-.buyer-pdf-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.buyer-pdf-btn:active:not(:disabled) {
-  background: #00877f;
-}
-
-.buyer-ta6-row {
-  background: #f4f0ff;
-  border-color: #c4b5e8;
-  margin-top: -12px;
-}
-
-.buyer-ta6-btn {
-  background: #5a54d6;
-}
-
-.buyer-ta6-btn:active:not(:disabled) {
-  background: #4740c0;
-}
-
-.buyer-ta7-row {
-  background: #fff8ed;
-  border-color: #f5c96a;
-  margin-top: -12px;
-}
-
-.buyer-ta7-btn {
-  background: #92400e;
-}
-
-.buyer-ta7-btn:active:not(:disabled) {
-  background: #92400e;
-}
-
-.buyer-ta10-row {
-  background: #eef4ff;
-  border-color: #b8cfee;
-  margin-top: -12px;
-}
-
-.buyer-ta10-btn {
-  background: #2563eb;
-}
-
-.buyer-ta10-btn:active:not(:disabled) {
-  background: #1d4ed8;
-}
-
-/* ── Progress ─────────────────────────────────────────────────────────── */
-.buyer-progress-card {
-  background: linear-gradient(140deg, #f3fbfa 0%, #f1f9f4 100%);
-  border: 1px solid #e2f1ea;
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  box-shadow:
-    0 1px 3px rgba(35, 29, 69, 0.06),
-    0 2px 8px rgba(35, 29, 69, 0.04);
-}
-
-.buyer-progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.buyer-progress-label {
-  font-size: 13px;
-  font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.01em;
-}
-
-.buyer-progress-pct {
-  font-size: 14px;
-  font-weight: 800;
-  color: #00a19a;
-  letter-spacing: -0.01em;
-}
-
-.buyer-progress-track {
-  height: 6px;
-  background: #d5ece8;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.buyer-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00a19a, #00b5ad);
-  border-radius: 999px;
-  transition: width 0.6s ease;
-}
-
-.buyer-progress-hint {
-  font-size: 11.5px;
-  color: #94a3b8;
-  margin: 0;
-  line-height: 1.45;
-}
-
-/* ── Red Flags ────────────────────────────────────────────────────────── */
-.buyer-redflags-card {
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  box-shadow:
-    0 1px 3px rgba(35, 29, 69, 0.06),
-    0 2px 8px rgba(35, 29, 69, 0.04);
-}
-
-.buyer-redflags-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 800;
-  color: #92400e;
-  letter-spacing: -0.01em;
-  margin-bottom: 10px;
-}
-
-.buyer-redflags-list {
-  margin: 0;
-  padding-left: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.buyer-redflags-list li {
-  font-size: 12px;
-  color: #78350f;
-  line-height: 1.5;
-}
-
-/* ── Completion dots ──────────────────────────────────────────────────── */
-.buyer-record-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.buyer-completion-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dot--complete {
-  background: #22c55e;
-}
-
-.dot--partial {
-  background: #f59e0b;
-}
-
-.dot--empty {
-  background: #d1d5db;
-  border: 1.5px solid #9ca3af;
-}
-
-/* ── Comparables — passportview-themed list ──────────────────────────── */
+/* ── Comparables ──────────────────────────────────────────────────── */
 .buyer-comparables-list {
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: hidden;
-  border: 1px solid #eef0f6;
+  border: 1px solid var(--line);
   background: #fff;
-  box-shadow:
-    0 1px 3px rgba(35, 29, 69, 0.06),
-    0 2px 8px rgba(35, 29, 69, 0.04);
+  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.06);
 }
-
 .buyer-comp-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 13px 16px;
   border-bottom: 1px solid #f1f5f9;
   transition: background 0.12s;
 }
-.buyer-comp-row:hover {
-  background: #f0fdfa;
-}
-.buyer-comp-row:last-child {
-  border-bottom: none;
-}
-
+.buyer-comp-row:hover { background: #f0fdfa; }
+.buyer-comp-row:last-child { border-bottom: none; }
 .buyer-comp-icon {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(140deg, #f3fbfa 0%, #f1f9f4 100%);
-  border: 1px solid #e2f1ea;
-  color: #00a19a;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  color: var(--teal);
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
+.buyer-comp-info { flex: 1; min-width: 0; }
+.buyer-comp-address { font-size: 13.5px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.buyer-comp-meta { font-size: 11.5px; color: var(--ink-faint); margin: 0; }
+.buyer-comp-price { font-size: 14px; font-weight: 800; color: #00a19a; letter-spacing: -0.01em; flex-shrink: 0; }
 
-.buyer-comp-info {
-  flex: 1;
-  min-width: 0;
+/* ── Sidebar cards ────────────────────────────────────────────────── */
+.bp-side-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.06);
 }
-
-.buyer-comp-address {
-  font-size: 13.5px;
+.bp-side-title { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 4px; }
+.bp-side-sub { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 16px; line-height: 1.5; }
+.bp-pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bp-pd-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: #fbfbfa;
+}
+.bp-pd-label {
+  font-size: 9.5px;
   font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.01em;
-  margin: 0 0 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 5px;
 }
-
-.buyer-comp-meta {
-  font-size: 11.5px;
-  color: #94a3b8;
-  margin: 0;
-}
-
-.buyer-comp-price {
-  font-size: 14px;
+.bp-pd-value { font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.bp-pd-chip {
+  font-size: 9px;
   font-weight: 800;
-  color: #00a19a;
-  letter-spacing: -0.01em;
-  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 2px 6px;
+  border-radius: 6px;
 }
+.bp-sc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.bp-sc-label { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+.bp-sc-pct { font-size: 15px; font-weight: 800; color: #d97706; letter-spacing: -0.01em; }
+.buyer-progress-track { height: 6px; background: #eef0f6; border-radius: 999px; overflow: hidden; margin-bottom: 10px; }
+.buyer-progress-fill { height: 100%; background: linear-gradient(90deg, #00a19a, #00b5ad); border-radius: 999px; transition: width 0.6s ease; }
+.bp-side-note { font-size: 11.5px; color: var(--ink-faint); margin: 0; line-height: 1.5; }
 
-/* ── Notes FAB ────────────────────────────────────────────────────────── */
+/* ── Notes FAB ────────────────────────────────────────────────────── */
 .notes-fab {
   position: fixed;
-  bottom: 96px;
-  right: 20px;
-  width: 52px;
-  height: 52px;
+  bottom: 28px;
+  right: 24px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: #00a19a;
+  background: linear-gradient(135deg, #00a19a, #00857f);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.4);
+  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.4);
   z-index: 50;
   transition: transform 0.15s;
 }
-
-.notes-fab:active {
-  transform: scale(0.94);
-}
-
+.notes-fab:active { transform: scale(0.94); }
 .notes-fab-badge {
   position: absolute;
   top: -4px;
@@ -2273,70 +1908,34 @@ async function deleteNote(noteId: string) {
   justify-content: center;
 }
 
-/* ── Bottom Sheets ────────────────────────────────────────────────────── */
+/* ── Bottom Sheets ────────────────────────────────────────────────── */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   z-index: 100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 20px;
   animation: fade-in 0.2s ease;
 }
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .sheet-panel {
   width: 100%;
-  max-width: 480px;
-  max-height: 80vh;
+  max-width: 460px;
+  max-height: 84vh;
   background: white;
-  border-radius: 20px 20px 0 0;
+  border-radius: 20px;
   overflow-y: auto;
-  padding: 12px 20px 40px;
-  animation: slide-up 0.25s ease;
+  padding: 20px 22px 28px;
+  animation: pop-in 0.22s ease;
+  color-scheme: light;
 }
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: #e0e0e0;
-  margin: 0 auto 16px;
-}
-
-.sheet-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.sheet-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
-}
-
+@keyframes pop-in { from { transform: translateY(12px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.sheet-handle { display: none; }
+.sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.sheet-title { font-size: 17px; font-weight: 800; color: #231d45; margin: 0; }
 .sheet-close {
   width: 32px;
   height: 32px;
@@ -2348,15 +1947,7 @@ async function deleteNote(noteId: string) {
   align-items: center;
   justify-content: center;
 }
-
-/* Notes compose */
-.notes-compose {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
+.notes-compose { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
 .notes-textarea {
   width: 100%;
   border: 1.5px solid #e0e0e0;
@@ -2364,16 +1955,15 @@ async function deleteNote(noteId: string) {
   padding: 10px 12px;
   font-size: 14px;
   color: #333;
+  background: #fff;
   resize: none;
   outline: none;
   font-family: inherit;
   box-sizing: border-box;
+  color-scheme: light;
 }
-
-.notes-textarea:focus {
-  border-color: #00a19a;
-}
-
+.notes-textarea::placeholder { color: #9a9aa5; }
+.notes-textarea:focus { border-color: #00a19a; }
 .notes-save-btn {
   align-self: flex-end;
   background: #00a19a;
@@ -2382,78 +1972,21 @@ async function deleteNote(noteId: string) {
   border-radius: 10px;
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
 }
-
-.notes-save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Notes list */
-.notes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.notes-empty {
-  text-align: center;
-  color: #999;
-  font-size: 14px;
-  padding: 24px 0;
-}
-
-.note-item {
-  background: #f8fffe;
-  border: 1px solid #e0f5f4;
-  border-radius: 10px;
-  padding: 12px 14px;
-}
-
-.note-text {
-  font-size: 14px;
-  color: #1a1a1a;
-  margin: 0 0 8px;
-  line-height: 1.5;
-}
-
-.note-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.note-date {
-  font-size: 11px;
-  color: #999;
-}
-
-.note-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-}
-
-/* Share sheet */
+.notes-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.notes-list { display: flex; flex-direction: column; gap: 10px; }
+.notes-empty { text-align: center; color: #999; font-size: 14px; padding: 24px 0; }
+.note-item { background: #f8fffe; border: 1px solid #e0f5f4; border-radius: 10px; padding: 12px 14px; }
+.note-text { font-size: 14px; color: #231d45; margin: 0 0 8px; line-height: 1.5; }
+.note-footer { display: flex; justify-content: space-between; align-items: center; }
+.note-date { font-size: 11px; color: #999; }
+.note-delete { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; }
 .share-intro,
-.share-result {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.share-hint {
-  font-size: 14px;
-  color: #555;
-  margin: 0;
-  line-height: 1.5;
-}
-
+.share-result { display: flex; flex-direction: column; gap: 12px; }
+.share-hint { font-size: 14px; color: #555; margin: 0; line-height: 1.5; }
 .share-generate-btn {
   background: #00a19a;
   color: white;
@@ -2461,46 +1994,16 @@ async function deleteNote(noteId: string) {
   border-radius: 12px;
   padding: 14px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   width: 100%;
+  font-family: inherit;
 }
-
-.share-generate-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.share-regenerate {
-  background: #e6f9f7;
-  color: #00a19a;
-  border: 1.5px solid #b2e4e1;
-}
-
-.share-expires {
-  font-size: 12px;
-  color: #999;
-  margin: 0;
-}
-
-.share-url-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f5f5f5;
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-.share-url-text {
-  flex: 1;
-  font-size: 12px;
-  color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+.share-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.share-regenerate { background: #e6f9f7; color: #00a19a; border: 1.5px solid #b2e4e1; }
+.share-expires { font-size: 12px; color: #999; margin: 0; }
+.share-url-row { display: flex; align-items: center; gap: 8px; background: #f5f5f5; border-radius: 10px; padding: 10px 12px; }
+.share-url-text { flex: 1; font-size: 12px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .share-copy-btn {
   background: #00a19a;
   color: white;
@@ -2508,339 +2011,21 @@ async function deleteNote(noteId: string) {
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.2s;
-}
-
-.share-copy-btn:active {
-  background: #00877f;
-}
-
-/* ── Premium hero card — passport book + identity + stats strip ── */
-.buyer-hero-card {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  gap: 14px;
-  padding: 14px;
-  margin: 4px 0 18px;
-  background: linear-gradient(135deg, #f4fbfa, #f1f9f4);
-  border: 1px solid #e2f1ea;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 140, 134, 0.1);
-}
-.buyer-hero-glow {
-  position: absolute;
-  right: -30px;
-  bottom: -30px;
-  width: 140px;
-  height: 140px;
-  background: radial-gradient(
-    circle,
-    rgba(0, 161, 154, 0.18),
-    transparent 70%
-  );
-  border-radius: 50%;
-  pointer-events: none;
-}
-.buyer-hero-book {
-  width: 84px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 6px 14px rgba(0, 140, 134, 0.28));
-  position: relative;
-  z-index: 1;
-}
-.buyer-hero-book :deep(.passport-card) {
-  margin: 0;
-  padding: 0;
-}
-.buyer-hero-book :deep(.passport-container) {
-  width: 100%;
-  height: 110px;
-}
-.buyer-hero-info {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  z-index: 1;
-}
-.buyer-hero-eyebrow {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #00a19a;
-  margin-bottom: 4px;
-}
-.buyer-hero-addr {
-  font-size: 16px;
-  font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-.buyer-hero-sub {
-  font-size: 11.5px;
-  color: #94a3b8;
-  margin: 2px 0 10px;
-}
-.buyer-hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  padding-top: 8px;
-  border-top: 1px solid rgba(0, 140, 134, 0.1);
-}
-.buyer-hero-stat {
-  text-align: center;
-  padding: 0 4px;
-}
-.buyer-hero-stat + .buyer-hero-stat {
-  border-left: 1px solid rgba(0, 140, 134, 0.08);
-}
-.buyer-hero-stat-val {
-  font-size: 16px;
-  font-weight: 800;
-  color: #231d45;
-  line-height: 1;
-  letter-spacing: -0.01em;
-}
-.buyer-hero-stat-val--brand {
-  color: #00a19a;
-}
-.buyer-hero-stat-val--ready {
-  color: #00a19a;
-}
-.buyer-hero-stat-lbl {
-  font-size: 8.5px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 3px;
-  font-weight: 700;
-}
-
-/* ── Risk pill in title block ──────────────────────────────────── */
-.buyer-risk-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 8px;
-  padding: 5px 11px;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 999px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  letter-spacing: -0.01em;
   font-family: inherit;
 }
-.risk-pill--ok {
-  background: #d1fae5;
-  color: #1f7a66;
-  border-color: #a7f3d0;
-}
-.risk-pill--ok:hover {
-  background: #a7f3d0;
-}
-.risk-pill--warn {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fef3c7;
-}
-.risk-pill--warn:hover {
-  background: #fef3c7;
-}
+.share-copy-btn:active { background: #00877f; }
 
-/* ── Resume card ───────────────────────────────────────────────── */
-.buyer-resume {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin: 12px 0 18px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, #00a19a, #00a19a);
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  text-align: left;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.28);
-  transition: transform 0.15s ease;
-  font-family: inherit;
-}
-.buyer-resume:hover {
-  transform: translateY(-1px);
-}
-.buyer-resume-ic {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.2);
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-.buyer-resume-body {
-  flex: 1;
-  min-width: 0;
-}
-.buyer-resume-eyebrow {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.78);
-}
-.buyer-resume-title {
-  font-size: 13.5px;
-  font-weight: 800;
-  margin-top: 2px;
-  letter-spacing: -0.01em;
-}
-.buyer-resume-chev {
-  font-size: 22px;
-  opacity: 0.7;
-  flex-shrink: 0;
-}
-
-/* ── Section completion summary ───────────────────────────────── */
-.buyer-summary-card {
-  background: linear-gradient(140deg, #f3fbfa 0%, #f1f9f4 100%);
-  border: 1px solid #e2f1ea;
-  border-radius: 14px;
-  padding: 14px 14px 12px;
-  margin-bottom: 12px;
-  box-shadow:
-    0 1px 3px rgba(35, 29, 69, 0.06),
-    0 2px 8px rgba(35, 29, 69, 0.04);
-}
-.buyer-summary-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
-}
-.buyer-summary-stat {
-  text-align: center;
-  padding: 0 4px;
-}
-.buyer-summary-stat + .buyer-summary-stat {
-  border-left: 1px solid rgba(0, 140, 134, 0.12);
-}
-.buyer-summary-num {
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.buyer-summary-num--done {
-  color: #16a34a;
-}
-.buyer-summary-num--partial {
-  color: #92400e;
-}
-.buyer-summary-num--empty {
-  color: #94a3b8;
-}
-.buyer-summary-lbl {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 4px;
-}
-.buyer-summary-hint {
-  font-size: 11.5px;
-  color: #4a5568;
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* ── Sticky bottom action bar ─────────────────────────────────── */
-.buyer-action-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 30;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 8px;
-  max-width: 28rem;
-  margin: 0 auto;
-  padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #eef0f6;
-  box-shadow: 0 -4px 20px rgba(35, 29, 69, 0.08);
-}
-.buyer-action-save {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #fff;
-  border: 1.5px solid #eef0f6;
-  color: #4a5568;
-  font-weight: 700;
-  font-size: 12.5px;
-  padding: 11px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.15s;
-}
-.buyer-action-save:hover {
-  border-color: #e2f1ea;
-}
-.buyer-action-save.is-saved {
-  background: #fff1f2;
-  border-color: #fecdd3;
-  color: #be123c;
-}
-.buyer-action-heart {
-  font-size: 14px;
-  line-height: 1;
-}
-.buyer-action-ask {
-  background: linear-gradient(135deg, #00a19a, #00a19a);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 11px 16px;
-  font-size: 13.5px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.28);
-  font-family: inherit;
-  transition: transform 0.12s, box-shadow 0.15s;
-}
-.buyer-action-ask:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(0, 161, 154, 0.34);
-}
-
-/* Pad the bottom of the scrollable card so content isn't hidden under
-   the sticky bar. */
-.buyer-card {
-  padding-bottom: 88px;
-}
-
-/* Save toast — slides down from the top */
+/* ── Save toast ───────────────────────────────────────────────────── */
 .buyer-save-toast {
   position: fixed;
   left: 50%;
   top: 90px;
   transform: translateX(-50%);
-  z-index: 40;
+  z-index: 60;
   background: #231d45;
   color: #fff;
   font-size: 12.5px;
@@ -2851,32 +2036,40 @@ async function deleteNote(noteId: string) {
   letter-spacing: -0.01em;
 }
 .buyer-toast-enter-active,
-.buyer-toast-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
+.buyer-toast-leave-active { transition: opacity 0.25s ease, transform 0.25s ease; }
 .buyer-toast-enter-from,
-.buyer-toast-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-12px);
-}
+.buyer-toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
 
 /* ── Responsive ───────────────────────────────────────────────────── */
-@media (max-width: 899px) {
+@media (max-width: 1040px) {
+  .bp-grid { grid-template-columns: 1fr; }
+  .bp-col-side { position: static; }
+  .bp-col-side .bp-side-card { max-width: none; }
+}
+@media (max-width: 900px) {
   .hsw-links { display: none; }
   .hsw-shell { width: calc(100% - 32px); }
-  .hsw-nav-inner { min-height: 58px; }
-  .bpw-main { padding-top: 0; }
-  .bpw-shell {
-    width: 100%;
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-    box-shadow: none;
+  .hsw-nav-inner { min-height: 60px; }
+  .bpw-shell { width: calc(100% - 32px); }
+  .bp-hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 28px 22px;
+    gap: 22px;
   }
+  .bp-hero-book { margin: 0 auto; }
+  .bp-hero-eyebrow,
+  .bp-hero-pricerow,
+  .bp-hero-stats,
+  .bp-hero-actions { justify-content: center; }
+  .bp-hero-stats { justify-content: center; }
+  .bp-hero-ring-wrap { margin: 0 auto; }
 }
 @media (max-width: 640px) {
-  .hsw-back span,
-  .hsw-back { font-size: 13px; }
-  .buyer-card { padding-left: 18px; padding-right: 18px; }
+  .hsw-ask { display: none; }
+  .bp-summary-row { grid-template-columns: 1fr; }
+  .bp-records-grid { grid-template-columns: 1fr; }
+  .bp-hero-stats { gap: 22px; }
+  .bpw-main { padding-top: 16px; }
 }
 </style>
