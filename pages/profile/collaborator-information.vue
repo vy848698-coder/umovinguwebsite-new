@@ -532,7 +532,7 @@ const goBack = useGoBack('/profile')
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 44px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -1.4px;
   line-height: 1.04;
   margin: 0 0 8px;

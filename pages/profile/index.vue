@@ -615,7 +615,7 @@ const deleteAccount = async () => {
   line-height: 1.08;
   letter-spacing: -1.4px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
 }
 
 .pf-sub {
@@ -691,7 +691,7 @@ const deleteAccount = async () => {
   line-height: 1.15;
   letter-spacing: -0.6px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
 }
 
 .pf-email {

@@ -302,7 +302,7 @@ const goBack = useGoBack('/buyer-profile/pdf')
   padding: 6px 12px; border-radius: 100px; margin-bottom: 14px;
 }
 .sd-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
-.sd-h1 { font-size: 38px; font-weight: 800; color: #10263d; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
+.sd-h1 { font-size: 38px; font-weight: 800; color: #231d45; letter-spacing: -1px; line-height: 1.08; margin-bottom: 10px; }
 .sd-sub { font-size: 15px; color: #627891; line-height: 1.6; font-weight: 500; }
 
 /* Grid */
@@ -346,7 +346,7 @@ const goBack = useGoBack('/buyer-profile/pdf')
 /* CTA */
 .cta-btn {
   width: 100%; margin-top: 20px;
-  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 48%, #4f4ff2 100%);
+  background: #00857f;
   color: #fff; border: none; border-radius: 14px; padding: 17px;
   font-size: 15px; font-weight: 800; font-family: inherit;
   box-shadow: 0 14px 26px rgba(58,87,206,0.26); cursor: pointer;

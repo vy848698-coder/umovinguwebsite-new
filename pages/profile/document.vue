@@ -638,7 +638,7 @@ const goBack = useGoBack('/profile')
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.35px;
-  color: #10263d;
+  color: #231d45;
 }
 
 .dc-body {

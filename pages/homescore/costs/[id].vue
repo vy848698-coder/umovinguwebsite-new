@@ -70,6 +70,21 @@
             energy costs
           </div>
         </div>
+        <!-- Breakdown strip — fills the hero and shows where the money goes -->
+        <div class="cost-hero-split">
+          <div class="cost-hero-split-item">
+            <div class="cost-hero-split-label">Energy</div>
+            <div class="cost-hero-split-val">£{{ fmt(tween(data.energy.total)) }}</div>
+          </div>
+          <div class="cost-hero-split-item">
+            <div class="cost-hero-split-label">Water</div>
+            <div class="cost-hero-split-val">£{{ fmt(tween(data.water.cost)) }}</div>
+          </div>
+          <div class="cost-hero-split-item">
+            <div class="cost-hero-split-label">Council tax</div>
+            <div class="cost-hero-split-val">£{{ fmt(tween(data.councilTax.cost)) }}</div>
+          </div>
+        </div>
       </div>
       <!-- /cost-hero -->
       </div>
@@ -1036,7 +1051,7 @@ function onUpload() {
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
-  background: linear-gradient(120deg, #00a19a 0%, #2f9bdf 52%, #5a4cf0 100%);
+  background: #00857f;
   box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -1458,6 +1473,50 @@ function onUpload() {
 .cost-compare-text b {
   color: #fff;
   font-weight: 800;
+}
+
+/* Breakdown strip — three equal columns anchored to the base of the hero */
+.cost-hero-split {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+/* Hero is a flex column so the split strip can anchor to its base and
+   soak up the extra height from the taller summary column beside it. */
+.rc-hero-col .cost-hero {
+  display: flex;
+  flex-direction: column;
+}
+.rc-hero-col .cost-compare {
+  margin-bottom: 18px;
+}
+.rc-hero-col .cost-hero-split {
+  margin-top: auto;
+}
+.cost-hero-split-item {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  text-align: center;
+}
+.cost-hero-split-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+.cost-hero-split-val {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  font-feature-settings: 'tnum';
 }
 
 /* ── Section headers ──────────────────────────────────────── */

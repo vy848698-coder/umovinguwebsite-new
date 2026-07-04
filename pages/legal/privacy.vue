@@ -269,7 +269,7 @@ const goBack = useGoBack('/profile/settings')
 .lg-h1 {
   font-size: 42px;
   font-weight: 750;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -1.3px;
   line-height: 1.03;
   margin: 0;
@@ -295,7 +295,7 @@ const goBack = useGoBack('/profile/settings')
 .lg-content h2 {
   font-size: 17px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -0.4px;
   margin: 28px 0 10px;
 }
@@ -322,7 +322,7 @@ const goBack = useGoBack('/profile/settings')
   border-bottom: 1px solid rgba(6, 122, 116, 0.4);
 }
 .lg-content a:hover { border-bottom-color: #067a74; }
-.lg-content strong { color: #10263d; font-weight: 800; }
+.lg-content strong { color: #231d45; font-weight: 800; }
 .lg-fineprint {
   margin-top: 30px !important;
   padding-top: 18px;

@@ -36,122 +36,139 @@
     </header>
 
     <main class="hsw-shell ppv-main">
-      <!-- Page head — title + lede + isometric house -->
+      <!-- Page head — kicker + title + lede, role switch on the right -->
       <div class="ppv-head">
         <div class="ppv-head-text">
-          <p class="ppv-kicker"><span class="ppv-kicker-dot" />Property Passport</p>
+          <p class="ppv-kicker"><span class="ppv-kicker-line" />Property Passport</p>
           <h1>Your Passport</h1>
           <p class="ppv-lede">
-            Manage, publish, and share your property information with ease.
+            Manage, publish and share your property information —
+            every answer ready before anyone asks.
           </p>
         </div>
-        <img
-          src="/house.png"
-          alt=""
-          class="ppv-head-house"
-          @error="(e) => (e.target.style.display = 'none')"
-        />
+        <div class="ppv-role-switch">
+          <SegmentedSwitch
+            v-model="selectedRole"
+            :options="roleOptions"
+            @update:modelValue="onRoleSwitch"
+          />
+        </div>
       </div>
 
-      <!-- Seller / Buyer role switch -->
-      <SegmentedSwitch
-        class="ppv-role-switch"
-        v-model="selectedRole"
-        :options="roleOptions"
-        @update:modelValue="onRoleSwitch"
-      />
-
     <div class="passport-content">
-      <!-- ── Premium Passport hero — book on left, dashboard on right ── -->
+      <!-- ── Passport hero — book · details · progress ── -->
       <div class="pp-hero">
-        <div class="pp-hero-glow" />
         <div class="pp-hero-book">
           <PassportCard
             :line1="passportAddress.line1"
             :line2="passportAddress.line2"
           />
         </div>
-        <div class="pp-hero-info">
-          <div class="pp-hero-eyebrow">Property Passport</div>
+
+        <div class="pp-hero-main">
+          <div class="pp-hero-eyebrow">Property Passport · Live Record</div>
           <div class="pp-hero-addr-row">
             <div class="pp-hero-addr-text">
               <div class="pp-hero-addr-l1">{{ passportAddress.line1 }}</div>
-              <div class="pp-hero-addr-l2">{{ passportAddress.line2 }}</div>
+              <div class="pp-hero-addr-l2">{{ heroSubline }}</div>
             </div>
-            <button class="pp-hero-switch" @click="showPropertiesModal = true">
-              <OPIcon name="caretDown" class="w-[16px] h-[16px]" />
+            <button
+              class="pp-hero-switch"
+              aria-label="Switch property"
+              title="Switch property"
+              @click="showPropertiesModal = true"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </button>
           </div>
-          <div class="pp-hero-bottom">
-            <div class="pp-hero-stats">
-              <div class="pp-hero-stat">
-                <div class="pp-hero-stat-val">{{ heroHsScore }}</div>
-                <div class="pp-hero-stat-lbl">PTS</div>
-              </div>
-              <div class="pp-hero-stat">
-                <div class="pp-hero-stat-val">{{ heroDocsCount }}</div>
-                <div class="pp-hero-stat-lbl">Docs</div>
-              </div>
-              <div class="pp-hero-stat">
-                <div class="pp-hero-stat-val">{{ heroSectionsLabel }}</div>
-                <div class="pp-hero-stat-lbl">Sections</div>
-              </div>
-            </div>
 
-            <div class="pp-hero-progress">
-              <div class="pp-hero-ring">
-                <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
-                  <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
-                  <circle
-                    cx="36"
-                    cy="36"
-                    r="30"
-                    class="pp-hero-ring-fill"
-                    stroke-dasharray="188.5"
-                    :stroke-dashoffset="188.5 - (188.5 * safeProgress) / 100"
-                  />
-                </svg>
-                <span class="pp-hero-ring-pct">{{ overallProgress }}%</span>
-              </div>
-              <div class="pp-hero-progress-meta">
-                <div class="pp-hero-progress-label">Passport progress</div>
-                <div class="pp-hero-dash-issued">
-                  <span class="pp-hero-dash-dot" />
-                  Passport issued
-                </div>
-              </div>
+          <div class="pp-hero-stats">
+            <div class="pp-hero-stat">
+              <div class="pp-hero-stat-val">{{ heroHsScore }}</div>
+              <div class="pp-hero-stat-lbl">Points</div>
             </div>
+            <div class="pp-hero-stat">
+              <div class="pp-hero-stat-val">{{ heroDocsCount }}</div>
+              <div class="pp-hero-stat-lbl">Documents</div>
+            </div>
+            <div class="pp-hero-stat">
+              <div class="pp-hero-stat-val">{{ heroSectionsLabel }}</div>
+              <div class="pp-hero-stat-lbl">Sections</div>
+            </div>
+          </div>
+
+          <div class="pp-hero-actions">
+            <button
+              class="pp-hero-btn pp-hero-btn--primary"
+              :class="{ 'is-loading': publishLoading }"
+              :disabled="publishLoading"
+              @click="togglePublish"
+            >
+              <OPIcon name="share" class="w-[15px] h-[15px]" />
+              {{
+                publishLoading
+                  ? '…'
+                  : isPublished
+                    ? 'Unpublish'
+                    : 'Publish Passport'
+              }}
+            </button>
+            <button
+              class="pp-hero-btn pp-hero-btn--ghost"
+              @click="setTab('buyers')"
+            >
+              <OPIcon name="matchToBuyers" class="w-[15px] h-[15px]" />
+              Match to buyers
+              <span v-if="matchedBuyers.length" class="pp-hero-btn-badge">{{
+                matchedBuyers.length
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pp-hero-side">
+          <div class="pp-hero-ring">
+            <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
+              <defs>
+                <linearGradient id="ppRingGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#2fd0c6" />
+                  <stop offset="100%" stop-color="#00a19a" />
+                </linearGradient>
+              </defs>
+              <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
+              <circle
+                cx="36"
+                cy="36"
+                r="30"
+                class="pp-hero-ring-fill"
+                stroke-dasharray="188.5"
+                :stroke-dashoffset="188.5 - (188.5 * safeProgress) / 100"
+              />
+            </svg>
+            <div class="pp-hero-ring-center">
+              <span class="pp-hero-ring-pct">{{ overallProgress }}%</span>
+            </div>
+          </div>
+          <div class="pp-hero-side-label">Passport Progress</div>
+          <div v-if="isPublished" class="pp-hero-issued">
+            <span class="pp-hero-issued-dot" />
+            Passport issued
+          </div>
+          <div v-else class="pp-hero-issued pp-hero-issued--draft">
+            <span class="pp-hero-issued-dot" />
+            Draft
           </div>
         </div>
       </div>
 
-      <!-- ── Action row — Match to Buyers / Publish ── -->
-      <div class="pp-action-row">
-        <button
-          class="pp-action-btn pp-action-outline"
-          @click="setTab('buyers')"
-        >
-          <OPIcon name="matchToBuyers" class="w-[15px] h-[15px]" />
-          Match to Buyers
-          <span v-if="matchedBuyers.length" class="pp-action-badge">{{
-            matchedBuyers.length
-          }}</span>
-        </button>
-        <button
-          class="pp-action-btn pp-action-primary"
-          :class="{ 'pp-action-loading': publishLoading }"
-          :disabled="publishLoading"
-          @click="togglePublish"
-        >
-          <OPIcon name="share" class="w-[15px] h-[15px]" />
-          {{ publishLoading ? '...' : isPublished ? 'Unpublish' : 'Publish' }}
-        </button>
-      </div>
-
       <!-- ── Collaborators row ── -->
       <div class="pp-collab-row" @click="openCollaboratorModal">
-        <button class="pp-collab-add" type="button">+</button>
-        <div class="pp-collab-stack">
+        <button class="pp-collab-add" type="button" aria-label="Add collaborator">
+          +
+        </button>
+        <div v-if="displayCollaborators.length" class="pp-collab-stack">
           <div
             v-for="collaborator in displayCollaborators"
             :key="collaborator.id"
@@ -160,14 +177,21 @@
             {{ getInitials(collaborator.firstName, collaborator.lastName) }}
           </div>
         </div>
-        <div class="pp-collab-text">
-          {{ collaborators.length }}
-          {{ collaborators.length === 1 ? 'Collaborator' : 'Collaborators' }}
+        <div class="pp-collab-body">
+          <div class="pp-collab-title">
+            {{ collaborators.length }}
+            {{ collaborators.length === 1 ? 'collaborator' : 'collaborators' }}
+          </div>
+          <div class="pp-collab-sub">
+            Invite your solicitor, agent or co-owner — control exactly who sees
+            what.
+          </div>
         </div>
-        <span class="pp-collab-chev">›</span>
+        <span class="pp-collab-arrow">→</span>
       </div>
 
-      <!-- ── Sub-tabs ── -->
+      <!-- ── Tabs row: sections/street/buyers + list/map ── -->
+      <div class="pp-tabs-row">
       <div class="pp-subtabs">
         <button
           :class="['pp-subtab', activeTab === 'sections' ? 'active' : '']"
@@ -237,13 +261,13 @@
         </button>
       </div>
 
-      <!-- Sections tab -->
-      <div v-if="activeTab === 'sections'">
-        <!-- List / Map sub-toggle -->
-        <div class="view-toggle">
+        <div v-if="activeTab === 'sections'" class="view-toggle">
           <SegmentedSwitch v-model="viewMode" :options="viewOptions" />
         </div>
+      </div>
 
+      <!-- Sections tab -->
+      <div v-if="activeTab === 'sections'">
         <!-- Pick up where you left off — works for both list and map view -->
         <button
           v-if="resumeTarget"
@@ -255,8 +279,21 @@
             <span class="pp-resume-title">Pick up where you left off</span>
             <span class="pp-resume-sub">{{ resumeSubtitle }}</span>
           </span>
-          <span class="pp-resume-chev">›</span>
+          <span class="pp-resume-continue">Continue →</span>
         </button>
+
+        <!-- Section list header -->
+        <div v-if="viewMode === 'list'" class="pp-sec-header">
+          <div class="pp-sec-head-text">
+            <div class="pp-sec-kicker">
+              <span class="ppv-kicker-line" />{{ steps.length }} Verified Sections
+            </div>
+            <h2 class="pp-sec-title">Build your record, section by section</h2>
+          </div>
+          <span class="pp-sec-complete">
+            {{ completeSectionCount }} of {{ steps.length }} complete
+          </span>
+        </div>
 
         <div v-if="viewMode === 'list'" class="steps-list">
           <div
@@ -269,7 +306,7 @@
             <div class="step-card-top">
               <div class="step-icon-container">
                 <div class="step-icon-bg">
-                  <OPIcon :name="step.key" class="w-[56px] h-[56px]" />
+                  <OPIcon :name="step.key" class="w-[38px] h-[38px]" />
                 </div>
               </div>
               <button class="step-arrow">
@@ -283,12 +320,10 @@
               </p>
               <div class="step-counts">
                 <span class="step-count-pill step-count-docs">
-                  📎
                   {{ getStepDocs(step).done }}/{{ getStepDocs(step).total }}
                   docs
                 </span>
                 <span class="step-count-pill step-count-q">
-                  ❓
                   {{ getStepQuestions(step).done }}/{{
                     getStepQuestions(step).total
                   }}
@@ -329,24 +364,20 @@
             v-for="sp in streetProperties"
             :key="sp.id"
             class="pp-street-row"
+            :class="{
+              'is-published': sp.isPublished,
+              'is-started': !sp.isPublished && sp.hasPassport,
+              'is-none': !sp.isPublished && !sp.hasPassport,
+            }"
             @click="navigateToProperty(sp.id)"
           >
-            <div
-              class="pp-street-icon"
-              :style="{
-                color: sp.isPublished
-                  ? '#1f7a66'
-                  : sp.hasPassport
-                    ? '#f59e0b'
-                    : '#94a3b8',
-              }"
-            >
-              🏠
-            </div>
-            <div style="flex: 1; min-width: 0">
+            <div class="pp-street-icon">🏠</div>
+            <div class="pp-street-body">
               <div class="pp-street-addr">{{ sp.addressLine1 }}</div>
               <div class="pp-street-meta">
-                <span v-if="sp.propertyType">{{ sp.propertyType }}</span>
+                <span v-if="sp.propertyType" class="pp-street-type">{{
+                  sp.propertyType
+                }}</span>
                 <span
                   v-if="sp.epcRating"
                   class="pp-street-epc"
@@ -356,12 +387,25 @@
               </div>
             </div>
             <span v-if="sp.isPublished" class="pp-street-badge published"
-              >✓ Published</span
+              ><span class="pp-street-dot" />Published</span
             >
             <span v-else-if="sp.hasPassport" class="pp-street-badge started"
-              >In progress</span
+              ><span class="pp-street-dot" />In progress</span
             >
-            <span v-else class="pp-street-badge none">Not started</span>
+            <span v-else class="pp-street-badge none"
+              ><span class="pp-street-dot" />Not started</span
+            >
+            <svg
+              class="pp-street-chev"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </div>
         </div>
         <div v-else class="pp-empty">
@@ -370,8 +414,17 @@
         </div>
 
         <div v-if="streetStats" class="pp-street-stats">
-          <div class="pp-stats-title">
-            {{ passportAddress.line2 }} — Street Overview
+          <div class="pp-stats-head">
+            <span class="pp-stats-pin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21s-7-5.686-7-11a7 7 0 0 1 14 0c0 5.314-7 11-7 11z" />
+                <circle cx="12" cy="10" r="2.6" />
+              </svg>
+            </span>
+            <div>
+              <div class="pp-stats-title">Street Overview</div>
+              <div class="pp-stats-sub">{{ passportAddress.line2 }}</div>
+            </div>
           </div>
           <div class="pp-stats-grid">
             <div class="pp-stat brand">
@@ -394,8 +447,12 @@
             </div>
           </div>
           <div class="pp-street-tip">
-            💡 <strong>You're ahead of your street.</strong> Sellers with a
-            passport typically accept offers <strong>18 days faster</strong>.
+            <span class="pp-street-tip-ic">💡</span>
+            <span
+              ><strong>You're ahead of your street.</strong> Sellers with a
+              passport typically accept offers
+              <strong>18 days faster</strong>.</span
+            >
           </div>
         </div>
         <div style="height: 80px" />
@@ -546,7 +603,7 @@ const passportTourSteps = [
     body: 'Tap here anytime to jump straight back to the next task waiting for you.',
   },
   {
-    selector: '.pp-action-row',
+    selector: '.pp-hero-actions',
     title: 'Match buyers or publish',
     body: 'When you\'re ready, match to verified buyers or publish so anyone can view your verified record.',
   },
@@ -581,6 +638,7 @@ const showCollaboratorModal = ref(false)
 const showPropertiesModal = ref(false)
 
 const passportAddress = ref({ line1: '', line2: '' })
+const passportTown = ref('')
 const isPublished = ref(false)
 const publishLoading = ref(false)
 const propertyHomeScore = ref(null)
@@ -642,6 +700,7 @@ onMounted(async () => {
       line1: passport.addressLine1 ?? '',
       line2: passport.postcode ?? '',
     }
+    passportTown.value = passport.town ?? passport.city ?? ''
     isPublished.value = passport.status === 'PUBLISHED'
     propertyId.value = passport.propertyId ?? null
     // Pre-fetch street + buyer data in background
@@ -817,6 +876,19 @@ const getInitials = (firstName, lastName) => {
 
 const safeProgress = computed(() =>
   Math.min(Math.max(overallProgress.value, 5), 95),
+)
+
+// Hero sub-line — "Town · Postcode" when a town is known, else just postcode.
+const heroSubline = computed(() => {
+  const parts = [passportTown.value, passportAddress.value?.line2].filter(
+    Boolean,
+  )
+  return parts.join(' · ')
+})
+
+// Sections shown as "X of Y complete" in the list header.
+const completeSectionCount = computed(
+  () => (steps.value ?? []).filter((s) => (s?.progress ?? 0) >= 100).length,
 )
 
 // const { steps } = usePassportSteps()
@@ -1914,148 +1986,254 @@ const onRoleSwitch = (role) => {
 
 /* ── Street tab ──────────────────────────────────────── */
 .pp-vm-header {
-  font-size: 12.5px;
-  color: #475569;
+  font-size: 13px;
+  color: #5b6d84;
   line-height: 1.5;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
+
+/* ── Street list ─────────────────────────────────────── */
 .pp-street-list {
-  background: white;
-  border-radius: 16px;
+  background: #fff;
+  border-radius: 18px;
   overflow: hidden;
   margin-bottom: 14px;
-  border: 1px solid #e2e8e8;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04),
+    0 8px 22px rgba(15, 36, 62, 0.05);
 }
 .pp-street-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-bottom: 1px solid #f1f5f9;
+  gap: 13px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f2f5f9;
   cursor: pointer;
+  transition: background 0.18s ease;
 }
 .pp-street-row:last-child {
   border-bottom: none;
 }
-.pp-street-row:active {
-  background: #f0fdfa;
+.pp-street-row:hover {
+  background: #f7fbfa;
+}
+.pp-street-row:hover .pp-street-chev {
+  color: #00a19a;
+  transform: translateX(2px);
 }
 .pp-street-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
   font-size: 20px;
   flex-shrink: 0;
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 1px rgba(15, 36, 62, 0.05);
+}
+.pp-street-row.is-published .pp-street-icon {
+  background: linear-gradient(135deg, #e8f7f2 0%, #d6f0ea 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.18);
+}
+.pp-street-row.is-started .pp-street-icon {
+  background: linear-gradient(135deg, #fef6e6 0%, #fdedcf 100%);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.2);
+}
+.pp-street-body {
+  flex: 1;
+  min-width: 0;
 }
 .pp-street-addr {
-  font-size: 13px;
-  font-weight: 600;
-  color: #0f172a;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f2440;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .pp-street-meta {
-  font-size: 11px;
+  font-size: 11.5px;
   color: #64748b;
-  margin-top: 2px;
+  margin-top: 3px;
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   flex-wrap: wrap;
+}
+.pp-street-type {
+  font-weight: 500;
 }
 .pp-street-epc {
   font-size: 10px;
   font-weight: 800;
+  letter-spacing: 0.02em;
   color: #fff;
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: 4px;
+  padding: 2px 6px;
+  border-radius: 5px;
 }
 .pp-street-badge {
-  font-size: 10.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 10px 4px 8px;
   border-radius: 999px;
   white-space: nowrap;
   flex-shrink: 0;
 }
+.pp-street-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
 .pp-street-badge.published {
-  background: #dcfce7;
-  color: #166534;
+  background: #e7f6f1;
+  color: #0f7a63;
 }
 .pp-street-badge.started {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fdf3e0;
+  color: #a5680d;
 }
 .pp-street-badge.none {
   background: #f1f5f9;
   color: #64748b;
 }
+.pp-street-chev {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #cbd5e1;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
 .pp-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 20px;
+  padding: 44px 20px;
   color: #64748b;
   font-size: 13px;
   text-align: center;
-}
-.pp-street-stats {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 18px;
   margin-bottom: 14px;
-  border: 1px solid #e2e8e8;
+}
+
+/* ── Street overview stats ───────────────────────────── */
+.pp-street-stats {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04),
+    0 8px 22px rgba(15, 36, 62, 0.05);
+}
+.pp-stats-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 15px;
+}
+.pp-stats-pin {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #00a19a;
+  background: linear-gradient(135deg, #f1f9f7 0%, #e4f4f1 100%);
+}
+.pp-stats-pin svg {
+  width: 19px;
+  height: 19px;
 }
 .pp-stats-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 12px;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #0f2440;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.pp-stats-sub {
+  font-size: 12px;
+  color: #7688a0;
+  margin-top: 1px;
 }
 .pp-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 .pp-stat {
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 14px;
+  padding: 13px 14px;
+  border: 1px solid transparent;
 }
 .pp-stat.brand {
-  background: #f0fdfa;
+  background: #f0faf8;
+  border-color: #dcefeb;
 }
 .pp-stat.green {
-  background: #f0fdf4;
+  background: #f1faf3;
+  border-color: #dcefe0;
 }
 .pp-stat.amber {
-  background: #fef3c7;
+  background: #fdf7ea;
+  border-color: #f4e6c6;
 }
 .pp-stat.grey {
-  background: #f8fafc;
+  background: #f7f9fc;
+  border-color: #e9eef5;
 }
 .pp-stat-val {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
-  color: #0f172a;
+  color: #0f2440;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 .pp-stat.brand .pp-stat-val {
-  color: #1f7a66;
+  color: #0f8a76;
 }
 .pp-stat.green .pp-stat-val {
-  color: #16a34a;
+  color: #17a34a;
 }
 .pp-stat.amber .pp-stat-val {
-  color: #92400e;
+  color: #b5760f;
 }
 .pp-stat-lbl {
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 500;
   color: #64748b;
-  margin-top: 1px;
+  margin-top: 4px;
 }
 .pp-street-tip {
-  font-size: 12px;
-  color: #475569;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  color: #4a5b72;
   line-height: 1.5;
-  padding: 10px;
-  background: #f8fafc;
-  border-radius: 8px;
+  padding: 12px 13px;
+  background: #f0faf8;
+  border: 1px solid #dcefeb;
+  border-radius: 12px;
+}
+.pp-street-tip-ic {
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.pp-street-tip strong {
+  color: #0f2440;
+  font-weight: 700;
 }
 
 /* ── Buyers tab ──────────────────────────────────────── */
@@ -2285,11 +2463,11 @@ const onRoleSwitch = (role) => {
 }
 .pp-hero-addr-row {
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
 }
 .pp-hero-addr-text {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
 }
 .pp-hero-addr-l1 {
@@ -2735,6 +2913,505 @@ const onRoleSwitch = (role) => {
 
   .pp-hero-stat {
     padding: 0 14px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   REDESIGN — target look: dark hero, inline actions, combined tab row,
+   verified-sections header, refined section cards. Overrides above.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Page head — role switch sits at top-right ─────────────────────── */
+.ppv-head {
+  align-items: center;
+  margin-bottom: 22px;
+}
+.ppv-lede {
+  max-width: 520px;
+}
+.ppv-kicker-line {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
+}
+
+/* Compact, pill-style segmented switches (role + list/map) */
+.ppv-role-switch {
+  margin-bottom: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+.ppv-role-switch :deep(.switch-container),
+.view-toggle :deep(.switch-container) {
+  width: auto;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid #e6e3dd;
+  background: #fff;
+}
+.ppv-role-switch :deep(.switch-btn),
+.view-toggle :deep(.switch-btn) {
+  flex: 0 0 auto;
+  border-radius: 999px !important;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b6885;
+  padding: 8px 22px;
+}
+.ppv-role-switch :deep(.btn-icon),
+.view-toggle :deep(.btn-icon) {
+  display: none;
+}
+.ppv-role-switch :deep(.switch-btn:not(.active)),
+.view-toggle :deep(.switch-btn:not(.active)) {
+  background: transparent;
+}
+.ppv-role-switch :deep(.switch-btn.active) {
+  background: #231d45;
+  color: #fff;
+}
+.view-toggle {
+  margin: 0;
+}
+.view-toggle :deep(.switch-container) {
+  background: #eeece7;
+}
+.view-toggle :deep(.switch-btn) {
+  font-size: 13.5px;
+  padding: 7px 18px;
+}
+.view-toggle :deep(.switch-btn.active) {
+  background: #fff;
+  color: #231d45;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.14);
+}
+
+/* ── Dark hero ─────────────────────────────────────────────────────── */
+.pp-hero {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(0, 212, 195, 0.16), transparent 42%),
+    radial-gradient(circle at 6% 92%, rgba(90, 76, 240, 0.16), transparent 46%),
+    linear-gradient(135deg, #241e4c 0%, #14102f 60%, #0d0924 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  padding: 30px 34px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  overflow: hidden;
+  box-shadow: 0 26px 64px rgba(13, 9, 36, 0.3);
+}
+.pp-hero-book {
+  width: 172px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 20px 36px rgba(0, 140, 134, 0.42));
+}
+/* Let the book render at its natural 965×1362 aspect ratio so the baked-in
+   layout and the overlaid address stay aligned (a forced fixed height was
+   letterboxing the image and pushing the address text past its edges). */
+.pp-hero-book :deep(.passport-card) {
+  margin: 0;
+}
+.pp-hero-book :deep(.passport-container) {
+  width: 100%;
+  height: auto;
+}
+.pp-hero-book :deep(.passport-image) {
+  width: 100%;
+  height: auto;
+}
+.pp-hero-main {
+  flex: 1;
+  min-width: 0;
+}
+.pp-hero-eyebrow {
+  color: #38dccc;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.pp-hero-addr-l1 {
+  color: #fff;
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.pp-hero-addr-l2 {
+  color: #b6b1d6;
+  font-size: 13.5px;
+  margin-top: 5px;
+}
+.pp-hero-switch {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #d7d3ee;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.16s, border-color 0.16s, color 0.16s, transform 0.16s;
+}
+.pp-hero-switch svg {
+  width: 16px;
+  height: 16px;
+}
+.pp-hero-switch:hover {
+  background: rgba(47, 208, 198, 0.16);
+  border-color: rgba(47, 208, 198, 0.5);
+  color: #2fd0c6;
+  transform: translateY(-1px);
+}
+.pp-hero-stats {
+  margin-top: 20px;
+}
+.pp-hero-stat-val {
+  color: #fff;
+  font-size: 26px;
+}
+.pp-hero-stat-lbl {
+  color: #8f8ab0;
+}
+.pp-hero-stat:first-child {
+  padding-left: 0;
+}
+.pp-hero-stat + .pp-hero-stat {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pp-hero-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+.pp-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.pp-hero-btn:active {
+  transform: scale(0.98);
+}
+.pp-hero-btn--primary {
+  background: #00a19a;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.4);
+}
+.pp-hero-btn--primary:hover {
+  background: #00b3ab;
+}
+.pp-hero-btn--primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.pp-hero-btn--ghost {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.pp-hero-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+.pp-hero-btn-badge {
+  background: #00d4c3;
+  color: #0d0924;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.pp-hero-side {
+  flex-shrink: 0;
+  width: 176px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(6px);
+}
+.pp-hero-ring {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  display: grid;
+  place-items: center;
+}
+.pp-hero-ring::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(47, 208, 198, 0.16), transparent 70%);
+}
+.pp-hero-ring-svg {
+  width: 116px;
+  height: 116px;
+}
+.pp-hero-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 7;
+}
+.pp-hero-ring-fill {
+  fill: none;
+  stroke: url(#ppRingGrad);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+  filter: drop-shadow(0 0 5px rgba(47, 208, 198, 0.5));
+}
+.pp-hero-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.pp-hero-ring-pct {
+  color: #fff;
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.pp-hero-ring-sub {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8f8ab0;
+}
+.pp-hero-side-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a5a0c4;
+  text-align: center;
+}
+.pp-hero-issued {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0, 212, 195, 0.14);
+  border: 1px solid rgba(47, 208, 198, 0.3);
+  color: #4fe3d5;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+.pp-hero-issued--draft {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #b6b1d6;
+}
+.pp-hero-issued-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00d4c3;
+  box-shadow: 0 0 0 3px rgba(0, 212, 195, 0.18);
+}
+.pp-hero-issued--draft .pp-hero-issued-dot {
+  background: #b6b1d6;
+  box-shadow: 0 0 0 3px rgba(182, 177, 214, 0.16);
+}
+
+/* ── Collaborators row ─────────────────────────────────────────────── */
+.pp-collab-row {
+  gap: 14px;
+  border: 1px solid #e6e3dd;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.pp-collab-add {
+  width: 40px;
+  height: 40px;
+  border-style: dashed;
+  font-size: 20px;
+}
+.pp-collab-body {
+  flex: 1;
+  min-width: 0;
+}
+.pp-collab-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #231d45;
+}
+.pp-collab-sub {
+  font-size: 12.5px;
+  color: #8b8aa3;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.pp-collab-arrow {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #e6e3dd;
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Tabs row (sections/street/buyers · list/map) ──────────────────── */
+.pp-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 20px;
+}
+.pp-subtabs {
+  display: inline-flex;
+  width: auto;
+  border: 1px solid #e6e3dd;
+  border-radius: 999px;
+  margin-bottom: 0;
+}
+.pp-subtab {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 9px 18px;
+}
+
+/* ── Resume banner — dark ──────────────────────────────────────────── */
+.pp-resume-cta {
+  background: linear-gradient(135deg, #241e4c, #14102f 70%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 15px 18px;
+  box-shadow: 0 12px 32px rgba(20, 16, 47, 0.26);
+  margin-bottom: 4px;
+}
+.pp-resume-cta:hover {
+  box-shadow: 0 16px 40px rgba(20, 16, 47, 0.32);
+}
+.pp-resume-ic {
+  background: rgba(0, 212, 195, 0.16);
+  color: #3fe0d2;
+}
+.pp-resume-sub {
+  color: rgba(255, 255, 255, 0.6);
+}
+.pp-resume-continue {
+  color: #3fe0d2;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Verified-sections header ──────────────────────────────────────── */
+.pp-sec-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 22px 0 16px;
+}
+.pp-sec-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.pp-sec-title {
+  margin: 0;
+  color: #1b2340;
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.pp-sec-complete {
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #e6e3dd;
+  color: #5b6d89;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 8px 15px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ── Section cards — refined ───────────────────────────────────────── */
+.step-icon-bg {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+}
+.step-points {
+  color: #8b93a7;
+  font-weight: 600;
+}
+.step-count-docs,
+.step-count-q {
+  background: #f3f4f8;
+  color: #5b6478;
+  border: 1px solid #eceef3;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 899px) {
+  .pp-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    padding: 22px;
+  }
+  .pp-hero-book {
+    width: 144px;
+    align-self: center;
+  }
+  .pp-hero-side {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+  }
+  .pp-tabs-row {
+    flex-wrap: wrap;
+  }
+  .ppv-head {
+    align-items: flex-start;
   }
 }
 </style>

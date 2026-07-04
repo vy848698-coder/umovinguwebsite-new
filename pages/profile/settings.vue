@@ -632,7 +632,7 @@ const securityLabel = computed(() => {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 40px;
   font-weight: 750;
-  color: #10263d;
+  color: #231d45;
   letter-spacing: -1px;
   line-height: 1.04;
 }

@@ -455,7 +455,7 @@ onMounted(loadPassports)
 .ac-page {
   --ac-teal: #00a19a;
   --ac-teal-strong: #00857f;
-  --ac-navy: #10263d;
+  --ac-navy: #231d45;
   --ac-text: #1f2b3f;
   --ac-muted: #627891;
   --ac-border: rgba(193, 215, 237, 0.7);

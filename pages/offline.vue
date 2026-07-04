@@ -112,7 +112,7 @@ function retry() {
   padding: 0 28px;
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(120deg, #00a19a, #2f9bdf 52%, #5a4cf0);
+  background: #00857f;
   color: #fff;
   font-family: inherit;
   font-size: 15px;

@@ -35,283 +35,177 @@
       </header>
 
       <div class="pps-shell">
-      <!-- ─── SECTION 1: Hero ──────────────────────────────────────── -->
-      <div
-        class="pps-hero"
-        :style="
-          heroImage
-            ? {
-                backgroundImage: `url(${heroImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : undefined
-        "
-      >
-        <button
-          class="pps-hero-btn pps-hero-btn-back"
-          type="button"
-          @click="goBack"
-          aria-label="Back"
-        >
-          <svg
-            width="10"
-            height="16"
-            viewBox="0 0 10 16"
-            fill="none"
-            stroke="white"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+      <!-- ─── SECTION 1: Hero (web card) ───────────────────────────── -->
+      <div class="pps-herocard" :class="`pps-herocard--${pageState}`">
+        <div class="pps-herocard-actions">
+          <button
+            class="pps-herocard-icon"
+            type="button"
+            @click="onWishlistToggle"
+            aria-label="Favourite"
           >
-            <path d="M8 1L2 8l6 7" />
-          </svg>
-        </button>
-        <button
-          class="pps-hero-btn pps-hero-btn-fav"
-          type="button"
-          @click="onWishlistToggle"
-          aria-label="Favourite"
-        >
-          <svg
-            width="16"
-            height="15"
-            viewBox="0 0 16 15"
-            fill="none"
-            stroke="white"
-            stroke-width="1.8"
+            <svg width="16" height="15" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path
+                d="M8 13.5S1 9.5 1 4.5A3.5 3.5 0 0 1 8 2.9 3.5 3.5 0 0 1 15 4.5C15 9.5 8 13.5 8 13.5z"
+                :fill="wishlisted ? 'currentColor' : 'none'"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            class="pps-herocard-icon"
+            type="button"
+            @click="showShare = true"
+            aria-label="Share"
           >
-            <path
-              d="M8 13.5S1 9.5 1 4.5A3.5 3.5 0 0 1 8 2.9 3.5 3.5 0 0 1 15 4.5C15 9.5 8 13.5 8 13.5z"
-              :fill="wishlisted ? 'white' : 'none'"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-        <button
-          class="pps-hero-btn pps-hero-btn-share"
-          type="button"
-          @click="showShare = true"
-          aria-label="Share"
-        >
-          <svg
-            width="14"
-            height="16"
-            viewBox="0 0 14 16"
-            fill="none"
-            stroke="white"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="11.5" cy="2.5" r="1.8" />
-            <circle cx="2.5" cy="8" r="1.8" />
-            <circle cx="11.5" cy="13.5" r="1.8" />
-            <line x1="4.2" y1="7" x2="9.8" y2="3.5" />
-            <line x1="4.2" y1="9" x2="9.8" y2="12.5" />
-          </svg>
-        </button>
-
-        <!-- House silhouette fallback when no real image -->
-        <svg
-          v-if="!heroImage"
-          class="pps-hero-house"
-          viewBox="0 0 80 70"
-          fill="white"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M40 5L5 32h8v33h54V32h8L40 5z" />
-          <rect
-            x="28"
-            y="44"
-            width="10"
-            height="21"
-            fill="#0a0d12"
-            opacity="0.3"
-          />
-          <rect
-            x="42"
-            y="44"
-            width="10"
-            height="21"
-            fill="#0a0d12"
-            opacity="0.3"
-          />
-        </svg>
-
-        <div class="pps-hero-scrim" />
-
-        <!-- State-aware passport badge (top-right) -->
-        <div class="pps-hero-badges">
-          <div
-            v-if="pageState === 'unclaimed'"
-            class="pps-badge-passport pps-badge-passport--unclaimed"
-          >
-            <span class="pps-badge-passport-dot" style="background: #9c98ad" />
-            Unclaimed
-          </div>
-          <div
-            v-else-if="pageState === 'progress'"
-            class="pps-badge-passport pps-badge-passport--progress"
-          >
-            <span class="pps-badge-passport-dot" style="background: #e6a23c" />
-            Passport in progress
-          </div>
-          <div v-else class="pps-badge-passport">
-            <span class="pps-badge-passport-dot" />
-            ✓ Passport available
-          </div>
-          <div v-if="floodBadgeLabel" class="pps-badge-flood">
-            💧 {{ floodBadgeLabel }}
-          </div>
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11.5" cy="2.5" r="1.8" />
+              <circle cx="2.5" cy="8" r="1.8" />
+              <circle cx="11.5" cy="13.5" r="1.8" />
+              <line x1="4.2" y1="7" x2="9.8" y2="3.5" />
+              <line x1="4.2" y1="9" x2="9.8" y2="12.5" />
+            </svg>
+          </button>
         </div>
 
-        <!-- Identity overlaid on the image — one cohesive hero unit -->
-        <div class="pps-hero-overlay">
-          <h1 class="pps-identity-address">{{ property.addressLine1 }}</h1>
-          <div class="pps-identity-suburb">
-            <template v-if="property.city">{{ property.city }}</template>
-            <template v-if="property.city && property.postcode">, </template>
-            <template v-if="property.postcode">{{ property.postcode }}</template>
-          </div>
-          <div class="pps-hero-meta">
-            <div v-if="estimatedPrice" class="pps-price-row">
-              <span class="pps-price-value">{{ formatPrice(estimatedPrice) }}</span>
-              <span class="pps-price-source">{{ priceSourceLabel }}</span>
+        <div class="pps-herocard-grid">
+          <!-- Left: identity -->
+          <div class="pps-herocard-lead">
+            <span class="pps-herocard-state">
+              <span class="pps-herocard-state-dot" :style="{ background: heroStatePill.dot }" />
+              {{ heroStatePill.label }}
+            </span>
+
+            <h1 class="pps-herocard-title">{{ property.addressLine1 }}</h1>
+            <p class="pps-herocard-sub">
+              <template v-if="property.city">{{ property.city }}</template
+              ><template v-if="property.city && property.postcode"> · </template
+              ><template v-if="property.postcode">{{ property.postcode }}</template>
+            </p>
+
+            <div v-if="estimatedPrice" class="pps-herocard-price">
+              {{ formatPrice(estimatedPrice) }}
             </div>
-            <div class="pps-pill-row">
-              <span v-if="property.propertyType" class="pps-pill">{{
+            <p class="pps-herocard-price-src">
+              {{ priceSourceLabel }} · HM Land Registry connected
+            </p>
+
+            <div class="pps-herocard-pills">
+              <span v-if="property.propertyType" class="pps-herocard-pill">{{
                 property.propertyType
               }}</span>
-              <span v-if="property.sqft" class="pps-pill"
-                >📐 {{ property.sqft.toLocaleString() }} sqft</span
+              <span v-if="property.epcRating" class="pps-herocard-pill"
+                >EPC {{ property.epcRating
+                }}<template v-if="property.epcScore"> · {{ property.epcScore }}</template></span
               >
-              <span v-if="property.yearBuilt" class="pps-pill"
-                >📅 {{ property.yearBuilt }}</span
+              <span class="pps-herocard-pill"
+                >{{ exploreTiles.length }} live data sources</span
+              >
+              <span v-if="floodBadgeLabel" class="pps-herocard-pill"
+                >💧 {{ floodBadgeLabel }}</span
               >
             </div>
+
+            <div class="pps-herocard-ctas">
+              <button
+                class="pps-herocard-btn pps-herocard-btn--primary"
+                type="button"
+                @click="onHeroPrimaryClick"
+              >
+                {{ heroPrimaryCta }}
+              </button>
+              <button
+                class="pps-herocard-btn pps-herocard-btn--ghost"
+                type="button"
+                @click="onSampleClick"
+              >
+                See a sample Passport
+              </button>
+            </div>
+
+            <p class="pps-herocard-foot">
+              Build a verified Passport · TA6 · TA7 · TA10 · certificates ·
+              history — no card needed
+            </p>
           </div>
+
+          <!-- Right: passport preview -->
+          <aside class="pps-preview">
+            <div class="pps-preview-eyebrow">Property Passport · Preview</div>
+            <div class="pps-preview-addr">{{ property.addressLine1 }}</div>
+            <div class="pps-preview-sub">
+              <template v-if="property.city">{{ property.city }}</template
+              ><template v-if="property.city && property.postcode"> · </template
+              ><template v-if="property.postcode">{{ property.postcode }}</template>
+            </div>
+
+            <div class="pps-preview-divider" />
+
+            <div class="pps-preview-row">
+              <div class="pps-preview-ring">
+                <svg viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="ppsPreviewGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#2fd0c6" />
+                      <stop offset="100%" stop-color="#00857f" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="pps-preview-ring-bg" cx="50" cy="50" r="42" />
+                  <circle
+                    class="pps-preview-ring-fill"
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    :stroke-dashoffset="263.9 - (homescore / 100) * 263.9"
+                  />
+                </svg>
+                <span class="pps-preview-ring-num">{{ homescore }}</span>
+                <span class="pps-preview-ring-denom">/100</span>
+              </div>
+              <div class="pps-preview-stats">
+                <div class="pps-preview-stat-strong">
+                  {{ heroSectionsStarted }}/{{ HERO_SECTIONS_TOTAL }} sections started
+                </div>
+                <div class="pps-preview-stat-muted">— documents on file</div>
+                <div class="pps-preview-stat-strong">{{ scoreVerdict }} HomeScore</div>
+              </div>
+            </div>
+
+            <div class="pps-preview-hint">
+              <span class="pps-preview-hint-dot" />
+              {{ heroPreviewHint }}
+            </div>
+          </aside>
         </div>
       </div>
 
-      <!-- ─── SECTION 3: Action Bar ────────────────────────────────── -->
-      <div class="pps-action-bar">
-        <button
-          v-if="pageState === 'unclaimed'"
-          class="pps-passport-cta-unlock"
-          style="
-            background: #231d45;
-            box-shadow: 0 6px 22px rgba(35, 29, 69, 0.4);
-            margin-bottom: 10px;
-          "
-          type="button"
-          @click="onClaimClick"
-        >
-          <div class="pps-passport-cta-unlock-left">
-            <div class="pps-passport-cta-unlock-title">
-              Claim this property — it's free
-            </div>
-            <div class="pps-passport-cta-unlock-sub">
-              Build a verified Passport · TA6, TA7, TA10 · certificates ·
-              history
-            </div>
-          </div>
-          <div class="pps-passport-cta-unlock-price">
-            <span
-              class="pps-passport-cta-unlock-amount"
-              style="font-size: 18px; letter-spacing: -0.3px"
-              >Free</span
-            >
-            <span class="pps-passport-cta-unlock-arrow">→</span>
-          </div>
+      <!-- ─── SECTION 2: Quick actions ─────────────────────────────── -->
+      <div class="pps-actions">
+        <button type="button" class="pps-actionbar" @click="onWatchClick">
+          <span class="pps-actionbar-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .53-.21 1.04-.59 1.41L4 17h5" />
+              <path d="M10 17a2 2 0 0 0 4 0" />
+            </svg>
+          </span>
+          <span class="pps-actionbar-body">
+            <strong>{{ pageState === 'progress' ? 'Get notified' : 'Watch this property' }}</strong>
+            <small>{{ pageState === 'progress' ? 'Alert when the Passport is live' : 'Save it & get alerts when anything changes' }}</small>
+          </span>
+          <span class="pps-actionbar-arrow">→</span>
         </button>
-
-        <button
-          v-else-if="pageState === 'progress'"
-          class="pps-passport-cta-unlock"
-          style="
-            background: linear-gradient(
-              135deg,
-              #4dd4ce 0%,
-              #00a19a 45%,
-              #006e68 100%
-            );
-            box-shadow: 0 6px 22px rgba(0, 161, 154, 0.35);
-            margin-bottom: 10px;
-          "
-          type="button"
-          @click="onAccessPassport"
-        >
-          <div class="pps-passport-cta-unlock-left">
-            <div class="pps-passport-cta-unlock-title">
-              Preview what's being built
-            </div>
-            <div class="pps-passport-cta-unlock-sub">
-              TA6, TA7, TA10 · certificates · history — live soon
-            </div>
-          </div>
-          <div class="pps-passport-cta-unlock-price">
-            <span
-              class="pps-passport-cta-unlock-amount"
-              style="font-size: 14px; letter-spacing: -0.2px; line-height: 1.3"
-              >{{ progressPct }}%<br /><span
-                style="font-size: 11px; font-weight: 600; opacity: 0.8"
-                >done</span
-              ></span
-            >
-            <span class="pps-passport-cta-unlock-arrow">→</span>
-          </div>
+        <button type="button" class="pps-actionbar" @click="onContactClick">
+          <span class="pps-actionbar-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+          </span>
+          <span class="pps-actionbar-body">
+            <strong>{{ pageState === 'published' ? 'Make contact' : 'Ask a question' }}</strong>
+            <small>{{ pageState === 'published' ? 'Owner or neighbour — start a conversation' : 'Neighbour or curious buyer — ask the community' }}</small>
+          </span>
+          <span class="pps-actionbar-arrow">→</span>
         </button>
-
-        <button
-          v-else
-          class="pps-passport-cta-unlock"
-          type="button"
-          @click="onAccessPassport"
-        >
-          <div class="pps-passport-cta-unlock-left">
-            <div class="pps-passport-cta-unlock-title">
-              Get the full Passport
-            </div>
-            <div class="pps-passport-cta-unlock-sub">
-              Conveyancing questions answered · TA6, TA7, TA10 · certificates ·
-              history
-            </div>
-          </div>
-          <div class="pps-passport-cta-unlock-price">
-            <span class="pps-passport-cta-unlock-amount">£99</span>
-            <span class="pps-passport-cta-unlock-arrow">→</span>
-          </div>
-        </button>
-
-        <div class="pps-secondary-row">
-          <button type="button" class="pps-secondary-btn" @click="onWatchClick">
-            <span class="pps-secondary-btn-label">{{
-              pageState === 'progress' ? '🔔 Get notified' : '🔔 Watch this'
-            }}</span>
-            <span class="pps-secondary-btn-sub">{{
-              pageState === 'progress'
-                ? 'Alert when Passport is live'
-                : 'Save & get alerts'
-            }}</span>
-          </button>
-          <button
-            type="button"
-            class="pps-secondary-btn"
-            @click="onContactClick"
-          >
-            <span class="pps-secondary-btn-label">{{
-              pageState === 'published'
-                ? '💬 Make contact'
-                : '💬 Ask a question'
-            }}</span>
-            <span class="pps-secondary-btn-sub">{{
-              pageState === 'published'
-                ? 'Owner or neighbour'
-                : 'Neighbour or curious buyer'
-            }}</span>
-          </button>
-        </div>
       </div>
 
       <!-- ─── Two-column web body ──────────────────────────────────── -->
@@ -321,25 +215,14 @@
       <div class="pps-signal-bar">
         <div class="pps-signal-left">
           <span
-            v-if="pageState === 'unclaimed'"
-            class="pps-pulse-dot"
-            style="background: #9c98ad; animation: none"
-          />
-          <span
-            v-else-if="pageState === 'progress'"
+            v-if="pageState === 'progress'"
             class="pps-pulse-dot"
             style="background: #e6a23c"
           />
           <span v-else class="pps-pulse-dot" />
           <span
             class="pps-signal-viewing"
-            :style="
-              pageState === 'unclaimed'
-                ? { color: '#9c98ad' }
-                : pageState === 'progress'
-                  ? { color: '#b07a1c' }
-                  : undefined
-            "
+            :style="pageState === 'progress' ? { color: '#b07a1c' } : undefined"
           >
             {{ signalLeftLabel }}
           </span>
@@ -353,9 +236,6 @@
         @click="onScoreCardTap"
       >
         <div class="pps-score-top">
-          <div class="pps-score-blob-tr" />
-          <div class="pps-score-blob-bl" />
-
           <div class="pps-gauge-wrap">
             <svg class="pps-gauge-svg" viewBox="0 0 100 100">
               <circle class="pps-gauge-bg" cx="50" cy="50" r="40" />
@@ -375,43 +255,43 @@
 
           <div class="pps-score-info">
             <div class="pps-score-eyebrow">HomeScore™</div>
-            <div class="pps-score-verdict">{{ scoreVerdict }}</div>
+            <div class="pps-score-verdict">{{ scoreVerdictLine }}</div>
             <div class="pps-score-desc">{{ scoreDesc }}</div>
-            <div v-if="property.epcRating" class="pps-score-epc-pill">
-              <span class="pps-epc-dot" :style="{ background: epcDotColor }" />
-              EPC {{ property.epcRating
-              }}<template v-if="property.epcScore">
-                ({{ property.epcScore }})</template
-              >
-              <template v-if="property.yearBuilt">
-                · Built {{ property.yearBuilt }}</template
+            <div class="pps-score-pills">
+              <span v-if="property.epcRating" class="pps-score-pill pps-score-pill--epc">
+                EPC {{ property.epcRating
+                }}<template v-if="property.epcScore">
+                  ({{ property.epcScore }})</template
+                >
+              </span>
+              <span
+                v-if="pageState !== 'published'"
+                class="pps-score-pill pps-score-pill--warn"
+                >Public data only — unverified</span
               >
             </div>
           </div>
-        </div>
 
-        <div v-if="epcBars.length > 0" class="pps-score-bottom">
-          <div class="pps-epc-header">From the public EPC certificate</div>
-          <div class="pps-epc-rows">
-            <div v-for="bar in epcBars" :key="bar.label" class="pps-epc-row">
-              <span class="pps-epc-label">{{ bar.label }}</span>
-              <div class="pps-epc-track">
-                <div
-                  class="pps-bar-fill"
-                  :style="{ width: bar.pct + '%', background: bar.color }"
-                />
-              </div>
-              <span class="pps-epc-rating">{{ bar.rating }}</span>
-            </div>
-          </div>
+          <button
+            type="button"
+            class="pps-score-run-btn"
+            @click.stop="onScoreCardTap"
+          >
+            Run a full HomeScore
+          </button>
         </div>
       </div>
 
       <!-- ─── SECTION 6: Explore Grid ──────────────────────────────── -->
       <div class="pps-explore-header">
-        <span class="pps-explore-title">Explore this property</span>
+        <div class="pps-explore-heading">
+          <span class="pps-explore-eyebrow"
+            ><span class="pps-explore-eyebrow-dash" />Live record</span
+          >
+          <h2 class="pps-explore-title">Explore this property</h2>
+        </div>
         <span class="pps-explore-sources"
-          >{{ exploreTiles.length }} data sources</span
+          >{{ exploreTiles.length }} data sources <span aria-hidden="true">↗</span></span
         >
       </div>
       <div class="pps-explore-grid">
@@ -421,9 +301,21 @@
           class="pps-tile"
           @click="onExploreTileClick(tile.key)"
         >
-          <div class="pps-tile-icon" :style="{ background: tile.iconBg }">
-            {{ tile.icon }}
+          <div
+            class="pps-tile-icon"
+            :style="{ background: tileIcon(tile.key).bg, color: tileIcon(tile.key).color }"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              v-html="tileIcon(tile.key).svg"
+            />
           </div>
+          <span class="pps-tile-arrow" aria-hidden="true">→</span>
           <div class="pps-tile-title">
             {{ tile.title }}
             <span
@@ -433,58 +325,55 @@
               >{{ tile.pip }}</span
             >
           </div>
-          <div class="pps-tile-value" :style="tile.valueStyle">
+          <div
+            class="pps-tile-value"
+            :class="{ 'pps-tile-value--warn': /unavailable|tap to retry/i.test(tile.value) }"
+            :style="tile.valueStyle"
+          >
             {{ tile.value }}
           </div>
           <div class="pps-tile-sub">{{ tile.sub }}</div>
           <div v-if="tile.trend" class="pps-tile-trend">
             <span class="pps-tile-trend-arrow">↑</span> {{ tile.trend }}
           </div>
-          <span class="pps-tile-arrow">→</span>
         </div>
       </div>
 
       <!-- ─── SECTION 7: Passport Card ─────────────────────────────── -->
-      <div v-if="pageState === 'unclaimed'" class="pps-passport-card">
-        <div class="pps-score-blob-tr" />
-        <div class="pps-score-blob-bl" />
+      <div
+        v-if="pageState === 'unclaimed'"
+        class="pps-passport-card pps-passport-card--dark"
+      >
         <div class="pps-passport-eyebrow-row">
-          <span class="pps-passport-eyebrow"
-            ><span
-              class="pps-passport-eyebrow-dot"
-              style="background: #9c98ad"
-            />Property Passport</span
+          <span class="pps-passport-eyebrow pps-passport-eyebrow--dark"
+            ><span class="pps-passport-eyebrow-line" />Property Passport</span
           >
           <span
-            class="pps-passport-price-pill"
-            style="background: #f5f5f7; color: #9c98ad; border-color: #ececef"
+            class="pps-passport-price-pill pps-passport-price-pill--unclaimed-dark"
             >Unclaimed</span
           >
         </div>
-        <div class="pps-passport-title">No Passport yet — be the first</div>
-        <div class="pps-passport-explain pps-passport-explain--unclaimed">
+        <div class="pps-passport-title pps-passport-title--dark">
+          No Passport yet —
+          <span class="pps-passport-title-accent">be the first.</span>
+        </div>
+        <div class="pps-passport-explain pps-passport-explain--unclaimed-dark">
           <div style="flex: 1">
-            <div class="pps-passport-explain-eyebrow">
+            <div
+              class="pps-passport-explain-eyebrow pps-passport-explain-eyebrow--dark"
+            >
               Your home's permanent record
             </div>
-            <div class="pps-passport-explain-body">
-              Why would anyone buy a home without seeing its full history? A
-              Passport stays with this property for life — documents,
-              certificates, everything verified.
+            <div class="pps-passport-explain-body pps-passport-explain-body--dark">
+              Why would anyone buy a home without seeing its full history?
+              <strong>A Passport stays with this property for life</strong> —
+              documents, certificates, everything verified, before a buyer's
+              solicitor ever asks.
             </div>
           </div>
-          <button
-            type="button"
-            class="pps-explain-btn"
-            style="background: #231d45"
-            @click.stop="openSheet('explain-unclaimed')"
-            aria-label="Why a Property Passport"
-          >
-            ?
-          </button>
         </div>
 
-        <div class="pps-pp-stepper">
+        <div class="pps-pp-stepper pps-pp-stepper--dark">
           <div class="pps-pp-step pps-pp-step--active">
             <div class="pps-pp-step-dot">1</div>
             <div class="pps-pp-step-label">Claim</div>
@@ -508,18 +397,13 @@
 
         <button
           type="button"
-          class="pps-passport-cta"
-          style="
-            background: #231d45;
-            box-shadow: 0 4px 16px rgba(35, 29, 69, 0.35);
-            color: white;
-          "
+          class="pps-passport-cta pps-passport-cta--dark"
           @click="onClaimClick"
         >
           Claim this property — it's free →
         </button>
-        <div class="pps-passport-cta-sub">
-          Takes 2 minutes · No listing required · Free forever
+        <div class="pps-passport-cta-sub pps-passport-cta-sub--dark">
+          Takes 2 minutes · <strong>No listing required</strong> · Free forever
         </div>
       </div>
 
@@ -805,60 +689,100 @@
         <div class="pps-details-header">Property details</div>
         <div class="pps-details-grid">
           <div v-if="property.propertyType" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">🏠</span>
-            <div class="pps-detail-label">Type</div>
-            <div class="pps-detail-value">{{ property.propertyType }}</div>
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V21h14V9.5" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">Type</div>
+              <div class="pps-detail-value">{{ property.propertyType }}</div>
+            </div>
           </div>
           <div v-if="property.tenure" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">🔑</span>
-            <div class="pps-detail-label">Tenure</div>
-            <div class="pps-detail-value">{{ property.tenure }}</div>
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="7.5" cy="15.5" r="4.5" />
+                <path d="m10.7 12.3 8.8-8.8M15 7l3 3M18 4l2 2" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">Tenure</div>
+              <div class="pps-detail-value">{{ property.tenure }}</div>
+            </div>
           </div>
           <div v-if="property.yearBuilt" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">📅</span>
-            <div class="pps-detail-label">Year built</div>
-            <div class="pps-detail-value">{{ property.yearBuilt }}</div>
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M8 3v4M16 3v4M3 10h18" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">Year built</div>
+              <div class="pps-detail-value">{{ property.yearBuilt }}</div>
+            </div>
           </div>
           <div
             v-if="property.sqft || property.floorAreaSqm"
             class="pps-detail-tile"
           >
-            <span class="pps-detail-tile-icon">📐</span>
-            <div class="pps-detail-label">Floor area</div>
-            <div class="pps-detail-value">
-              <template v-if="property.sqft"
-                >{{ property.sqft.toLocaleString() }} sqft</template
-              >
-              <template v-else>{{ property.floorAreaSqm }} m²</template>
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <path d="M4 9h5V4" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">Floor area</div>
+              <div class="pps-detail-value">
+                <template v-if="property.sqft"
+                  >{{ property.sqft.toLocaleString() }} sqft</template
+                >
+                <template v-else>{{ property.floorAreaSqm }} m²</template>
+              </div>
             </div>
           </div>
           <div v-if="property.epcRating" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">⚡</span>
-            <div class="pps-detail-label">EPC</div>
-            <div class="pps-detail-value">
-              <span
-                class="pps-epc-badge"
-                :style="{ background: epcDotColor }"
-                >{{ property.epcRating }}</span
-              >
-              <template v-if="property.epcScore">
-                {{ property.epcScore }}/100</template
-              >
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2 4.5 13.5H11L9.5 22 19 10h-6.5L13 2z" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">EPC rating</div>
+              <div class="pps-detail-value">
+                <span class="pps-epc-badge">{{ property.epcRating }}</span>
+                <template v-if="property.epcScore">
+                  {{ property.epcScore }}/100</template
+                >
+              </div>
             </div>
           </div>
           <div v-if="property.uprn" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">🔢</span>
-            <div class="pps-detail-label">UPRN</div>
-            <div class="pps-detail-value" style="font-size: 12px">
-              {{ property.uprn }}
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="3" width="14" height="18" rx="2" />
+                <path d="M9 8h6M9 12h6M9 16h4" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">UPRN</div>
+              <div class="pps-detail-value">{{ property.uprn }}</div>
             </div>
           </div>
           <!-- Title number tile (restored) -->
           <div v-if="property.titleNumber" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">📜</span>
-            <div class="pps-detail-label">Title number</div>
-            <div class="pps-detail-value" style="font-size: 12px">
-              {{ property.titleNumber }}
+            <span class="pps-detail-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z" />
+                <path d="M14 3v5h5" />
+              </svg>
+            </span>
+            <div class="pps-detail-tile-body">
+              <div class="pps-detail-label">Title number</div>
+              <div class="pps-detail-value">{{ property.titleNumber }}</div>
             </div>
           </div>
           <!-- (Flood tile removed from Property Details — the same data is
@@ -907,12 +831,55 @@
           </svg>
         </div>
         <div class="pps-ask-title">Need something specific?</div>
-        <div class="pps-ask-sub">Ask a neighbour or our community</div>
+        <div class="pps-ask-sub">
+          Ask a neighbour or our community — answers land in this record.
+        </div>
         <button type="button" class="pps-ask-btn" @click="onContactClick">Ask a question</button>
       </div>
       </aside><!-- /pps-col-side -->
       </div><!-- /pps-grid -->
       </div><!-- /pps-shell -->
+
+      <!-- ─────────────────────────── FOOTER ─────────────────────────── -->
+      <footer class="pps-footer">
+        <div class="pps-footer-grid">
+          <div class="pps-footer-intro">
+            <div class="pps-footer-brand">
+              <img src="/logo-new.png" alt="" class="pps-footer-logo" />
+              <strong>umovingu</strong>
+            </div>
+            <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
+            <div class="pps-footer-chips">
+              <span>OPDA standard</span>
+              <span>Property Redress Scheme</span>
+              <span>HM Land Registry</span>
+            </div>
+          </div>
+
+          <div class="pps-footer-col">
+            <h5>Product</h5>
+            <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport/collections')">Property Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+          </div>
+
+          <div class="pps-footer-col">
+            <h5>Company</h5>
+            <button type="button" @click="navigateTo('/')">Our story</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            <button type="button" @click="navigateTo('/profile')">Account</button>
+          </div>
+
+          <div class="pps-footer-col">
+            <h5>Legal</h5>
+            <button type="button" @click="navigateTo('/legal/privacy')">Privacy</button>
+            <button type="button" @click="navigateTo('/legal/terms')">Terms</button>
+            <button type="button" @click="navigateTo('/legal/cookies')">Cookies</button>
+          </div>
+        </div>
+        <div class="pps-footer-bottom">© 2026 umovingu. All rights reserved.</div>
+      </footer>
     </template>
 
     <!-- Drawers — wired to the new state-driven CTAs. -->
@@ -4373,7 +4340,15 @@ const scoreDesc = computed<string>(() => {
   if (pageState.value === 'progress') {
     return 'Owner is building a verified Passport — this score will sharpen as data lands.'
   }
-  return 'Score from public EPC data. Owner can run a full HomeScore for a verified picture.'
+  return 'Scored from public EPC data. The owner can run a full HomeScore — bills, energy and value against the street — for a verified picture.'
+})
+
+// "Above average for CV5" — verdict anchored to the outcode when we have one.
+const scoreVerdictLine = computed<string>(() => {
+  const outcode = (property.value?.postcode || '').trim().split(/\s+/)[0]
+  if (!outcode || scoreVerdict.value === 'Score unavailable')
+    return scoreVerdict.value
+  return `${scoreVerdict.value} for ${outcode}`
 })
 
 const epcDotColor = computed<string>(() => {
@@ -4463,6 +4438,43 @@ const progressPct = computed<number>(() => {
   if (passportStatus.value?.hasPassport) done += 2
   return Math.min(100, Math.round((done / total) * 100))
 })
+
+// ── Hero (web) helpers ────────────────────────────────────────
+// State-aware pill shown top-left of the navy hero card.
+const heroStatePill = computed<{ label: string; dot: string }>(() => {
+  if (pageState.value === 'published')
+    return { label: 'Passport available', dot: '#00b6ae' }
+  if (pageState.value === 'progress')
+    return { label: 'Passport in progress', dot: '#e6a23c' }
+  return { label: 'Unclaimed property', dot: '#f0a500' }
+})
+const HERO_SECTIONS_TOTAL = 17
+const heroSectionsStarted = computed<number>(() =>
+  pageState.value === 'unclaimed'
+    ? 0
+    : Math.round((progressPct.value / 100) * HERO_SECTIONS_TOTAL),
+)
+// Hint line inside the white passport-preview card.
+const heroPreviewHint = computed<string>(() => {
+  if (pageState.value === 'published')
+    return 'Passport published — view the full record'
+  if (pageState.value === 'progress')
+    return `Passport in progress — ${progressPct.value}% complete`
+  return 'Be the first — no Passport on this address yet'
+})
+// Primary hero CTA label, state-aware.
+const heroPrimaryCta = computed<string>(() => {
+  if (pageState.value === 'published') return 'Get the full Passport →'
+  if (pageState.value === 'progress') return "Preview what's being built →"
+  return "Claim this property — it's free →"
+})
+function onHeroPrimaryClick() {
+  if (pageState.value === 'unclaimed') onClaimClick()
+  else onAccessPassport()
+}
+function onSampleClick() {
+  navigateTo('/passport/collections')
+}
 
 // Real-time per-section status from the backend. Used by the "Passport
 // being built" card to render which sections are actually verified instead
@@ -4808,6 +4820,88 @@ const exploreTiles = computed(() => {
   return tiles
 })
 
+// Line-art icon + colour per explore tile (replaces the old emoji glyphs).
+const TILE_ICON: Record<string, { svg: string; bg: string; color: string }> = {
+  history: {
+    svg: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+    bg: '#e3f4ee',
+    color: '#0f857c',
+  },
+  street: {
+    svg: '<path d="M8 3 4 21M16 3l4 18M12 5.5v3M12 12v3M12 18.5v1"/>',
+    bg: '#eef3fb',
+    color: '#43597a',
+  },
+  schools: {
+    svg: '<path d="m2 8 10-4 10 4-10 4L2 8z"/><path d="M6 10v5c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6v-5"/>',
+    bg: '#efeafb',
+    color: '#7a5cd0',
+  },
+  trains: {
+    svg: '<rect x="5" y="3" width="14" height="13" rx="3.5"/><path d="M5 11h14M8.5 16l-2 3M15.5 16l2 3"/><circle cx="9" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/>',
+    bg: '#fbe9ea',
+    color: '#cf5a5a',
+  },
+  buses: {
+    svg: '<rect x="4" y="3.5" width="16" height="13" rx="2.5"/><path d="M4 11h16M8 16.5v2.5M16 16.5v2.5"/><circle cx="8" cy="13.7" r="1"/><circle cx="16" cy="13.7" r="1"/>',
+    bg: '#fdf1dc',
+    color: '#c8912f',
+  },
+  airports: {
+    svg: '<path d="M21.5 2.5 11 13"/><path d="M21.5 2.5 15 21l-3.8-8.2L3 9l18.5-6.5z"/>',
+    bg: '#e6f0fb',
+    color: '#3f7fd0',
+  },
+  map: {
+    svg: '<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+    bg: '#e3f4ee',
+    color: '#0f857c',
+  },
+  flood: {
+    svg: '<path d="M12 3s6 6.4 6 10.5a6 6 0 0 1-12 0C6 9.4 12 3 12 3z"/>',
+    bg: '#e9f2fb',
+    color: '#3f7fd0',
+  },
+  planning: {
+    svg: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+    bg: '#efeafb',
+    color: '#7a5cd0',
+  },
+  council: {
+    svg: '<path d="M3 10 12 4l9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 21h18"/>',
+    bg: '#e3f4ee',
+    color: '#0f857c',
+  },
+  broadband: {
+    svg: '<path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.4a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/>',
+    bg: '#e3f4ee',
+    color: '#0f857c',
+  },
+  'stamp-duty': {
+    svg: '<path d="M3 10 12 4l9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 21h18"/>',
+    bg: '#fdf1dc',
+    color: '#c8912f',
+  },
+  listed: {
+    svg: '<path d="M3 10 12 4l9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 21h18"/>',
+    bg: '#fdf1dc',
+    color: '#c8912f',
+  },
+  crime: {
+    svg: '<path d="M12 3 5 6v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9V6l-7-3z"/><path d="m9.3 11.8 1.9 1.9 3.4-3.6"/>',
+    bg: '#fbe9ea',
+    color: '#cf5a5a',
+  },
+}
+const TILE_ICON_FALLBACK = {
+  svg: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h5"/>',
+  bg: '#eef3fb',
+  color: '#43597a',
+}
+function tileIcon(key: string) {
+  return TILE_ICON[key] || TILE_ICON_FALLBACK
+}
+
 const stampDutyEstimate = computed<number>(() => {
   const price = estimatedPrice.value || 0
   if (price <= 250000) return 0
@@ -4835,13 +4929,14 @@ const costsBoxes = computed(() => {
 
 // FOMO signal-bar copy
 const signalLeftLabel = computed<string>(() => {
-  if (pageState.value === 'unclaimed') return 'No Passport on this address yet'
+  if (pageState.value === 'unclaimed')
+    return "No Passport on this address yet — the record starts when it's claimed"
   if (pageState.value === 'progress') return 'Owner building a Passport'
   return 'Passport live · verified data'
 })
 const signalCountLabel = computed<string>(() => {
   // We don't have live stats wired here yet — show a generic searches line.
-  return 'View live activity in Passport'
+  return 'View live activity →'
 })
 
 // ── Handlers wired to existing drawers/refs ───────────────────────────────────
@@ -6175,7 +6270,7 @@ function formatSaleDate(dateStr: string): string {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
-  padding: 0 0 56px;
+  padding: 0;
 }
 
 /* ─── Web top nav ─────────────────────────────────────────────── */
@@ -6263,6 +6358,65 @@ function formatSaleDate(dateStr: string): string {
   margin: 0 auto;
   padding-top: 22px;
 }
+
+/* ── Footer (app-wide standard) ───────────────────────────────── */
+.pps-footer {
+  margin-top: 48px;
+  background: var(--navy);
+  color: #fff;
+  padding: 56px 0 28px;
+}
+.pps-footer-grid,
+.pps-footer-bottom {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+}
+.pps-footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pps-footer-brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+.pps-footer-logo { height: 26px; width: auto; display: block; object-fit: contain; }
+.pps-footer-brand strong { font-size: 18px; font-weight: 800; color: #fff; }
+.pps-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
+.pps-footer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.pps-footer-chips span {
+  font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 7px; padding: 5px 9px;
+}
+.pps-footer-col { display: flex; flex-direction: column; align-items: flex-start; }
+.pps-footer-col h5 {
+  margin: 2px 0 14px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.pps-footer-col button {
+  display: block;
+  border: 0; background: transparent;
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0; margin-bottom: 11px; cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+}
+.pps-footer-col button:hover { color: var(--brand); }
+.pps-footer-bottom {
+  padding-top: 22px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+@media (max-width: 980px) {
+  .pps-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .pps-footer-grid { grid-template-columns: 1fr; }
+  .pps-footer-grid,
+  .pps-footer-bottom { width: calc(100% - 32px); }
+}
+
 .pps-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -6282,39 +6436,55 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Ask-a-question sidebar card ─────────────────────────────── */
 .pps-ask-card {
-  background: #fff;
-  border: 1px solid #e7eef6;
-  border-radius: 18px;
-  padding: 26px 22px;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 22px;
+  padding: 34px 26px;
   text-align: center;
-  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 10px 26px rgba(15, 36, 62, 0.05);
+  color: #fff;
+  background:
+    radial-gradient(120% 120% at 20% 100%, rgba(0, 182, 174, 0.3) 0%, rgba(0, 182, 174, 0) 55%),
+    linear-gradient(160deg, #1c2547 0%, #141b38 55%, #0f1530 100%);
+  box-shadow: 0 22px 46px rgba(12, 18, 42, 0.28);
 }
 .pps-ask-ic {
-  width: 46px; height: 46px;
-  margin: 0 auto 12px;
+  width: 52px; height: 52px;
+  margin: 0 auto 16px;
   display: grid;
   place-items: center;
-  border-radius: 13px;
-  background: linear-gradient(135deg, #eafaf8, #def6f3);
-  color: #00857f;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #2fd4c6;
 }
-.pps-ask-ic svg { width: 22px; height: 22px; }
-.pps-ask-title { font-size: 16px; font-weight: 800; color: #0f2440; letter-spacing: -0.2px; }
-.pps-ask-sub { font-size: 13px; color: #6b7a90; margin-top: 4px; }
-.pps-ask-btn {
-  margin-top: 16px;
-  border: 1px solid #dbe5ef;
-  background: #fff;
-  color: #0f2440;
-  font-weight: 700;
+.pps-ask-ic svg { width: 24px; height: 24px; }
+.pps-ask-title { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+.pps-ask-sub {
   font-size: 14px;
-  font-family: inherit;
-  padding: 11px 20px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+  color: rgba(255, 255, 255, 0.62);
+  margin-top: 8px;
+  line-height: 1.5;
 }
-.pps-ask-btn:hover { transform: translateY(-1px); border-color: #00b6ae; box-shadow: 0 8px 18px rgba(0, 182, 174, 0.18); }
+.pps-ask-btn {
+  margin-top: 20px;
+  border: none;
+  background: #00b6ae;
+  color: #08312e;
+  font-weight: 800;
+  font-size: 15px;
+  font-family: inherit;
+  padding: 13px 30px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 182, 174, 0.32);
+  transition: box-shadow 0.15s, transform 0.15s, background 0.15s;
+}
+.pps-ask-btn:hover {
+  transform: translateY(-1px);
+  background: #12c3ba;
+  box-shadow: 0 14px 28px rgba(0, 182, 174, 0.42);
+}
 
 @media (max-width: 980px) {
   .pps-grid { grid-template-columns: 1fr; }
@@ -6359,7 +6529,406 @@ function formatSaleDate(dateStr: string): string {
   cursor: pointer;
 }
 
-/* ─── Hero (cohesive overlay unit) ──────────────────────────── */
+/* ─── Hero (web card) ───────────────────────────────────────── */
+.pps-herocard {
+  position: relative;
+  border-radius: var(--r-xl);
+  padding: 34px 36px;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 88% 0%, rgba(0, 182, 174, 0.28) 0%, rgba(0, 182, 174, 0) 46%),
+    linear-gradient(135deg, #221b47 0%, #1c1a3e 48%, #141a37 100%);
+  box-shadow: var(--sh-lg);
+}
+.pps-herocard-actions {
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+}
+.pps-herocard-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.pps-herocard-icon:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+.pps-herocard-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 34px;
+  align-items: start;
+}
+.pps-herocard-lead {
+  min-width: 0;
+}
+.pps-herocard-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 6px 13px;
+  border-radius: 999px;
+}
+.pps-herocard-state-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.pps-herocard-title {
+  margin: 18px 0 0;
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.pps-herocard-sub {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.66);
+}
+.pps-herocard-price {
+  margin-top: 22px;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.pps-herocard-price-src {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+.pps-herocard-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.pps-herocard-pill {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  padding: 6px 13px;
+  border-radius: 999px;
+}
+.pps-herocard-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+.pps-herocard-btn {
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 14px 22px;
+  border-radius: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.pps-herocard-btn--primary {
+  background: #00857f;
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(0, 133, 127, 0.4);
+}
+.pps-herocard-btn--primary:hover {
+  transform: translateY(-1px);
+  background: #009a92;
+  box-shadow: 0 14px 30px rgba(0, 133, 127, 0.48);
+}
+.pps-herocard-btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.pps-herocard-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.pps-herocard-foot {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Passport preview panel (right of hero) */
+.pps-preview {
+  display: flex;
+  flex-direction: column;
+  /* Clear the favourite/share icons (top:20px, 34px tall) so the card
+     sits well below them with room to breathe. */
+  margin-top: 56px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 22px;
+  padding: 22px 24px 24px;
+  color: var(--ink-1, #0f2440);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.5) inset,
+    0 28px 60px rgba(8, 12, 30, 0.4);
+}
+.pps-preview-eyebrow {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #00857f;
+  background: #eafaf8;
+  border: 1px solid #d3f0ec;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.pps-preview-addr {
+  margin-top: 14px;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0f2440;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.pps-preview-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: #7c8aa0;
+  font-weight: 500;
+}
+.pps-preview-divider {
+  height: 1px;
+  background: linear-gradient(90deg, #eef2f7, rgba(238, 242, 247, 0));
+  margin: 18px 0;
+}
+.pps-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.pps-preview-ring {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.pps-preview-ring::before {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 182, 174, 0.1), transparent 70%);
+}
+.pps-preview-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.pps-preview-ring-bg {
+  fill: none;
+  stroke: #eef2f7;
+  stroke-width: 8;
+}
+.pps-preview-ring-fill {
+  fill: none;
+  stroke: url(#ppsPreviewGrad);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 263.9;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 0 4px rgba(0, 182, 174, 0.45));
+}
+.pps-preview-ring-num {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #0f2440;
+  font-feature-settings: 'tnum';
+}
+.pps-preview-ring-denom {
+  position: absolute;
+  top: 66%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #9aa7b8;
+}
+.pps-preview-stats {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pps-preview-stat-strong {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f2440;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+.pps-preview-stat-muted {
+  font-size: 12.5px;
+  color: #9aa7b8;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.pps-preview-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1f6f66;
+  background: #eafaf8;
+  border: 1px solid #cdeee9;
+  border-radius: 13px;
+  padding: 12px 14px;
+  line-height: 1.45;
+}
+.pps-preview-hint-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00b6ae;
+  box-shadow: 0 0 0 3px rgba(0, 182, 174, 0.16);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* Quick actions (two bars under the hero) */
+.pps-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+.pps-actionbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--sh-sm);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.pps-actionbar:hover {
+  transform: translateY(-1px);
+  border-color: #cfe9e6;
+  box-shadow: var(--sh-md);
+}
+.pps-actionbar-ic {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #eafaf8, #def6f3);
+  color: #00857f;
+}
+.pps-actionbar-ic svg {
+  width: 20px;
+  height: 20px;
+}
+.pps-actionbar-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pps-actionbar-body strong {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0f2440;
+  letter-spacing: -0.01em;
+}
+.pps-actionbar-body small {
+  font-size: 12.5px;
+  color: #6b7a90;
+}
+.pps-actionbar-arrow {
+  color: #b3c0d0;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 860px) {
+  .pps-herocard {
+    padding: 24px 20px;
+  }
+  .pps-herocard-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .pps-preview {
+    margin-top: 0;
+  }
+  .pps-herocard-title {
+    font-size: 30px;
+  }
+  .pps-herocard-price {
+    font-size: 32px;
+  }
+  .pps-actions {
+    grid-template-columns: 1fr;
+  }
+  .pps-score-top {
+    flex-wrap: wrap;
+    padding: 24px 20px 22px 26px;
+    gap: 18px;
+  }
+  .pps-score-verdict {
+    font-size: 21px;
+  }
+  .pps-score-run-btn {
+    width: 100%;
+  }
+  .pps-signal-bar {
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    gap: 8px;
+  }
+}
+
+/* ─── Hero (legacy mobile overlay unit — unused on web) ─────── */
 .pps-hero {
   height: 340px;
   width: 100%;
@@ -6682,14 +7251,13 @@ function formatSaleDate(dateStr: string): string {
 .pps-signal-bar {
   width: 100%;
   margin: 0;
-  background: #f2faf8;
-  border-top: 1px solid #e5f4f2;
-  border-bottom: 1px solid #e5f4f2;
-  padding: 10px 18px;
+  background: #ddefe7;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 14px;
+  gap: 16px;
+  border-radius: 16px;
 }
 .pps-signal-left {
   display: flex;
@@ -6717,17 +7285,24 @@ function formatSaleDate(dateStr: string): string {
   }
 }
 .pps-signal-viewing {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  color: #00897b;
+  color: #1b7a63;
 }
 .pps-signal-count {
-  font-size: 12px;
-  color: #aaa;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #178a6e;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(23, 138, 110, 0.45);
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 /* ─── Score card ────────────────────────────────────────────── */
 .pps-score-card {
+  position: relative;
   margin: 0;
   width: 100%;
   border-radius: var(--r-lg);
@@ -6735,6 +7310,17 @@ function formatSaleDate(dateStr: string): string {
   border: 1px solid var(--line);
   box-shadow: var(--sh-md);
   background: var(--surface);
+}
+/* Teal accent bar on the card's left edge */
+.pps-score-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: #00a19a;
+  z-index: 1;
 }
 .pps-score-card--clickable {
   cursor: pointer;
@@ -6747,13 +7333,12 @@ function formatSaleDate(dateStr: string): string {
   box-shadow: 0 10px 30px rgba(35, 29, 69, 0.14);
 }
 .pps-score-top {
-  background: linear-gradient(135deg, #f2faf8 0%, #e5f4f2 100%);
-  padding: 24px 22px 20px;
+  background: var(--surface, #fff);
+  padding: 30px 28px 28px 34px;
   position: relative;
-  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 26px;
 }
 .pps-score-blob-tr {
   position: absolute;
@@ -6833,36 +7418,68 @@ function formatSaleDate(dateStr: string): string {
   z-index: 1;
 }
 .pps-score-eyebrow {
-  font-size: 9px;
+  font-size: 11.5px;
   font-weight: 800;
-  color: #007e78;
-  letter-spacing: 2px;
+  color: #00897b;
+  letter-spacing: 2.4px;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .pps-score-verdict {
-  font-size: 17px;
+  font-size: 26px;
   font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.3px;
+  color: #1a1535;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 .pps-score-desc {
-  font-size: 13px;
-  color: #6b6783;
-  margin-top: 5px;
-  line-height: 1.5;
+  font-size: 15px;
+  color: #6b7a90;
+  margin-top: 8px;
+  line-height: 1.6;
+  max-width: 54ch;
 }
-.pps-score-epc-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  background: white;
-  border: 1px solid #ececef;
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 12px;
-  color: #444;
+.pps-score-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.pps-score-pill {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 15px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.pps-score-pill--epc {
+  background: #e2f3ec;
+  color: #14735f;
+  border: 1px solid #cde9df;
+}
+.pps-score-pill--warn {
+  background: #fdf1d8;
+  color: #a4711a;
+  border: 1px solid #f3ddb0;
+}
+.pps-score-run-btn {
+  flex-shrink: 0;
+  align-self: center;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e2233;
+  background: #fff;
+  border: 1.5px solid #1e2233;
+  border-radius: 14px;
+  padding: 15px 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.15s;
+}
+.pps-score-run-btn:hover {
+  background: #f4f6f9;
+  transform: translateY(-1px);
 }
 .pps-epc-dot {
   width: 6px;
@@ -6926,22 +7543,58 @@ function formatSaleDate(dateStr: string): string {
 /* ─── Explore grid ──────────────────────────────────────────── */
 .pps-explore-header {
   width: 100%;
-  margin: var(--sp-2) 0 calc(-1 * var(--sp-1));
+  margin: var(--sp-3) 0 var(--sp-1);
   padding: 0 2px;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-end;
+  gap: 16px;
+}
+.pps-explore-heading {
+  min-width: 0;
+}
+.pps-explore-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: #00897b;
+}
+.pps-explore-eyebrow-dash {
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
 }
 .pps-explore-title {
-  font-size: 17px;
+  margin: 10px 0 0;
+  font-size: 30px;
   font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.01em;
+  color: #1a1535;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 .pps-explore-sources {
-  font-size: 13px;
-  color: var(--brand-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 14.5px;
+  color: #178a6e;
   font-weight: 700;
+  background: #fff;
+  border: 1.5px solid #d5e7e2;
+  border-radius: 999px;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pps-explore-sources:hover {
+  border-color: #00a19a;
+  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.14);
 }
 .pps-explore-grid {
   width: 100%;
@@ -6971,11 +7624,11 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-tile {
   background: var(--surface);
-  border-radius: var(--r-md);
-  padding: var(--sp-4) var(--sp-3);
+  border-radius: 18px;
+  padding: 22px 22px 44px;
   cursor: pointer;
-  box-shadow: var(--sh-sm);
-  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 12px 26px rgba(15, 36, 62, 0.05);
+  border: 1px solid #eef0ee;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
@@ -6983,36 +7636,44 @@ function formatSaleDate(dateStr: string): string {
 .pps-tile:hover {
   transform: translateY(-3px);
   border-color: #d4e6e3;
-  box-shadow: var(--sh-lg);
+  box-shadow: 0 14px 32px rgba(15, 36, 62, 0.1);
 }
 .pps-tile:active {
   transform: translateY(-1px);
 }
 .pps-tile-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+}
+.pps-tile-icon svg {
+  width: 22px;
+  height: 22px;
 }
 .pps-tile-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: #1a1535;
-  margin-top: 10px;
+  letter-spacing: -0.01em;
+  margin-top: 18px;
 }
 .pps-tile-value {
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 800;
-  color: #00a19a;
-  margin-top: 3px;
+  color: #0f857c;
+  letter-spacing: -0.01em;
+  margin-top: 6px;
+}
+.pps-tile-value--warn {
+  color: #bf8324;
 }
 .pps-tile-sub {
-  font-size: 11px;
-  color: #999;
-  margin-top: 2px;
+  font-size: 13px;
+  color: #8a94a3;
+  margin-top: 4px;
 }
 .pps-tile-trend {
   font-size: 11px;
@@ -7034,11 +7695,24 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-tile-arrow {
   position: absolute;
-  bottom: 12px;
-  right: 12px;
-  font-size: 12px;
-  color: #ccc;
+  top: 22px;
+  right: 22px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid #e7ebf0;
+  background: #fff;
+  font-size: 14px;
+  color: #9aa4b2;
   line-height: 1;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.pps-tile:hover .pps-tile-arrow {
+  border-color: #00a19a;
+  color: #00a19a;
+  background: #f0faf8;
 }
 
 /* ─── Passport card ─────────────────────────────────────────── */
@@ -7294,6 +7968,121 @@ function formatSaleDate(dateStr: string): string {
   margin-top: 8px;
 }
 
+/* ─── Dark unclaimed passport card (redesign) ───────────────────── */
+.pps-passport-card--dark {
+  background:
+    radial-gradient(
+      130% 130% at 100% 100%,
+      rgba(31, 111, 156, 0.5) 0%,
+      rgba(31, 111, 156, 0) 55%
+    ),
+    linear-gradient(150deg, #1b1638 0%, #201a44 50%, #1c2350 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 22px 55px rgba(20, 16, 45, 0.4);
+  border-radius: 24px;
+  padding: 34px 32px;
+}
+.pps-passport-eyebrow--dark {
+  color: #35c9b6;
+}
+.pps-passport-eyebrow-line {
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: #35c9b6;
+  flex-shrink: 0;
+}
+.pps-passport-price-pill--unclaimed-dark {
+  background: rgba(255, 255, 255, 0.04);
+  color: #938fb5;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+}
+.pps-passport-title--dark {
+  color: #ffffff;
+  font-size: 30px;
+  line-height: 1.12;
+  margin-top: 16px;
+}
+.pps-passport-title-accent {
+  color: #35c9b6;
+}
+.pps-passport-explain--unclaimed-dark {
+  background: rgba(255, 255, 255, 0.035);
+  border-left: 3px solid #35c9b6;
+  border-radius: 0 10px 10px 0;
+  padding: 16px 18px;
+  margin-top: 22px;
+}
+.pps-passport-explain-eyebrow--dark {
+  color: #35c9b6;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+.pps-passport-explain-body--dark {
+  color: #b9b5d0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.pps-passport-explain-body--dark strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+.pps-pp-stepper--dark {
+  margin: 30px 0 26px;
+}
+.pps-pp-stepper--dark .pps-pp-step-dot {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  color: #6f6a92;
+}
+.pps-pp-stepper--dark .pps-pp-step--active .pps-pp-step-dot {
+  background: #12b6a5;
+  border-color: #12b6a5;
+  color: #ffffff;
+  box-shadow: 0 0 0 5px rgba(18, 182, 165, 0.15);
+}
+.pps-pp-stepper--dark .pps-pp-step-label {
+  color: #6f6a92;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.pps-pp-stepper--dark .pps-pp-step--active .pps-pp-step-label {
+  color: #ffffff;
+}
+.pps-pp-stepper--dark .pps-pp-step-line {
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 28px;
+}
+.pps-passport-cta--dark {
+  background: linear-gradient(180deg, #16c2ad 0%, #10b6a3 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  font-size: 16px;
+  box-shadow: 0 12px 30px rgba(16, 182, 163, 0.4);
+}
+.pps-passport-cta--dark:hover {
+  box-shadow: 0 14px 34px rgba(16, 182, 163, 0.5);
+}
+.pps-passport-cta-sub--dark {
+  color: #7d78a0;
+  font-size: 12px;
+  margin-top: 14px;
+}
+.pps-passport-cta-sub--dark strong {
+  color: #b9b5d0;
+  font-weight: 700;
+}
+
 /* ─── Costs card ────────────────────────────────────────────── */
 .pps-costs-card {
   width: 100%;
@@ -7419,9 +8208,10 @@ function formatSaleDate(dateStr: string): string {
   background: var(--surface);
 }
 .pps-details-header {
-  padding: 14px 16px 0;
-  font-size: 15px;
+  padding: 20px 20px 0;
+  font-size: 18px;
   font-weight: 800;
+  letter-spacing: -0.01em;
   color: #1a1535;
 }
 .pps-details-sub {
@@ -7444,50 +8234,66 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
 }
 .pps-details-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 12px 14px 14px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 16px 18px 18px;
 }
 .pps-detail-tile {
-  padding: 13px;
-  border-radius: 10px;
-  background: linear-gradient(170deg, #fbfdff 0%, #f6f9ff 100%);
-  border: 1.5px solid rgba(174, 201, 231, 0.34);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f7f4ec;
+  border: 1px solid #eee9dc;
+  transition: border-color 0.15s, background 0.15s;
 }
 .pps-detail-tile:hover {
-  transform: translateY(-3px) scale(1.02);
-  border-color: rgba(35, 29, 69, 0.42);
-  background: white;
-  box-shadow: 0 8px 22px rgba(17, 52, 88, 0.12);
+  border-color: #ddd5c2;
+  background: #f5f1e6;
 }
 .pps-detail-tile-icon {
-  font-size: 16px;
-  margin-bottom: 6px;
-  display: block;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #1e2233;
+  box-shadow: 0 1px 3px rgba(26, 21, 53, 0.08);
+}
+.pps-detail-tile-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.pps-detail-tile-body {
+  min-width: 0;
 }
 .pps-detail-label {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
-  color: #aaa;
-  letter-spacing: 1px;
+  color: #9aa0ad;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
 }
 .pps-detail-value {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: #1a1535;
-  margin-top: 4px;
+  margin-top: 3px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
+  overflow-wrap: anywhere;
 }
 .pps-epc-badge {
   color: white;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  border-radius: 5px;
-  padding: 1px 6px;
+  border-radius: 7px;
+  padding: 2px 9px;
+  background: #10a58c;
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -7499,8 +8305,10 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   z-index: 220;
   background: rgba(15, 12, 38, 0.55);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
   animation: pps-overlay-fade 0.22s ease both;
 }
 @keyframes pps-overlay-fade {
@@ -7515,16 +8323,38 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   width: 100%;
   max-width: 28rem;
   background: #fff;
-  border-radius: 22px 22px 0 0;
+  border-radius: 22px;
   padding: 16px 20px 24px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
-  max-height: 86vh;
+  max-height: min(88vh, 760px);
   overflow-y: auto;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
-  animation: pps-sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: 0 24px 60px rgba(15, 12, 38, 0.32);
+  animation: pps-sheet-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Slim, inset scrollbar so it doesn't collide with the rounded corners */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(35, 29, 69, 0.28) transparent;
+}
+.pps-sheet::-webkit-scrollbar {
+  width: 10px;
+}
+.pps-sheet::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pps-sheet::-webkit-scrollbar-thumb {
+  background: rgba(35, 29, 69, 0.22);
+  border-radius: 100px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.pps-sheet::-webkit-scrollbar-thumb:hover {
+  background: rgba(35, 29, 69, 0.4);
+  background-clip: padding-box;
 }
 .pps-sheet--tall {
-  max-height: 92vh;
+  max-height: min(92vh, 860px);
+}
+@keyframes pps-sheet-pop {
+  from { transform: translateY(14px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 @keyframes pps-sheet-up {
   from {
@@ -7537,11 +8367,34 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   }
 }
 .pps-sheet-handle {
+  display: none; /* desktop = centered modal; handle only shows on mobile bottom-sheet */
   width: 40px;
   height: 4px;
   background: #ececef;
   border-radius: 100px;
   margin: 0 auto 14px;
+}
+
+/* Collapse to a bottom-sheet on phones */
+@media (max-width: 560px) {
+  .pps-sheet-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .pps-sheet {
+    max-width: 100%;
+    border-radius: 22px 22px 0 0;
+    max-height: 88vh;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
+    animation: pps-sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pps-sheet--tall {
+    max-height: 92vh;
+  }
+  .pps-sheet-handle {
+    display: block;
+  }
 }
 .pps-sheet-icon {
   font-size: 36px;

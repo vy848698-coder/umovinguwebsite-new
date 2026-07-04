@@ -66,7 +66,7 @@ function go(to: string) {
 .psb-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 24px; }
 .psb-brand-logo { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(140deg, #00b6ae, #007e78); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .psb-brand-svg { width: 18px; height: 18px; color: #fff; }
-.psb-brand-text { font-size: 14px; font-weight: 800; letter-spacing: 0.6px; color: #10263d; }
+.psb-brand-text { font-size: 14px; font-weight: 800; letter-spacing: 0.6px; color: #231d45; }
 
 .psb-nav { display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .psb-item {
@@ -76,7 +76,7 @@ function go(to: string) {
   background: none; border: none; cursor: pointer; text-align: left; width: 100%;
   transition: all 0.16s;
 }
-.psb-item:hover { background: #f4f7fb; color: #10263d; }
+.psb-item:hover { background: #f4f7fb; color: #231d45; }
 .psb-item-ic { width: 20px; height: 20px; flex-shrink: 0; }
 .psb-item.active {
   background: linear-gradient(120deg, #00a19a, #007e78); color: #fff;
@@ -86,7 +86,7 @@ function go(to: string) {
 .psb-secure { margin-top: 16px; background: #f7faff; border: 1px solid #e8eef5; border-radius: 16px; padding: 18px 16px; text-align: center; }
 .psb-secure-ic { width: 40px; height: 40px; border-radius: 12px; background: #e3f4f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
 .psb-secure-svg { width: 20px; height: 20px; color: #00a19a; }
-.psb-secure-t { font-size: 12.5px; font-weight: 700; color: #10263d; }
+.psb-secure-t { font-size: 12.5px; font-weight: 700; color: #231d45; }
 .psb-secure-pct { font-size: 13px; font-weight: 800; color: #00a19a; margin-bottom: 8px; }
 .psb-secure-s { font-size: 11px; color: #7e8a98; line-height: 1.5; margin-bottom: 12px; }
 .psb-secure-link { display: inline-flex; align-items: center; gap: 5px; background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 800; color: #007e78; cursor: pointer; }

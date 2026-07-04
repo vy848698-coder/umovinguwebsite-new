@@ -731,7 +731,7 @@ onMounted(async () => {
   line-height: 1;
   letter-spacing: -0.9px;
   font-weight: 800;
-  color: #10263d;
+  color: #231d45;
 }
 .cal-stats {
   display: flex;

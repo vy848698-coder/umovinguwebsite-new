@@ -834,7 +834,7 @@ const goBack = useGoBack('/profile')
 }
 .pi-welcome-greet { font-size: 15px; font-weight: 700; color: #2a4055; margin-bottom: 2px; }
 .pi-wave { display: inline-block; }
-.pi-welcome-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #10263d; line-height: 1.1; margin-bottom: 6px; }
+.pi-welcome-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #231d45; line-height: 1.1; margin-bottom: 6px; }
 .pi-welcome-sub { font-size: 14px; color: #5f7488; line-height: 1.5; max-width: 320px; }
 .pi-welcome-prog { min-width: 0; }
 .pi-wp-label { font-size: 12.5px; font-weight: 700; color: #5f7488; margin-bottom: 4px; }
@@ -877,14 +877,14 @@ const goBack = useGoBack('/profile')
 .ic-aqua { background: #e3f5f1; color: #00a19a; }
 .ic-green { background: #e3f5ec; color: #18a558; }
 .ic-indigo { background: #efeafe; color: #7c5cf0; }
-.pi-card-title { font-size: 16px; font-weight: 800; color: #10263d; letter-spacing: -0.3px; }
+.pi-card-title { font-size: 16px; font-weight: 800; color: #231d45; letter-spacing: -0.3px; }
 .pi-card-action {
   display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
   font-family: inherit; font-size: 12.5px; font-weight: 700; color: #41566b;
   background: #fff; border: 1px solid #e2e8f1; border-radius: 9px; padding: 6px 11px; cursor: pointer;
   transition: border-color 0.16s, color 0.16s;
 }
-.pi-card-action:hover { border-color: #b9d5ea; color: #10263d; }
+.pi-card-action:hover { border-color: #b9d5ea; color: #231d45; }
 .pi-card-action-ic { width: 14px; height: 14px; }
 .pi-card-desc { font-size: 13px; color: #6f8398; line-height: 1.45; margin-bottom: 14px; }
 .pi-card-desc.tight { margin: 2px 0 0; }
@@ -937,7 +937,7 @@ const goBack = useGoBack('/profile')
 .pi-verify-badge { width: 76px; height: 76px; border-radius: 50%; background: #e7f5ee; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
 .pi-verify-badge-ic { width: 38px; height: 38px; color: #18a558; }
 .pi-verify-badge.done { background: #d8f3e3; }
-.pi-verify-title { font-size: 17px; font-weight: 800; color: #10263d; margin-bottom: 6px; }
+.pi-verify-title { font-size: 17px; font-weight: 800; color: #231d45; margin-bottom: 6px; }
 .pi-verify-sub { font-size: 12.5px; color: #6f8398; line-height: 1.5; max-width: 240px; margin-bottom: 16px; }
 .pi-verify-btn {
   width: 100%; height: 46px; border-radius: 12px; border: none; cursor: pointer;
