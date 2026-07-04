@@ -368,6 +368,16 @@ import BottomNav from '~/components/core/BottomNav.vue'
 const route = useRoute()
 const router = useRouter()
 
+// Editorial serif for the hero heading — matches the rest of the app.
+useHead({
+  link: [
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap',
+    },
+  ],
+})
+
 const {
   currentStep,
   currentTask,
@@ -1383,38 +1393,34 @@ const handleContinue = () => {
 /* ── Hero (matches prototype/disputes.html teal-pale gradient) ─── */
 .qhero {
   margin: 8px 0 16px;
-  border-radius: 24px;
-  background: linear-gradient(160deg, #e6fbf6 0%, #def7f1 60%, #b8f2e6 100%);
-  padding: 22px 22px;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  padding: 24px 22px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 14px 34px rgba(35, 29, 69, 0.07);
 }
 .qhero::before {
   content: '';
   position: absolute;
-  inset: -40% -20% auto auto;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.7),
-    transparent 65%
-  );
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, #00a19a, #2fd0c6);
   pointer-events: none;
 }
 .qhero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(15, 118, 110, 0.15);
-  color: #0f766e;
+  gap: 7px;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.22);
+  color: #00857f;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
   position: relative;
   z-index: 1;
@@ -1423,31 +1429,32 @@ const handleContinue = () => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #14b8a6;
+  background: #00a19a;
 }
 .qhero-illustration {
   display: flex;
   justify-content: center;
-  margin: 4px 0 8px;
+  margin: 10px 0 6px;
   position: relative;
   z-index: 1;
 }
 .qhero-title {
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #0a0f2c;
-  margin: 4px 0 4px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.3px;
+  color: #231d45;
+  margin: 6px 0 5px;
   position: relative;
   z-index: 1;
 }
 .qhero-sub {
-  color: #115e59;
-  font-size: 14px;
+  color: #8b8799;
+  font-size: 13.5px;
   font-weight: 500;
-  line-height: 1.4;
-  margin: 0 0 16px;
+  line-height: 1.45;
+  margin: 0 0 18px;
   position: relative;
   z-index: 1;
 }
@@ -1466,8 +1473,8 @@ const handleContinue = () => {
   height: var(--size);
   border-radius: 50%;
   background: conic-gradient(
-    #1f7a66 calc(var(--p) * 1%),
-    rgba(15, 118, 110, 0.15) 0
+    #00a19a calc(var(--p) * 1%),
+    rgba(0, 161, 154, 0.14) 0
   );
   display: grid;
   place-items: center;
@@ -1485,29 +1492,29 @@ const handleContinue = () => {
   grid-area: 1 / 1;
   z-index: 1;
   font-size: 12px;
-  font-weight: 700;
-  color: #0a0f2c;
+  font-weight: 800;
+  color: #231d45;
   line-height: 1;
 }
 .qmeta-text small {
   display: block;
   text-transform: uppercase;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: 0.08em;
-  color: #115e59;
+  color: #8b8799;
   margin-bottom: 4px;
 }
 .qmeta-text strong {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #0a0f2c;
+  font-size: 13.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #231d45;
 }
 .qmeta-text strong em {
   font-style: normal;
-  color: #64748b;
-  font-weight: 500;
+  color: #8b8799;
+  font-weight: 600;
 }
 
 /* ── Help / Play pills (even split) ───────────────────────────── */
@@ -1531,13 +1538,19 @@ const handleContinue = () => {
 }
 .qpill.ghost {
   background: #fff;
-  border-color: #e5e7eb;
-  color: #0f766e;
+  border-color: #ececf2;
+  color: #00857f;
+}
+.qpill.ghost:hover {
+  border-color: #00a19a;
 }
 .qpill.primary {
-  background: #1f7a66;
+  background: #00a19a;
   color: #fff;
-  box-shadow: 0 8px 20px -8px rgba(13, 148, 136, 0.6);
+  box-shadow: 0 10px 22px -8px rgba(0, 161, 154, 0.55);
+}
+.qpill.primary:hover {
+  background: #00857f;
 }
 
 /* ── Question header + segmented progress ─────────────────────── */
@@ -1549,17 +1562,18 @@ const handleContinue = () => {
 }
 .qheader-h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
   line-height: 1.1;
-  color: #0a0f2c;
-  letter-spacing: -0.02em;
+  color: #231d45;
+  letter-spacing: -0.3px;
 }
 .qheader-sub {
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #64748b;
+  margin-top: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8b8799;
 }
 .qnav {
   display: flex;
@@ -1569,21 +1583,24 @@ const handleContinue = () => {
 }
 .qnav-btn {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  color: #0f766e;
-  padding: 8px 14px;
+  border: 1px solid #ececf2;
+  color: #00857f;
+  padding: 8px 15px;
   border-radius: 999px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 700;
   font-family: inherit;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, border-color 0.16s;
+}
+.qnav-btn:hover {
+  border-color: #00a19a;
 }
 .qnav-btn:active {
   transform: scale(0.97);
 }
 .qnav-btn.ghost-muted {
-  color: #64748b;
+  color: #8b8799;
 }
 
 .qsegments {
@@ -1600,36 +1617,36 @@ const handleContinue = () => {
   overflow: hidden;
 }
 .qseg.done {
-  background: #14b8a6;
+  background: #00a19a;
 }
 .qseg.current {
-  background: #99f6e4;
+  background: #a7ede8;
 }
 .qseg.current::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #14b8a6 0%, #14b8a6 50%, transparent 50%);
+  background: linear-gradient(90deg, #00a19a 0%, #00a19a 50%, transparent 50%);
 }
 
 /* ── "What is this?" tip — kept on aqua per request ─────────── */
 .qtip {
-  background: #e6f9f7;
-  border: 1px solid #e2f1ea;
+  background: rgba(0, 161, 154, 0.06);
+  border: 1px solid rgba(0, 161, 154, 0.18);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   margin-bottom: 16px;
   display: flex;
-  gap: 10px;
+  gap: 11px;
   align-items: flex-start;
 }
 .qtip-ic {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   flex-shrink: 0;
-  background: #e2f1ea;
-  color: #00756f;
+  background: rgba(0, 161, 154, 0.12);
+  color: #00857f;
   display: grid;
   place-items: center;
 }
@@ -1639,18 +1656,18 @@ const handleContinue = () => {
 }
 .qtip-body strong {
   display: block;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 800;
   line-height: 1.2;
-  color: #00756f;
+  color: #00857f;
   margin-bottom: 4px;
 }
 .qtip-body p {
   margin: 0;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 12.5px;
+  font-weight: 500;
   line-height: 1.5;
-  color: #115e59;
+  color: #5a5570;
 }
 
 .task-header {
@@ -1930,8 +1947,9 @@ const handleContinue = () => {
 .question-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 12px 16px;
-  border: 0.33px solid #3c3c432e;
+  padding: 16px 18px;
+  border: 1px solid #ececf2;
+  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
 }
 
 .question-card + .question-card {
@@ -1940,18 +1958,25 @@ const handleContinue = () => {
 
 .submit-btn {
   width: 100%;
-  padding: 14px 20px;
-  background: #00a19a;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #00a19a, #00857f);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 17px;
-  line-height: 22px;
-  letter-spacing: -0.43px;
-  font-weight: 400;
+  border-radius: 14px;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.14s ease, box-shadow 0.16s ease, opacity 0.16s;
   margin-top: 24px;
+  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.3);
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(0, 161, 154, 0.4);
 }
 
 .submit-btn:active:not(:disabled) {
@@ -1959,8 +1984,9 @@ const handleContinue = () => {
 }
 
 .submit-btn:disabled {
-  color: #00a19a;
-  background: #00a19a1a;
+  color: #9a97a8;
+  background: #eceef3;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -2000,16 +2026,24 @@ const handleContinue = () => {
   margin-bottom: 16px;
 }
 
+.property-photos-section {
+  background: #fff;
+  border: 1px solid #ececf2;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.06);
+}
 .property-photos-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a2e2b;
-  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
+  margin: 0 0 5px;
 }
 
 .property-photos-sub {
-  font-size: 13px;
-  color: #6b7c78;
+  font-size: 12.5px;
+  color: #8b8799;
   margin: 0 0 16px;
   line-height: 1.5;
 }

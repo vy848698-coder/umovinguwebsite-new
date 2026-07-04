@@ -161,11 +161,15 @@ export default defineNuxtConfig({
     // Public keys (exposed to client-side)
     public: {
       // In dev, default to the same-origin proxy path so browser calls avoid
-      // CORS (see $development.routeRules above). In prod, NUXT_PUBLIC_API_BASE
-      // is set to the real backend URL on Vercel.
+      // CORS (see $development.routeRules above). In prod, prefer
+      // NUXT_PUBLIC_API_BASE (set on Vercel); if it's missing, fall back to the
+      // real backend URL rather than localhost so a forgotten env var can't
+      // silently break production.
       apiBase:
         process.env.NUXT_PUBLIC_API_BASE ||
-        (isDev ? '/__backend' : 'http://localhost:3002'),
+        (isDev
+          ? '/__backend'
+          : 'https://demo-umu-backend-production.up.railway.app'),
       googleClientId:
         process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID ||
         '869780740735-rlucf6t174rb3dljniqfj3ri2r0kg9cj.apps.googleusercontent.com',
