@@ -521,9 +521,6 @@
       storage-key="umu_tour_collections_v1"
     />
 
-    <div class="pp-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
   </div>
 </template>
 
@@ -535,7 +532,6 @@ import UserAvatar from '~/components/ui/UserAvatar.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 const { profile } = useProfile()
 

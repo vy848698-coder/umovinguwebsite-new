@@ -315,58 +315,60 @@ const emitUpdate = () => {
 }
 
 .question-text {
-  color: #000000;
-  margin: 0 0 20px 0;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
+  color: #231d45;
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .question-description {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-  color: #3c3c4399;
+  line-height: 1.55;
+  color: #8b8799;
   margin-bottom: 20px;
 }
 
 .help-section {
   display: flex;
-  gap: 2px;
-  padding: 12px;
-  background: #00a19a1a;
-  border-radius: 12px;
-  border: 2px solid #e6f9f7;
+  gap: 11px;
+  padding: 13px 15px;
+  background: rgba(0, 161, 154, 0.06);
+  border-radius: 14px;
+  border: 1px solid rgba(0, 161, 154, 0.18);
   margin-bottom: 20px;
 }
 
 .help-icon {
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .help-content {
   flex: 1;
+  min-width: 0;
 }
 
 .help-title {
-  margin: 0px 0 8px -5px;
-  color: #00a19a;
-  font-weight: 590;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  color: #00857f;
+  font-weight: 800;
+  font-size: 12.5px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .help-text {
-  color: #3c3c4399;
+  color: #5a5570;
   margin: 0;
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  font-weight: 500;
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .typing-cursor {

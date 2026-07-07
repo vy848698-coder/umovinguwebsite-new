@@ -175,15 +175,11 @@
 
     <SiteFooter />
 
-    <div class="ex-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -288,7 +284,7 @@ async function submitEnquiry() {
 .exw-head { max-width: 720px; margin-bottom: 26px; }
 .exw-kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; color: #00857f; font-size: 12px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; }
 .exw-kicker-dot { width: 7px; height: 7px; border-radius: 999px; background: #00a19a; box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16); }
-.exw-head h1 { margin: 0; color: #08102f; font-size: clamp(28px, 3.4vw, 42px); font-weight: 900; line-height: 1.08; letter-spacing: -0.02em; }
+.exw-head h1 { margin: 0; color: #231d45; font-size: clamp(28px, 3.4vw, 42px); font-weight: 900; line-height: 1.08; letter-spacing: -0.02em; }
 .exw-lede { margin: 16px 0 0; max-width: 560px; color: #5b6d89; font-size: 16px; font-weight: 500; line-height: 1.6; }
 
 /* ── Layout ───────────────────────────────────────────────────────── */

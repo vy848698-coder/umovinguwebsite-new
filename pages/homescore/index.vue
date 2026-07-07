@@ -1122,7 +1122,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 .hs-step-card h3 {
   margin: 0 0 10px;
-  color: #08102f;
+  color: #231d45;
   font-size: 17px;
   font-weight: 900;
   line-height: 1.25;
@@ -1189,7 +1189,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 .hs-footer {
   position: relative;
   z-index: 2;
-  background: #08102f;
+  background: #231d45;
   color: #cbd9ea;
   padding: 56px 32px 24px;
 }

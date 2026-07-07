@@ -425,58 +425,60 @@ const formatValue = (rawValue, option) => {
 
 <style scoped>
 .question-text {
-  color: #000000;
-  margin: 0 0 20px 0;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
+  color: #231d45;
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .question-description {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-  color: #3c3c4399;
+  line-height: 1.55;
+  color: #8b8799;
   margin-bottom: 20px;
 }
 
 .help-section {
   display: flex;
-  gap: 2px;
-  padding: 12px;
-  background: #00a19a1a;
-  border-radius: 12px;
-  border: 2px solid #e6f9f7;
-  margin-bottom: 20px;
+  gap: 11px;
+  padding: 13px 15px;
+  background: rgba(0, 161, 154, 0.06);
+  border-radius: 14px;
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  margin-bottom: 18px;
 }
 
 .help-icon {
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .help-content {
   flex: 1;
+  min-width: 0;
 }
 
 .help-title {
-  margin: 0px 0 8px -5px;
-  color: #00a19a;
-  font-weight: 590;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  color: #00857f;
+  font-weight: 800;
+  font-size: 12.5px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .help-text {
-  color: #3c3c4399;
+  color: #5a5570;
   margin: 0;
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  font-weight: 500;
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .typing-cursor {
@@ -510,22 +512,29 @@ const formatValue = (rawValue, option) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fbfbfa;
+  border: 1.5px solid #ececf2;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.16s, background 0.16s, box-shadow 0.16s,
+    transform 0.12s;
   position: relative;
 }
 
+.date-option:hover {
+  border-color: #bfe9e5;
+  background: #fbfefe;
+}
+
 .date-option:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 .date-option.selected {
   border-color: #00a19a;
-  background: #f0fffe;
+  background: rgba(0, 161, 154, 0.06);
+  box-shadow: 0 6px 18px -8px rgba(0, 161, 154, 0.4);
 }
 
 .date-option.single-option {
@@ -533,16 +542,16 @@ const formatValue = (rawValue, option) => {
 }
 
 .radio-btn {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #ccc;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #d3d0dd;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.2s;
-  background: white;
+  transition: background 0.16s, border-color 0.16s;
+  background: #fff;
 }
 
 .radio-btn.checked {
@@ -552,36 +561,36 @@ const formatValue = (rawValue, option) => {
 
 .check-icon {
   color: white;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1;
 }
 
 .option-label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #1a1a1a;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #231d45;
   flex: 1;
 }
 
 .date-badge {
-  padding: 8px 16px;
-  background: #e6f9f7;
-  border-radius: 8px;
+  padding: 9px 16px;
+  background: rgba(0, 161, 154, 0.1);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.16s;
   position: relative;
   overflow: hidden;
 }
 
 .date-badge:hover {
-  background: #d1f5f1;
+  background: rgba(0, 161, 154, 0.16);
 }
 
 .date-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #00a19a;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #00857f;
   position: relative;
   z-index: 1;
   pointer-events: none;
@@ -589,7 +598,7 @@ const formatValue = (rawValue, option) => {
 
 .date-placeholder {
   font-size: 14px;
-  color: #999;
+  color: #a5a1b4;
   position: relative;
   z-index: 1;
   pointer-events: none;

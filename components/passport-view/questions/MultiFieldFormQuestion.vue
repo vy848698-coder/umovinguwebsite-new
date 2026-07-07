@@ -203,40 +203,44 @@ const emitUpdate = () => {
 }
 
 .question-text {
-  font-size: 15px;
-  font-weight: 500;
-  color: #3c3c43;
-  margin: 0 0 20px 0;
-  letter-spacing: -0.23px;
-  line-height: 1.5;
+  font-size: 24px;
+  font-weight: 800;
+  color: #231d45;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .question-description {
-  font-size: 14px;
-  color: #3c3c4399;
-  margin: 0 0 16px 0;
-  line-height: 1.4;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8b8799;
+  margin: 0 0 20px 0;
+  line-height: 1.55;
 }
 
 .help-section {
   display: flex;
-  gap: 8px;
-  padding: 12px;
-  background-color: #00a19a1a;
-  border-radius: 12px;
-  margin: 0 0 20px 0;
-  font-size: 13px;
-  color: #3c3c43;
+  gap: 11px;
+  padding: 13px 15px;
+  background: rgba(0, 161, 154, 0.06);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  border-radius: 14px;
+  margin: 0 0 18px 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5a5570;
+  line-height: 1.5;
 }
 
 .help-icon {
   flex-shrink: 0;
-  font-size: 16px;
-  color: #00a19a;
+  font-size: 15px;
+  color: #00857f;
 }
 
 .help-text {
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .typing-cursor {
@@ -272,11 +276,11 @@ const emitUpdate = () => {
 
 .form-title {
   font-size: 15px;
-  font-weight: 500;
-  color: #3c3c43;
+  font-weight: 800;
+  color: #231d45;
   margin: 0;
-  letter-spacing: -0.23px;
-  line-height: 1.5;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
 }
 
 .form-instance {
@@ -284,99 +288,109 @@ const emitUpdate = () => {
 }
 
 .form-instance.has-remove {
-  padding-right: 40px;
+  padding: 18px 18px 18px;
+  border: 1.5px solid #ececf2;
+  border-radius: 16px;
+  background: #fbfbfa;
 }
 
 .remove-form-btn {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffebee;
+  background: #f1f0f4;
   border: none;
   border-radius: 50%;
-  color: #c62828;
+  color: #8b8799;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s;
+  font-size: 13px;
+  transition: background-color 0.16s, color 0.16s;
 }
 
 .remove-form-btn:hover {
-  background: #ff9800;
-  color: white;
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 
 .field-label {
   font-size: 13px;
-  font-weight: 500;
-  color: #1a1a1a;
+  font-weight: 700;
+  color: #5a5570;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .field-input {
-  padding: 12px 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 13px 15px;
+  border: 1.5px solid #ececf2;
+  border-radius: 12px;
+  font-size: 15px;
   font-family: inherit;
-  transition: border-color 0.2s;
+  background: #fbfbfa;
+  color: #2a2540;
+  color-scheme: light;
+  transition: border-color 0.16s, background 0.16s, box-shadow 0.16s;
   box-sizing: border-box;
 }
 
 .field-input:focus {
   outline: none;
   border-color: #00a19a;
-  background: white;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
 }
 
 .field-input::placeholder {
-  color: #999;
+  color: #a5a1b4;
 }
 
 .add-form-btn {
-  font-weight: 400;
+  font-weight: 700;
   font-size: 14px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
-  padding: 16px 12px;
-  background: #eafffc;
-  border: none;
-  border-radius: 16px;
-  color: #00a19a;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  padding: 15px 12px;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1.5px dashed rgba(0, 161, 154, 0.4);
+  border-radius: 14px;
+  color: #00857f;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background-color 0.2s;
+  transition: background-color 0.16s, border-color 0.16s;
   align-self: center;
   white-space: nowrap;
   width: 100%;
 }
 
 .add-form-btn:hover {
-  background: #d0ede9;
+  background: rgba(0, 161, 154, 0.14);
+  border-color: #00a19a;
 }
 
 .add-icon {
   font-size: 18px;
   font-weight: 700;
+  display: inline-flex;
 }
 </style>
 

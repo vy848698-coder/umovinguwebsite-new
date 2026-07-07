@@ -231,15 +231,11 @@
 
     <SiteFooter />
 
-    <div class="marketplace-mobile-nav">
-      <BottomNav active="marketplace" />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 const route = useRoute()
@@ -642,7 +638,7 @@ async function submitNotify() {
 
 .hero-content h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(42px, 4.8vw, 58px);
   font-weight: 900;
   line-height: 1.08;
@@ -848,7 +844,7 @@ async function submitNotify() {
 
 .passport-card h2 {
   margin: 0 0 2px;
-  color: #08102f;
+  color: #231d45;
   font-size: 20px;
   font-weight: 900;
 }
@@ -996,7 +992,7 @@ async function submitNotify() {
 }
 
 .value-item h3 {
-  color: #08102f;
+  color: #231d45;
   font-size: 15px;
   font-weight: 900;
 }
@@ -1021,7 +1017,7 @@ async function submitNotify() {
 .marketplace-how-it-works h2,
 .marketplace-cta h2 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-weight: 900;
   line-height: 1.16;
 }
@@ -1099,7 +1095,7 @@ async function submitNotify() {
 
 .service-card h3 {
   margin: 0 0 12px;
-  color: #08102f;
+  color: #231d45;
   font-size: 19px;
   font-weight: 900;
   letter-spacing: -0.01em;
@@ -1222,7 +1218,7 @@ async function submitNotify() {
 }
 
 .quote-person strong {
-  color: #08102f;
+  color: #231d45;
   font-size: 13px;
   font-weight: 900;
 }
@@ -1266,7 +1262,7 @@ async function submitNotify() {
 }
 
 .proof-list h3 {
-  color: #08102f;
+  color: #231d45;
   font-size: 15px;
   font-weight: 900;
 }
@@ -1347,7 +1343,7 @@ async function submitNotify() {
 }
 
 .step-item h3 {
-  color: #08102f;
+  color: #231d45;
   font-size: 15px;
   font-weight: 900;
 }
@@ -1412,7 +1408,7 @@ async function submitNotify() {
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.95);
-  color: #08102f;
+  color: #231d45;
   font-family: inherit;
   font-size: 15px;
   padding: 0 20px;
@@ -1461,7 +1457,7 @@ async function submitNotify() {
 .marketplace-footer {
   position: relative;
   z-index: 2;
-  background: #08102f;
+  background: #231d45;
   color: #cbd9ea;
   padding: 56px 32px 24px;
 }

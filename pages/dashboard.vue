@@ -357,7 +357,6 @@
       </div>
     </main>
 
-    <BottomNav active="explore" />
 
     <SearchDrawer :show="showSearchDrawer" @close="showSearchDrawer = false" />
   </div>
@@ -366,7 +365,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import AppHeader from '~/components/core/AppHeader.vue'
-import BottomNav from '@/components/core/BottomNav.vue'
 import HeroSection from '~/components/HeroSection.vue'
 import SearchDrawer from '~/components/search/SearchDrawer.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'

@@ -26,298 +26,263 @@
       </div>
     </header>
 
-    <main class="hsw-shell tkw-main">
-      <div class="tkw-layout">
-        <aside class="tkw-aside">
-      <!-- ── Hero (section header card) ─── -->
-      <section class="qhero">
-        <span class="qhero-badge">
-          <span class="qhero-dot"></span>
+    <div class="tk-split">
+
+      <!-- ── Left dark sidebar ─────────────────────────────────────── -->
+      <aside class="tk-side">
+        <span class="side-badge">
+          <span class="dot"></span>
           {{ currentStep?.title || '' }}
         </span>
-        <div class="qhero-illustration" aria-hidden="true">
+
+        <div class="side-icon">
           <OPIcon
             v-if="currentStep?.icon"
             :name="currentStep.icon"
-            class="w-[120px] h-[120px]"
+            class="w-[48px] h-[48px]"
           />
         </div>
-        <h1 class="qhero-title">{{ currentStep?.title || '' }}</h1>
-        <p class="qhero-sub">{{ currentTask?.title || '' }}</p>
-        <div class="qhero-meta">
-          <div class="qring" :style="{ '--p': taskProgress }">
-            <span>{{ taskAnsweredCount }}/{{ totalQuestions }}</span>
+
+        <h1 class="side-title">{{ currentStep?.title || '' }}</h1>
+        <p class="side-sub">{{ currentTask?.title || '' }}</p>
+
+        <div class="side-divider"></div>
+
+        <div class="side-progress">
+          <div class="side-ring" :style="{ '--p': taskProgress }">
+            <span>{{ totalQuestions - remainingQuestions }}/{{ totalQuestions }}</span>
           </div>
-          <div class="qmeta-text">
+          <div class="side-progress-text">
             <small>Task Progress</small>
             <strong>
               {{ remainingQuestions }}
-              {{ remainingQuestions === 1 ? 'question' : 'questions' }}
-              remaining
-              <em>· ~{{ estimatedMinutesLeft }} min left</em>
+              {{ remainingQuestions === 1 ? 'question' : 'questions' }} remaining
             </strong>
-          </div>
-        </div>
-      </section>
-
-      <div class="action-buttons">
-        <button class="qpill ghost" @click="openHelp">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
-          Help
-        </button>
-        <button class="qpill primary" @click="openVideo">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="6 4 20 12 6 20 6 4" />
-          </svg>
-          Play Video
-        </button>
-      </div>
-
-      <PointsSection
-        :points="currentQuestion?.points || 0"
-        label="Available for completing this question."
-        @nextTask="handleNextQuestion"
-      />
-
-      <!-- Property photos upload — only for "What we love about our home?" task -->
-      <div
-        v-if="currentTask?.key === 'give_your_home_a_story'"
-        class="property-photos-section"
-      >
-        <h3 class="property-photos-title">Property Photos</h3>
-        <p class="property-photos-sub">
-          Upload photos of your property. These will appear in your listing and
-          buyer passport.
-        </p>
-
-        <div v-if="propertyImages.length > 0" class="property-photos-grid">
-          <div
-            v-for="(img, index) in propertyImages"
-            :key="index"
-            class="property-photo-item"
-          >
-            <img
-              :src="img"
-              :alt="`Photo ${index + 1}`"
-              class="property-photo-thumb"
-            />
-            <button
-              class="property-photo-delete"
-              @click="removePropertyImage(index)"
-              title="Remove photo"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <line
-                  x1="18"
-                  y1="6"
-                  x2="6"
-                  y2="18"
-                  stroke="white"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                />
-                <line
-                  x1="6"
-                  y1="6"
-                  x2="18"
-                  y2="18"
-                  stroke="white"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </button>
+            <span>~{{ estimatedMinutesLeft }} min left</span>
           </div>
         </div>
 
-        <div class="property-photos-actions">
-          <label class="add-photos-btn" :class="{ disabled: uploadingImages }">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 5v14M5 12h14"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-              />
+        <div class="side-actions">
+          <button class="side-btn ghost" @click="openHelp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            {{ uploadingImages ? 'Uploading...' : 'Add Photos' }}
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              class="hidden-file-input"
-              :disabled="uploadingImages"
-              @change="handlePropertyImageUpload"
-            />
-          </label>
+            Help
+          </button>
+          <button class="side-btn teal" @click="openVideo">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
+            Play Video
+          </button>
         </div>
-      </div>
 
-        </aside>
-
-        <section class="tkw-content">
-      <div class="qheader">
-        <div>
-          <h2 class="qheader-h2">Question {{ currentQuestionIndex + 1 }}</h2>
-          <div class="qheader-sub">
-            {{ currentQuestionIndex + 1 }} of {{ totalQuestions }} in this
-            section
+        <div class="side-points">
+          <div class="pts-head">
+            <span class="pts-lock">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <strong class="pts-value">{{ currentQuestion?.points || 0 }} pts</strong>
+            <span class="pts-locked">Locked</span>
           </div>
+          <strong class="pts-title">Next: Available for completing this question.</strong>
+          <p class="pts-desc">
+            A total of {{ currentQuestion?.points || 0 }} points are available in this
+            section. Complete tasks to unlock rewards and move to the next section.
+          </p>
         </div>
-        <div class="qnav">
-          <button
-            v-if="currentQuestionIndex !== 0"
-            class="qnav-btn ghost-muted"
-            :disabled="currentQuestionIndex === 0"
-            @click="goToPreviousQuestion"
-          >
-            Previous
-          </button>
-          <button
-            v-if="currentQuestionIndex < totalQuestions - 1"
-            class="qnav-btn"
-            @click="skipQuestion"
-          >
-            Skip
-          </button>
-        </div>
-      </div>
 
-      <!-- Segmented progress (one chip per question) -->
-      <div v-if="totalQuestions > 0" class="qsegments" aria-hidden="true">
-        <span
-          v-for="i in totalQuestions"
-          :key="i"
-          class="qseg"
-          :class="{
-            done: i - 1 < currentQuestionIndex,
-            current: i - 1 === currentQuestionIndex,
-          }"
-        />
-      </div>
+        <!-- Property photos upload — only for "What we love about our home?" task -->
+        <div
+          v-if="currentTask?.key === 'give_your_home_a_story'"
+          class="property-photos-section"
+        >
+          <h3 class="property-photos-title">Property Photos</h3>
+          <p class="property-photos-sub">
+            Upload photos of your property. These will appear in your listing and
+            buyer passport.
+          </p>
 
-      <!-- "What is this?" tip — kept on aqua per request -->
-      <div v-if="tipBody" class="qtip">
-        <div class="qtip-ic">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M9 18h6" />
-            <path d="M10 22h4" />
-            <path
-              d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v1.3h6v-1.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"
-            />
-          </svg>
-        </div>
-        <div class="qtip-body">
-          <strong>What is this?</strong>
-          <p>{{ tipBody }}</p>
-        </div>
-      </div>
-      <div class="question-section">
-        <div v-if="currentQuestion" class="question-content">
-          <div
-            v-if="showOptions"
-            class="answer-section answer-section--visible"
-          >
+          <div v-if="propertyImages.length > 0" class="property-photos-grid">
             <div
-              v-if="
-                currentQuestionType !== 'multipart' ||
-                currentQuestion?.repeatable
-              "
-              class="question-card"
+              v-for="(img, index) in propertyImages"
+              :key="index"
+              class="property-photo-item"
             >
-              <component
-                :key="currentQuestion?.id"
-                :is="getQuestionComponent"
-                :question="currentQuestion"
-                :answer="currentQuestion.answer"
-                :display="
-                  currentQuestion.display || currentQuestion.type?.toLowerCase()
-                "
-                :passport-id="route.query.propertyId || ''"
-                :displayed-question="displayedQuestion"
-                :show-question-cursor="showQuestionCursor"
-                :displayed-description="displayedDescription"
-                :show-description-cursor="showDescriptionCursor"
-                :displayed-help="displayedHelp"
-                :show-help-cursor="showHelpCursor"
-                @update="updateAnswer"
+              <img
+                :src="img"
+                :alt="`Photo ${index + 1}`"
+                class="property-photo-thumb"
               />
-            </div>
-            <component
-              v-else
-              :key="currentQuestion?.id"
-              :is="getQuestionComponent"
-              :question="currentQuestion"
-              :answer="currentQuestion.answer"
-              :display="
-                currentQuestion.display || currentQuestion.type?.toLowerCase()
-              "
-              :passport-id="route.query.propertyId || ''"
-              :displayed-question="displayedQuestion"
-              :show-question-cursor="showQuestionCursor"
-              :displayed-description="displayedDescription"
-              :show-description-cursor="showDescriptionCursor"
-              :displayed-help="displayedHelp"
-              :show-help-cursor="showHelpCursor"
-              @update="updateAnswer"
-            />
-
-            <div v-if="hasAdditionalInfo" class="question-card">
-              <TextUploadQuestion
-                :question="{
-                  description:
-                    'Please provide additional supporting information',
-                  uploadInstruction: currentQuestion.uploadInstruction,
-                  instructionText: currentQuestion.instructionText,
-                  placeholder: currentQuestion.placeholder,
-                }"
-                :answer="additionalInfoAnswer"
-                :display="additionalInfoDisplay"
-                @update="updateAdditionalInfo"
-              />
+              <button
+                class="property-photo-delete"
+                @click="removePropertyImage(index)"
+                title="Remove photo"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+              </button>
             </div>
           </div>
+
+          <div class="property-photos-actions">
+            <label class="add-photos-btn" :class="{ disabled: uploadingImages }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+              {{ uploadingImages ? 'Uploading...' : 'Add Photos' }}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                class="hidden-file-input"
+                :disabled="uploadingImages"
+                @change="handlePropertyImageUpload"
+              />
+            </label>
+          </div>
         </div>
-      </div>
-      <button
-        v-if="currentQuestion?.type?.toLowerCase() !== 'radio'"
-        class="submit-btn"
-        @click="saveAnswer"
-        :disabled="!isAnswerValid"
-      >
-        Save and go to next question
-      </button>
-        </section>
-      </div>
-    </main>
+      </aside>
+
+      <!-- ── Right content ─────────────────────────────────────────── -->
+      <main class="tk-main">
+        <div class="tk-content">
+          <span class="eyebrow"><span class="eyebrow-line"></span> This section</span>
+
+          <div class="q-head">
+            <div class="q-head-left">
+              <h2 class="q-head-title">Question {{ currentQuestionIndex + 1 }}</h2>
+              <div class="q-head-sub">
+                {{ currentQuestionIndex + 1 }} of {{ totalQuestions }} in this section
+              </div>
+            </div>
+            <div class="q-nav">
+              <button
+                v-if="currentQuestionIndex !== 0"
+                class="q-nav-btn ghost-muted"
+                @click="goToPreviousQuestion"
+              >
+                ← Previous
+              </button>
+              <button
+                v-if="currentQuestionIndex < totalQuestions - 1"
+                class="q-nav-btn"
+                @click="skipQuestion"
+              >
+                Skip →
+              </button>
+            </div>
+          </div>
+
+          <div v-if="totalQuestions > 0" class="q-segments" aria-hidden="true">
+            <span
+              v-for="i in totalQuestions"
+              :key="i"
+              class="q-seg"
+              :class="{
+                done: i - 1 < currentQuestionIndex,
+                current: i - 1 === currentQuestionIndex,
+              }"
+            />
+          </div>
+          <div v-if="totalQuestions > 0" class="q-seg-labels">
+            <span>Question {{ currentQuestionIndex + 1 }} of {{ totalQuestions }}</span>
+            <span>{{ remainingQuestions }} remaining</span>
+          </div>
+
+          <div class="question-section">
+            <div v-if="currentQuestion" class="question-content">
+              <div
+                v-if="showOptions"
+                class="answer-section answer-section--visible"
+              >
+                <div
+                  v-if="
+                    currentQuestionType !== 'multipart' ||
+                    currentQuestion?.repeatable
+                  "
+                  class="question-card"
+                >
+                  <component
+                    :key="currentQuestion?.id"
+                    :is="getQuestionComponent"
+                    :question="currentQuestion"
+                    :answer="currentQuestion.answer"
+                    :display="
+                      currentQuestion.display || currentQuestion.type?.toLowerCase()
+                    "
+                    :passport-id="route.query.propertyId || ''"
+                    :displayed-question="displayedQuestion"
+                    :show-question-cursor="showQuestionCursor"
+                    :displayed-description="displayedDescription"
+                    :show-description-cursor="showDescriptionCursor"
+                    :displayed-help="displayedHelp"
+                    :show-help-cursor="showHelpCursor"
+                    @update="updateAnswer"
+                  />
+                </div>
+                <component
+                  v-else
+                  :key="currentQuestion?.id"
+                  :is="getQuestionComponent"
+                  :question="currentQuestion"
+                  :answer="currentQuestion.answer"
+                  :display="
+                    currentQuestion.display || currentQuestion.type?.toLowerCase()
+                  "
+                  :passport-id="route.query.propertyId || ''"
+                  :displayed-question="displayedQuestion"
+                  :show-question-cursor="showQuestionCursor"
+                  :displayed-description="displayedDescription"
+                  :show-description-cursor="showDescriptionCursor"
+                  :displayed-help="displayedHelp"
+                  :show-help-cursor="showHelpCursor"
+                  @update="updateAnswer"
+                />
+
+                <div v-if="hasAdditionalInfo" class="question-card">
+                  <TextUploadQuestion
+                    :question="{
+                      description:
+                        'Please provide additional supporting information',
+                      uploadInstruction: currentQuestion.uploadInstruction,
+                      instructionText: currentQuestion.instructionText,
+                      placeholder: currentQuestion.placeholder,
+                    }"
+                    :answer="additionalInfoAnswer"
+                    :display="additionalInfoDisplay"
+                    @update="updateAdditionalInfo"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="submit-btn"
+            @click="saveAnswer"
+            :disabled="!isAnswerValid"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+            </svg>
+            Save and go to next question
+          </button>
+          <p v-if="!isAnswerValid" class="submit-hint">
+            Select an answer to continue
+          </p>
+        </div>
+      </main>
+
+    </div>
 
     <SiteFooter />
 
-    <div class="tk-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
   </div>
 
   <div v-if="showThankYou">
@@ -345,7 +310,6 @@
 
 <script setup>
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
-import PointsSection from '~/components/passport-view/PointsSection.vue'
 import ThankYouModal from '~/components/passport-view/ThankYouModal.vue'
 import RadioQuestion from '~/components/passport-view/questions/RadioQuestion.vue'
 import TextUploadQuestion from '~/components/passport-view/questions/TextUploadQuestion.vue'
@@ -363,20 +327,9 @@ import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '~/components/passport-view/HelpDrawer.vue'
 import VideoModal from '~/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 const route = useRoute()
 const router = useRouter()
-
-// Editorial serif for the hero heading — matches the rest of the app.
-useHead({
-  link: [
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap',
-    },
-  ],
-})
 
 const {
   currentStep,
@@ -495,16 +448,6 @@ async function removePropertyImage(index) {
 }
 // ──────────────────────────────────────────────────────────────────────────
 
-// Animation removed - no longer needed
-// let typingInterval = null
-
-// onBeforeUnmount(() => {
-//   if (typingInterval) {
-//     clearInterval(typingInterval)
-//     typingInterval = null
-//   }
-// })
-
 onMounted(async () => {
   if (!currentStep.value) {
     await loadPassport(route.query.propertyId)
@@ -541,46 +484,6 @@ async function recordLastVisited() {
   }
 }
 
-// Typing animation removed - display questions immediately
-// const typeText = (targetRef, cursorRef, text, speed = 30) => {
-//   return new Promise((resolve) => {
-//     // clear any previous typing
-//     if (typingInterval) {
-//       clearInterval(typingInterval)
-//       typingInterval = null
-//     }
-//
-//     targetRef.value = ''
-//     cursorRef.value = true
-//
-//     let index = 0
-//
-//     typingInterval = setInterval(() => {
-//       if (index < text.length) {
-//         targetRef.value += text.charAt(index)
-//         index++
-//       } else {
-//         clearInterval(typingInterval)
-//         typingInterval = null
-//         cursorRef.value = false
-//         resolve()
-//       }
-//     }, speed)
-//   })
-// }
-
-// const runQuestionAnimation = async (q) => {
-//   if (!q) return
-
-//   // Set all text immediately
-//   displayedQuestion.value = q.question
-//   displayedDescription.value = q.description || ''
-//   displayedHelp.value = q.help || ''
-
-//   // Show options immediately
-//   showOptions.value = true
-// }
-
 const runQuestionAnimation = (q) => {
   if (!q) return
 
@@ -600,10 +503,6 @@ watch(
       additionalInfoAnswer.value = null
       return
     }
-
-    console.log('Question changed:', q)
-    console.log('Question type:', q.type)
-    console.log('Additional info type:', q.additionalInfoType)
 
     // Multipart questions store their answer as an object keyed by partKey — skip additionalInfo extraction
     if (q.type === 'multipart') {
@@ -940,17 +839,8 @@ const hasAdditionalInfo = computed(() => {
 
   // Only show additional info section after the user has answered the main question
   const answer = currentQuestion.value.answer
-  console.log('Checking additional info visibility. Answer:', answer)
   return answer !== null && answer !== undefined && answer !== ''
 })
-
-// const additionalInfoDisplay = computed(() => {
-//   const type = currentQuestion.value?.additionalInfoType
-//   if (type === 'upload') return 'upload'
-//   if (type === 'writeInstruction') return 'text'
-//   if (type === 'uploadAndWriteInstruction') return 'both'
-//   return null
-// })
 
 const additionalInfoDisplay = computed(() => {
   const type = currentQuestion.value?.additionalInfoType
@@ -970,7 +860,6 @@ const updateAnswer = async (answer) => {
 
   // Check if this is a NOTE question being completed
   if (currentQuestion.value.type?.toLowerCase() === 'note' && answer === true) {
-    console.log('✅ NOTE question completed! Auto-saving...')
     isSaving.value = true
     try {
       // Save the note as completed
@@ -1005,7 +894,6 @@ const updateAnswer = async (answer) => {
 
   // Auto-save plain RADIO questions immediately on selection
   if (currentQuestion.value.type?.toLowerCase() === 'radio') {
-    console.log('✅ RADIO question selected! Auto-saving...')
     isSaving.value = true
     try {
       await apiSaveAnswer(currentQuestion.value.id, answer)
@@ -1049,15 +937,6 @@ const updateAnswer = async (answer) => {
         ? rawTrigger.value
         : rawTrigger
 
-    // Debug: log what we're checking
-    console.log('AutoSave Check:', {
-      partKey,
-      expectedValue: value,
-      actualValue: triggerPartAnswer,
-      allAnswers: answer,
-      questionParts: currentQuestion.value.parts?.map((p) => p.partKey),
-    })
-
     // If the partKey doesn't exist, try to find the first radio part as fallback
     if (triggerPartAnswer === undefined) {
       const firstRadioPart = currentQuestion.value.parts?.find(
@@ -1065,17 +944,11 @@ const updateAnswer = async (answer) => {
       )
       if (firstRadioPart) {
         triggerPartAnswer = answer[firstRadioPart.partKey]
-        console.log(
-          'PartKey not found, using first radio part:',
-          firstRadioPart.partKey,
-          triggerPartAnswer,
-        )
       }
     }
 
     // If trigger part is answered with the auto-save value, save immediately
     if (triggerPartAnswer === value) {
-      console.log('✅ Auto-save triggered! Saving question...')
       isSaving.value = true
       try {
         await apiSaveAnswer(currentQuestion.value.id, answer)
@@ -1178,55 +1051,20 @@ const handleContinue = () => {
 </script>
 
 <style scoped>
-/* ── Web canvas ───────────────────────────────────────────────────── */
+/* ── Canvas ────────────────────────────────────────────────────────── */
 .tk-root {
-  --color-border: #e7ecf2;
   min-height: 100dvh;
   color: #231d45;
-  background: #f3f2ef;
+  background: #f7f6f3;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow: clip;
-  position: relative;
 }
 
-.tk-ambient,
-.tk-mesh {
-  pointer-events: none;
-  position: fixed;
-}
-
-.tk-ambient {
-  border-radius: 999px;
-  filter: blur(48px);
-  opacity: 0.16;
-}
-
-.tk-ambient-a {
-  width: 300px;
-  height: 300px;
-  left: -100px;
-  top: 120px;
-  background: #00a19a;
-}
-
-.tk-ambient-b {
-  width: 320px;
-  height: 320px;
-  right: -120px;
-  top: 160px;
-  background: #5a4cf0;
-}
-
-.tk-mesh {
-  inset: 0;
-  opacity: 0.02;
-  background-image:
-    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(180deg, #000, transparent 86%);
+.tk-split {
+  display: grid;
+  grid-template-columns: 400px minmax(0, 1fr);
+  align-items: stretch;
 }
 
 /* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
@@ -1236,16 +1074,14 @@ const handleContinue = () => {
   position: relative;
   z-index: 2;
 }
-
 .hsw-nav {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(243, 242, 239, 0.88);
+  background: rgba(247, 246, 243, 0.9);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(35, 29, 69, 0.07);
 }
-
 .hsw-nav-inner {
   min-height: 66px;
   display: flex;
@@ -1253,7 +1089,6 @@ const handleContinue = () => {
   justify-content: space-between;
   gap: 24px;
 }
-
 .hsw-brand {
   border: 0;
   background: transparent;
@@ -1267,13 +1102,11 @@ const handleContinue = () => {
   flex-shrink: 0;
   font-family: inherit;
 }
-
 .hsw-brand-logo {
   width: 28px;
   height: 28px;
   object-fit: contain;
 }
-
 .hsw-brand-beta {
   font-size: 9.5px;
   font-weight: 800;
@@ -1286,12 +1119,10 @@ const handleContinue = () => {
   padding: 2px 7px;
   margin-left: 2px;
 }
-
 .hsw-links {
   display: flex;
   gap: 6px;
 }
-
 .hsw-links button {
   border: 0;
   background: transparent;
@@ -1305,25 +1136,21 @@ const handleContinue = () => {
   font-family: inherit;
   transition: background 0.18s, color 0.18s;
 }
-
 .hsw-links button:hover {
   color: #0c2342;
   background: rgba(0, 161, 154, 0.08);
 }
-
 .hsw-links button.active {
   color: #00857f;
   background: rgba(0, 161, 154, 0.1);
   box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
 }
-
 .hsw-actions {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
 }
-
 .hsw-back {
   display: inline-flex;
   align-items: center;
@@ -1340,734 +1167,459 @@ const handleContinue = () => {
   cursor: pointer;
   transition: border-color 0.18s, background 0.18s;
 }
-
 .hsw-back:hover {
   border-color: #bfd1e4;
   background: #f8fbff;
 }
-
 .hsw-back svg {
   width: 15px;
   height: 15px;
 }
 
-/* ── Layout ───────────────────────────────────────────────────────── */
-.tkw-main {
-  padding: 34px 0 60px;
+/* ── Left dark sidebar ─────────────────────────────────────────────── */
+.tk-side {
+  align-self: stretch;
+  min-height: calc(100dvh - 66px);
+  padding: 40px 34px;
+  color: #fff;
+  background:
+    radial-gradient(120% 80% at 8% 4%, rgba(0, 161, 154, 0.26), transparent 46%),
+    linear-gradient(165deg, #2b2456 0%, #221d45 46%, #1a1636 100%);
 }
 
-.tkw-layout {
-  display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 32px;
-  align-items: start;
-}
-
-.tkw-aside {
-  position: sticky;
-  top: 90px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.tkw-content {
-  min-width: 0;
-}
-
-.tk-mobile-nav {
-  display: none;
-}
-
-/* Web spacing fixes for items that had mobile margins */
-.tkw-aside .qhero {
-  margin: 0;
-}
-.tkw-aside .action-buttons {
-  margin-bottom: 0;
-}
-.tkw-content .qheader {
-  margin-top: 0;
-}
-
-/* ── Hero (matches prototype/disputes.html teal-pale gradient) ─── */
-.qhero {
-  margin: 8px 0 16px;
-  border-radius: 22px;
-  background: #fff;
-  border: 1px solid #ececf2;
-  padding: 24px 22px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 14px 34px rgba(35, 29, 69, 0.07);
-}
-.qhero::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 4px;
-  background: linear-gradient(90deg, #00a19a, #2fd0c6);
-  pointer-events: none;
-}
-.qhero-badge {
+.side-badge {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  background: rgba(0, 161, 154, 0.08);
-  border: 1px solid rgba(0, 161, 154, 0.22);
-  color: #00857f;
+  gap: 8px;
+  background: rgba(0, 161, 154, 0.14);
+  border: 1px solid rgba(47, 208, 198, 0.3);
+  color: #7fe6dd;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 6px 12px;
+  padding: 6px 13px;
   border-radius: 999px;
-  position: relative;
-  z-index: 1;
 }
-.qhero-dot {
+.side-badge .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00a19a;
+  background: #2fd0c6;
 }
-.qhero-illustration {
-  display: flex;
-  justify-content: center;
-  margin: 10px 0 6px;
-  position: relative;
-  z-index: 1;
+
+.side-icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 22px;
+  margin: 28px 0 24px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, #12b3a6, #05867f);
+  box-shadow: 0 18px 34px -12px rgba(0, 161, 154, 0.6);
 }
-.qhero-title {
-  font-family: 'Fraunces', Georgia, serif;
-  font-size: 25px;
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.3px;
-  color: #231d45;
-  margin: 6px 0 5px;
-  position: relative;
-  z-index: 1;
+.side-icon :deep(img) {
+  filter: brightness(0) invert(1);
 }
-.qhero-sub {
-  color: #8b8799;
-  font-size: 13.5px;
+
+.side-title {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.side-sub {
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.45;
-  margin: 0 0 18px;
-  position: relative;
-  z-index: 1;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
 }
-.qhero-meta {
+
+.side-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 26px 0;
+}
+
+.side-progress {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-top: 8px;
-  position: relative;
-  z-index: 1;
+  gap: 18px;
 }
-.qring {
+.side-ring {
   --p: 0;
-  --size: 56px;
-  width: var(--size);
-  height: var(--size);
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: conic-gradient(
-    #00a19a calc(var(--p) * 1%),
-    rgba(0, 161, 154, 0.14) 0
+    from -90deg,
+    #2fd0c6 calc(var(--p) * 1%),
+    rgba(255, 255, 255, 0.12) 0
   );
   display: grid;
   place-items: center;
-  flex-shrink: 0;
 }
-.qring::after {
-  content: '';
-  width: 44px;
-  height: 44px;
-  background: #fff;
+.side-ring span {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  grid-area: 1 / 1;
-}
-.qring span {
-  grid-area: 1 / 1;
-  z-index: 1;
-  font-size: 12px;
+  background: #221d44;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
   font-weight: 800;
-  color: #231d45;
-  line-height: 1;
+  letter-spacing: -0.02em;
 }
-.qmeta-text small {
+.side-progress-text small {
   display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #8b8799;
-  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 5px;
 }
-.qmeta-text strong {
-  font-size: 13.5px;
+.side-progress-text strong {
+  display: block;
+  font-size: 15.5px;
   font-weight: 800;
-  line-height: 1.25;
-  color: #231d45;
+  line-height: 1.2;
 }
-.qmeta-text strong em {
-  font-style: normal;
-  color: #8b8799;
+.side-progress-text span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12.5px;
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-/* ── Help / Play pills (even split) ───────────────────────────── */
-.qpill {
+.side-actions {
+  display: flex;
+  gap: 12px;
+  margin: 26px 0;
+}
+.side-btn {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 13px 14px;
+  height: 48px;
   border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
   border: 1px solid transparent;
   font-family: inherit;
-  transition: transform 0.12s ease;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s, transform 0.12s;
 }
-.qpill:active {
+.side-btn:active {
   transform: scale(0.98);
 }
-.qpill.ghost {
-  background: #fff;
-  border-color: #ececf2;
-  color: #00857f;
+.side-btn svg {
+  width: 16px;
+  height: 16px;
 }
-.qpill.ghost:hover {
-  border-color: #00a19a;
+.side-btn.ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
-.qpill.primary {
+.side-btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.side-btn.teal {
   background: #00a19a;
   color: #fff;
-  box-shadow: 0 10px 22px -8px rgba(0, 161, 154, 0.55);
+  box-shadow: 0 12px 24px -10px rgba(0, 161, 154, 0.7);
 }
-.qpill.primary:hover {
-  background: #00857f;
+.side-btn.teal:hover {
+  background: #00b3ab;
 }
 
-/* ── Question header + segmented progress ─────────────────────── */
-.qheader {
+.side-points {
+  border-radius: 18px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pts-head {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin: 0 0 12px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
 }
-.qheader-h2 {
-  margin: 0;
-  font-family: 'Fraunces', Georgia, serif;
-  font-size: 21px;
-  font-weight: 600;
-  line-height: 1.1;
-  color: #231d45;
-  letter-spacing: -0.3px;
-}
-.qheader-sub {
-  margin-top: 5px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #8b8799;
-}
-.qnav {
-  display: flex;
-  gap: 8px;
+.pts-lock {
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
-  margin-top: 2px;
-}
-.qnav-btn {
-  background: #fff;
-  border: 1px solid #ececf2;
-  color: #00857f;
-  padding: 8px 15px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 700;
-  font-family: inherit;
-  transition: transform 0.12s ease, border-color 0.16s;
-}
-.qnav-btn:hover {
-  border-color: #00a19a;
-}
-.qnav-btn:active {
-  transform: scale(0.97);
-}
-.qnav-btn.ghost-muted {
-  color: #8b8799;
-}
-
-.qsegments {
-  display: flex;
-  gap: 4px;
-  margin: 0 0 18px;
-}
-.qseg {
-  flex: 1;
-  height: 6px;
-  border-radius: 999px;
-  background: #e2e8f0;
-  position: relative;
-  overflow: hidden;
-}
-.qseg.done {
-  background: #00a19a;
-}
-.qseg.current {
-  background: #a7ede8;
-}
-.qseg.current::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, #00a19a 0%, #00a19a 50%, transparent 50%);
-}
-
-/* ── "What is this?" tip — kept on aqua per request ─────────── */
-.qtip {
-  background: rgba(0, 161, 154, 0.06);
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  border-radius: 14px;
-  padding: 13px 15px;
-  margin-bottom: 16px;
-  display: flex;
-  gap: 11px;
-  align-items: flex-start;
-}
-.qtip-ic {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  flex-shrink: 0;
-  background: rgba(0, 161, 154, 0.12);
-  color: #00857f;
+  border-radius: 11px;
+  background: rgba(0, 161, 154, 0.16);
+  border: 1px solid rgba(47, 208, 198, 0.28);
+  color: #7fe6dd;
   display: grid;
   place-items: center;
 }
-.qtip-body {
-  flex: 1;
-  min-width: 0;
+.pts-lock svg {
+  width: 17px;
+  height: 17px;
 }
-.qtip-body strong {
-  display: block;
-  font-size: 12.5px;
+.pts-value {
+  flex: 1;
+  font-size: 22px;
   font-weight: 800;
-  line-height: 1.2;
-  color: #00857f;
-  margin-bottom: 4px;
+  letter-spacing: -0.02em;
 }
-.qtip-body p {
+.pts-locked {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7fe6dd;
+  border: 1px solid rgba(47, 208, 198, 0.3);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+.pts-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin-bottom: 7px;
+}
+.pts-desc {
   margin: 0;
   font-size: 12.5px;
   font-weight: 500;
-  line-height: 1.5;
-  color: #5a5570;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.task-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: transparent;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #00a19a;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  padding: 8px;
-  cursor: pointer;
-}
-
-.back-arrow {
-  font-size: 20px;
-}
-
-.menu-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #5a54d6;
-  border: none;
-  font-size: 20px;
-  color: white;
-  cursor: pointer;
-}
-
-.task-content {
-  padding: 0 20px;
-}
-
-.task-illustration {
-  display: flex;
-  justify-content: center;
-  margin: 24px 0;
-}
-
-.task-icon-large {
-  font-size: 100px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
-}
-
-.task-title {
-  font-size: 28px;
-  font-weight: 700;
-  text-align: center;
-  margin: 0 0 8px;
-  color: #1a1a1a;
-}
-
-.task-subtitle {
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.progress-section {
-  margin-bottom: 24px;
-}
-
-.progress-bar {
-  height: 16px;
-  background: #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00a19a 0%, #00d4c3 100%);
-  transition: width 0.3s ease;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.progress-label {
-  font-size: 11px;
-  color: #3c3c4399;
-  font-weight: 400;
-  letter-spacing: 0.06px;
-  line-height: 13px;
-}
-
-.progress-remaining {
-  font-size: 11px;
-  color: #00a19a;
-  font-weight: 590;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  justify-content: end;
-}
-
-.help-btn,
-.video-btn {
-  flex: 1;
-  padding: 8px;
-  border: 2px solid #e0e0e0;
-  background: white;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
-  color: #00a19a;
-  max-width: fit-content;
-}
-
-.video-btn {
-  background: #00a19a;
-  color: white;
-  border-color: #00a19a;
-}
-
-.help-btn {
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.play-icon {
-  font-size: 12px;
-}
-
-.question-section {
-  margin-top: 4px;
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-.question-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.question-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.prev-btn {
-  background: white;
-  border: 0.33px solid #3c3c432e;
-  border-radius: 40px;
-  color: #00a19a;
-  font-size: 13px;
-  font-weight: 400;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-.prev-btn:disabled {
-  color: #999;
-  cursor: not-allowed;
-}
-
-.question-number {
-  font-size: 18px;
-  font-weight: 590;
-  margin: 0;
-  color: #000000;
-}
-
-.total {
-  font-size: 13px;
-  color: #999;
-  font-weight: 500;
-}
-
-.skip-btn {
-  background: white;
-  border: 0.33px solid #3c3c432e;
-  border-radius: 40px;
-  color: #00a19a;
-  font-size: 13px;
-  font-weight: 400;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-.question-content {
+/* ── Right content ─────────────────────────────────────────────────── */
+.tk-main {
+  min-width: 0;
+  padding: 48px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  justify-content: center;
+}
+.tk-content {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
-.question-text {
-  color: #000000;
-  margin: 0;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-}
-
-.question-description {
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-  color: #3c3c4399;
-}
-
-.help-section {
-  display: flex;
-  gap: 2px;
-  padding: 12px;
-  background: #00a19a1a;
-  border-radius: 12px;
-  border: 2px solid #e6f9f7;
-}
-
-.help-icon {
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.help-content {
-  flex: 1;
-}
-
-.help-title {
-  display: flex;
+.eyebrow {
+  display: inline-flex;
   align-items: center;
-  margin: 0px 0 8px -5px;
-  color: #00a19a;
-  font-weight: 590;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #00857f;
+}
+.eyebrow-line {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
 }
 
-.help-text {
-  color: #3c3c4399;
-  margin: 0;
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+.q-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 14px 0 22px;
+}
+.q-head-title {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #231d45;
+  margin: 0 0 5px;
+}
+.q-head-sub {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8b8799;
+}
+.q-nav {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.q-nav-btn {
+  background: #fff;
+  border: 1px solid #ececf2;
+  color: #00857f;
+  padding: 11px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: border-color 0.16s, transform 0.12s;
+}
+.q-nav-btn:hover {
+  border-color: #00a19a;
+}
+.q-nav-btn:active {
+  transform: scale(0.97);
+}
+.q-nav-btn.ghost-muted {
+  color: #8b8799;
 }
 
+.q-segments {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.q-seg {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: #e4e2db;
+  overflow: hidden;
+  position: relative;
+}
+.q-seg.done {
+  background: linear-gradient(90deg, #00a19a, #2fd0c6);
+}
+.q-seg.current {
+  background: #b6ede8;
+}
+.q-seg.current::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 55%;
+  background: linear-gradient(90deg, #00a19a, #2fd0c6);
+  border-radius: 999px;
+}
+.q-seg-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 26px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #8b8799;
+}
+
+/* ── Question card ─────────────────────────────────────────────────── */
+.question-section {
+  margin-top: 0;
+}
 .answer-section {
-  margin: 8px 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.35s ease;
 }
-
-.upload-after-radio {
-  margin-top: 16px;
+.answer-section--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .question-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px 18px;
-  border: 1px solid #ececf2;
-  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
+  background: #fff;
+  border-radius: 22px;
+  padding: 34px 36px;
+  border: 1px solid #ecebf1;
+  box-shadow: 0 14px 40px rgba(35, 29, 69, 0.06);
 }
-
 .question-card + .question-card {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .submit-btn {
   width: 100%;
-  padding: 15px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 20px;
   background: linear-gradient(135deg, #00a19a, #00857f);
   color: white;
   border: none;
-  border-radius: 14px;
-  font-size: 15px;
+  border-radius: 16px;
+  font-size: 15.5px;
   line-height: 1.2;
   letter-spacing: -0.01em;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
   transition: transform 0.14s ease, box-shadow 0.16s ease, opacity 0.16s;
-  margin-top: 24px;
-  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.3);
+  margin-top: 28px;
+  box-shadow: 0 16px 30px -10px rgba(0, 161, 154, 0.55);
 }
-
+.submit-btn svg {
+  width: 18px;
+  height: 18px;
+}
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 8px 26px rgba(0, 161, 154, 0.4);
+  box-shadow: 0 20px 34px -10px rgba(0, 161, 154, 0.6);
 }
-
 .submit-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
-
 .submit-btn:disabled {
   color: #9a97a8;
   background: #eceef3;
   box-shadow: none;
   cursor: not-allowed;
 }
-
-.typing-cursor {
-  margin-left: 2px;
-  color: #00a19a;
-  animation: blink 1s infinite;
+.submit-hint {
+  text-align: center;
+  margin: 14px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #a5a1b4;
 }
 
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0;
-  }
-}
-
-.answer-section {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: all 0.4s ease;
-}
-
-.answer-section--visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── Property Photos Upload ───────────────────────────────────────────────── */
+/* ── Property Photos Upload ────────────────────────────────────────── */
 .property-photos-section {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-}
-
-.property-photos-section {
-  background: #fff;
-  border: 1px solid #ececf2;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
   padding: 18px;
-  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.06);
 }
 .property-photos-title {
   font-size: 15px;
   font-weight: 800;
-  color: #231d45;
+  color: #fff;
   letter-spacing: -0.01em;
   margin: 0 0 5px;
 }
-
 .property-photos-sub {
   font-size: 12.5px;
-  color: #8b8799;
+  color: rgba(255, 255, 255, 0.55);
   margin: 0 0 16px;
   line-height: 1.5;
 }
-
 .property-photos-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-bottom: 14px;
 }
-
 .property-photo-item {
   position: relative;
   aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
 }
-
 .property-photo-thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .property-photo-delete {
   position: absolute;
   top: 4px;
@@ -2083,12 +1635,10 @@ const handleContinue = () => {
   cursor: pointer;
   padding: 0;
 }
-
 .property-photos-actions {
   display: flex;
   justify-content: flex-start;
 }
-
 .add-photos-btn {
   display: inline-flex;
   align-items: center;
@@ -2098,32 +1648,19 @@ const handleContinue = () => {
   color: #fff;
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   user-select: none;
 }
-
 .add-photos-btn.disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
 .hidden-file-input {
   display: none;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────── */
-@media (max-width: 980px) {
-  .tkw-layout {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .tkw-aside {
-    position: static;
-    top: auto;
-  }
-}
-
+/* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 899px) {
   .hsw-links {
     display: none;
@@ -2134,22 +1671,37 @@ const handleContinue = () => {
   .hsw-nav-inner {
     min-height: 58px;
   }
-  .tkw-main {
-    padding-top: 26px;
-    padding-bottom: 96px;
+}
+
+@media (max-width: 900px) {
+  .tk-split {
+    grid-template-columns: 1fr;
   }
-  .tk-mobile-nav {
-    display: block;
+  .tk-side {
+    min-height: 0;
+    padding: 26px 22px 30px;
+  }
+  .side-title {
+    font-size: 28px;
+  }
+  .tk-main {
+    padding: 28px 20px 90px;
+    justify-content: flex-start;
+  }
+  .q-head-title {
+    font-size: 27px;
+  }
+  .question-card {
+    padding: 24px 20px;
   }
 }
 
-@media (max-width: 640px) {
-  .hsw-shell {
-    width: calc(100% - 24px);
+@media (max-width: 520px) {
+  .q-head {
+    flex-direction: column;
   }
-  .hsw-back {
-    display: none;
+  .q-nav {
+    margin-top: 0;
   }
 }
-/* ─────────────────────────────────────────────────────────────────────────── */
 </style>

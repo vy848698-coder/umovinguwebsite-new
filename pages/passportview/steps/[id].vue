@@ -20,200 +20,238 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to passport
+            Back to Passport
           </button>
         </div>
       </div>
     </header>
 
     <main class="hsw-shell stw-main">
-      <div class="stw-layout">
-        <aside class="stw-aside">
-      <!-- Hero — section header card (icon + title + ring meta) -->
+      <!-- Breadcrumb -->
+      <nav class="stw-crumbs" aria-label="Breadcrumb">
+        <button type="button" @click="navigateTo('/passport')">Passport</button>
+        <span aria-hidden="true">/</span>
+        <button type="button" @click="navigateTo(backToPassportUrl)">Sections</button>
+        <span aria-hidden="true">/</span>
+        <strong>{{ currentStep?.title || '' }}</strong>
+      </nav>
+
+      <!-- ── Hero (full-width dark card) ─────────────────────────────── -->
       <section class="hero">
-        <span class="hero-badge"
-          ><span class="dot"></span> Low risk · Verified</span
-        >
-        <div class="hero-illustration" aria-hidden="true">
-          <OPIcon
-            v-if="currentStep?.icon"
-            :name="currentStep.icon"
-            class="w-[120px] h-[120px]"
-          />
-        </div>
-        <h1 class="hero-title">{{ currentStep?.title || '' }}</h1>
-        <p class="hero-sub">{{ currentStep?.subtitle || '' }}</p>
-        <div class="hero-meta">
-          <div class="ring" :style="{ '--p': stepProgress }">
-            <span>{{ stepProgress }}%</span>
-          </div>
-          <div class="meta-text">
-            <small>Overall Progress</small>
-            <strong>
-              {{ completedTaskCount }} of {{ totalTaskCount }}
-              {{ totalTaskCount === 1 ? 'task' : 'tasks' }}
-              <em>· {{ totalStepPoints }}pts earned</em>
-            </strong>
-          </div>
-        </div>
-      </section>
+        <span class="hero-num" aria-hidden="true">{{ sectionNumberPadded }}</span>
 
-      <div class="action-buttons">
-        <button class="help-btn" @click="showHelp = true">
-          <OPIcon name="helpIcon" class="w-[15px] h-[15px]" />Help
-        </button>
-        <button class="video-btn" @click="showVideo = true">
-          <span class="play-icon"
-            ><OPIcon name="playIcon" class="w-[15px] h-[15px]"
-          /></span>
-          Play Video
-        </button>
-      </div>
+        <div class="hero-body">
+          <span class="hero-badge">
+            <span class="dot"></span>
+            Official record · Section {{ sectionNumber }} of {{ totalSections }}
+          </span>
+          <h1 class="hero-title">{{ currentStep?.title || '' }}</h1>
+          <p class="hero-sub">{{ currentStep?.subtitle || '' }}</p>
 
-      <HelpDrawer
-        mode="seller"
-        :show="showHelp"
-        :content="currentStep?.helpContent ?? null"
-        @close="showHelp = false"
-      />
-      <VideoModal
-        :show="showVideo"
-        :video-url="currentStep?.helpVideoUrl ?? null"
-        @close="showVideo = false"
-      />
-
-      <PointsSection
-        :points="totalStepPoints"
-        :label="nextStepLabel"
-        :description="`A total of ${totalStepPoints}points are available in this section.`"
-        :show-rewards-link="true"
-        :show-next-task="hasNextTask"
-        @nextTask="goToNextTask"
-      />
-
-      <UnderReview
-        title="Your Expert Guidance"
-        :description="`You have 3 questions under review by an expert.`"
-        :minimum-time="'3 Days'"
-        @viewProfile="handleViewProfile"
-      />
-        </aside>
-
-        <section class="stw-content">
-      <div class="tasks-section">
-        <div class="section-header">
-          <h2 class="section-title">Your Tasks</h2>
-          <button class="sort-btn">Sort</button>
-        </div>
-
-        <div class="tasks-list">
-          <div
-            v-for="task in currentStep?.tasks"
-            :key="task.id"
-            class="task-card"
-            :class="{ completed: task.completed }"
-            @click="navigateToTask(task.id)"
-          >
-            <div class="task-status">
-              <div
-                class="status-circle"
-                :class="getTaskStatus(task)"
-                :style="getTaskProgressStyle(task)"
-              >
-                <span v-if="task.completed" class="check-icon">✓</span>
-                <span
-                  v-else-if="getTaskStatus(task) === 'in-progress'"
-                  class="progress-percentage"
-                >
-                  {{ getTaskProgress(task) }}%
-                </span>
-              </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <strong>{{ answeredQuestions }}<em>/{{ totalQuestions }}</em></strong>
+              <small>Questions</small>
             </div>
-
-            <!-- <div class="task-icon">
-              <span>{{ getTaskIcon(task) }}</span>
-            </div> -->
-
-            <div class="task-info">
-              <div class="task-points">
-                <span class="points-icon"
-                  ><OPIcon name="giftIcon" class="w-[11px] h-[11px]"
-                /></span>
-                +0pts
-              </div>
-              <h3 class="task-title">{{ task.title }}</h3>
-              <p class="task-description">{{ task.description }}</p>
-              <div class="task-meta">
-                <span>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    width="11"
-                    height="11"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  ~{{ getTaskMinutes(task) }} min
-                </span>
-                <span>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    width="11"
-                    height="11"
-                  >
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                    />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                  {{ task.totalQuestions ?? 0 }}
-                  {{
-                    (task.totalQuestions ?? 0) === 1 ? 'question' : 'questions'
-                  }}
-                </span>
-              </div>
-              <div v-if="task.completed" class="task-completed-info">
-                Completed • {{ getCompletedDate() }}
-              </div>
+            <span class="hero-divider"></span>
+            <div class="hero-stat">
+              <strong>{{ totalTaskCount }}</strong>
+              <small>Tasks</small>
             </div>
+            <span class="hero-divider"></span>
+            <div class="hero-stat">
+              <strong>{{ completedTaskCount }}</strong>
+              <small>Complete</small>
+            </div>
+          </div>
 
-            <button class="task-arrow">
-              <OPIcon name="caretRight" class="w-[13px] h-[13px]" />
+          <div class="hero-actions">
+            <button class="hbtn teal" @click="showVideo = true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
+              Watch video
+            </button>
+            <button class="hbtn ghost" @click="showHelp = true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              Help
             </button>
           </div>
         </div>
-      </div>
+
+        <div class="hero-ring-wrap">
+          <div class="hero-ring" :style="{ '--p': questionsPercent }">
+            <div class="hero-ring-inner">
+              <span class="hero-ring-pct">{{ questionsPercent }}%</span>
+              <span class="hero-ring-lbl">Section answered</span>
+            </div>
+          </div>
+          <span class="hero-updated">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+            Last updated {{ lastUpdatedDisplay }}
+          </span>
+        </div>
+      </section>
+
+      <!-- ── Seller progress bar card ────────────────────────────────── -->
+      <section class="prog-card">
+        <div class="prog-avatar">
+          <OPIcon name="seller" class="w-[18px] h-[18px]" />
+        </div>
+        <div class="prog-text">
+          <strong>Questions answered by seller</strong>
+          <small>You'll see updates here as the seller completes this section.</small>
+        </div>
+        <div class="prog-track">
+          <span class="prog-fill" :style="{ width: questionsPercent + '%' }"></span>
+        </div>
+        <div class="prog-count">{{ answeredQuestions }} / {{ totalQuestions }}</div>
+      </section>
+
+      <!-- ── Two-column body ─────────────────────────────────────────── -->
+      <div class="stw-layout">
+        <section class="stw-content">
+          <div class="section-head">
+            <span class="eyebrow"><span class="eyebrow-line"></span> This section</span>
+            <h2 class="section-title">Question groups</h2>
+            <p class="section-desc">
+              {{ totalTaskCount }} {{ totalTaskCount === 1 ? 'task makes' : 'tasks make' }} up the
+              {{ currentStep?.title || 'section' }} — tap any group to review the answers.
+            </p>
+            <div class="legend">
+              <span class="legend-item"><span class="ld done"></span> Complete</span>
+              <span class="legend-item"><span class="ld progress"></span> In progress</span>
+              <span class="legend-item"><span class="ld none"></span> Not started</span>
+            </div>
+          </div>
+
+          <div class="tasks-list">
+            <button
+              v-for="(task, index) in currentStep?.tasks"
+              :key="task.id"
+              class="task-card"
+              :class="getTaskStatus(task)"
+              @click="navigateToTask(task.id)"
+            >
+              <span class="task-index">{{ String(index + 1).padStart(2, '0') }}</span>
+              <div class="task-icon" :class="getTaskStatus(task)">
+                <OPIcon :name="task.icon || 'instructions'" class="w-[20px] h-[20px]" />
+              </div>
+
+              <div class="task-info">
+                <h3 class="task-title">{{ task.title }}</h3>
+                <p v-if="task.description" class="task-description">{{ task.description }}</p>
+
+                <div class="task-progress-row">
+                  <span class="task-badge" :class="getTaskStatus(task)">
+                    <svg v-if="task.completed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {{ getTaskBadge(task) }}
+                  </span>
+                  <template v-if="task.totalQuestions > 0">
+                    <div class="task-track">
+                      <span class="task-fill" :class="getTaskStatus(task)" :style="{ width: getTaskProgress(task) + '%' }"></span>
+                    </div>
+                    <span class="task-pct">{{ getTaskProgress(task) }}%</span>
+                  </template>
+                </div>
+              </div>
+
+              <span class="task-arrow" :class="getTaskStatus(task)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
+            </button>
+          </div>
         </section>
+
+        <aside class="stw-aside">
+          <!-- Expert guidance -->
+          <section class="expert-card">
+            <span class="expert-badge"><span class="dot"></span> Under review</span>
+            <div class="expert-ic">
+              <OPIcon name="expertIcon" class="w-[22px] h-[22px]" />
+            </div>
+            <h3 class="expert-title">Need expert guidance?</h3>
+            <p class="expert-desc">
+              Get professional advice from a qualified property expert on this section.
+            </p>
+            <span class="expert-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+              </svg>
+              Minimum time: 1 day
+            </span>
+            <button class="expert-btn" @click="handleViewProfile">View expert profile</button>
+          </section>
+
+          <!-- Section summary -->
+          <section class="summary-card">
+            <h3 class="summary-title">Section summary</h3>
+            <div class="summary-row">
+              <span>Answered</span>
+              <strong>{{ answeredQuestions }} of {{ totalQuestions }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Tasks complete</span>
+              <strong>{{ completedTaskCount }} of {{ totalTaskCount }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Section</span>
+              <strong>{{ sectionNumber }} of {{ totalSections }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Last updated</span>
+              <strong>{{ lastUpdatedDisplay }}</strong>
+            </div>
+          </section>
+
+          <!-- Up next -->
+          <button v-if="nextStep" class="upnext-card" @click="goToNextSection">
+            <div class="upnext-ic">
+              <OPIcon :name="nextStep.icon || 'instructions'" class="w-[20px] h-[20px]" />
+            </div>
+            <div class="upnext-text">
+              <small>Up next · Section {{ sectionNumber + 1 }}</small>
+              <strong>{{ nextStep.title }}</strong>
+            </div>
+            <svg class="upnext-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </aside>
       </div>
     </main>
 
+    <HelpDrawer
+      mode="seller"
+      :show="showHelp"
+      :content="currentStep?.helpContent ?? null"
+      @close="showHelp = false"
+    />
+    <VideoModal
+      :show="showVideo"
+      :video-url="currentStep?.helpVideoUrl ?? null"
+      @close="showVideo = false"
+    />
+
     <SiteFooter />
 
-    <div class="st-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
   </div>
 </template>
 
 <script setup>
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
-import PointsSection from '@/components/passport-view/PointsSection.vue'
-import UnderReview from '~/components/passport-view/UnderReview.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -230,10 +268,6 @@ const backToPassportUrl = computed(() => {
   return `/passportview/${route.query.propertyId}`
 })
 
-// onMounted(() => {
-//   setCurrentStep(stepId)
-// })
-
 onMounted(async () => {
   if (route.query.propertyId) {
     await loadPassport(route.query.propertyId)
@@ -246,108 +280,105 @@ watchEffect(() => {
   }
 })
 
-const completedTaskCount = computed(() => {
-  if (!currentStep.value) return 0
-  return currentStep.value.tasks.filter((t) => t.completed).length
-})
+// ── Task / question tallies ────────────────────────────────────────────────
+const completedTaskCount = computed(
+  () => currentStep.value?.tasks?.filter((t) => t.completed).length ?? 0,
+)
 const totalTaskCount = computed(() => currentStep.value?.tasks?.length ?? 0)
 
-const stepProgress = computed(() => {
-  if (!currentStep.value) return 0
-  const completedTasks = currentStep.value.tasks.filter(
-    (t) => t.completed,
-  ).length
-  const totalTasks = currentStep.value.tasks.length
-  return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
-})
+const answeredQuestions = computed(
+  () =>
+    currentStep.value?.tasks?.reduce(
+      (sum, t) => sum + (t.answeredQuestions ?? 0),
+      0,
+    ) ?? 0,
+)
+const totalQuestions = computed(
+  () =>
+    currentStep.value?.tasks?.reduce(
+      (sum, t) => sum + (t.totalQuestions ?? 0),
+      0,
+    ) ?? 0,
+)
+const questionsPercent = computed(() =>
+  totalQuestions.value > 0
+    ? Math.round((answeredQuestions.value / totalQuestions.value) * 100)
+    : 0,
+)
 
-// const totalStepPoints = computed(() => {
-//   return currentStep.value
-//     ? currentStep.value.tasks.reduce((sum, task) => sum + task.pointsReward, 0)
-//     : 0
-// })
-
-const totalStepPoints = computed(() => 0)
-
+// ── Section position within the passport ───────────────────────────────────
 const orderedSteps = computed(() => {
   const list = [...steps.value]
   const hasOrder = list.some((step) => typeof step.order === 'number')
-  if (hasOrder) {
-    return list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  return hasOrder
+    ? list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    : list
+})
+const currentIndex = computed(() =>
+  orderedSteps.value.findIndex((s) => s.id === currentStep.value?.id),
+)
+const sectionNumber = computed(() =>
+  currentIndex.value >= 0 ? currentIndex.value + 1 : 1,
+)
+const sectionNumberPadded = computed(() =>
+  String(sectionNumber.value).padStart(2, '0'),
+)
+const totalSections = computed(() => steps.value.length || 0)
+const nextStep = computed(() =>
+  currentIndex.value >= 0
+    ? orderedSteps.value[currentIndex.value + 1] || null
+    : null,
+)
+
+// ── Last updated ───────────────────────────────────────────────────────────
+const fmtDate = (d) =>
+  `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleString('en-GB', {
+    month: 'short',
+  })} ${d.getFullYear()}`
+
+const lastUpdatedDisplay = computed(() => {
+  const raw = currentStep.value?.updatedAt || currentStep.value?.lastUpdated
+  if (raw) {
+    const d = new Date(raw)
+    if (!isNaN(d.getTime())) return fmtDate(d)
   }
-  return list
+  return fmtDate(new Date())
 })
 
-const nextStepLabel = computed(() => {
-  if (!currentStep.value) return 'Next: '
-  const currentIndex = orderedSteps.value.findIndex(
-    (step) => step.id === currentStep.value.id,
-  )
-  const nextStep =
-    currentIndex >= 0 ? orderedSteps.value[currentIndex + 1] : null
-  return nextStep?.title ? `Next: ${nextStep.title}` : 'Next: '
-})
-
-const hasNextTask = computed(() => {
-  if (!currentStep.value) return false
-  const incompleteTasks = currentStep.value.tasks.filter((t) => !t.completed)
-  return incompleteTasks.length > 0
-})
-
-const getTaskIcon = (task) => {
-  return task.icon || '📋'
-}
-
+// ── Task helpers ───────────────────────────────────────────────────────────
 const getTaskStatus = (task) => {
-  if (task.completed) return 'completed'
-  if (task.answeredQuestions > 0) return 'in-progress'
-  return 'pending'
+  if (task.completed) return 'done'
+  if ((task.answeredQuestions ?? 0) > 0) return 'progress'
+  return 'none'
 }
 
-const getTaskProgressStyle = (task) => {
-  if (
-    !task.completed &&
-    task.answeredQuestions > 0 &&
-    task.totalQuestions > 0
-  ) {
-    const progress = Math.round(
-      (task.answeredQuestions / task.totalQuestions) * 100,
-    )
-    return { '--progress': `${progress}` }
-  }
-  return {}
+const getTaskBadge = (task) => {
+  if (task.completed) return `All ${task.totalQuestions ?? 0} answered`
+  if ((task.answeredQuestions ?? 0) > 0)
+    return `${task.answeredQuestions} of ${task.totalQuestions} answered`
+  return 'No answers yet'
 }
 
 const getTaskProgress = (task) => {
-  if (task.totalQuestions > 0) {
+  if (task.completed) return 100
+  if ((task.totalQuestions ?? 0) > 0) {
     return Math.round((task.answeredQuestions / task.totalQuestions) * 100)
   }
   return 0
 }
 
-// Approx minutes to complete — ~1 min per question, minimum 2.
-const getTaskMinutes = (task) => {
-  const q = Number(task?.totalQuestions ?? 0)
-  if (!q) return 2
-  return Math.max(2, Math.round(q * 1))
-}
-
-const getCompletedDate = () => {
-  return '10 February 2025'
-}
-
+// ── Navigation ─────────────────────────────────────────────────────────────
 const navigateToTask = (taskId) => {
   router.push(
     `/passportview/steps/tasks/${taskId}?stepId=${stepId}&propertyId=${route.query.propertyId}`,
   )
 }
 
-const goToNextTask = () => {
-  if (currentStep.value) {
-    const nextTask = currentStep.value.tasks.find((t) => !t.completed)
-    if (nextTask) {
-      navigateToTask(nextTask.id)
-    }
+const goToNextSection = () => {
+  if (nextStep.value) {
+    router.push(
+      `/passportview/steps/${nextStep.value.id}?propertyId=${route.query.propertyId}`,
+    )
   }
 }
 
@@ -357,15 +388,12 @@ const handleViewProfile = () => {
   )
 }
 
-const goBack = () => {
-  router.back()
-}
 </script>
 
 <style scoped>
 /* ── Web canvas ───────────────────────────────────────────────────── */
 .st-root {
-  --color-border: #e7ecf2;
+  --color-border: #ececf2;
   min-height: 100dvh;
   color: #231d45;
   background: #f3f2ef;
@@ -374,44 +402,6 @@ const goBack = () => {
   -webkit-font-smoothing: antialiased;
   overflow: clip;
   position: relative;
-}
-
-.st-ambient,
-.st-mesh {
-  pointer-events: none;
-  position: fixed;
-}
-
-.st-ambient {
-  border-radius: 999px;
-  filter: blur(48px);
-  opacity: 0.16;
-}
-
-.st-ambient-a {
-  width: 300px;
-  height: 300px;
-  left: -100px;
-  top: 120px;
-  background: #00a19a;
-}
-
-.st-ambient-b {
-  width: 320px;
-  height: 320px;
-  right: -120px;
-  top: 160px;
-  background: #5a4cf0;
-}
-
-.st-mesh {
-  inset: 0;
-  opacity: 0.02;
-  background-image:
-    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(180deg, #000, transparent 86%);
 }
 
 /* ── Web nav (shared HomeScore pattern) ───────────────────────────── */
@@ -538,16 +528,571 @@ const goBack = () => {
 
 /* ── Layout ───────────────────────────────────────────────────────── */
 .stw-main {
-  padding: 34px 0 60px;
+  padding: 26px 0 60px;
 }
 
+.stw-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #9a97a8;
+}
+.stw-crumbs button {
+  border: 0;
+  background: transparent;
+  color: #8b8799;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.16s;
+}
+.stw-crumbs button:hover {
+  color: #00857f;
+}
+.stw-crumbs strong {
+  color: #00857f;
+  font-weight: 800;
+}
+
+/* ── Hero (dark) ──────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+  padding: 34px 36px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  color: #fff;
+  background:
+    radial-gradient(120% 130% at 88% 8%, rgba(0, 161, 154, 0.28), transparent 46%),
+    linear-gradient(135deg, #2c2559 0%, #221d45 52%, #1b1838 100%);
+  box-shadow: 0 22px 50px rgba(29, 24, 56, 0.28);
+}
+.hero-num {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 240px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+  letter-spacing: -0.04em;
+  z-index: 0;
+}
+.hero-body {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 161, 154, 0.16);
+  border: 1px solid rgba(47, 208, 198, 0.32);
+  color: #7fe6dd;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: 999px;
+}
+.hero-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2fd0c6;
+}
+.hero-title {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 16px 0 8px;
+}
+.hero-sub {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.66);
+  margin: 0;
+  max-width: 520px;
+}
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 24px 0 26px;
+}
+.hero-stat strong {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.hero-stat strong em {
+  font-style: normal;
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+.hero-stat small {
+  display: block;
+  margin-top: 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.hero-divider {
+  width: 1px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.hbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+.hbtn:active {
+  transform: scale(0.98);
+}
+.hbtn svg {
+  width: 17px;
+  height: 17px;
+}
+.hbtn.teal {
+  background: #00a19a;
+  color: #fff;
+  box-shadow: 0 12px 24px -10px rgba(0, 161, 154, 0.7);
+}
+.hbtn.teal:hover {
+  background: #00b3ab;
+}
+.hbtn.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.hbtn.ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.hero-ring-wrap {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.hero-ring {
+  --p: 0;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -90deg,
+    #2fd0c6 calc(var(--p) * 1%),
+    rgba(255, 255, 255, 0.12) 0
+  );
+  display: grid;
+  place-items: center;
+}
+.hero-ring-inner {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: #221d44;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+.hero-ring-pct {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.hero-ring-lbl {
+  margin-top: 8px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.hero-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+}
+.hero-updated svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── Seller progress card ─────────────────────────────────────────── */
+.prog-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+  padding: 18px 24px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(35, 29, 69, 0.05);
+}
+.prog-avatar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: rgba(0, 161, 154, 0.1);
+  display: grid;
+  place-items: center;
+}
+.prog-text {
+  flex-shrink: 0;
+  min-width: 0;
+}
+.prog-text strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+}
+.prog-text small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #8b8799;
+}
+.prog-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: #ece9e2;
+  overflow: hidden;
+}
+.prog-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00a19a, #2fd0c6);
+  transition: width 0.4s ease;
+}
+.prog-count {
+  flex-shrink: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #00857f;
+}
+
+/* ── Two-column body ──────────────────────────────────────────────── */
 .stw-layout {
   display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
   align-items: start;
+  margin-top: 34px;
+}
+.stw-content {
+  min-width: 0;
 }
 
+.section-head {
+  margin-bottom: 18px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #00857f;
+}
+.eyebrow-line {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
+}
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #231d45;
+  margin: 12px 0 6px;
+}
+.section-desc {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #8b8799;
+  margin: 0;
+  max-width: 480px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #5a5570;
+}
+.ld {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.ld.done {
+  background: #00a19a;
+}
+.ld.progress {
+  background: #e79a2b;
+}
+.ld.none {
+  background: #cbcdd6;
+}
+
+/* ── Task cards ───────────────────────────────────────────────────── */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.task-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  text-align: left;
+  padding: 20px 22px 20px 26px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 6px 18px rgba(35, 29, 69, 0.04);
+  transition: transform 0.14s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.task-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: #e2e0e8;
+  transition: background 0.18s ease;
+}
+.task-card.done::before {
+  background: #00a19a;
+}
+.task-card.progress::before {
+  background: #e79a2b;
+}
+.task-card:hover {
+  transform: translateY(-3px);
+  border-color: #00a19a;
+  box-shadow: 0 18px 36px rgba(0, 161, 154, 0.18);
+}
+.task-card:hover::before {
+  background: #00a19a;
+}
+.task-card:hover .task-title {
+  color: #00857f;
+}
+.task-card:active {
+  transform: translateY(-1px);
+}
+.task-index {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #b8b5c4;
+  letter-spacing: 0.02em;
+  width: 22px;
+}
+.task-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: #f4f3f7;
+}
+.task-icon.done {
+  background: linear-gradient(135deg, #00a19a, #05867f);
+}
+.task-icon.done :deep(img) {
+  filter: brightness(0) invert(1);
+}
+.task-icon.progress {
+  background: linear-gradient(135deg, #f6b63f, #e79a2b);
+}
+.task-icon.progress :deep(img) {
+  filter: brightness(0) invert(1);
+}
+.task-info {
+  flex: 1;
+  min-width: 0;
+}
+.task-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #231d45;
+  margin: 0 0 4px;
+  transition: color 0.18s ease;
+}
+.task-description {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #8b8799;
+  margin: 0;
+}
+.task-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+.task-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #f1f0f4;
+  color: #8b8799;
+}
+.task-badge svg {
+  width: 12px;
+  height: 12px;
+}
+.task-badge.done {
+  background: rgba(0, 161, 154, 0.1);
+  color: #00857f;
+}
+.task-badge.progress {
+  background: rgba(231, 154, 43, 0.12);
+  color: #c97e18;
+}
+.task-track {
+  flex: 1;
+  max-width: 260px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ece9e2;
+  overflow: hidden;
+}
+.task-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #cbcdd6;
+  transition: width 0.4s ease;
+}
+.task-fill.done {
+  background: linear-gradient(90deg, #00a19a, #2fd0c6);
+}
+.task-fill.progress {
+  background: linear-gradient(90deg, #f6b63f, #e79a2b);
+}
+.task-pct {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #8b8799;
+}
+.task-arrow {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f4f3f7;
+  border: 1px solid #ececf2;
+  color: #8b8799;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+.task-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+.task-arrow.done {
+  background: #00a19a;
+  border-color: #00a19a;
+  color: #fff;
+}
+.task-card:hover .task-arrow {
+  background: rgba(0, 161, 154, 0.1);
+  border-color: rgba(0, 161, 154, 0.24);
+  color: #00a19a;
+}
+.task-card:hover .task-arrow.done {
+  background: #00857f;
+  color: #fff;
+}
+
+/* ── Aside ────────────────────────────────────────────────────────── */
 .stw-aside {
   position: sticky;
   top: 90px;
@@ -556,509 +1101,186 @@ const goBack = () => {
   gap: 16px;
 }
 
-.stw-content {
-  min-width: 0;
+.expert-card {
+  border-radius: 22px;
+  padding: 24px;
+  color: #fff;
+  background:
+    radial-gradient(120% 120% at 90% 6%, rgba(0, 161, 154, 0.26), transparent 50%),
+    linear-gradient(160deg, #2a2355 0%, #201c42 60%, #1a1736 100%);
+  box-shadow: 0 18px 40px rgba(29, 24, 56, 0.2);
 }
-
-.st-mobile-nav {
-  display: none;
-}
-
-.step-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: transparent;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #00a19a;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  padding: 8px;
-  cursor: pointer;
-}
-
-.back-arrow {
-  font-size: 20px;
-}
-
-.menu-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #5a54d6;
-  border: none;
-  font-size: 20px;
-  color: white;
-  cursor: pointer;
-}
-
-.step-content {
-  padding: 0 16px 20px;
-}
-
-/* ── Hero (matches prototype disputes.html) ───────────── */
-.hero {
-  margin: 8px 0 16px;
-  border-radius: 24px;
-  background: linear-gradient(160deg, #ffffff 0%, #def7f1 60%, #d1e8e3 100%);
-  padding: 22px 22px 24px;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: -40% -20% auto auto;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.7),
-    transparent 65%
-  );
-  pointer-events: none;
-}
-.hero-badge {
+.expert-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(15, 118, 110, 0.15);
-  color: #0f766e;
+  gap: 7px;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 6px 10px;
-  border-radius: 999px;
-  position: relative;
-  z-index: 1;
+  color: #7fe6dd;
 }
-.hero-badge .dot {
+.expert-badge .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00a19a;
+  background: #2fd0c6;
 }
-.hero-illustration {
-  display: flex;
-  justify-content: center;
-  margin: 4px 0 8px;
-  position: relative;
-  z-index: 1;
+.expert-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  margin: 18px 0 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
 }
-.hero-title {
-  font-size: 26px;
+.expert-title {
+  font-size: 20px;
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #0a0f2c;
-  margin: 4px 0 4px;
-  position: relative;
-  z-index: 1;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
 }
-.hero-sub {
-  color: #115e59;
-  font-size: 14px;
+.expert-desc {
+  font-size: 13.5px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.66);
   margin: 0 0 16px;
-  position: relative;
-  z-index: 1;
 }
-.hero-meta {
+.expert-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 18px;
+}
+.expert-time svg {
+  width: 13px;
+  height: 13px;
+}
+.expert-btn {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: #00a19a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 26px -10px rgba(0, 161, 154, 0.7);
+  transition: background 0.16s ease, transform 0.12s ease;
+}
+.expert-btn:hover {
+  background: #00b3ab;
+}
+.expert-btn:active {
+  transform: scale(0.98);
+}
+
+.summary-card {
+  border-radius: 22px;
+  padding: 22px 24px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  box-shadow: 0 8px 24px rgba(35, 29, 69, 0.05);
+}
+.summary-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #231d45;
+  margin: 0 0 6px;
+}
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-bottom: 1px solid #f1f0f4;
+}
+.summary-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.summary-row span {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #8b8799;
+}
+.summary-row strong {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #231d45;
+}
+
+.upnext-card {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: 8px;
-  position: relative;
-  z-index: 1;
+  width: 100%;
+  text-align: left;
+  padding: 18px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 161, 154, 0.2);
+  background: linear-gradient(135deg, #e7f7f4, #edf9f6);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.14s ease, box-shadow 0.16s ease;
 }
-.ring {
-  --p: 0;
-  --size: 56px;
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  background: conic-gradient(
-    #1f7a66 calc(var(--p) * 1%),
-    rgba(15, 118, 110, 0.15) 0
-  );
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
+.upnext-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 161, 154, 0.16);
 }
-.ring::after {
-  content: '';
+.upnext-ic {
   width: 44px;
   height: 44px;
-  background: #fff;
-  border-radius: 50%;
-  grid-area: 1 / 1;
-}
-.ring span {
-  grid-area: 1 / 1;
-  z-index: 1;
-  font-size: 13px;
-  font-weight: 700;
-  color: #0a0f2c;
-  line-height: 1;
-}
-.meta-text small {
-  display: block;
-  text-transform: uppercase;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #115e59;
-  margin-bottom: 4px;
-}
-.meta-text strong {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #0a0f2c;
-}
-.meta-text strong em {
-  font-style: normal;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.step-illustration {
-  display: flex;
-  justify-content: center;
-  margin: 24px 0;
-}
-
-.step-icon-large {
-  font-size: 100px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
-}
-
-.step-title {
-  font-size: 28px;
-  font-weight: 700;
-  text-align: center;
-  margin: 0 0 8px;
-  color: #1a1a1a;
-}
-
-.step-subtitle {
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.progress-section {
-  margin-bottom: 24px;
-}
-
-.progress-bar {
-  height: 16px;
-  background: #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00a19a 0%, #00d4c3 100%);
-  transition: width 0.3s ease;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.progress-label {
-  font-size: 11px;
-  color: #3c3c4399;
-  font-weight: 400;
-  letter-spacing: 0.06px;
-  line-height: 13px;
-}
-
-.progress-value {
-  font-size: 11px;
-  color: #00a19a;
-  font-weight: 590;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.help-btn,
-.video-btn {
-  flex: 1;
-  padding: 13px 14px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
-  color: #0f766e;
-}
-
-.help-btn:active,
-.video-btn:active {
-  transform: scale(0.98);
-}
-
-.video-btn {
-  background: #1f7a66;
-  color: white;
-  border-color: #1f7a66;
-  box-shadow: 0 8px 20px -8px rgba(13, 148, 136, 0.6);
-}
-
-.play-icon {
-  font-size: 12px;
-}
-
-.tasks-section {
-  margin-top: 32px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 590;
-  margin: 0;
-  color: #000000;
-}
-
-.sort-btn {
-  background: white;
-  border: 0.33px solid #3c3c432e;
-  border-radius: 40px;
-  color: #00a19a;
-  font-size: 13px;
-  font-weight: 400;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-.tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.task-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: white;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 0.33px solid #3c3c432e;
-}
-
-.task-card:active {
-  transform: scale(0.98);
-}
-
-.task-card.completed {
-  opacity: 0.7;
-}
-
-.task-status {
   flex-shrink: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #00a19a, #05867f);
+  display: grid;
+  place-items: center;
 }
-
-.status-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 6px solid #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  position: relative;
+.upnext-ic :deep(img) {
+  filter: brightness(0) invert(1);
 }
-
-.status-circle.completed {
-  background: #00a19a;
-  border-color: #00a19a;
-}
-
-.status-circle.in-progress {
-  border: none;
-  background: conic-gradient(
-    #00a19a 0% calc(var(--progress, 50) * 1%),
-    #e0e0e0 calc(var(--progress, 50) * 1%) 100%
-  );
-}
-
-.status-circle.in-progress::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: white;
-}
-
-.status-circle.pending {
-  border-color: #e0e0e0;
-}
-
-.check-icon {
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.progress-percentage {
-  color: #00a19a;
-  font-size: 9px;
-  font-weight: 400;
-  position: relative;
-  z-index: 1;
-}
-
-.task-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #f0fffe 0%, #e6f9f7 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.task-info {
+.upnext-text {
   flex: 1;
   min-width: 0;
 }
-
-.task-title {
-  font-size: 15px;
-  font-weight: 400;
-  margin: 0 0 4px;
-  color: #000000;
-  line-height: 20px;
-  letter-spacing: -0.23px;
+.upnext-text small {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #00857f;
+  margin-bottom: 4px;
 }
-
-.task-description {
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
-  color: #3c3c4399;
-  margin: 0 0 6px;
+.upnext-text strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: #231d45;
 }
-
-.task-meta {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #64748b;
-}
-.task-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.task-meta svg {
-  width: 11px;
-  height: 11px;
-}
-
-.task-completed-info {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #00a19a;
-  font-weight: 600;
-}
-
-.task-points {
-  background: #00a19a1a;
-  font-size: 11px;
-  line-height: 13px;
-  color: #00a19a;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
-  width: fit-content;
-  border-radius: 4px;
-}
-
-.points-icon {
-  font-size: 14px;
-}
-
-.task-arrow {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f9f9fd;
-  border: 0.5px solid #d2d1e4;
-  font-size: 24px;
-  color: #999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-/* ── Web layout overrides ─────────────────────────────────────────── */
-.stw-aside .hero {
-  margin: 0;
-}
-.stw-aside .action-buttons {
-  margin-bottom: 0;
-}
-.stw-content .tasks-section {
-  margin-top: 0;
+.upnext-arrow {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #00857f;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────── */
-@media (max-width: 980px) {
+@media (max-width: 1040px) {
   .stw-layout {
     grid-template-columns: 1fr;
-    gap: 24px;
   }
   .stw-aside {
     position: static;
@@ -1076,12 +1298,27 @@ const goBack = () => {
   .hsw-nav-inner {
     min-height: 58px;
   }
-  .stw-main {
-    padding-top: 26px;
-    padding-bottom: 96px;
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 26px 24px;
+    gap: 24px;
   }
-  .st-mobile-nav {
-    display: block;
+  .hero-ring-wrap {
+    flex-direction: row;
+    align-self: stretch;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .hero-title {
+    font-size: 32px;
+  }
+  .prog-card {
+    flex-wrap: wrap;
+  }
+  .prog-track {
+    order: 3;
+    flex-basis: 100%;
   }
 }
 
@@ -1090,6 +1327,15 @@ const goBack = () => {
     width: calc(100% - 24px);
   }
   .hsw-back {
+    display: none;
+  }
+  .hero-num {
+    font-size: 150px;
+  }
+  .task-track {
+    display: none;
+  }
+  .task-pct {
     display: none;
   }
 }

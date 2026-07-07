@@ -35,18 +35,20 @@
       <main class="hsw-shell btw-layout">
         <!-- ── Sticky aside ──────────────────────────────────────────── -->
         <aside class="btw-aside">
-          <!-- Hero card -->
-          <section class="qhero">
-            <span class="qhero-badge">
-              <span class="qhero-dot" />
+          <section class="qpanel">
+            <span class="qpanel-badge">
+              <span class="dot" />
               {{ section?.title || '' }}
             </span>
-            <div class="qhero-illustration" aria-hidden="true">
-              <OPIcon :name="section?.imageKey || 'fittingsContents'" class="w-[120px] h-[120px]" />
+            <div class="qpanel-icon" aria-hidden="true">
+              <OPIcon :name="section?.imageKey || 'ownershipProfile'" class="w-[32px] h-[32px]" />
             </div>
-            <h1 class="qhero-title">{{ task.title || firstQuestionLabel }}</h1>
-            <p class="qhero-sub">{{ task.description || section?.description || 'Official property record' }}</p>
-            <div class="qhero-meta">
+            <h1 class="qpanel-title">{{ task.title || firstQuestionLabel }}</h1>
+            <p class="qpanel-sub">{{ task.description || section?.description || 'Official property record' }}</p>
+
+            <div class="qpanel-divider" />
+
+            <div class="qpanel-progress">
               <div class="qring" :style="{ '--p': taskProgressPct }">
                 <span>{{ taskAnsweredCount }}/{{ taskTotalQuestions }}</span>
               </div>
@@ -54,36 +56,55 @@
                 <small>Task answered</small>
                 <strong>
                   {{ taskRemainingQuestions }}
-                  {{ taskRemainingQuestions === 1 ? 'question' : 'questions' }}
-                  remaining
+                  {{ taskRemainingQuestions === 1 ? 'question' : 'questions' }} remaining
                 </strong>
               </div>
             </div>
-          </section>
 
-          <!-- Section-level Help + Video -->
-          <div class="task-help-strip">
-            <button class="task-help-btn task-help-btn--help" @click="openSectionHelp">
-              <OPIcon name="helpIcon" class="w-[15px] h-[15px]" />Help
-            </button>
-            <button class="task-help-btn task-help-btn--video" @click="openSectionVideo">
-              <span class="task-play-icon"><OPIcon name="playIcon" class="w-[15px] h-[15px]" /></span>
-              Play Video
-            </button>
-          </div>
+            <div class="qpanel-actions">
+              <button class="qpanel-btn qpanel-btn--help" @click="openSectionHelp">
+                <OPIcon name="helpIcon" class="w-[15px] h-[15px]" />Help
+              </button>
+              <button class="qpanel-btn qpanel-btn--video" @click="openSectionVideo">
+                <span class="qpanel-play"><OPIcon name="playIcon" class="w-[13px] h-[13px]" /></span>
+                Play Video
+              </button>
+            </div>
+          </section>
         </aside>
 
         <!-- ── Main content ──────────────────────────────────────────── -->
         <div class="btw-content">
           <!-- Question navigation header -->
-          <div class="question-nav">
-            <div class="question-nav-counter">
-              <h2 class="question-nav-num">Question {{ activeIndex + 1 }}</h2>
-              <div class="question-nav-sub">{{ activeIndex + 1 }} of {{ visibleQuestions.length }} in this section</div>
+          <div class="qhead">
+            <div class="qhead-left">
+              <span class="qeyebrow"><span class="qeyebrow-line" /> This Section</span>
+              <h2 class="qhead-title">Question {{ activeIndex + 1 }}</h2>
+              <p class="qhead-sub">{{ activeIndex + 1 }} of {{ visibleQuestions.length }} in this section</p>
             </div>
-            <div class="question-nav-actions">
-              <button class="nav-btn nav-btn--prev" :disabled="activeIndex === 0" @click="activeIndex--">Previous</button>
-              <button class="nav-btn nav-btn--next" :disabled="activeIndex >= visibleQuestions.length - 1" @click="activeIndex++">Next</button>
+            <div class="qhead-nav">
+              <button class="qnav qnav--prev" :disabled="activeIndex === 0" @click="activeIndex--">
+                <span aria-hidden="true">←</span> Previous
+              </button>
+              <button class="qnav qnav--next" :disabled="activeIndex >= visibleQuestions.length - 1" @click="activeIndex++">
+                Next <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Segmented progress -->
+          <div class="qprogress">
+            <div class="qprogress-track">
+              <span
+                v-for="(_, i) in visibleQuestions"
+                :key="i"
+                class="qseg"
+                :class="{ 'qseg--done': i <= activeIndex }"
+              />
+            </div>
+            <div class="qprogress-labels">
+              <span>Question {{ activeIndex + 1 }} of {{ visibleQuestions.length }}</span>
+              <span>{{ Math.max(0, visibleQuestions.length - activeIndex - 1) }} remaining</span>
             </div>
           </div>
 
@@ -91,13 +112,18 @@
           <div class="task-items">
             <div v-for="q in [activeQuestion].filter(Boolean)" :key="q.id" class="task-item">
               <div class="task-item-header">
-                <div class="task-item-left">
-                  <h3 class="task-item-title">{{ getCardTitle(q) }}</h3>
-                  <span class="task-item-status" :class="getStatusClass(q)">{{ getStatusLabel(q) }}</span>
-                </div>
+                <h3 class="task-item-title">{{ getCardTitle(q) }}</h3>
+                <span class="task-item-status" :class="getStatusClass(q)">
+                  <svg v-if="q.answer" width="12" height="12" viewBox="0 0 24 24" fill="none">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  {{ getStatusLabel(q) }}
+                </span>
               </div>
 
-              <div class="task-item-detail">
+              <div class="task-item-answer" :class="{ 'task-item-answer--empty': !q.answer }">
+                <span class="task-item-answer-label">Seller's Answer</span>
+                <div class="task-item-detail">
                 <!-- ── MULTIPART ── -->
                 <template v-if="q.type === 'MULTIPART' && Array.isArray(q.parts) && q.parts.length">
                   <div v-for="part in answerParts(q)" :key="part.partKey">
@@ -342,6 +368,7 @@
                   </div>
                 </div>
               </div>
+              </div>
             </div>
 
             <div v-if="visibleQuestions.length === 0" class="task-empty">
@@ -352,7 +379,6 @@
       </main>
 
       <SiteFooter />
-      <BottomNav active="passport" />
     </template>
 
     <HelpDrawer :show="showHelp" :content="activeHelpContent" mode="buyer" @close="showHelp = false" />
@@ -365,7 +391,6 @@ import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -863,74 +888,112 @@ function downloadFile(url: string, name: string) {
 .btw-aside { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 16px; }
 .btw-content { display: flex; flex-direction: column; gap: 20px; }
 
-/* ── Hero card ────────────────────────────────────────────────────────── */
-.qhero {
-  border-radius: 20px;
-  background: linear-gradient(160deg, #ffffff 0%, #def7f1 60%, #d1e8e3 100%);
-  padding: 22px 22px 24px;
+/* ── Left panel (unified card) ────────────────────────────────────────── */
+.qpanel {
+  border-radius: 24px;
+  background: linear-gradient(158deg, #d8f0ec 0%, #c3e6ed 52%, #a9d7e6 100%);
+  padding: 26px 26px 24px;
   position: relative; overflow: hidden;
-  border: 1px solid rgba(0, 161, 154, 0.12);
+  border: 1px solid rgba(0, 161, 154, 0.22);
+  box-shadow: 0 18px 44px -28px rgba(15, 100, 130, 0.5);
 }
-.qhero::before {
-  content: ''; position: absolute; inset: -40% -20% auto auto;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.7), transparent 65%);
+.qpanel::before {
+  content: ''; position: absolute; inset: -45% -25% auto auto;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.7), transparent 66%);
   pointer-events: none;
 }
-.qhero-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(6px);
-  border: 1px solid rgba(15, 118, 110, 0.15); color: #0f766e;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
-  text-transform: uppercase; padding: 6px 10px; border-radius: 999px;
+.qpanel-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 118, 110, 0.18); color: #0f766e;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 6px 12px; border-radius: 999px;
   position: relative; z-index: 1;
 }
-.qhero-dot { width: 6px; height: 6px; border-radius: 50%; background: #00a19a; }
-.qhero-illustration { display: flex; justify-content: center; margin: 4px 0 8px; position: relative; z-index: 1; }
-.qhero-title { font-size: 24px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: #0a0f2c; margin: 4px 0 4px; position: relative; z-index: 1; }
-.qhero-sub { color: #115e59; font-size: 14px; font-weight: 500; line-height: 1.4; margin: 0 0 16px; position: relative; z-index: 1; }
-.qhero-meta { display: flex; align-items: center; gap: 14px; margin-top: 8px; position: relative; z-index: 1; }
+.qpanel-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #00a19a; }
+.qpanel-icon {
+  width: 62px; height: 62px; border-radius: 18px; margin: 20px 0 18px;
+  background: linear-gradient(150deg, #10b3a3, #0f766e);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 14px 28px -12px rgba(15, 118, 110, 0.7);
+  position: relative; z-index: 1;
+}
+.qpanel-icon :deep(.op-icon) { filter: brightness(0) invert(1); }
+.qpanel-title { font-size: 28px; font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; color: #0a0f2c; margin: 0 0 8px; position: relative; z-index: 1; }
+.qpanel-sub { color: #52646d; font-size: 14.5px; font-weight: 500; line-height: 1.45; margin: 0; position: relative; z-index: 1; }
+.qpanel-divider { height: 1px; background: rgba(15, 42, 72, 0.09); margin: 22px 0; position: relative; z-index: 1; }
+.qpanel-progress { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
 .qring {
-  --p: 0; --size: 56px;
+  --p: 0; --size: 64px;
   width: var(--size); height: var(--size); border-radius: 50%;
-  background: conic-gradient(#1f7a66 calc(var(--p) * 1%), rgba(15, 118, 110, 0.15) 0);
+  background: conic-gradient(#00a19a calc(var(--p) * 1%), #e2e8e6 0);
   display: grid; place-items: center; flex-shrink: 0;
 }
-.qring::after { content: ''; width: 44px; height: 44px; background: #fff; border-radius: 50%; grid-area: 1 / 1; }
-.qring span { grid-area: 1 / 1; z-index: 1; font-size: 13px; font-weight: 700; color: #0a0f2c; line-height: 1; }
-.qmeta-text small { display: block; text-transform: uppercase; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: #115e59; margin-bottom: 4px; }
-.qmeta-text strong { font-size: 14px; font-weight: 700; line-height: 1.2; color: #0a0f2c; }
+.qring::after { content: ''; width: 50px; height: 50px; background: #fff; border-radius: 50%; grid-area: 1 / 1; }
+.qring span { grid-area: 1 / 1; z-index: 1; font-size: 15px; font-weight: 800; color: #0a0f2c; line-height: 1; }
+.qmeta-text small { display: block; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #0f766e; margin-bottom: 5px; }
+.qmeta-text strong { font-size: 15px; font-weight: 700; line-height: 1.25; color: #0a0f2c; }
+.qpanel-actions { display: flex; gap: 10px; margin-top: 22px; position: relative; z-index: 1; }
+.qpanel-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: transform 0.12s;
+}
+.qpanel-btn:active { transform: scale(0.97); }
+.qpanel-btn--help { background: #fff; color: #334155; border: 1.5px solid #e2e8f0; }
+.qpanel-btn--video { background: #00a19a; color: #fff; border: 1.5px solid #00a19a; box-shadow: 0 10px 22px -10px rgba(0, 161, 154, 0.85); }
+.qpanel-play { display: inline-flex; }
+.qpanel-btn--video .qpanel-play :deep(.op-icon) { filter: brightness(0) invert(1); }
 
-/* ── Help strip ───────────────────────────────────────────────────────── */
-.task-help-strip { display: flex; gap: 6px; flex-wrap: wrap; }
-.task-help-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-.task-help-btn--help { background: white; color: #00a19a; border: 2px solid #e0e0e0; }
-.task-help-btn--video { background: #00a19a; color: white; border: 2px solid #00a19a; }
-.task-play-icon { font-size: 12px; }
+/* ── Question header ──────────────────────────────────────────────────── */
+.qhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.qhead-left { min-width: 0; }
+.qeyebrow { display: inline-flex; align-items: center; gap: 10px; text-transform: uppercase; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; color: #0f766e; }
+.qeyebrow-line { width: 28px; height: 2px; border-radius: 2px; background: #00a19a; }
+.qhead-title { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: #0a0f2c; margin: 10px 0 4px; line-height: 1.05; }
+.qhead-sub { font-size: 15px; color: #94a3b8; font-weight: 500; margin: 0; }
+.qhead-nav { display: flex; gap: 10px; flex-shrink: 0; }
+.qnav {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; font-size: 14px; font-weight: 700;
+  cursor: pointer; padding: 11px 22px; font-family: inherit;
+  transition: transform 0.12s, background 0.15s, box-shadow 0.15s;
+}
+.qnav:active:not(:disabled) { transform: scale(0.97); }
+.qnav--prev { background: #eef1f4; border: 1px solid #e2e8f0; color: #475569; }
+.qnav--prev:hover:not(:disabled) { background: #e6ebef; }
+.qnav--next { background: #00a19a; border: 1px solid #00a19a; color: #fff; box-shadow: 0 12px 26px -12px rgba(0, 161, 154, 0.9); }
+.qnav--next:hover:not(:disabled) { box-shadow: 0 16px 30px -12px rgba(0, 161, 154, 1); }
+.qnav:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-/* ── Question navigation ──────────────────────────────────────────────── */
-.question-nav { display: flex; align-items: center; justify-content: space-between; }
-.question-nav-num { font-size: 18px; font-weight: 700; color: #0c1f3d; margin: 0; }
-.question-nav-sub { font-size: 13px; color: #9ca3af; font-weight: 500; margin-top: 2px; }
-.question-nav-actions { display: flex; gap: 8px; }
-.nav-btn { background: white; border: 1px solid #d8e3ee; border-radius: 40px; color: #00a19a; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 16px; font-family: inherit; transition: background 0.15s; }
-.nav-btn:hover:not(:disabled) { background: #f0faf9; }
-.nav-btn:disabled { color: #d1d5db; border-color: #e9ecf0; cursor: not-allowed; }
+/* ── Segmented progress ───────────────────────────────────────────────── */
+.qprogress { display: flex; flex-direction: column; gap: 10px; }
+.qprogress-track { display: flex; gap: 6px; }
+.qseg { flex: 1; height: 6px; border-radius: 999px; background: #e3e8ec; transition: background 0.25s; }
+.qseg--done { background: linear-gradient(90deg, #10b3a3, #0f766e); }
+.qprogress-labels { display: flex; align-items: center; justify-content: space-between; }
+.qprogress-labels span { font-size: 13px; font-weight: 700; color: #64748b; }
+.qprogress-labels span:last-child { color: #94a3b8; font-weight: 600; }
 
 /* ── Question card ────────────────────────────────────────────────────── */
-.task-items { background: white; border-radius: 16px; overflow: hidden; border: 1px solid #e7ecf2; box-shadow: 0 2px 12px rgba(23, 52, 92, 0.06); }
-.task-item { border-bottom: 1px solid #f0f0f0; }
-.task-item:last-child { border-bottom: none; }
-.task-item-header { display: flex; align-items: flex-start; gap: 10px; padding: 16px 20px 10px; }
-.task-item-left { flex: 1; min-width: 0; }
-.task-item-title { font-size: 15px; font-weight: 600; color: #0c1f3d; margin: 0 0 6px; line-height: 1.4; }
-.task-item-status { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; padding: 2px 8px; border-radius: 20px; }
-.status--included { background: #e6f9f7; color: #00a19a; }
-.status--excluded { background: #fef2f2; color: #e53e3e; }
-.status--offered { background: #fff7ed; color: #c2780a; }
-.status--answered { background: #eef2ff; color: #4f46e5; }
-.status--unanswered { background: #f9fafb; color: #d1d5db; }
-.task-item-detail { padding: 0 20px 20px; }
+.task-items { display: flex; flex-direction: column; gap: 16px; }
+.task-item { background: white; border-radius: 20px; border: 1px solid #eef1f4; padding: 28px 30px; box-shadow: 0 12px 30px -22px rgba(15, 42, 72, 0.55); }
+.task-item-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.task-item-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #0a1f3d; margin: 0; line-height: 1.2; }
+.task-item-status { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; padding: 7px 14px; border-radius: 999px; }
+.status--included { background: #e6f9f7; color: #0f766e; border: 1px solid #b2e4e1; }
+.status--excluded { background: #fef2f2; color: #e53e3e; border: 1px solid #f6c9c9; }
+.status--offered { background: #fff7ed; color: #c2780a; border: 1px solid #f5d9ad; }
+.status--answered { background: #e6f9f7; color: #0f766e; border: 1px solid #b2e4e1; }
+.status--unanswered { background: #f4f6f8; color: #94a3b8; border: 1px solid #e2e8f0; }
+
+/* Seller's answer box */
+.task-item-answer { position: relative; background: #f7fbfa; border: 1px solid #e7f0ee; border-left: 4px solid #00a19a; border-radius: 14px; padding: 18px 20px; }
+.task-item-answer--empty { border-left-color: #d7dee2; background: #f8fafb; }
+.task-item-answer-label { display: block; text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #0f766e; margin-bottom: 10px; }
+.task-item-answer--empty .task-item-answer-label { color: #94a3b8; }
+.task-item-detail { }
 
 /* ── Answer components ────────────────────────────────────────────────── */
 .detail-answer-pill { display: inline-block; font-size: 14px; font-weight: 600; color: #1a1a1a; background: #f0faf9; border: 1.5px solid #b2e4e1; border-radius: 20px; padding: 6px 16px; margin-top: 2px; }
@@ -940,7 +1003,7 @@ function downloadFile(url: string, name: string) {
 .detail-answer-block { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; margin-top: 4px; }
 .detail-answer-label { font-size: 12px; color: #9ca3af; }
 .detail-answer-value { font-size: 14px; font-weight: 500; color: #1a1a1a; }
-.detail-text-answer { font-size: 14px; color: #1a1a1a; background: #f9fafb; border-radius: 8px; padding: 10px 12px; line-height: 1.5; white-space: pre-line; margin-top: 4px; }
+.detail-text-answer { font-size: 17px; font-weight: 600; color: #0a1f3d; line-height: 1.5; white-space: pre-line; }
 .detail-part-label { font-size: 12px; font-weight: 600; color: #6b7280; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.4px; }
 .detail-no-answer { font-size: 13px; color: #d1d5db; font-style: italic; margin: 6px 0; }
 .detail-scale { display: inline-flex; padding: 8px 16px; background: #f0faf9; border-radius: 20px; border: 1px solid #b2e4e1; }
@@ -980,12 +1043,24 @@ function downloadFile(url: string, name: string) {
   .hsw-shell { width: calc(100% - 32px); }
   .hsw-nav-inner { min-height: 58px; }
 }
+@media (max-width: 720px) {
+  .qhead { flex-direction: column; gap: 16px; }
+  .qhead-nav { width: 100%; }
+  .qnav { flex: 1; justify-content: center; }
+}
 @media (max-width: 640px) {
   .hsw-shell { width: calc(100% - 24px); }
   .hsw-back { display: none; }
   .btw-layout { padding: 24px 0 60px; gap: 20px; }
+  .qhead-title { font-size: 30px; }
+  .task-item { padding: 22px 20px; }
+  .task-item-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .task-item-title { font-size: 20px; }
+  .qpanel { padding: 22px; }
+  .qpanel-title { font-size: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .btw-spinner { animation: none; }
+  .qseg, .qnav, .qpanel-btn { transition: none; }
 }
 </style>

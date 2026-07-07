@@ -1003,16 +1003,6 @@ const { getBuyerProfile, updateBuyerProfile, publishBuyerProfile } =
   useBuyerProfile()
 const { showToast } = useAppToast()
 
-// Editorial serif for the page heading — matches the rest of the app.
-useHead({
-  link: [
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap',
-    },
-  ],
-})
-
 // step=6 is the post-publish celebration screen (matches prototype `complete`).
 const step = ref<1 | 2 | 3 | 4 | 5 | 6>(1)
 const saving = ref(false)
@@ -2951,7 +2941,7 @@ onBeforeUnmount(() => {
 }
 .bp-header-title {
   display: block;
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: clamp(24px, 3vw, 32px);
   font-weight: 600;
   letter-spacing: -0.4px;
@@ -3628,7 +3618,7 @@ onBeforeUnmount(() => {
   100% { transform: scale(1); opacity: 1; }
 }
 .bp-complete-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 30px; font-weight: 600; color: #231d45;
   letter-spacing: -0.5px; margin-bottom: 6px;
   animation: bp-fadeSlideUp 0.4s 0.2s both;

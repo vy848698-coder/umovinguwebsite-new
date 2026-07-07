@@ -1094,7 +1094,7 @@ function onUpload() {
 }
 .rc-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;

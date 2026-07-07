@@ -40,6 +40,13 @@
   --separators-non-opaque: rgba(84, 84, 86, 0.34);
 }
 
+/* The app is a light-themed UI. Force a light color-scheme so form controls
+   (inputs, textareas, selects) never inherit the OS dark theme — which was
+   rendering answer boxes with black backgrounds on Windows/macOS dark mode. */
+html {
+  color-scheme: light;
+}
+
 @layer base {
   body {
     font-family:

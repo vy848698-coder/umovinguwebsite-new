@@ -742,16 +742,6 @@ import UnderReview from '~/components/passport-view/UnderReview.vue'
 
 definePageMeta({ middleware: 'auth' })
 
-// Editorial serif for display headings — matches the landing page look.
-useHead({
-  link: [
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap',
-    },
-  ],
-})
-
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
@@ -1204,7 +1194,7 @@ async function deleteNote(noteId: string) {
   --ink-faint: #8b8799;
   --line: #ececf2;
   --bg: #f3f2ef;
-  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --serif: 'Plus Jakarta Sans', sans-serif;
   --color-border: #ececf2;
   min-height: 100dvh;
   color: var(--ink);
@@ -1627,13 +1617,13 @@ async function deleteNote(noteId: string) {
 .buyer-pdf-btn:active:not(:disabled) { background: var(--teal-dark); }
 .buyer-ta6-btn,
 .buyer-ta7-btn,
-.buyer-ta10-btn { background: var(--navy); box-shadow: 0 10px 22px rgba(35, 29, 69, 0.22); }
+.buyer-ta10-btn { background: #00a19a; box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26); }
 .buyer-ta6-btn:hover:not(:disabled),
 .buyer-ta7-btn:hover:not(:disabled),
 .buyer-ta10-btn:hover:not(:disabled),
 .buyer-ta6-btn:active:not(:disabled),
 .buyer-ta7-btn:active:not(:disabled),
-.buyer-ta10-btn:active:not(:disabled) { background: var(--navy-2); }
+.buyer-ta10-btn:active:not(:disabled) { background: var(--teal-dark); }
 
 /* ── Red Flags ────────────────────────────────────────────────────── */
 .buyer-redflags-card {
@@ -1725,6 +1715,7 @@ async function deleteNote(noteId: string) {
   gap: 14px;
 }
 .buyer-record-row {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1733,11 +1724,35 @@ async function deleteNote(noteId: string) {
   border: 1px solid var(--line);
   border-radius: 16px;
   cursor: pointer;
-  transition: border-color 0.18s, box-shadow 0.18s, transform 0.1s;
+  overflow: hidden;
+  transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-color 0.2s ease, box-shadow 0.28s ease;
   box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
 }
-.buyer-record-row:hover { border-color: var(--teal); box-shadow: 0 12px 28px rgba(35, 29, 69, 0.09); }
-.buyer-record-row:active { transform: scale(0.99); }
+/* Growing top accent bar */
+.buyer-record-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-bright));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.34s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.buyer-record-row:hover {
+  transform: translateY(-4px);
+  border-color: var(--teal);
+  box-shadow: 0 20px 42px -14px rgba(0, 161, 154, 0.32),
+    0 4px 14px rgba(35, 29, 69, 0.06);
+}
+.buyer-record-row:hover::before { transform: scaleX(1); }
+.buyer-record-row:active {
+  transform: translateY(-1px) scale(0.995);
+  transition-duration: 0.08s;
+}
 .buyer-record-head { display: flex; align-items: flex-start; justify-content: space-between; }
 .buyer-record-icon {
   width: 46px;
@@ -1750,6 +1765,14 @@ async function deleteNote(noteId: string) {
   place-items: center;
   flex-shrink: 0;
   overflow: hidden;
+  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.2, 1),
+    background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.buyer-record-row:hover .buyer-record-icon {
+  transform: scale(1.08) rotate(-3deg);
+  background: rgba(0, 161, 154, 0.14);
+  border-color: rgba(0, 161, 154, 0.32);
+  box-shadow: 0 10px 20px -8px rgba(0, 161, 154, 0.35);
 }
 .buyer-record-arrow {
   width: 28px;
@@ -1762,14 +1785,30 @@ async function deleteNote(noteId: string) {
   cursor: pointer;
   flex-shrink: 0;
   color: var(--ink-faint);
+  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.2, 1),
+    background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+.buyer-record-arrow :deep(img) { transition: filter 0.2s ease; }
 .buyer-record-row:hover .buyer-record-arrow {
-  background: rgba(0, 161, 154, 0.08);
-  border-color: rgba(0, 161, 154, 0.22);
-  color: var(--teal);
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+  transform: translateX(3px);
+}
+.buyer-record-row:hover .buyer-record-arrow :deep(img) {
+  filter: brightness(0) invert(1);
 }
 .buyer-record-info { flex: 1; min-width: 0; }
-.buyer-record-title { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; line-height: 1.25; margin: 0 0 3px; }
+.buyer-record-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 0 0 3px;
+  transition: color 0.2s ease;
+}
+.buyer-record-row:hover .buyer-record-title { color: var(--teal-dark); }
 .buyer-record-sub { font-size: 12px; color: var(--ink-faint); margin: 0 0 10px; line-height: 1.45; }
 .buyer-record-meta { margin-bottom: 8px; }
 .buyer-record-pill {

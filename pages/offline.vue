@@ -93,7 +93,7 @@ function retry() {
   font-size: 26px;
   font-weight: 900;
   letter-spacing: -0.02em;
-  color: #08102f;
+  color: #231d45;
   margin: 0 0 10px;
 }
 

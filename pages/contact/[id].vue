@@ -156,16 +156,6 @@ import { useAppToast } from '~/composables/useCustomToast'
 
 definePageMeta({ middleware: 'auth' })
 
-// Editorial serif for display headings — matches the rest of the app.
-useHead({
-  link: [
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap',
-    },
-  ],
-})
-
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
@@ -254,7 +244,7 @@ const sendMessage = async () => {
   --ink-faint: #8b8799;
   --line: #ececf2;
   --bg: #f3f2ef;
-  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --serif: 'Plus Jakarta Sans', sans-serif;
   min-height: 100dvh;
   background: var(--bg);
   color: var(--ink);
