@@ -55,7 +55,7 @@
       <section class="hs-hero">
         <div class="hero-content">
           <p class="section-kicker"><span class="kicker-dot" />HomeScore</p>
-          <h1>How energy<br class="h1-br-mobile" /> efficient is any UK<br class="h1-br-mobile" /> property?</h1>
+          <h1>What does any UK<br class="h1-br-mobile" /> home really<br class="h1-br-mobile" /> cost to run?</h1>
           <p class="hero-description">
             Instantly scored from public EPC data — for any address, anyone.
             See how a property compares to its street in seconds.
