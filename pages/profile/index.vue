@@ -542,12 +542,7 @@ const deleteAccount = async () => {
 }
 
 .pf-aurora {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 34%),
-    radial-gradient(circle at 88% 12%, rgba(208, 236, 255, 0.5) 0%, rgba(208, 236, 255, 0) 42%);
+  display: none;
 }
 
 .pf-body {

@@ -52,7 +52,7 @@
       <section class="lp-hero reveal is-visible" data-reveal>
         <div class="lp-shell lp-hero-grid">
           <div class="lp-hero-copy">
-            <p class="lp-eyebrow"><span class="lp-eyebrow-dash" />Know your home inside out</p>
+            <p class="lp-eyebrow">Know your home inside out</p>
             <h1 class="lp-hero-title">
               Have the<br />
               answers ready,<br />
@@ -131,7 +131,7 @@
       <!-- ───────────────────── PROPERTY STRIP ───────────────────── -->
       <section class="lp-strip reveal" data-reveal>
         <div class="lp-shell">
-          <p class="lp-strip-eyebrow"><span class="lp-eyebrow-dash" />Homes already moving with UMU</p>
+          <p class="lp-strip-eyebrow">Homes already moving with UMU</p>
           <p class="lp-strip-sub">A live ribbon of HomeScores and Passports near you · illustrative</p>
         </div>
         <div class="lp-strip-viewport">
@@ -236,7 +236,7 @@
           </article>
 
           <div class="lp-copy">
-            <p class="lp-eyebrow"><span class="lp-eyebrow-dash" />The free first step</p>
+            <p class="lp-eyebrow">The free first step</p>
             <h2 class="lp-h2 lp-h2--sans">How does your<br />home compare<span class="lp-q">?</span></h2>
             <p class="lp-lede">
               HomeScore is your free way in. In 60 seconds it shows how your home compares on
@@ -367,7 +367,7 @@
       <!-- ─────────────────────────── CTA ─────────────────────────── -->
       <section id="reviews" class="lp-section lp-cta reveal" data-reveal>
         <div class="lp-shell lp-cta-inner">
-          <p class="lp-eyebrow"><span class="lp-eyebrow-dash" />Ready when you are</p>
+          <p class="lp-eyebrow">Ready when you are</p>
           <h2 class="lp-h2 lp-h2--sans lp-cta-title">Start with a free HomeScore.<br />Sell like Aisha did<span class="lp-q">.</span></h2>
           <p class="lp-lede">
             See what your home tells you in 60 seconds. <span class="lp-hl-dark">Upgrade to a Property Passport</span>
@@ -786,12 +786,6 @@ onUnmounted(() => {
   color: #00a19a;
 }
 .lp-eyebrow--teal { color: var(--teal-bright); }
-.lp-eyebrow-dash {
-  width: 22px;
-  height: 2px;
-  border-radius: 2px;
-  background: currentColor;
-}
 
 .lp-h2 {
   margin: 0 0 16px;
@@ -1004,7 +998,13 @@ onUnmounted(() => {
 .lp-menu-enter-from, .lp-menu-leave-to { opacity: 0; transform: translateY(-8px); }
 
 /* ── Hero ────────────────────────────────────────────────────────── */
-.lp-hero { padding: 56px 0 64px; }
+/* The `reveal` animation puts a `transform` on every section, which makes each
+   section its own stacking context. Without an explicit z-index the hero would
+   sit *below* the following sections, so the search dropdown (rendered inside
+   the hero) gets painted over — and clipped — by the grey property strip right
+   underneath it. Lifting the hero above the later sections lets the dropdown
+   overlay them at full height. Stays below the sticky navbar (z-index: 50). */
+.lp-hero { position: relative; z-index: 20; padding: 56px 0 64px; }
 .lp-hero-grid {
   display: grid;
   grid-template-columns: 1.02fr 0.98fr;
@@ -1032,6 +1032,7 @@ onUnmounted(() => {
 .lp-hero-sub strong { color: var(--navy); font-weight: 700; }
 
 .lp-hero-search {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1044,7 +1045,6 @@ onUnmounted(() => {
   box-shadow: 0 14px 34px rgba(35, 29, 69, 0.08);
 }
 .lp-hero-search-field {
-  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -1052,14 +1052,25 @@ onUnmounted(() => {
 }
 .lp-hero-search-field .lp-pin {
   position: absolute;
-  left: 0;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 18px;
   height: 18px;
   color: var(--ink-faint);
   z-index: 2;
   pointer-events: none;
 }
-.lp-hero-search-field :deep(.psi-wrap) { width: 100%; }
+/* Let the results dropdown escape the narrow input field and align to the
+   full search pill (matches the /homescore search), instead of stopping
+   short before the CTA button. */
+.lp-hero-search-field :deep(.psi-wrap) { position: static; width: 100%; }
+.lp-hero-search :deep(.psi-drop) {
+  left: 0;
+  right: 0;
+  width: auto;
+  top: calc(100% + 8px);
+}
 .lp-hero-search-field :deep(.psi-input) {
   min-height: 44px;
   border: 0 !important;
@@ -1999,6 +2010,11 @@ onUnmounted(() => {
   .lp-nav-actions { gap: 8px; }
   .lp-hero { padding: 36px 0 44px; }
   .lp-hero-search { flex-direction: column; align-items: stretch; padding: 10px; }
+  /* Pill padding shrinks to 10px here — keep the pin aligned with the input,
+     and anchor the dropdown to the field so it drops under the input rather
+     than below the stacked CTA button. */
+  .lp-hero-search-field { position: relative; }
+  .lp-hero-search-field .lp-pin { left: 0; top: 50%; }
   .lp-hero-search .lp-btn { width: 100%; justify-content: center; }
   .lp-feature-tiles { grid-template-columns: 1fr; }
 
