@@ -139,24 +139,26 @@ const updateAnswer = (event) => {
 }
 
 .input-instruction {
-  font-size: 14px;
-  color: #1a1a1a;
+  font-size: 13.5px;
+  color: #5a5570;
   margin: 0 0 12px 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .text-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 14px;
+  border: 1.5px solid #ececf2;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.5;
   font-family: inherit;
-  resize: none;
-  background: #f9f9f9;
-  transition: border-color 0.2s;
+  resize: vertical;
+  background: #fbfbfa;
+  transition: border-color 0.16s, background 0.16s;
   box-sizing: border-box;
-  color: #666;
+  color: #2a2540;
+  color-scheme: light;
 }
 
 .text-input:focus {
@@ -166,46 +168,47 @@ const updateAnswer = (event) => {
 }
 
 .text-input::placeholder {
-  color: #999;
-  font-style: italic;
+  color: #a5a1b4;
 }
 
 .question-text {
-  color: #000000;
+  color: #231d45;
   margin: 0;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .question-description {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-  color: #3c3c4399;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: #8b8799;
 }
 
 .help-section {
   display: flex;
-  gap: 8px;
-  padding: 12px;
-  background-color: #00a19a1a;
-  border-radius: 12px;
-  margin: 0 0 20px 0;
-  font-size: 13px;
-  color: #3c3c43;
+  gap: 11px;
+  padding: 13px 15px;
+  background: rgba(0, 161, 154, 0.06);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  border-radius: 14px;
+  margin: 0 0 18px 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5a5570;
 }
 
 .help-icon {
   flex-shrink: 0;
-  font-size: 16px;
-  color: #00a19a;
+  font-size: 15px;
+  color: #00857f;
 }
 
 .help-text {
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .typing-cursor {

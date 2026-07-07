@@ -115,9 +115,6 @@
 
     <SiteFooter />
 
-    <div class="pd-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
 
     <Toast
       v-if="toastState.visible"
@@ -131,7 +128,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import BottomNav from '~/components/core/BottomNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import Toast from '~/components/ui/Toast.vue'
 import { useAppToast } from '~/composables/useCustomToast'

@@ -152,26 +152,33 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: white;
-  border: 0.33px solid #e0e0e0;
+  background: #fbfbfa;
+  border: 1.5px solid #ececf2;
   border-radius: 16px;
-  padding: 12px;
+  padding: 8px 10px;
+  transition: border-color 0.16s, background 0.16s, box-shadow 0.16s;
+}
+
+.voice-input-row:focus-within {
+  border-color: #00a19a;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
 }
 
 .voice-input-field {
   flex: 1;
-  border: 0.33px solid #e0e0e0;
-  padding: 9px 12px;
+  border: none;
+  padding: 10px 12px;
   outline: none;
-  font-size: 14px;
-  color: #1a1a1a;
+  font-size: 15px;
+  color: #2a2540;
   background: transparent;
   font-family: inherit;
   border-radius: 100px;
 }
 
 .voice-input-field::placeholder {
-  color: #aaa;
+  color: #a5a1b4;
 }
 
 .voice-btn {
@@ -183,7 +190,7 @@ onUnmounted(() => {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: #aaa;
+  color: #a5a1b4;
   cursor: pointer;
   transition: color 0.2s;
   flex-shrink: 0;

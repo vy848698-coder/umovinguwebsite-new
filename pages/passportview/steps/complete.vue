@@ -132,8 +132,8 @@ const goNextStep = () => {
     0 24px 56px rgba(23, 52, 92, 0.12);
 }
 .sc-emoji { font-size: 52px; margin-bottom: 14px; }
-.sc-title { margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -0.02em; color: #08102f; }
-.sc-sub { margin: 10px 0 26px; font-size: 15px; color: #5b6d89; line-height: 1.5; }
+.sc-title { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.4px; color: #231d45; }
+.sc-sub { margin: 10px 0 26px; font-size: 15px; color: #8b8799; line-height: 1.5; }
 .sc-cta {
   display: inline-flex;
   align-items: center;

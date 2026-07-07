@@ -571,9 +571,6 @@
       storage-key="umu_tour_passportview_v1"
     />
 
-    <div class="ppv-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
   </div>
 </template>
 
@@ -581,7 +578,6 @@
 // import { usePassportSteps } from '~/composables/usePassportSteps'
 import PassportMapView from '@/components/passport-view/PassportMapView.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 import PassportCard from '@/components/passport-view/PassportCard.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 import SegmentedSwitch from '@/components/core/SegmentedSwitch.vue'
@@ -1256,7 +1252,7 @@ const onRoleSwitch = (role) => {
 
 .ppv-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.08;
@@ -1348,7 +1344,7 @@ const onRoleSwitch = (role) => {
   place-items: center;
   font-size: 16px;
   font-weight: 900;
-  color: #08102f;
+  color: #231d45;
   letter-spacing: -0.02em;
 }
 

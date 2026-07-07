@@ -106,9 +106,6 @@
 
     <SiteFooter />
 
-    <div class="cl-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
   </div>
 </template>
 
@@ -116,7 +113,6 @@
 import { ref } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({
   middleware: 'auth',
@@ -350,7 +346,7 @@ const onBack = useGoBack('/explore')
 
 .clw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(32px, 4vw, 46px);
   font-weight: 900;
   line-height: 1.08;
@@ -528,7 +524,7 @@ const onBack = useGoBack('/explore')
   margin: 0 0 18px;
   font-size: 17px;
   font-weight: 900;
-  color: #08102f;
+  color: #231d45;
   letter-spacing: -0.01em;
 }
 

@@ -348,9 +348,6 @@
 
     <SiteFooter />
 
-    <div class="lp-mobile-nav">
-      <BottomNav active="passport" />
-    </div>
 
     <!-- Convert modal -->
     <Teleport to="body">
@@ -571,7 +568,6 @@ import { useRoute } from 'vue-router'
 import { usePassportClaim } from '~/composables/usePassportClaim'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import BottomNav from '~/components/core/BottomNav.vue'
 
 definePageMeta({ title: 'Landlord Passport — UmovingU', middleware: 'auth' })
 
@@ -1396,7 +1392,7 @@ const SectionCard = defineComponent({
 
 .lpw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.08;

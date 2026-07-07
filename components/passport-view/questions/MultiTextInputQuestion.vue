@@ -163,40 +163,44 @@ const cancelEdit = () => {
 }
 
 .question-text {
-  font-size: 15px;
-  font-weight: 500;
-  color: #3c3c43;
-  margin: 0 0 20px 0;
-  letter-spacing: -0.23px;
-  line-height: 1.5;
+  font-size: 24px;
+  font-weight: 800;
+  color: #231d45;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .question-description {
-  font-size: 14px;
-  color: #3c3c4399;
-  margin: 0 0 16px 0;
-  line-height: 1.4;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8b8799;
+  margin: 0 0 20px 0;
+  line-height: 1.55;
 }
 
 .help-section {
   display: flex;
-  gap: 8px;
-  padding: 12px;
-  background-color: #00a19a1a;
-  border-radius: 12px;
-  margin: 0 0 20px 0;
-  font-size: 13px;
-  color: #3c3c43;
+  gap: 11px;
+  padding: 13px 15px;
+  background: rgba(0, 161, 154, 0.06);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  border-radius: 14px;
+  margin: 0 0 18px 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5a5570;
+  line-height: 1.5;
 }
 
 .help-icon {
   flex-shrink: 0;
-  font-size: 16px;
-  color: #00a19a;
+  font-size: 15px;
+  color: #00857f;
 }
 
 .help-text {
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .typing-cursor {
@@ -225,15 +229,16 @@ const cancelEdit = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  transition: border-color 0.2s;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1.5px solid #ececf2;
+  border-radius: 12px;
+  transition: border-color 0.16s, box-shadow 0.16s;
 }
 
 .item-card:hover {
   border-color: #00a19a;
+  box-shadow: 0 6px 18px -8px rgba(0, 161, 154, 0.35);
 }
 
 .item-content {
@@ -243,27 +248,28 @@ const cancelEdit = () => {
 }
 
 .item-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: #1a1a1a;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #231d45;
 }
 
 .edit-btn {
-  padding: 6px 16px;
-  background: #e3f2fd;
+  padding: 7px 16px;
+  background: rgba(0, 161, 154, 0.1);
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 13px;
-  font-weight: 500;
-  color: #00a19a;
+  font-weight: 700;
+  font-family: inherit;
+  color: #00857f;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.16s;
   flex-shrink: 0;
   margin-left: 12px;
 }
 
 .edit-btn:hover {
-  background: #bce9e6;
+  background: rgba(0, 161, 154, 0.18);
 }
 
 .input-section {
@@ -275,44 +281,51 @@ const cancelEdit = () => {
 
 .text-input {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 14px 15px;
+  border: 1.5px solid #ececf2;
+  border-radius: 12px;
+  font-size: 15px;
   font-family: inherit;
-  transition: border-color 0.2s;
+  background: #fbfbfa;
+  color: #2a2540;
+  color-scheme: light;
+  transition: border-color 0.16s, background 0.16s, box-shadow 0.16s;
   box-sizing: border-box;
 }
 
 .text-input:focus {
   outline: none;
   border-color: #00a19a;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
 }
 
 .text-input::placeholder {
-  color: #999;
+  color: #a5a1b4;
 }
 
 .add-btn {
-  padding: 12px 24px;
-  background: #e8f5f3;
-  border: none;
-  border-radius: 20px;
+  padding: 14px 24px;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1.5px dashed rgba(0, 161, 154, 0.4);
+  border-radius: 14px;
   font-size: 14px;
-  font-weight: 500;
-  color: #00a19a;
+  font-weight: 700;
+  font-family: inherit;
+  color: #00857f;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.2s;
+  transition: background-color 0.16s, border-color 0.16s;
   white-space: nowrap;
   flex-shrink: 0;
   justify-content: center;
 }
 
 .add-btn:hover {
-  background: #d0ede9;
+  background: rgba(0, 161, 154, 0.14);
+  border-color: #00a19a;
 }
 
 .add-icon {

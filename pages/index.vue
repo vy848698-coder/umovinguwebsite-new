@@ -256,7 +256,7 @@
       <section id="passport" class="lp-section lp-dark reveal" data-reveal>
         <div class="lp-shell lp-split lp-split--passport">
           <div class="lp-copy">
-            <p class="lp-eyebrow lp-eyebrow--teal"><span class="lp-eyebrow-dash" />The product · solicitor-grade</p>
+            <p class="lp-eyebrow lp-eyebrow--teal">The product · solicitor-grade</p>
             <h2 class="lp-h2 lp-h2--sans">Find out now.<br />Not three weeks in<span class="lp-q">.</span></h2>
             <p class="lp-lede">
               This is where a sharpened HomeScore becomes move-ready. Everything a buyer's
@@ -283,7 +283,7 @@
                 Open the live Property Passport — 17 <span class="lp-hl">verified sections</span>, <span class="lp-hl">documents</span>,
                 <span class="lp-hl">buyer matching</span> and collaborator access.
               </p>
-              <button class="lp-btn lp-btn--solid lp-btn--block" type="button" @click="goToHomeScore">Open the sample Passport</button>
+              <button class="lp-btn lp-btn--solid lp-btn--block" type="button" @click="navigateTo('/passport/collections')">Open the sample Passport</button>
             </article>
           </div>
         </div>
@@ -437,16 +437,6 @@ import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 
 definePageMeta({})
-
-// Editorial serif for display headings (matches the design reference).
-useHead({
-  link: [
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap',
-    },
-  ],
-})
 
 const gaugeScore = 74
 // Number shown inside the HomeScore ring — counts up from 0 → gaugeScore
@@ -762,7 +752,7 @@ onUnmounted(() => {
   --line: #ececf2;
   --bg: #f3f2ef;
   --card: #ffffff;
-  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --serif: 'Plus Jakarta Sans', sans-serif;
 
   position: relative;
   min-height: 100dvh;
@@ -1400,17 +1390,6 @@ onUnmounted(() => {
   gap: 22px;
   position: relative;
   border-radius: 24px;
-}
-/* Teal accent strip across the top of the card */
-.lp-score-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 24px;
-  right: 24px;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: var(--teal);
 }
 .lp-score-top {
   display: grid;

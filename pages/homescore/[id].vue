@@ -7624,7 +7624,7 @@ watch(screen, (s) => {
 }
 .ppw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;
@@ -9597,7 +9597,7 @@ watch(screen, (s) => {
 }
 .bvw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;
@@ -10243,7 +10243,7 @@ watch(screen, (s) => {
 }
 .simw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;
@@ -11231,7 +11231,7 @@ watch(screen, (s) => {
 }
 .pqw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;
@@ -12019,7 +12019,7 @@ watch(screen, (s) => {
 }
 .pubw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(26px, 3.2vw, 38px);
   font-weight: 900;
   line-height: 1.12;
@@ -12615,7 +12615,7 @@ watch(screen, (s) => {
 }
 .kycw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;
@@ -13066,52 +13066,84 @@ watch(screen, (s) => {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(20, 16, 45, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 20px;
+  animation: qw-fade 0.2s ease;
+}
+@keyframes qw-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .qw-modal {
   width: 100%;
-  max-width: 28rem;
+  max-width: 27rem;
   background: #fff;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
-  padding: 16px 20px 24px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  border-radius: 22px;
+  box-shadow: 0 30px 70px rgba(20, 16, 45, 0.4);
+  padding: 22px 24px 24px;
   display: flex;
   flex-direction: column;
-  max-height: 86vh;
-  animation: qw-slide-up 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 88vh;
+  animation: qw-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes qw-slide-up {
+@keyframes qw-pop {
   from {
-    transform: translateY(20px);
+    transform: translateY(12px) scale(0.98);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
+/* Drag handle only makes sense as a bottom-sheet affordance — hidden on the
+   centered modal. */
 .qw-modal-handle {
-  width: 40px;
-  height: 4px;
-  background: #f5f5f7;
-  border-radius: 100px;
-  margin: 0 auto 14px;
+  display: none;
 }
 .qw-modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 6px;
 }
 .qw-modal-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 800;
   color: #231d45;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* On phones, drop to a bottom-sheet — nicer reach on touch. */
+@media (max-width: 560px) {
+  .qw-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .qw-modal {
+    max-width: none;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    animation: qw-slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .qw-modal-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: #e7e5ee;
+    border-radius: 100px;
+    margin: 0 auto 14px;
+  }
+}
+@keyframes qw-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 .qw-modal-close {
   width: 30px;
@@ -13135,10 +13167,10 @@ watch(screen, (s) => {
   margin-bottom: 14px;
 }
 .qw-modal-intro {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #6b6783;
-  line-height: 1.5;
-  margin-bottom: 14px;
+  line-height: 1.55;
+  margin-bottom: 18px;
 }
 
 /* Doc preview row (existing saved file OR pending new file) */
@@ -13195,21 +13227,23 @@ watch(screen, (s) => {
   border-color: #c8c5e0;
 }
 
-/* File picker row */
+/* File picker — centered dropzone */
 .qw-upload-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border: 2px dashed #e5f4f2;
-  border-radius: 12px;
+  text-align: center;
+  gap: 12px;
+  padding: 26px 20px;
+  border: 2px dashed #bfe6e2;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.15s;
-  background: #f2faf8;
+  transition: border-color 0.16s, background 0.16s;
+  background: rgba(0, 161, 154, 0.05);
 }
 .qw-upload-row:hover {
   border-color: #00a19a;
-  background: #e5f4f2;
+  background: rgba(0, 161, 154, 0.09);
 }
 .qw-upload-input {
   position: absolute;
@@ -13219,32 +13253,34 @@ watch(screen, (s) => {
   pointer-events: none;
 }
 .qw-upload-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   background: #fff;
   color: #00a19a;
-  border: 1.5px solid #e5f4f2;
+  border: 1px solid #d3ede9;
+  box-shadow: 0 6px 16px rgba(0, 161, 154, 0.14);
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
 .qw-upload-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 .qw-upload-text {
   font-size: 15px;
   font-weight: 800;
   color: #231d45;
+  letter-spacing: -0.01em;
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 .qw-upload-text small {
   font-size: 12px;
   font-weight: 500;
-  color: #6b6783;
-  margin-top: 2px;
+  color: #8b8799;
 }
 
 .qw-modal-error {
@@ -13267,35 +13303,37 @@ watch(screen, (s) => {
 .qw-btn-secondary,
 .qw-btn-primary {
   flex: 1;
-  padding: 13px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 13px;
   font-family: inherit;
   font-size: 15px;
   font-weight: 800;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: transform 0.14s, box-shadow 0.16s, background 0.16s, border-color 0.16s;
 }
 .qw-btn-secondary {
-  background: #fafafa;
-  border: 1.5px solid #ececef;
-  color: #6b6783;
+  background: #fff;
+  border: 1.5px solid #ececf2;
+  color: #5a5570;
 }
 .qw-btn-secondary:hover {
   color: #231d45;
   border-color: #c8c5e0;
 }
 .qw-btn-primary {
-  background: #00a19a;
+  background: linear-gradient(135deg, #00a19a, #00857f);
   border: none;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.32);
 }
 .qw-btn-primary:hover:not(:disabled) {
-  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(0, 161, 154, 0.42);
 }
 .qw-btn-primary:disabled {
-  background: #ececef;
-  color: #9c98ad;
+  background: #eceef3;
+  color: #a8a5b8;
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -13366,7 +13404,7 @@ watch(screen, (s) => {
 }
 .boostw-head h1 {
   margin: 0;
-  color: #08102f;
+  color: #231d45;
   font-size: clamp(28px, 3.4vw, 40px);
   font-weight: 900;
   line-height: 1.1;

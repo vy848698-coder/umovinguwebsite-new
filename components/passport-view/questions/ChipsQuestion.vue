@@ -72,37 +72,52 @@ const toggle = (value) => {
 .chips-wrap {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 9px;
 }
 .chip {
-  padding: 8px 12px;
+  padding: 9px 15px;
   border-radius: 999px;
-  border: 1px solid #00a19a1a;
-  background: #00a19a1a;
+  border: 1px solid rgba(0, 161, 154, 0.2);
+  background: rgba(0, 161, 154, 0.08);
   font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  color: #00a19a;
+  color: #00857f;
+  transition: background 0.16s, border-color 0.16s, color 0.16s,
+    transform 0.12s;
+}
+
+.chip:hover {
+  background: rgba(0, 161, 154, 0.14);
+  border-color: rgba(0, 161, 154, 0.34);
+}
+
+.chip:active {
+  transform: scale(0.97);
 }
 
 .chip.selected {
   background: #00a19a;
   color: white;
   border-color: #00a19a;
+  box-shadow: 0 8px 18px -8px rgba(0, 161, 154, 0.5);
 }
 .question-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: #3c3c43;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.23px;
-  line-height: 1.5;
+  font-size: 24px;
+  font-weight: 800;
+  color: #231d45;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .question-description {
-  font-size: 14px;
-  color: #3c3c4399;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8b8799;
+  margin: 0 0 20px 0;
+  line-height: 1.55;
 }
 </style>
 

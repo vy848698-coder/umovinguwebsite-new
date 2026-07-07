@@ -362,58 +362,60 @@ const handleDrawerClose = () => {
 
 <style scoped>
 .question-text {
-  color: #000000;
-  margin: 0 0 20px 0;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
+  color: #231d45;
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .question-description {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.23px;
-  color: #3c3c4399;
+  line-height: 1.55;
+  color: #8b8799;
   margin-bottom: 20px;
 }
 
 .help-section {
   display: flex;
-  gap: 2px;
-  padding: 12px;
-  background: #00a19a1a;
-  border-radius: 12px;
-  border: 2px solid #e6f9f7;
-  margin-bottom: 20px;
+  gap: 11px;
+  padding: 13px 15px;
+  background: rgba(0, 161, 154, 0.06);
+  border-radius: 14px;
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  margin-bottom: 18px;
 }
 
 .help-icon {
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .help-content {
   flex: 1;
+  min-width: 0;
 }
 
 .help-title {
-  margin: 0px 0 8px -5px;
-  color: #00a19a;
-  font-weight: 590;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  color: #00857f;
+  font-weight: 800;
+  font-size: 12.5px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .help-text {
-  color: #3c3c4399;
+  color: #5a5570;
   margin: 0;
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  font-weight: 500;
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .typing-cursor {
@@ -438,13 +440,21 @@ const handleDrawerClose = () => {
 }
 
 .note-question .summary {
-  border: 1px dashed #e5e7eb;
-  padding: 12px;
-  border-radius: 8px;
+  border: 1.5px solid #ececf2;
+  background: #fbfbfa;
+  padding: 16px 18px;
+  border-radius: 14px;
   cursor: pointer;
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: space-between;
+  transition: border-color 0.16s, background 0.16s, box-shadow 0.16s;
+}
+
+.note-question .summary:hover {
+  border-color: #00a19a;
+  background: rgba(0, 161, 154, 0.04);
+  box-shadow: 0 6px 18px -8px rgba(0, 161, 154, 0.35);
 }
 
 .note-question .summary-section {
@@ -458,16 +468,19 @@ const handleDrawerClose = () => {
 }
 
 .note-question .summary-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #00857f;
   margin-bottom: 6px;
 }
 
 .note-question .summary-line {
-  font-size: 13px;
-  color: #111827;
-  line-height: 1.4;
+  font-size: 14px;
+  font-weight: 500;
+  color: #231d45;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -476,40 +489,44 @@ const handleDrawerClose = () => {
 }
 
 .note-question .muted {
-  color: #6b7280;
+  color: #8b8799;
   font-weight: 500;
 }
 
 .tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  background-color: #7878801f;
+  gap: 4px;
+  margin-bottom: 14px;
+  background-color: #eceef3;
   border-radius: 100px;
-  padding: 2px;
-  color: #000;
+  padding: 4px;
 }
 
 .tab {
-  padding: 8px 12px;
-  background: #f3f4f6;
+  padding: 10px 12px;
+  background: transparent;
   border: none;
   border-radius: 100px;
   cursor: pointer;
-  font-weight: 590;
+  color: #5a5570;
+  font-family: inherit;
+  font-weight: 700;
   font-size: 13px;
-  line-height: 18px;
-  letter-spacing: -0.08px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   text-align: center;
-  font-weight: 500;
   width: 50%;
+  transition: color 0.16s, background 0.16s;
+}
+
+.tab:hover {
+  color: #231d45;
 }
 
 .tab.active {
-  background: white;
-  border: 0.5px solid #0000000a;
-  box-shadow: 0px 3px 1px 0px #0000000a;
-  box-shadow: 0px 3px 8px 0px #0000001f;
+  background: #fff;
+  color: #00857f;
+  box-shadow: 0 2px 6px rgba(35, 29, 69, 0.12);
 }
 
 .tab-content {
@@ -517,36 +534,57 @@ const handleDrawerClose = () => {
 }
 
 .template {
-  background: #f9fafb;
-  padding: 12px;
-  border-radius: 8px;
+  background: #fbfbfa;
+  border: 1px solid #ececf2;
+  padding: 20px 22px;
+  border-radius: 16px;
   margin-bottom: 0;
   min-height: 400px;
-  /* max-height: 60vh; */
   overflow-y: auto;
 }
 
 .template-body {
-  color: #4b5563;
+  color: #4b4a5c;
   font-weight: 400;
-  font-size: 16px;
-  line-height: 23px;
+  font-size: 15px;
+  line-height: 1.6;
   letter-spacing: 0px;
 }
 
-/* Bullet list for array content */
+/* Bullet list for array content — custom teal markers */
 .note-list {
-  margin: 0 0 14px 0;
-  padding-left: 18px;
-  list-style: disc;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .note-list li {
-  margin-bottom: 10px;
-  color: #4b5563;
+  position: relative;
+  padding-left: 26px;
+  color: #4b4a5c;
   font-weight: 400;
-  font-size: 16px;
-  line-height: 23px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.note-list li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00a19a;
+  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.14);
+}
+
+.note-list li strong {
+  color: #231d45;
+  font-weight: 700;
 }
 
 .note-list li:last-child {
@@ -555,11 +593,12 @@ const handleDrawerClose = () => {
 
 /* Typed block content styles */
 .note-heading {
-  font-size: 17px;
-  font-weight: 700;
-  color: #111827;
-  margin: 16px 0 8px 0;
-  line-height: 1.4;
+  font-size: 16px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
+  margin: 18px 0 8px 0;
+  line-height: 1.35;
 }
 
 .note-heading:first-child {
@@ -567,104 +606,123 @@ const handleDrawerClose = () => {
 }
 
 .note-paragraph {
-  font-size: 15px;
-  color: #4b5563;
+  font-size: 14.5px;
+  color: #4b4a5c;
   font-weight: 400;
-  line-height: 22px;
+  line-height: 1.6;
   margin: 0 0 14px 0;
 }
 
 .note-bold-paragraph {
-  font-size: 15px;
-  color: #111827;
+  font-size: 14.5px;
+  color: #231d45;
   font-weight: 700;
-  line-height: 22px;
+  line-height: 1.55;
   margin: 14px 0 8px 0;
 }
 
 .note-callout {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  background: #e6f9f7;
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 12px 0 14px 0;
+  gap: 11px;
+  background: rgba(0, 161, 154, 0.06);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  border-radius: 12px;
+  padding: 13px 15px;
+  margin: 14px 0;
 }
 
 .note-callout__icon {
-  font-size: 18px;
+  font-size: 17px;
   color: #00a19a;
   flex-shrink: 0;
   line-height: 1.3;
 }
 
 .note-callout__text {
-  font-size: 15px;
-  color: #00a19a;
-  font-weight: 500;
-  line-height: 22px;
+  font-size: 14px;
+  color: #1f6f66;
+  font-weight: 600;
+  line-height: 1.55;
 }
 
 /* Conditional info card */
 .info-card {
+  position: relative;
   background: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 30px rgba(35, 29, 69, 0.07);
+  border: 1px solid #ececf2;
+  overflow: hidden;
+}
+.info-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #00a19a, #2fd0c6);
 }
 
 .info-card__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
 }
 
 .info-card__text {
   flex: 1;
+  min-width: 0;
 }
 
 .info-card__title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #000;
-  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
+  margin: 0 0 7px;
 }
 
 .info-card__description {
-  font-size: 13px;
-  color: #00a19a;
-  margin: 0 0 4px;
-  line-height: 18px;
+  font-size: 14px;
+  color: #5a5570;
+  margin: 0 0 10px;
+  line-height: 1.6;
 }
 
 .info-card__link {
-  font-size: 12px;
-  color: #00a19a;
-  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #00857f;
+  text-decoration: none;
+  border-bottom: 1.5px solid rgba(0, 161, 154, 0.4);
+  padding-bottom: 1px;
+  cursor: pointer;
 }
 
 .info-card__section {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f2;
 }
 
 .info-card__section-title {
   font-size: 14px;
-  font-weight: 700;
-  color: #000;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
   margin: 0 0 6px;
 }
 
 .info-card__section-content {
-  font-size: 13px;
-  color: #00a19a;
+  font-size: 13.5px;
+  color: #5a5570;
   margin: 0;
-  line-height: 18px;
+  line-height: 1.6;
 }
 
 /* Visit link cards */
