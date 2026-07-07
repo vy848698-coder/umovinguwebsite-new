@@ -504,6 +504,28 @@ defineExpose({ clearQuery })
   z-index: 40;
   max-height: 320px;
   overflow-y: auto;
+  /* Slim, on-brand scrollbar instead of the OS default (which renders as a
+     wide dark bar on Windows). */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.psi-drop::-webkit-scrollbar {
+  width: 10px;
+}
+.psi-drop::-webkit-scrollbar-track {
+  background: transparent;
+}
+.psi-drop::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  /* Transparent border carves the thumb in from the edge so it reads as a thin
+     pill floating inside the dropdown rather than a chunky bar. */
+  border: 3px solid #fff;
+  background-clip: padding-box;
+}
+.psi-drop::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  background-clip: padding-box;
 }
 
 .psi-drop-item {

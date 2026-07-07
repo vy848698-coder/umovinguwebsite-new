@@ -37,7 +37,7 @@
       <div class="lpw-head">
         <div class="lpw-head-text">
           <p class="lpw-kicker"><span class="lpw-kicker-dot" />Landlord Passport</p>
-          <h1>Your Letting Passport</h1>
+          <h1>Your <span class="lpw-accent">Letting</span> Passport</h1>
           <p class="lpw-lede">
             Keep certificates current, stay compliant, and share everything with
             your tenant in one tap.
@@ -54,68 +54,75 @@
       <div v-if="loading" class="lp-loading">Loading…</div>
 
       <template v-else-if="passport">
-        <!-- Premium hero — book on left, dashboard on right (mirrors seller passport) -->
+        <!-- Premium hero — live-record dashboard -->
         <div class="pp-hero">
-          <div class="pp-hero-glow" />
           <div class="pp-hero-book">
             <PassportCard
               :line1="passport.addressLine1"
               :line2="passport.postcode"
             />
           </div>
-          <div class="pp-hero-info">
-            <div class="pp-hero-eyebrow">Landlord Passport</div>
-            <div class="pp-hero-addr-row">
-              <div class="pp-hero-addr-text">
-                <div class="pp-hero-addr-l1">{{ passport.addressLine1 }}</div>
-                <div class="pp-hero-addr-l2">{{ passport.postcode }}</div>
+
+          <div class="pp-hero-main">
+            <div class="pp-hero-eyebrow">Landlord Passport · Live record</div>
+            <h2 class="pp-hero-addr">{{ passport.addressLine1 }}</h2>
+            <div class="pp-hero-loc">{{ heroLocation }}</div>
+
+            <div class="pp-hero-stats">
+              <div class="pp-hero-stat">
+                <div class="pp-hero-stat-val">{{ progressPct }}<small>%</small></div>
+                <div class="pp-hero-stat-lbl">Compliant</div>
+              </div>
+              <div class="pp-hero-stat">
+                <div class="pp-hero-stat-val">{{ docCount }}</div>
+                <div class="pp-hero-stat-lbl">Documents</div>
+              </div>
+              <div class="pp-hero-stat">
+                <div class="pp-hero-stat-val">
+                  {{ stats.complete }}<span class="pp-hero-stat-of">/{{ stats.total }}</span>
+                </div>
+                <div class="pp-hero-stat-lbl">Sections</div>
               </div>
             </div>
-            <div class="pp-hero-bottom">
-              <div class="pp-hero-stats">
-                <div class="pp-hero-stat">
-                  <div class="pp-hero-stat-val">{{ progressPct }}<small>%</small></div>
-                  <div class="pp-hero-stat-lbl">Compliant</div>
-                </div>
-                <div class="pp-hero-stat">
-                  <div class="pp-hero-stat-val">{{ docCount }}</div>
-                  <div class="pp-hero-stat-lbl">Docs</div>
-                </div>
-                <div class="pp-hero-stat">
-                  <div class="pp-hero-stat-val">
-                    {{ stats.complete }}<span class="pp-hero-stat-of">/{{ stats.total }}</span>
-                  </div>
-                  <div class="pp-hero-stat-lbl">Sections</div>
-                </div>
-              </div>
 
-              <div class="pp-hero-progress">
-                <div class="pp-hero-ring">
-                  <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
-                    <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
-                    <circle
-                      cx="36"
-                      cy="36"
-                      r="30"
-                      class="pp-hero-ring-fill"
-                      stroke-dasharray="188.5"
-                      :stroke-dashoffset="188.5 - (188.5 * progressPct) / 100"
-                    />
-                  </svg>
-                  <span class="pp-hero-ring-pct">{{ progressPct }}%</span>
-                </div>
-                <div class="pp-hero-progress-meta">
-                  <div class="pp-hero-progress-label">Compliance</div>
-                  <div v-if="firstExpiring" class="pp-hero-dash-warn">
-                    <span class="pp-hero-dash-warn-dot" />
-                    {{ firstExpiring }}
-                  </div>
-                  <div v-else class="pp-hero-dash-issued">
-                    <span class="pp-hero-dash-dot" />
-                    Letting passport active
-                  </div>
-                </div>
-              </div>
+            <div class="pp-hero-actions">
+              <button class="pp-hero-btn pp-hero-btn--primary" type="button" @click="openFirstUpload">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload a certificate
+              </button>
+              <button class="pp-hero-btn pp-hero-btn--ghost" type="button" @click="openTenantShare">
+                Share with tenant
+              </button>
+            </div>
+          </div>
+
+          <div class="pp-hero-side">
+            <div class="pp-hero-ring">
+              <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
+                <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
+                <circle
+                  cx="36"
+                  cy="36"
+                  r="30"
+                  class="pp-hero-ring-fill"
+                  stroke-dasharray="188.5"
+                  :stroke-dashoffset="188.5 - (188.5 * progressPct) / 100"
+                />
+              </svg>
+              <span class="pp-hero-ring-pct">{{ progressPct }}%</span>
+            </div>
+            <div class="pp-hero-side-label">Compliance</div>
+            <div v-if="firstExpiring" class="pp-hero-badge pp-hero-badge--warn">
+              <span class="pp-hero-badge-dot" />
+              {{ firstExpiring }}
+            </div>
+            <div v-else class="pp-hero-badge">
+              <span class="pp-hero-badge-dot" />
+              Letting passport active
             </div>
           </div>
         </div>
@@ -131,7 +138,7 @@
             <div class="lp-convert-title">Convert to selling passport</div>
             <div class="lp-convert-sub">Transfer 6 docs · keep tenant or serve notice</div>
           </div>
-          <span class="lp-convert-chev">›</span>
+          <span class="lp-convert-link">Convert&nbsp;→</span>
         </button>
 
         <button v-else class="lp-convert-card lp-convert-card--linked" @click="navigateTo(`/passportview/${siblingSellerId}`)">
@@ -142,131 +149,152 @@
           </div>
           <div class="lp-convert-body">
             <div class="lp-convert-title">Selling passport linked</div>
-            <div class="lp-convert-sub">Open the seller passport for this property</div>
+            <div class="lp-convert-sub">Open the seller Passport for this property — the two records stay in sync.</div>
           </div>
-          <span class="lp-convert-chev">›</span>
+          <span class="lp-convert-link">Open&nbsp;→</span>
         </button>
 
         <!-- Tabs -->
         <div class="lp-tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.value"
-            type="button"
-            class="lp-tab"
-            :class="{ active: activeTab === tab.value }"
-            @click="activeTab = tab.value"
-          >
-            {{ tab.label }}
-            <span v-if="tab.count !== undefined" class="lp-tab-count">{{ tab.count }}</span>
-          </button>
+          <div class="lp-tabs-group">
+            <button
+              v-for="tab in tabs"
+              :key="tab.value"
+              type="button"
+              class="lp-tab"
+              :class="{ active: activeTab === tab.value }"
+              @click="activeTab = tab.value"
+            >
+              {{ tab.label }}
+              <span v-if="tab.count !== undefined" class="lp-tab-count">{{ tab.count }}</span>
+            </button>
+          </div>
+          <div class="lp-tabs-complete">{{ stats.complete }} of {{ stats.total }} complete</div>
         </div>
 
         <!-- COMPLIANCE -->
         <div v-show="activeTab === 'compliance'">
           <template v-for="group in complianceGroups" :key="group.label">
-            <div v-if="group.sections.length > 0" class="section-heading">{{ group.label }}</div>
+            <div v-if="group.sections.length > 0" class="section-heading">
+              <span class="section-heading-dash" />
+              <span class="section-heading-label">{{ group.label }}</span>
+              <span class="section-heading-rule" />
+              <span class="section-heading-count">
+                {{ group.sections.length }} item{{ group.sections.length === 1 ? '' : 's' }}
+              </span>
+            </div>
             <div v-if="group.sections.length > 0" class="lp-sec-grid">
-            <button
-              v-for="section in group.sections"
-              :key="section.id"
-              type="button"
-              class="lp-sec"
-              :class="`lp-sec--${cardData(section).tone}`"
-              @click="openSection(section)"
-            >
-              <div class="lp-sec-icon" :class="`lp-sec-icon--${cardData(section).tone}`">
-                {{ iconForSection(section.key) }}
-              </div>
-              <div class="lp-sec-content">
-                <div class="lp-sec-row-top">
-                  <div class="lp-sec-text">
-                    <div class="lp-sec-name">{{ section.title }}</div>
-                    <div class="lp-sec-sub">{{ cardData(section).subtitleLine }}</div>
-                    <div class="lp-sec-pills">
-                      <span class="lp-sec-pill lp-sec-pill--doc">
-                        <span class="lp-sec-pill-ic">📄</span>
-                        {{ cardData(section).docCount }}/{{ cardData(section).docTotal }} doc
-                      </span>
-                      <span class="lp-sec-pill" :class="`lp-sec-pill--${cardData(section).tone}`">
-                        {{ cardData(section).statusLabel }}
-                      </span>
-                    </div>
+              <button
+                v-for="section in group.sections"
+                :key="section.id"
+                type="button"
+                class="lp-sec"
+                :class="`lp-sec--${cardData(section).tone}`"
+                @click="openSection(section)"
+              >
+                <div class="lp-sec-top">
+                  <div class="lp-sec-icon" :class="iconClass(section.key)">
+                    <SectionIcon :name="iconName(section.key)" />
                   </div>
-                  <span class="lp-sec-chev">›</span>
+                  <span class="lp-sec-arrow" aria-hidden="true">→</span>
                 </div>
-                <div class="lp-sec-bar">
-                  <div
-                    class="lp-sec-bar-fill"
-                    :class="`lp-sec-bar-fill--${cardData(section).tone}`"
-                    :style="{ width: cardData(section).pct + '%' }"
-                  />
+                <div class="lp-sec-name">{{ section.title }}</div>
+                <div v-if="cardData(section).subtitleLine" class="lp-sec-sub">
+                  {{ cardData(section).subtitleLine }}
+                </div>
+                <div class="lp-sec-pills">
+                  <span class="lp-sec-pill lp-sec-pill--doc">
+                    <span class="lp-sec-pill-ic">📄</span>
+                    {{ cardData(section).docCount }}/{{ cardData(section).docTotal }} doc
+                  </span>
+                  <span class="lp-sec-pill" :class="`lp-sec-pill--${cardData(section).tone}`">
+                    {{ cardData(section).statusLabel }}
+                  </span>
+                </div>
+                <div class="lp-sec-barrow">
+                  <div class="lp-sec-bar">
+                    <div
+                      class="lp-sec-bar-fill"
+                      :class="`lp-sec-bar-fill--${cardData(section).tone}`"
+                      :style="{ width: cardData(section).pct + '%' }"
+                    />
+                  </div>
+                  <div class="lp-sec-pct" :class="{ 'lp-sec-pct--good': cardData(section).tone === 'good' }">
+                    {{ cardData(section).pct }}%
+                  </div>
                 </div>
                 <div v-if="cardData(section).actionByLabel" class="lp-sec-actionby">
                   {{ cardData(section).actionByLabel }}
                 </div>
-                <div
-                  v-else-if="cardData(section).tone === 'good'"
-                  class="lp-sec-pct lp-sec-pct--good"
-                >
-                  100%
-                </div>
-                <div v-else-if="cardData(section).docCount > 0" class="lp-sec-pct">
-                  {{ cardData(section).pct }}%
-                </div>
-              </div>
-            </button>
+              </button>
             </div>
           </template>
 
           <!-- Fallback: any sections that didn't match a group bucket -->
           <template v-if="ungroupedSections.length > 0">
-            <div class="section-heading">Other</div>
+            <div class="section-heading">
+              <span class="section-heading-dash" />
+              <span class="section-heading-label">Other</span>
+              <span class="section-heading-rule" />
+              <span class="section-heading-count">
+                {{ ungroupedSections.length }} item{{ ungroupedSections.length === 1 ? '' : 's' }}
+              </span>
+            </div>
             <div class="lp-sec-grid">
-            <button
-              v-for="section in ungroupedSections"
-              :key="section.id"
-              type="button"
-              class="lp-sec"
-              :class="`lp-sec--${cardData(section).tone}`"
-              @click="openSection(section)"
-            >
-              <div class="lp-sec-icon" :class="`lp-sec-icon--${cardData(section).tone}`">
-                {{ iconForSection(section.key) }}
-              </div>
-              <div class="lp-sec-content">
-                <div class="lp-sec-row-top">
-                  <div class="lp-sec-text">
-                    <div class="lp-sec-name">{{ section.title }}</div>
-                    <div class="lp-sec-sub">{{ cardData(section).subtitleLine }}</div>
-                    <div class="lp-sec-pills">
-                      <span class="lp-sec-pill lp-sec-pill--doc">
-                        <span class="lp-sec-pill-ic">📄</span>
-                        {{ cardData(section).docCount }}/{{ cardData(section).docTotal }} doc
-                      </span>
-                      <span class="lp-sec-pill" :class="`lp-sec-pill--${cardData(section).tone}`">
-                        {{ cardData(section).statusLabel }}
-                      </span>
-                    </div>
+              <button
+                v-for="section in ungroupedSections"
+                :key="section.id"
+                type="button"
+                class="lp-sec"
+                :class="`lp-sec--${cardData(section).tone}`"
+                @click="openSection(section)"
+              >
+                <div class="lp-sec-top">
+                  <div class="lp-sec-icon" :class="iconClass(section.key)">
+                    <SectionIcon :name="iconName(section.key)" />
                   </div>
-                  <span class="lp-sec-chev">›</span>
+                  <span class="lp-sec-arrow" aria-hidden="true">→</span>
                 </div>
-                <div class="lp-sec-bar">
-                  <div
-                    class="lp-sec-bar-fill"
-                    :class="`lp-sec-bar-fill--${cardData(section).tone}`"
-                    :style="{ width: cardData(section).pct + '%' }"
-                  />
+                <div class="lp-sec-name">{{ section.title }}</div>
+                <div v-if="cardData(section).subtitleLine" class="lp-sec-sub">
+                  {{ cardData(section).subtitleLine }}
                 </div>
-              </div>
-            </button>
+                <div class="lp-sec-pills">
+                  <span class="lp-sec-pill lp-sec-pill--doc">
+                    <span class="lp-sec-pill-ic">📄</span>
+                    {{ cardData(section).docCount }}/{{ cardData(section).docTotal }} doc
+                  </span>
+                  <span class="lp-sec-pill" :class="`lp-sec-pill--${cardData(section).tone}`">
+                    {{ cardData(section).statusLabel }}
+                  </span>
+                </div>
+                <div class="lp-sec-barrow">
+                  <div class="lp-sec-bar">
+                    <div
+                      class="lp-sec-bar-fill"
+                      :class="`lp-sec-bar-fill--${cardData(section).tone}`"
+                      :style="{ width: cardData(section).pct + '%' }"
+                    />
+                  </div>
+                  <div class="lp-sec-pct" :class="{ 'lp-sec-pct--good': cardData(section).tone === 'good' }">
+                    {{ cardData(section).pct }}%
+                  </div>
+                </div>
+              </button>
             </div>
           </template>
         </div>
 
         <!-- VAULT -->
         <div v-show="activeTab === 'vault'">
-          <div class="section-heading">All uploaded documents</div>
+          <div class="section-heading">
+            <span class="section-heading-dash" />
+            <span class="section-heading-label">All uploaded documents</span>
+            <span class="section-heading-rule" />
+            <span class="section-heading-count">
+              {{ uploadedDocs.length }} doc{{ uploadedDocs.length === 1 ? '' : 's' }}
+            </span>
+          </div>
           <div v-if="uploadedDocs.length === 0" class="lp-empty">
             No documents uploaded yet. Tap a section in the Compliance tab to upload one.
           </div>
@@ -282,7 +310,11 @@
 
         <!-- TENANCY -->
         <div v-show="activeTab === 'tenancy'">
-          <div class="section-heading">Current tenancy</div>
+          <div class="section-heading">
+            <span class="section-heading-dash" />
+            <span class="section-heading-label">Current tenancy</span>
+            <span class="section-heading-rule" />
+          </div>
           <div class="lp-tenancy-card">
             <div class="lp-tenancy-row">
               <span class="lp-tenancy-lbl">Tenant</span>
@@ -302,45 +334,55 @@
             </div>
           </div>
 
-          <div v-if="tenancySections.length > 0" class="section-heading">Documents to keep current</div>
+          <div v-if="tenancySections.length > 0" class="section-heading">
+            <span class="section-heading-dash" />
+            <span class="section-heading-label">Documents to keep current</span>
+            <span class="section-heading-rule" />
+            <span class="section-heading-count">
+              {{ tenancySections.length }} item{{ tenancySections.length === 1 ? '' : 's' }}
+            </span>
+          </div>
           <div v-if="tenancySections.length > 0" class="lp-sec-grid">
-          <button
-            v-for="section in tenancySections"
-            :key="section.id"
-            type="button"
-            class="lp-sec"
-            :class="`lp-sec--${cardData(section).tone}`"
-            @click="openSection(section)"
-          >
-            <div class="lp-sec-icon" :class="`lp-sec-icon--${cardData(section).tone}`">
-              {{ iconForSection(section.key) }}
-            </div>
-            <div class="lp-sec-content">
-              <div class="lp-sec-row-top">
-                <div class="lp-sec-text">
-                  <div class="lp-sec-name">{{ section.title }}</div>
-                  <div class="lp-sec-sub">{{ cardData(section).subtitleLine }}</div>
-                  <div class="lp-sec-pills">
-                    <span class="lp-sec-pill lp-sec-pill--doc">
-                      <span class="lp-sec-pill-ic">📄</span>
-                      {{ cardData(section).docCount }}/{{ cardData(section).docTotal }} doc
-                    </span>
-                    <span class="lp-sec-pill" :class="`lp-sec-pill--${cardData(section).tone}`">
-                      {{ cardData(section).statusLabel }}
-                    </span>
-                  </div>
+            <button
+              v-for="section in tenancySections"
+              :key="section.id"
+              type="button"
+              class="lp-sec"
+              :class="`lp-sec--${cardData(section).tone}`"
+              @click="openSection(section)"
+            >
+              <div class="lp-sec-top">
+                <div class="lp-sec-icon" :class="iconClass(section.key)">
+                  <SectionIcon :name="iconName(section.key)" />
                 </div>
-                <span class="lp-sec-chev">›</span>
+                <span class="lp-sec-arrow" aria-hidden="true">→</span>
               </div>
-              <div class="lp-sec-bar">
-                <div
-                  class="lp-sec-bar-fill"
-                  :class="`lp-sec-bar-fill--${cardData(section).tone}`"
-                  :style="{ width: cardData(section).pct + '%' }"
-                />
+              <div class="lp-sec-name">{{ section.title }}</div>
+              <div v-if="cardData(section).subtitleLine" class="lp-sec-sub">
+                {{ cardData(section).subtitleLine }}
               </div>
-            </div>
-          </button>
+              <div class="lp-sec-pills">
+                <span class="lp-sec-pill lp-sec-pill--doc">
+                  <span class="lp-sec-pill-ic">📄</span>
+                  {{ cardData(section).docCount }}/{{ cardData(section).docTotal }} doc
+                </span>
+                <span class="lp-sec-pill" :class="`lp-sec-pill--${cardData(section).tone}`">
+                  {{ cardData(section).statusLabel }}
+                </span>
+              </div>
+              <div class="lp-sec-barrow">
+                <div class="lp-sec-bar">
+                  <div
+                    class="lp-sec-bar-fill"
+                    :class="`lp-sec-bar-fill--${cardData(section).tone}`"
+                    :style="{ width: cardData(section).pct + '%' }"
+                  />
+                </div>
+                <div class="lp-sec-pct" :class="{ 'lp-sec-pct--good': cardData(section).tone === 'good' }">
+                  {{ cardData(section).pct }}%
+                </div>
+              </div>
+            </button>
           </div>
         </div>
       </template>
@@ -567,6 +609,7 @@
 import { useRoute } from 'vue-router'
 import { usePassportClaim } from '~/composables/usePassportClaim'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
+import SectionIcon from '~/components/passport-view/SectionIcon.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({ title: 'Landlord Passport — UmovingU', middleware: 'auth' })
@@ -751,22 +794,58 @@ const transferDocs = [
   { label: 'Tenant disclosure data', meta: 'from AST' },
 ]
 
-function iconForSection(key: string): string {
+// Maps a section key to a real line-icon name (see SectionIcon.vue).
+function iconName(key: string): string {
   const k = key.toLowerCase()
-  if (k.includes('gas')) return '🔥'
-  if (k.includes('eicr') || k.includes('electric')) return '⚡'
-  if (k.includes('epc') || k.includes('energy')) return '🌿'
-  if (k.includes('alarm') || k.includes('smoke')) return '🔔'
-  if (k.includes('legionella')) return '💧'
-  if (k.includes('insurance')) return '🛡️'
-  if (k.includes('ast') || k.includes('tenancy')) return '📜'
-  if (k.includes('deposit')) return '£'
-  if (k.includes('right_to_rent') || k.includes('rtr')) return '🪪'
-  if (k.includes('how_to_rent')) return '📘'
-  if (k.includes('inventory')) return '📋'
-  if (k.includes('pat')) return '🔌'
-  if (k.includes('hmo')) return '🏠'
-  return '📄'
+  if (k.includes('gas')) return 'flame'
+  if (k.includes('eicr') || k.includes('electric')) return 'zap'
+  if (k.includes('epc') || k.includes('energy')) return 'leaf'
+  if (k.includes('alarm') || k.includes('smoke')) return 'bell'
+  if (k.includes('legionella')) return 'droplet'
+  if (k.includes('insurance')) return 'shield'
+  if (k.includes('deposit')) return 'pound'
+  if (k.includes('right_to_rent') || k.includes('rtr')) return 'id'
+  if (k.includes('ast') || k.includes('tenancy')) return 'contract'
+  if (k.includes('how_to_rent')) return 'book'
+  if (k.includes('inventory')) return 'clipboard'
+  if (k.includes('pat')) return 'plug'
+  if (k.includes('hmo')) return 'building'
+  return 'file'
+}
+
+// Soft category tint for the section-card icon tile (mirrors the design mock).
+function iconClass(key: string): string {
+  const k = key.toLowerCase()
+  if (k.includes('gas')) return 'ic-amber'
+  if (k.includes('eicr') || k.includes('electric')) return 'ic-blue'
+  if (k.includes('epc') || k.includes('energy')) return 'ic-green'
+  if (k.includes('alarm') || k.includes('smoke')) return 'ic-rose'
+  if (k.includes('legionella')) return 'ic-sky'
+  if (k.includes('insurance')) return 'ic-rose'
+  if (k.includes('deposit')) return 'ic-teal'
+  if (k.includes('right_to_rent') || k.includes('rtr')) return 'ic-indigo'
+  if (k.includes('ast') || k.includes('tenancy')) return 'ic-violet'
+  if (k.includes('how_to_rent')) return 'ic-amber'
+  if (k.includes('inventory')) return 'ic-violet'
+  if (k.includes('hmo')) return 'ic-teal'
+  return 'ic-teal'
+}
+
+// Location line under the hero address (falls back to the postcode alone).
+const heroLocation = computed(() => {
+  const p = passport.value
+  if (!p) return ''
+  const town = p.town ?? p.city ?? p.addressLine2 ?? ''
+  return town ? `${town} · ${p.postcode}` : (p.postcode ?? '')
+})
+
+// Hero "Upload a certificate" — jump to Compliance and open the first
+// section that still needs a document.
+function openFirstUpload() {
+  activeTab.value = 'compliance'
+  const target =
+    sections.value.find((s) => cardData(s).tone !== 'good') ?? sections.value[0]
+  if (target) openSection(target)
 }
 
 // ── Section drawer (upload / view / replace certificate) ───────
@@ -1383,11 +1462,14 @@ const SectionCard = defineComponent({
 }
 
 .lpw-kicker-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
   background: #00a19a;
-  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+
+.lpw-accent {
+  color: #00a19a;
 }
 
 .lpw-head h1 {
@@ -1427,7 +1509,7 @@ const SectionCard = defineComponent({
 .lp-body {
   position: relative;
   z-index: 1;
-  width: min(960px, calc(100% - 48px));
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
   padding-bottom: 48px;
 }
@@ -1444,155 +1526,174 @@ const SectionCard = defineComponent({
 
 .lp-loading { padding: 60px 22px; text-align: center; color: #8a95a0; font-weight: 600; position: relative; z-index: 1; }
 
-/* ── Premium hero (mirrors seller passport) ──────────────── */
+/* ── Premium hero — dark live-record dashboard ──────────────── */
 .pp-hero {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 26px;
-  padding: 24px 28px;
+  grid-template-columns: 172px 1fr auto;
+  gap: 32px;
+  padding: 30px 34px;
   position: relative;
   z-index: 1;
   align-items: center;
+  color: #fff;
   background:
-    radial-gradient(ellipse 70% 100% at 20% 0%, rgba(61, 189, 163, 0.12), transparent 60%),
-    linear-gradient(180deg, #ffffff, #f7fdfb);
-  border: 1px solid #e2f1ea;
-  border-radius: 22px;
-  margin: 18px 0 16px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 18px 40px rgba(31, 61, 98, 0.08);
+    radial-gradient(ellipse 70% 120% at 88% -10%, rgba(0, 161, 154, 0.22), transparent 55%),
+    radial-gradient(ellipse 60% 90% at 8% 110%, rgba(90, 76, 240, 0.18), transparent 55%),
+    linear-gradient(150deg, #172654 0%, #111c40 52%, #0c1531 100%);
+  border: 1px solid rgba(120, 140, 195, 0.2);
+  border-radius: 26px;
+  margin: 18px 0 18px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(11, 20, 48, 0.34);
 }
-.pp-hero-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  background: radial-gradient(ellipse 60% 80% at 30% 0%, rgba(61, 189, 163, 0.15), transparent 70%);
-  pointer-events: none;
-}
+
+/* Teal passport booklet — shared PassportCard image (matches seller passport) */
 .pp-hero-book {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  max-width: 172px;
+  justify-self: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 20px 36px rgba(0, 140, 134, 0.42));
 }
-.pp-hero-book :deep(.passport-card) { margin: 0; padding: 0; }
+/* Render the book at its natural aspect ratio so the baked-in layout and the
+   overlaid address stay aligned. */
+.pp-hero-book :deep(.passport-card) {
+  margin: 0;
+}
 .pp-hero-book :deep(.passport-container) {
-  max-width: 138px;
-  width: 138px;
+  width: 100%;
+  height: auto;
 }
 .pp-hero-book :deep(.passport-image) {
-  width: 138px;
+  width: 100%;
   height: auto;
-  filter: drop-shadow(0 12px 26px rgba(14, 40, 64, 0.32));
 }
 
-.pp-hero-info {
+/* Main info column */
+.pp-hero-main {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
 }
 .pp-hero-eyebrow {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #1f7a66;
-  margin-bottom: 4px;
+  color: #4fd6bf;
 }
-.pp-hero-addr-row { display: flex; align-items: center; gap: 6px; }
-.pp-hero-addr-text { flex: 1; min-width: 0; }
-.pp-hero-addr-l1 {
-  font-size: 18px;
-  font-weight: 800;
-  color: #0e2840;
-  letter-spacing: -0.5px;
-  line-height: 1.1;
+.pp-hero-addr {
+  margin: 8px 0 4px;
+  font-size: clamp(24px, 2.6vw, 32px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+  color: #fff;
 }
-.pp-hero-addr-l2 {
-  font-size: 11px;
+.pp-hero-loc {
+  font-size: 13px;
   font-weight: 700;
-  color: #4a5868;
-  margin-top: 2px;
-}
-.pp-hero-addr-l1 {
-  font-size: 22px;
-}
-.pp-hero-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-top: 16px;
-  flex-wrap: wrap;
+  color: #93a4c9;
 }
 .pp-hero-stats {
   display: flex;
   align-items: center;
   gap: 0;
+  margin: 20px 0 22px;
 }
 .pp-hero-stat {
-  text-align: center;
-  padding: 0 20px;
+  padding: 0 24px;
 }
-.pp-hero-stat:first-child {
-  padding-left: 0;
-}
-.pp-hero-stat + .pp-hero-stat {
-  border-left: 1px solid rgba(14, 40, 64, 0.1);
-}
+.pp-hero-stat:first-child { padding-left: 0; }
+.pp-hero-stat + .pp-hero-stat { border-left: 1px solid rgba(255, 255, 255, 0.12); }
 .pp-hero-stat-val {
-  font-size: 24px;
+  font-size: 27px;
   font-weight: 900;
-  color: #0e2840;
+  color: #fff;
   letter-spacing: -0.02em;
   font-feature-settings: 'tnum';
   line-height: 1;
 }
-.pp-hero-stat-val small { font-size: 13px; color: #4a5868; font-weight: 800; }
-.pp-hero-stat-of { font-size: 14px; color: #8a95a0; font-weight: 800; }
+.pp-hero-stat-val small { font-size: 14px; color: #93a4c9; font-weight: 800; }
+.pp-hero-stat-of { font-size: 15px; color: #6f83aa; font-weight: 800; }
 .pp-hero-stat-lbl {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8a95a0;
-  margin-top: 6px;
+  color: #7f93bb;
+  margin-top: 8px;
 }
-
-/* Circular progress ring */
-.pp-hero-progress {
+.pp-hero-actions {
   display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pp-hero-btn {
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
+  transition: transform 0.16s, background 0.16s, border-color 0.16s;
+}
+.pp-hero-btn svg { width: 16px; height: 16px; }
+.pp-hero-btn--primary {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(180deg, #2fbfa4, #1f9e88);
+  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.36);
+}
+.pp-hero-btn--primary:hover { transform: translateY(-1px); }
+.pp-hero-btn--ghost {
+  background: rgba(255, 255, 255, 0.07);
+  color: #dbe4f4;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.pp-hero-btn--ghost:hover { background: rgba(255, 255, 255, 0.13); border-color: rgba(255, 255, 255, 0.32); }
+
+/* Ring + status column */
+.pp-hero-side {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   flex-shrink: 0;
 }
 .pp-hero-ring {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 122px;
+  height: 122px;
   flex-shrink: 0;
 }
 .pp-hero-ring-svg {
-  width: 72px;
-  height: 72px;
+  width: 122px;
+  height: 122px;
   display: block;
 }
 .pp-hero-ring-track {
   fill: none;
-  stroke: #e2f1ea;
-  stroke-width: 6;
+  stroke: rgba(255, 255, 255, 0.13);
+  stroke-width: 5.5;
 }
 .pp-hero-ring-fill {
   fill: none;
-  stroke: #1f7a66;
-  stroke-width: 6;
+  stroke: #34d3b4;
+  stroke-width: 5.5;
   stroke-linecap: round;
   transform: rotate(-90deg);
   transform-origin: center;
+  filter: drop-shadow(0 0 6px rgba(52, 211, 180, 0.5));
   transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pp-hero-ring-pct {
@@ -1600,65 +1701,73 @@ const SectionCard = defineComponent({
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 16px;
+  font-size: 26px;
   font-weight: 900;
-  color: #0e2840;
+  color: #fff;
   letter-spacing: -0.02em;
 }
-.pp-hero-progress-label {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+.pp-hero-side-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #8a95a0;
-  margin-bottom: 6px;
+  color: #7f93bb;
 }
-
-.pp-hero-dash-issued,
-.pp-hero-dash-warn {
-  display: flex;
+.pp-hero-badge {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: -0.1px;
+  color: #4fd6bf;
+  background: rgba(52, 211, 180, 0.12);
+  border: 1px solid rgba(52, 211, 180, 0.3);
+  padding: 5px 11px;
+  border-radius: 100px;
 }
-.pp-hero-dash-issued { color: #1f7a66; }
-.pp-hero-dash-warn { color: #b85b36; }
-.pp-hero-dash-dot { width: 7px; height: 7px; background: #3dbda3; border-radius: 50%; }
-.pp-hero-dash-warn-dot { width: 7px; height: 7px; background: #ff8b5a; border-radius: 50%; }
+.pp-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d3b4; }
+.pp-hero-badge--warn {
+  color: #ffb27a;
+  background: rgba(255, 139, 90, 0.14);
+  border-color: rgba(255, 139, 90, 0.34);
+}
+.pp-hero-badge--warn .pp-hero-badge-dot { background: #ff8b5a; }
 
-/* Convert card */
+/* Convert / linked banner */
 .lp-convert-card {
   width: calc(100% - 44px);
-  margin: 4px 22px 16px;
+  margin: 4px 22px 18px;
   background:
-    radial-gradient(ellipse 70% 70% at 30% 30%, rgba(255, 255, 255, 0.18), transparent 60%),
+    radial-gradient(ellipse 80% 120% at 12% 20%, rgba(255, 255, 255, 0.22), transparent 60%),
     linear-gradient(135deg, #00a19a, #1f7a66);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
-  padding: 14px 16px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
   position: relative;
   z-index: 1;
   color: #fff;
-  box-shadow: 0 6px 18px rgba(0, 161, 154, 0.32);
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.28);
+  transition: transform 0.16s, box-shadow 0.16s;
 }
+.lp-convert-card:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(0, 161, 154, 0.34); }
 .lp-convert-card--linked {
-  background: linear-gradient(135deg, #f1f9f4, #e2f1ea);
-  border: 1px solid rgba(31, 122, 102, 0.3);
+  background: linear-gradient(135deg, #eefaf3, #dff2ea);
+  border: 1px solid rgba(31, 122, 102, 0.28);
   color: #0e2840;
   box-shadow: none;
 }
+.lp-convert-card--linked:hover { box-shadow: 0 8px 20px rgba(31, 122, 102, 0.14); }
 .lp-convert-icon {
-  width: 38px; height: 38px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.22);
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.24);
   color: #fff;
   display: flex;
   align-items: center;
@@ -1666,66 +1775,127 @@ const SectionCard = defineComponent({
   flex-shrink: 0;
 }
 .lp-convert-card--linked .lp-convert-icon {
-  background: #1f7a66;
+  background: linear-gradient(150deg, #2fb39a, #1f8f7d);
   color: #fff;
+  box-shadow: 0 6px 14px rgba(31, 122, 102, 0.3);
 }
-.lp-convert-icon svg { width: 18px; height: 18px; }
+.lp-convert-icon svg { width: 20px; height: 20px; }
 .lp-convert-body { flex: 1; min-width: 0; }
-.lp-convert-title { font-size: 14px; font-weight: 800; letter-spacing: -0.3px; }
-.lp-convert-sub { font-size: 11px; font-weight: 700; opacity: 0.85; margin-top: 2px; }
+.lp-convert-title { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; }
+.lp-convert-card--linked .lp-convert-title { color: #1f7a66; }
+.lp-convert-sub { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 3px; line-height: 1.4; }
 .lp-convert-card--linked .lp-convert-sub { color: #4a5868; opacity: 1; }
-.lp-convert-chev { font-size: 20px; flex-shrink: 0; }
+.lp-convert-link {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+.lp-convert-card--linked .lp-convert-link { color: #1f7a66; }
 
 /* Tabs */
 .lp-tabs {
   display: flex;
-  gap: 6px;
-  padding: 0 22px 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 22px 16px;
   position: relative;
   z-index: 1;
 }
-.lp-tab {
-  flex: 1;
+.lp-tabs-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: #fff;
-  border: 1px solid #e8eceb;
+  border: 1px solid #e5e9e8;
   border-radius: 100px;
-  padding: 9px 12px;
+  padding: 4px;
+  box-shadow: 0 1px 2px rgba(14, 40, 64, 0.04);
+}
+.lp-tab {
+  background: transparent;
+  border: 0;
+  border-radius: 100px;
+  padding: 8px 16px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   color: #4a5868;
   letter-spacing: -0.2px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
+  transition: background 0.16s, color 0.16s;
 }
+.lp-tab:hover:not(.active) { color: #0e2840; }
 .lp-tab.active {
-  background: #0e2840;
+  background: #14224a;
   color: #fff;
-  border-color: #0e2840;
 }
 .lp-tab-count {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  background: rgba(255, 255, 255, 0.18);
+  min-width: 18px;
   padding: 1px 6px;
   border-radius: 100px;
   font-feature-settings: 'tnum';
+  background: #eef0ef;
+  color: #4a5868;
 }
-.lp-tab:not(.active) .lp-tab-count { background: #f0f2f1; color: #4a5868; }
+.lp-tab.active .lp-tab-count { background: #2fbfa4; color: #062b25; }
+.lp-tabs-complete {
+  font-size: 12px;
+  font-weight: 800;
+  color: #4a5868;
+  letter-spacing: -0.2px;
+  background: #fff;
+  border: 1px solid #e5e9e8;
+  border-radius: 100px;
+  padding: 8px 14px;
+  font-feature-settings: 'tnum';
+  white-space: nowrap;
+}
 
 /* Section heading */
 .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px 10px;
+  position: relative;
+  z-index: 1;
+}
+.section-heading-dash {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: #2fb39a;
+  flex-shrink: 0;
+}
+.section-heading-label {
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: #8a95a0;
-  padding: 8px 22px 8px;
-  position: relative;
-  z-index: 1;
+  color: #56657c;
+  white-space: nowrap;
+}
+.section-heading-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(14, 40, 64, 0.1), transparent);
+}
+.section-heading-count {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #9aa6b6;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Grid wrapper — lays the compliance section cards out in columns so the
@@ -1745,122 +1915,155 @@ const SectionCard = defineComponent({
   margin: 0;
 }
 
-/* Section card — prototype look (icon tile + double pills + progress bar) */
+/* Section card — vertical layout (icon + arrow row → title → pills → bar) */
 .lp-sec {
-  width: calc(100% - 44px);
-  margin: 0 22px 10px;
+  width: 100%;
+  margin: 0;
   background: #fff;
-  border: 1px solid #e8eceb;
-  border-radius: 16px;
-  padding: 14px 14px 12px;
+  border: 1px solid #eceeed;
+  border-radius: 20px;
+  padding: 18px 18px 16px;
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
   position: relative;
   z-index: 1;
-  transition: all 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
   box-shadow: 0 1px 2px rgba(14, 40, 64, 0.04);
 }
-.lp-sec:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(14, 40, 64, 0.08); }
+.lp-sec:hover {
+  transform: translateY(-2px);
+  border-color: #dfe3e2;
+  box-shadow: 0 12px 26px rgba(14, 40, 64, 0.09);
+}
+
+.lp-sec-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
 .lp-sec-icon {
-  width: 56px; height: 56px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f1f9f4, #e2f1ea);
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  background: #f1f5f4;
+  color: #56657c;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 26px;
-  box-shadow: inset 0 0 0 1px rgba(31, 122, 102, 0.1);
 }
-.lp-sec-icon--good { background: linear-gradient(135deg, #f1f9f4, #d6efe2); box-shadow: inset 0 0 0 1px rgba(61, 189, 163, 0.25); }
-.lp-sec-icon--warn { background: linear-gradient(135deg, #fef3c7, #fde9a4); box-shadow: inset 0 0 0 1px rgba(245, 196, 76, 0.4); }
+.lp-sec-icon svg { width: 23px; height: 23px; display: block; }
+/* Category tint (tile) + accent (line-icon colour via currentColor) */
+.lp-sec-icon.ic-amber  { background: #fdf1d8; color: #c07a10; }
+.lp-sec-icon.ic-blue   { background: #e2edfb; color: #2563c9; }
+.lp-sec-icon.ic-green  { background: #dcf3e7; color: #1f9a6b; }
+.lp-sec-icon.ic-rose   { background: #fce4ea; color: #cf4d7d; }
+.lp-sec-icon.ic-sky    { background: #e0f0fb; color: #1f8bd0; }
+.lp-sec-icon.ic-violet { background: #ebe6fb; color: #6d4bd0; }
+.lp-sec-icon.ic-indigo { background: #e5e8fc; color: #4f5bd5; }
+.lp-sec-icon.ic-teal   { background: #d9f2eb; color: #1f8f7d; }
 
-.lp-sec-content { flex: 1; min-width: 0; }
-.lp-sec-row-top {
+.lp-sec-arrow {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid #e8eceb;
+  color: #9aa6b6;
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.lp-sec-row-top > div:first-child { flex: 1; min-width: 0; }
+.lp-sec:hover .lp-sec-arrow {
+  background: #14224a;
+  border-color: #14224a;
+  color: #fff;
+}
+
 .lp-sec-name {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 800;
   color: #0e2840;
   letter-spacing: -0.3px;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .lp-sec-sub {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: #4a5868;
-  margin-top: 2px;
-  line-height: 1.35;
+  color: #74839a;
+  margin-top: 3px;
+  line-height: 1.4;
 }
 
 .lp-sec-pills {
   display: flex;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 14px;
   flex-wrap: wrap;
 }
 .lp-sec-pill {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
   letter-spacing: -0.1px;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: 100px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
 }
-.lp-sec-pill--doc { background: #f0f2f1; color: #4a5868; }
+.lp-sec-pill--doc { background: #f0f2f1; color: #56657c; }
 .lp-sec-pill-ic { font-size: 10px; }
 .lp-sec-pill--good { background: #d6efe2; color: #1f7a66; }
-.lp-sec-pill--warn { background: #fef3c7; color: #92400e; }
-.lp-sec-pill--pending { background: #f5f4f0; color: #8a95a0; }
+.lp-sec-pill--warn { background: #fdefc7; color: #92650e; }
+.lp-sec-pill--pending { background: #fcefdc; color: #a9701f; }
 
+.lp-sec-barrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
 .lp-sec-bar {
-  height: 4px;
-  background: #f0f2f1;
+  flex: 1;
+  height: 5px;
+  background: #eef0ef;
   border-radius: 100px;
-  margin-top: 12px;
   overflow: hidden;
 }
 .lp-sec-bar-fill {
   height: 100%;
   border-radius: 100px;
+  min-width: 5px;
   transition: width 0.3s ease;
 }
 .lp-sec-bar-fill--good { background: linear-gradient(90deg, #3dbda3, #1f7a66); }
 .lp-sec-bar-fill--warn { background: linear-gradient(90deg, #f5c44c, #d4a659); }
-.lp-sec-bar-fill--pending { background: #d9dee2; }
+.lp-sec-bar-fill--pending { background: #2fb39a; }
 
 .lp-sec-pct {
-  text-align: right;
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 800;
-  color: #4a5868;
-  margin-top: 4px;
+  color: #74839a;
   letter-spacing: -0.1px;
   font-feature-settings: 'tnum';
+  flex-shrink: 0;
+  min-width: 30px;
+  text-align: right;
 }
 .lp-sec-pct--good { color: #1f7a66; }
 
 .lp-sec-actionby {
-  text-align: right;
   font-size: 11px;
   font-weight: 800;
   color: #b85b36;
-  margin-top: 4px;
+  margin-top: 8px;
   letter-spacing: -0.1px;
 }
-
-.lp-sec-chev { color: #8a95a0; font-size: 22px; flex-shrink: 0; line-height: 1; padding-top: 2px; }
 
 /* Vault */
 .lp-doc {
@@ -1990,7 +2193,23 @@ const SectionCard = defineComponent({
   font-family: inherit;
   display: flex; align-items: center; justify-content: center;
 }
-.lp-modal-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
+.lp-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 12px 14px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd3d1 transparent;
+}
+.lp-modal-body::-webkit-scrollbar { width: 8px; }
+.lp-modal-body::-webkit-scrollbar-track { background: transparent; }
+.lp-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd3d1;
+  border-radius: 100px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.lp-modal-body::-webkit-scrollbar-thumb:hover { background: #aeb8b5; background-clip: padding-box; }
 .lp-modal-footer {
   padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
   border-top: 1px solid #e8eceb;
@@ -2297,10 +2516,25 @@ const SectionCard = defineComponent({
 }
 
 /* ── Responsive ───────────────────────────────────────────────────── */
-@media (max-width: 980px) {
+@media (max-width: 1040px) {
   .lp-sec-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .pp-hero {
+    grid-template-columns: 150px 1fr;
+    gap: 24px;
+  }
+  .pp-hero-side {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+    padding-top: 20px;
+    margin-top: 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .pp-hero-side-label { margin-right: auto; }
 }
 
 @media (max-width: 899px) {
@@ -2324,9 +2558,9 @@ const SectionCard = defineComponent({
     display: block;
   }
   .pp-hero {
-    grid-template-columns: 120px 1fr;
-    gap: 18px;
-    padding: 18px;
+    grid-template-columns: 140px 1fr;
+    gap: 20px;
+    padding: 22px;
   }
 }
 
@@ -2346,12 +2580,28 @@ const SectionCard = defineComponent({
   }
   .pp-hero {
     grid-template-columns: 1fr;
+    padding: 20px;
+    text-align: center;
   }
   .pp-hero-book {
-    justify-content: flex-start;
+    justify-content: center;
+  }
+  .pp-hero-stats {
+    justify-content: center;
+  }
+  .pp-hero-actions {
+    justify-content: center;
   }
   .pp-hero-stat {
-    padding: 0 14px;
+    padding: 0 16px;
   }
+  .lp-tabs {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .lp-tabs-group { justify-content: center; }
+  .lp-tabs-complete { text-align: center; }
+  .lp-convert-card { flex-wrap: wrap; }
 }
 </style>

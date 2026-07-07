@@ -56,13 +56,15 @@
     </div>
 
     <template v-else>
-      <!-- ── Page title bar ── -->
-      <div class="hsw-shell bpvw-titlebar">
-        <div class="bpvw-title-left">
-          <div class="bpvw-title-logo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
-          </div>
-          <span class="bpvw-title-text">BUYER PROFILE</span>
+      <!-- ── Page hero ── -->
+      <div class="hsw-shell bpvw-hero">
+        <div class="bpvw-hero-text">
+          <p class="bpvw-eyebrow"><span class="bpvw-eyebrow-dash" />Buyer Profile</p>
+          <h1 class="bpvw-h1">Your verified <span class="bpvw-h1-accent">buyer profile</span></h1>
+          <p class="bpvw-sub">
+            Share proof of identity, funds and chain position with agents and
+            sellers in one trusted link.
+          </p>
         </div>
         <button class="bpvw-help" @click="router.push('/profile/support')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
@@ -613,10 +615,10 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Web nav ── */
 .hsw-nav { position: sticky; top: 0; z-index: 100; background: rgba(243,242,239,0.88); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(35,29,69,0.07); }
-.hsw-shell { width: min(1280px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; }
+.hsw-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; position: relative; z-index: 2; }
 .hsw-nav-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.hsw-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; color: #231d45; background: none; border: none; cursor: pointer; flex-shrink: 0; }
-.hsw-brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.hsw-brand { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 800; letter-spacing: -0.4px; color: #231d45; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+.hsw-brand-logo { width: 28px; height: 28px; object-fit: contain; }
 .hsw-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #00857f; background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
 .hsw-links { display: flex; align-items: center; gap: 4px; }
 .hsw-links button { background: none; border: none; font-size: 13.5px; font-weight: 600; color: #516070; padding: 7px 13px; border-radius: 10px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
@@ -630,17 +632,26 @@ function goEdit() { router.push('/buyer-profile/build') }
 .hsw-help { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #231d45; background: rgba(255,255,255,0.9); border: 1px solid rgba(173,201,231,0.5); border-radius: 10px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
 .hsw-help:hover { background: #fff; border-color: #b9d5ea; }
 
-/* ── Page title bar ── */
-.bpvw-titlebar { display: flex; align-items: center; justify-content: space-between; padding: 32px 0 4px; }
-.bpvw-title-left { display: flex; align-items: center; gap: 14px; }
-.bpvw-title-logo {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: #e6f6f4;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+/* ── Page hero (app eyebrow-dash + H1 pattern) ── */
+.bpvw-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 34px 0 6px; }
+.bpvw-hero-text { min-width: 0; }
+.bpvw-eyebrow {
+  display: inline-flex; align-items: center; gap: 9px; margin: 0 0 12px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: 1.75px;
+  text-transform: uppercase; color: #00a19a;
 }
-.bpvw-title-logo svg { stroke: #00a19a; }
-.bpvw-title-text { font-size: 24px; font-weight: 800; color: #231d45; letter-spacing: 1px; }
+.bpvw-eyebrow-dash { width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
+.bpvw-h1 {
+  margin: 0; font-size: clamp(28px, 3.4vw, 40px); font-weight: 800;
+  line-height: 1.08; letter-spacing: -0.02em; color: #231d45;
+}
+.bpvw-h1-accent { color: #00a19a; }
+.bpvw-sub {
+  margin: 14px 0 0; max-width: 480px; font-size: 15.5px;
+  font-weight: 500; line-height: 1.6; color: #5b6e86;
+}
 .bpvw-help {
+  flex-shrink: 0;
   display: flex; align-items: center; gap: 6px;
   font-size: 13px; font-weight: 700; color: #231d45;
   background: #fff; border: 1px solid rgba(173,201,231,0.5);
@@ -1061,8 +1072,7 @@ function goEdit() { router.push('/buyer-profile/build') }
   .hsw-links, .hsw-cta { display: none; }
   .bpvw-layout { padding: 20px 0 20px; gap: 20px; }
   .bpvw-share-section { padding-bottom: 56px; gap: 16px; }
-  .bpvw-titlebar { padding: 24px 0 4px; }
-  .bpvw-title-text { font-size: 20px; }
+  .bpvw-hero { padding: 24px 0 4px; }
   .bp-share-grid { gap: 14px; }
   .share-card { padding: 18px 16px; }
   .share-card-icon { width: 40px; height: 40px; margin-bottom: 12px; }

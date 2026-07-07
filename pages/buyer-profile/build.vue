@@ -2943,10 +2943,10 @@ onBeforeUnmount(() => {
   display: block;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: clamp(24px, 3vw, 32px);
-  font-weight: 600;
-  letter-spacing: -0.4px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
   color: #231d45;
-  line-height: 1;
+  line-height: 1.1;
 }
 .bp-header-sub {
   display: inline-flex; align-items: center; gap: 7px;
