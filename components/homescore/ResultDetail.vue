@@ -311,6 +311,165 @@
       </div>
     </div>
 
+    <!-- ── Score pillar breakdown (Heating / Structure / …) ───── -->
+    <div v-if="pillars.length" class="rd-pillars-card" data-tour="pillars">
+      <div class="rd-pillars-head">
+        <div class="rd-pillars-title">Score breakdown</div>
+        <div class="rd-pillars-sub">Across five pillars · EPC stats</div>
+      </div>
+      <div class="rd-pillars-list">
+        <div v-for="p in pillars" :key="p.id" class="rd-pillar-row">
+          <span class="rd-pillar-dot" :style="{ background: p.color }" />
+          <span class="rd-pillar-name">{{ p.label }}</span>
+          <div class="rd-pillar-track">
+            <div
+              class="rd-pillar-bar"
+              :style="{ width: `${(p.value / p.max) * 100}%`, background: p.color }"
+            />
+          </div>
+          <span class="rd-pillar-score">
+            {{ p.value }}<span class="rd-pillar-max"> / {{ p.max }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Full EPC breakdown (collapsible) ───────────────────── -->
+    <div class="rd-epcfull-card" data-tour="epcfull">
+      <button
+        type="button"
+        class="rd-epcfull-head"
+        :aria-expanded="epcOpen ? 'true' : 'false'"
+        @click="epcOpen = !epcOpen"
+      >
+        <span class="rd-epcfull-ic">⚡</span>
+        <span class="rd-epcfull-head-text">
+          <span class="rd-epcfull-title">Full EPC breakdown</span>
+          <span class="rd-epcfull-sub">
+            Every line behind your score · {{ epcLines.length }} items
+          </span>
+        </span>
+        <svg
+          class="rd-epcfull-chev"
+          :class="{ open: epcOpen }"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      <div v-if="epcOpen" class="rd-epcfull-body">
+        <!-- Current → potential summary -->
+        <div class="rd-epcfull-summary">
+          <div class="rd-epcfull-grade">
+            <span class="rd-epc-letter-big" :style="{ background: epcColor }">{{ epcRating || '—' }}</span>
+            <span class="rd-epcfull-grade-meta">Current · {{ epcCurrentSap }}</span>
+          </div>
+          <span class="rd-epcfull-arrow">→</span>
+          <div class="rd-epcfull-grade">
+            <span class="rd-epc-letter-big" :style="{ background: '#7AB040' }">{{ epcPotentialLetter }}</span>
+            <span class="rd-epcfull-grade-meta">Potential · {{ epcPotentialSap }}</span>
+          </div>
+          <div class="rd-epcfull-saving">
+            <div class="rd-epcfull-saving-num">£{{ formatNum(potentialSaving) }}<span>/yr</span></div>
+            <div class="rd-epcfull-saving-meta">potential saving</div>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <div class="rd-epcfull-lines">
+          <div v-for="l in epcLines" :key="l.label" class="rd-epcfull-line">
+            <span class="rd-epcfull-line-ic">{{ l.icon }}</span>
+            <span class="rd-epcfull-line-body">
+              <span class="rd-epcfull-line-label">{{ l.label }}</span>
+              <span class="rd-epcfull-line-sub">{{ l.sub }}</span>
+            </span>
+            <span class="rd-epcfull-line-rating" :style="{ color: l.color, borderColor: l.color }">
+              {{ l.rating }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Your street (rank + inline map) ────────────────────── -->
+    <div class="rd-street-card" data-tour="street">
+      <div class="rd-street-eyebrow">🏘️ Your street · {{ streetName }}</div>
+      <div class="rd-street-rankrow">
+        <div class="rd-street-rank">#{{ streetRank }}</div>
+        <div class="rd-street-rank-text">
+          <div class="rd-street-of">of {{ streetHomes.length }} homes</div>
+          <div class="rd-street-delta" :class="streetSaving >= 0 ? 'good' : 'bad'">
+            {{ streetSavingAbs }} {{ streetSaving >= 0 ? 'cheaper than' : 'more than' }} the street average
+          </div>
+        </div>
+      </div>
+
+      <!-- House row -->
+      <div class="rd-street-houses">
+        <div
+          v-for="(h, i) in streetHomes"
+          :key="i"
+          class="rd-street-house"
+          :class="[h.tone, { you: h.you }]"
+          :title="h.you ? 'This property' : `£${formatNum(h.cost)}/yr`"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3 L21 10 L19 10 L19 20 L14 20 L14 14 L10 14 L10 20 L5 20 L5 10 L3 10 Z" />
+          </svg>
+        </div>
+      </div>
+
+      <button type="button" class="rd-street-toggle" @click="streetOpen = !streetOpen">
+        {{ streetOpen ? 'Hide street map' : 'Explore your street map' }}
+        <span class="rd-street-toggle-arrow" :class="{ open: streetOpen }">›</span>
+      </button>
+
+      <!-- Expanded detail -->
+      <div v-if="streetOpen" class="rd-street-detail">
+        <div class="rd-street-list">
+          <div
+            v-for="h in rankedHomes"
+            :key="h.addr"
+            class="rd-street-li"
+            :class="{ you: h.you }"
+          >
+            <span class="rd-street-li-rank">{{ h.rank }}</span>
+            <span class="rd-street-li-body">
+              <span class="rd-street-li-addr">{{ h.addr }}<template v-if="h.you"> — you</template></span>
+              <span class="rd-street-li-meta">{{ h.meta }}</span>
+            </span>
+            <span class="rd-street-li-cost" :style="{ color: toneColor(h.tone) }">
+              £{{ formatNum(h.cost) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="rd-street-legend">
+          <span><i style="background:#00a19a" />Under £1,500</span>
+          <span><i style="background:#d99a2b" />£1,500–2,000</span>
+          <span><i style="background:#dc2626" />Over £2,000</span>
+        </div>
+
+        <!-- EPC pathway projection -->
+        <div class="rd-street-pathway">
+          <div class="rd-street-pathway-label">If you complete the EPC pathway</div>
+          <div class="rd-street-pathway-row">
+            <div class="rd-street-pathway-cost">£{{ formatNum(pathwayCost) }}<span>/yr</span></div>
+            <div class="rd-street-pathway-meta">
+              #{{ pathwayRank }} of {{ streetHomes.length }} · up from #{{ streetRank }}
+            </div>
+            <div class="rd-street-pathway-save">−£{{ formatNum(pathwaySaving) }}/yr</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Intent picker ─────────────────────────────────────── -->
     <div class="rd-intent" data-tour="intent">
       <div class="rd-intent-eyebrow">
@@ -423,6 +582,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import type { Pillar } from '~/types/homescore'
+import { calculateScore, getPrefillFromProperty, getPillarMax } from '~/utils/homescoreScoring'
 
 // ── Tween helper: counts up from 0 → target with ease-out cubic on mount,
 // and re-tweens when the source changes (e.g. once real EPC data resolves).
@@ -520,6 +681,122 @@ defineEmits<{
   (e: 'see-running-costs'): void
   (e: 'refine-score'): void
 }>()
+
+// ── Score pillar breakdown (Heating / Structure / Efficiency / Electrics / Plumbing)
+// Derived from public EPC data via the shared V1 scoring model (same one the
+// owner quiz refines), so it stays consistent across the app.
+const PILLAR_META: { id: Pillar; label: string; color: string }[] = [
+  { id: 'heating', label: 'Heating', color: '#ef4444' },
+  { id: 'structure', label: 'Structure', color: '#f59e0b' },
+  { id: 'efficiency', label: 'Efficiency', color: '#22c55e' },
+  { id: 'electrics', label: 'Electrics', color: '#3b82f6' },
+  { id: 'plumbing', label: 'Plumbing', color: '#8b5cf6' },
+]
+const pillars = computed(() => {
+  if (!props.property) return []
+  const breakdown = calculateScore(getPrefillFromProperty(props.property)).breakdown
+  return PILLAR_META.map((m) => ({
+    ...m,
+    value: breakdown[m.id],
+    max: getPillarMax(m.id),
+  }))
+})
+
+// ── Full EPC breakdown accordion ─────────────────────────────────────
+const epcOpen = ref(false)
+
+// Map an EPC efficiency label ("Good", "Very Poor", …) to a display colour.
+function effColor(label: string): string {
+  const l = label.toLowerCase()
+  if (l.includes('very good')) return '#16a34a'
+  if (l.includes('good')) return '#65a30d'
+  if (l.includes('average')) return '#d99a2b'
+  if (l.includes('very poor')) return '#dc2626'
+  if (l.includes('poor')) return '#e0684b'
+  return '#9c98ad' // N/A / unknown
+}
+
+const EPC_LINE_META: { key: string; label: string; sub: string; icon: string }[] = [
+  { key: 'mainheatEnergyEff', label: 'Main heating', sub: 'Heating system', icon: '🔥' },
+  { key: 'mainheatcEnergyEff', label: 'Heating controls', sub: 'Controls', icon: '🎛️' },
+  { key: 'hotWaterEnergyEff', label: 'Hot water', sub: 'Hot water system', icon: '💧' },
+  { key: 'wallsEnergyEff', label: 'Walls', sub: 'Walls', icon: '🧱' },
+  { key: 'roofEnergyEff', label: 'Roof · loft insulation', sub: 'Roof', icon: '🏠' },
+  { key: 'floorEnergyEff', label: 'Floor', sub: 'Floor', icon: '🟫' },
+  { key: 'windowsEnergyEff', label: 'Windows', sub: 'Windows', icon: '🪟' },
+  { key: 'lightingEnergyEff', label: 'Lighting', sub: 'Lighting', icon: '💡' },
+]
+const epcLines = computed(() =>
+  EPC_LINE_META.map((m) => {
+    const raw = props.property?.[m.key]
+    const rating = raw ? String(raw) : 'N/A'
+    return { ...m, rating, color: raw ? effColor(rating) : '#9c98ad' }
+  }),
+)
+
+// ── Your street: rank card + inline map ──────────────────────────────
+// Neighbour costs are derived illustratively from the subject property + street
+// average (same approach as pages/homescore/street/[id].vue) — public EPC data
+// doesn't expose per-neighbour bills, so this is a modelled comparison.
+const streetOpen = ref(false)
+const streetAvg = computed(() => Number(props.streetAvgCost) || 1673)
+const youCost = computed(() => Number(props.estimatedAnnualCost) || streetAvg.value)
+const streetName = computed(() => {
+  const a: string = props.property?.addressLine1 || ''
+  const m = a.match(/^\d+[a-z]?,?\s*(.+)$/i)
+  return m ? m[1] : a || 'this street'
+})
+function toneOf(cost: number): 'low' | 'mid' | 'high' {
+  return cost < 1500 ? 'low' : cost < 2000 ? 'mid' : 'high'
+}
+function toneColor(t: string): string {
+  return t === 'low' ? '#00a19a' : t === 'mid' ? '#d99a2b' : '#dc2626'
+}
+function metaFor(cost: number): string {
+  if (cost < 1400) return 'Filled cavity · modern glazing · EPC C'
+  if (cost < 1700) return 'Part-insulated · EPC D'
+  if (cost < 2100) return 'Older glazing · EPC D/E'
+  return 'No insulation · single glazing · EPC F'
+}
+const streetHomes = computed(() => {
+  const avg = streetAvg.value
+  const rel = [0.76, 0.82, 0.86, 0.92, 0.97, 1.03, 1.09, 1.18, 1.31, 1.46]
+  const homes = rel.map((r, i) => {
+    const cost = Math.round((avg * r) / 10) * 10
+    return {
+      cost,
+      tone: toneOf(cost),
+      you: false,
+      addr: `${i * 2 + 1} ${streetName.value}`,
+      meta: metaFor(cost),
+    }
+  })
+  homes.push({
+    cost: youCost.value,
+    tone: toneOf(youCost.value),
+    you: true,
+    addr: props.property?.addressLine1 || 'This property',
+    meta: 'Your property · public EPC estimate',
+  })
+  return homes.sort((a, b) => a.cost - b.cost)
+})
+const rankedHomes = computed(() =>
+  streetHomes.value.map((h, i) => ({ ...h, rank: i + 1 })),
+)
+const streetRank = computed(
+  () => rankedHomes.value.find((h) => h.you)?.rank ?? 0,
+)
+// Positive = cheaper than the street average.
+const streetSaving = computed(() => streetAvg.value - youCost.value)
+const streetSavingAbs = computed(() => `£${formatNum(Math.abs(streetSaving.value))}`)
+const pathwaySaving = computed(() => Math.round(youCost.value * 0.28))
+const pathwayCost = computed(() => youCost.value - pathwaySaving.value)
+const pathwayRank = computed(() => {
+  const c = pathwayCost.value
+  let r = 1
+  for (const h of streetHomes.value) if (!h.you && h.cost < c) r++
+  return r
+})
 
 // ── Derived numbers ──
 const overpayDiff = computed(() =>
@@ -761,41 +1038,86 @@ function formatNum(n: number): string {
 @media (min-width: 900px) {
   .rd-page {
     background: transparent;
-    padding: 8px 0 0;
+    padding: 14px 0 0;
   }
   .rd-shell {
-    max-width: 1140px;
+    max-width: 1160px;
     margin: 0 auto;
     padding: 0 24px;
     display: grid;
     grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
-    gap: 22px;
+    grid-auto-rows: min-content;
+    gap: 20px 24px;
     align-items: start;
+    /* Balanced premium dashboard — tall cards paired with tall, the EPC drawer
+       and street/intent run full-width as bands so no column trails long. */
+    grid-template-areas:
+      'addr    score'
+      'cost    brk'
+      'pillars street'
+      'epc     epc'
+      'intent  intent';
   }
-  .rd-col {
+  /* Promote each column wrapper's children into the shell grid so every card
+     can be placed individually via grid-area (no template restructuring). */
+  .rd-shell .rd-col {
+    display: contents;
+  }
+  .rd-shell .rd-addr-card {
+    grid-area: addr;
+    align-self: stretch;
     display: flex;
     flex-direction: column;
-    min-width: 0;
+    justify-content: center;
   }
-  /* Cards flow inside the grid columns now — drop the per-card side margins
-     and let the grid gap + shell padding handle spacing. */
+  .rd-shell .rd-score-card {
+    grid-area: score;
+  }
+  .rd-shell .rd-overpay {
+    grid-area: cost;
+  }
+  .rd-shell .rd-breakdown {
+    grid-area: brk;
+  }
+  .rd-shell .rd-pillars-card {
+    grid-area: pillars;
+  }
+  .rd-shell .rd-epcfull-card {
+    grid-area: epc;
+  }
+  .rd-shell .rd-street-card {
+    grid-area: street;
+  }
+  .rd-shell .rd-intent {
+    grid-area: intent;
+  }
+  /* Grid gap handles all spacing now — drop the per-card side/bottom margins. */
   .rd-shell .rd-addr-card,
   .rd-shell .rd-score-card,
   .rd-shell .rd-overpay,
   .rd-shell .rd-breakdown,
+  .rd-shell .rd-pillars-card,
+  .rd-shell .rd-epcfull-card,
+  .rd-shell .rd-street-card,
   .rd-shell .rd-intent {
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 18px;
+    margin: 0;
   }
-  .rd-shell .rd-addr-card {
-    margin-top: 0;
+  /* Intent options fan out across the full-width band on desktop. */
+  .rd-shell .rd-intent-opts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+  }
+  .rd-shell .rd-intent-opt {
+    height: 100%;
   }
 }
 
 @media (min-width: 1280px) {
   .rd-shell {
-    gap: 26px;
+    max-width: 1200px;
+    gap: 22px 28px;
   }
 }
 
@@ -1345,6 +1667,465 @@ function formatNum(n: number): string {
   box-shadow: 0 4px 16px rgba(230, 162, 60, 0.1);
   transition: all 0.18s;
   animation: rd-fadeSlideUp 0.45s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Score pillar breakdown ─────────────────────────────────────────── */
+.rd-pillars-card {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  padding: 18px;
+  margin: 0 22px 12px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+  animation: rd-fadeSlideUp 0.45s 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rd-pillars-head {
+  margin-bottom: 14px;
+}
+.rd-pillars-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
+}
+.rd-pillars-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9c98ad;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.rd-pillars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.rd-pillar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rd-pillar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rd-pillar-name {
+  width: 74px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #231d45;
+}
+.rd-pillar-track {
+  flex: 1;
+  height: 8px;
+  background: #f2f2f7;
+  border-radius: 100px;
+  overflow: hidden;
+}
+.rd-pillar-bar {
+  height: 100%;
+  border-radius: 100px;
+  min-width: 4px;
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rd-pillar-score {
+  flex-shrink: 0;
+  min-width: 46px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  color: #231d45;
+  font-feature-settings: 'tnum';
+}
+.rd-pillar-max {
+  font-weight: 500;
+  color: #aeaeb2;
+}
+
+/* ── Full EPC breakdown accordion ───────────────────────────────────── */
+.rd-epcfull-card {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  margin: 0 22px 12px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+  overflow: hidden;
+  animation: rd-fadeSlideUp 0.45s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rd-epcfull-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.rd-epcfull-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: #eafaf6;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.rd-epcfull-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.rd-epcfull-title {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #231d45;
+}
+.rd-epcfull-sub {
+  display: block;
+  font-size: 12px;
+  color: #9c98ad;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.rd-epcfull-chev {
+  width: 18px;
+  height: 18px;
+  color: #9c98ad;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.rd-epcfull-chev.open {
+  transform: rotate(180deg);
+}
+.rd-epcfull-body {
+  padding: 0 18px 16px;
+  border-top: 1px solid #f3f4f7;
+}
+.rd-epcfull-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f7;
+  margin-bottom: 8px;
+}
+.rd-epcfull-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rd-epcfull-grade-meta {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #6b6783;
+}
+.rd-epcfull-arrow {
+  color: #c4c2d0;
+  font-weight: 800;
+}
+.rd-epcfull-saving {
+  margin-left: auto;
+  text-align: right;
+}
+.rd-epcfull-saving-num {
+  font-size: 18px;
+  font-weight: 900;
+  color: #00857f;
+  letter-spacing: -0.02em;
+}
+.rd-epcfull-saving-num span {
+  font-size: 12px;
+  font-weight: 700;
+}
+.rd-epcfull-saving-meta {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #9c98ad;
+}
+.rd-epcfull-lines {
+  display: flex;
+  flex-direction: column;
+}
+.rd-epcfull-line {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f5f5f7;
+}
+.rd-epcfull-line:last-child {
+  border-bottom: none;
+}
+.rd-epcfull-line-ic {
+  width: 26px;
+  text-align: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.rd-epcfull-line-body {
+  flex: 1;
+  min-width: 0;
+}
+.rd-epcfull-line-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #231d45;
+}
+.rd-epcfull-line-sub {
+  display: block;
+  font-size: 11px;
+  color: #9c98ad;
+  margin-top: 1px;
+}
+.rd-epcfull-line-rating {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid;
+  background: #fff;
+  white-space: nowrap;
+}
+
+/* ── Your street card ───────────────────────────────────────────────── */
+.rd-street-card {
+  margin: 0 22px 12px;
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #231d45 0%, #2f2769 100%);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.24);
+  animation: rd-fadeSlideUp 0.45s 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rd-street-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a9a3d6;
+  margin-bottom: 12px;
+}
+.rd-street-rankrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.rd-street-rank {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.rd-street-of {
+  font-size: 14px;
+  font-weight: 700;
+  color: #efeefb;
+}
+.rd-street-delta {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.rd-street-delta.good {
+  color: #6ee7c8;
+}
+.rd-street-delta.bad {
+  color: #ff9d8a;
+}
+.rd-street-houses {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 16px 0 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.16);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rd-street-houses::-webkit-scrollbar {
+  display: none;
+}
+.rd-street-house {
+  flex: 1 0 auto;
+  min-width: 22px;
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+}
+.rd-street-house svg {
+  width: 22px;
+  height: 22px;
+}
+.rd-street-house.low {
+  color: #4fd1b0;
+}
+.rd-street-house.mid {
+  color: #e6b45a;
+}
+.rd-street-house.high {
+  color: #f2846f;
+}
+.rd-street-house.you {
+  transform: translateY(-4px) scale(1.18);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+  opacity: 1;
+}
+.rd-street-toggle {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.rd-street-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.rd-street-toggle-arrow {
+  transition: transform 0.2s ease;
+  font-size: 18px;
+}
+.rd-street-toggle-arrow.open {
+  transform: rotate(90deg);
+}
+.rd-street-detail {
+  margin-top: 14px;
+}
+.rd-street-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rd-street-li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.rd-street-li.you {
+  background: rgba(0, 161, 154, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 200, 0.5);
+}
+.rd-street-li-rank {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 11px;
+  font-weight: 800;
+}
+.rd-street-li-body {
+  flex: 1;
+  min-width: 0;
+}
+.rd-street-li-addr {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rd-street-li-meta {
+  display: block;
+  font-size: 11px;
+  color: #b7b2dd;
+  margin-top: 1px;
+}
+.rd-street-li-cost {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 900;
+  font-feature-settings: 'tnum';
+}
+.rd-street-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 2px 0;
+  font-size: 11px;
+  color: #cfcbe9;
+  font-weight: 600;
+}
+.rd-street-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.rd-street-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.rd-street-pathway {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(0, 161, 154, 0.16);
+  border: 1px solid rgba(110, 231, 200, 0.3);
+}
+.rd-street-pathway-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6ee7c8;
+  margin-bottom: 8px;
+}
+.rd-street-pathway-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rd-street-pathway-cost {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.rd-street-pathway-cost span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cfcbe9;
+}
+.rd-street-pathway-meta {
+  flex: 1;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #cfcbe9;
+  line-height: 1.3;
+}
+.rd-street-pathway-save {
+  font-size: 14px;
+  font-weight: 900;
+  color: #6ee7c8;
+  white-space: nowrap;
 }
 .rd-breakdown:hover {
   transform: translateY(-2px);
