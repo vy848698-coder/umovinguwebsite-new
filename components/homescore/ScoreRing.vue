@@ -14,10 +14,10 @@
         style="transition: stroke-dasharray 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
       />
       <!-- Score -->
-      <text x="100" y="96" text-anchor="middle" :font-size="score >= 100 ? 46 : 58" font-weight="800" :fill="scoreColor" font-family="sans-serif" letter-spacing="-2">
+      <text x="100" y="96" text-anchor="middle" :font-size="score >= 100 ? 46 : 58" font-weight="800" :fill="scoreColor" font-family="'Plus Jakarta Sans', sans-serif" letter-spacing="-2">
         {{ displayScore }}
       </text>
-      <text x="100" y="126" text-anchor="middle" font-size="16" fill="#6b7280" font-family="sans-serif" font-weight="500">
+      <text x="100" y="126" text-anchor="middle" font-size="16" fill="#6b7280" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500">
         {{ rating }}
       </text>
     </svg>

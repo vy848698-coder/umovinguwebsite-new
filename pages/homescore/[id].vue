@@ -1,5 +1,5 @@
 <template>
-  <div class="hs-page" :class="{ 'hs-page--web': screen === 'landing' || screen === 'loading' || screen === 'results' || screen === 'publish' || screen === 'kyc' || screen === 'kyc-pending' || screen === 'published' || screen === 'quick-wins' || screen === 'move-ready' || screen === 'buyer-results' || screen === 'passport' || screen === 'questions' }">
+  <div class="hs-page" :class="{ 'hs-page--web': screen === 'landing' || screen === 'loading' || screen === 'results' || screen === 'publish' || screen === 'kyc' || screen === 'kyc-pending' || screen === 'published' || screen === 'quick-wins' || screen === 'move-ready' || screen === 'buyer-results' || screen === 'passport' || screen === 'questions' || screen === 'no-epc-estimator' || screen === 'boost' || screen === 'level-up' }">
     <!-- Global header — hidden during quiz + post-quiz funnel screens, which
          each render their own top nav and amber address card. -->
     <!-- Global mobile header removed — every screen now renders its own web
@@ -68,26 +68,102 @@
         </div>
       </header>
 
-      <ResultDetail
+      <V6ScoreView
         :property="property"
         :score="autoScoreVal"
         :epc-rating="property?.epcRating ?? null"
-        :state="resolvedPassportState"
-        :estimated-annual-cost="resolvedAnnualCost"
-        :street-avg-cost="1673"
         :epc-year="resolvedEpcYear"
-        :search-stats="searchStats"
+        :annual-cost="resolvedAnnualCost"
+        :potential-saving="resolvedPotentialSaving"
+        :co2-now="resolvedCo2Now"
+        :co2-potential="resolvedCo2Potential"
+        :bills-split="resolvedBillsSplit"
+        :street-rank="streetEnergyRank?.rank ?? null"
+        :street-total="streetEnergyRank?.total ?? null"
+        :searches-today="searchStats?.today ?? 0"
+        :watchers-count="(searchStats as any)?.watchers ?? 0"
+        :passport-state="resolvedPassportState"
+        :passport-progress-pct="passportProgressPct"
+        :passport-sections-done="passportSectionsDone"
+        :passport-sections-total="passportSectionsTotal"
+        :auto-open-claim="autoOpenClaim"
+        :is-logged-in="!isGuest"
+        :is-property-owner="isPropertyOwner"
+        @back="goBack"
         @claim="startQuestions"
-        @owner-dashboard="claimOrAccessPassport"
+        @refine="onRefineScore"
         @interested="goToBuyerView"
-        @see-street="goToStreetCompare"
+        @open-pathway="goToPathway"
+        @open-dashboard="claimOrAccessPassport"
+        @open-boost="goToBoost"
         @see-running-costs="goToRunningCosts"
-        @refine-score="onRefineScore"
+        @see-street="goToStreetCompare"
+        @view-passport="goToPassport"
+        @buy-passport="goToBuyerView"
+        @claim-passport="claimOrAccessPassport"
+        @claim-modal-closed="autoOpenClaim = false"
       />
     </template>
 
     <!-- ── QUESTIONS — prototype-style: teal address card + live gauge ── -->
+    <!-- ── OWNER QUIZ — exact clone V6QuizView ──────────────────── -->
     <template v-else-if="screen === 'questions'">
+      <V6QuizView
+        :property="property"
+        :initial-score="autoScoreVal"
+        :epc-rating="property?.epcRating ?? null"
+        :epc-year="resolvedEpcYear"
+        :searches-today="searchStats?.today ?? 0"
+        :watchers-count="(searchStats as any)?.watchers ?? 0"
+        :passport-state="resolvedPassportState"
+        :passport-progress-pct="passportProgressPct"
+        :passport-sections-done="passportSectionsDone"
+        :passport-sections-total="passportSectionsTotal"
+        @back="goBack"
+        @finish="onQuizFinish"
+        @upload-bill="onUploadBill"
+        @claim-passport="claimOrAccessPassport"
+        @watch-property="goToBuyerView"
+        @buy-passport="goToBuyerView"
+      />
+    </template>
+
+    <!-- ── BOOST YOUR SCORE — exact clone V6BoostView ───────────── -->
+    <template v-else-if="screen === 'boost'">
+      <V6BoostView
+        :home-score="autoScoreVal"
+        :public-epc-rating="property?.epcRating ?? null"
+        :public-epc-score="(property as any)?.epcScore ?? null"
+        :public-epc-year="resolvedEpcYear"
+        @back="goBack"
+        @open-marketplace="goToRunningCosts"
+        @start-passport="onBoostStartPassport"
+      />
+    </template>
+
+    <!-- ── LEVEL UP — exact clone V6LevelUpView ─────────────────── -->
+    <template v-else-if="screen === 'level-up'">
+      <V6LevelUpView
+        :from-score="autoScoreVal"
+        :to-score="v6QuizFinal?.finalScore ?? autoScoreVal"
+        :delta="v6QuizFinal?.delta ?? 0"
+        @back="goBack"
+        @open-pathway="goToPathway"
+        @open-boost="goToBoost"
+      />
+    </template>
+
+    <!-- ── NO-EPC ESTIMATOR — exact clone V6NoEpcEstimator ──────── -->
+    <template v-else-if="screen === 'no-epc-estimator'">
+      <V6NoEpcEstimator
+        :property="property"
+        @close="goBack"
+        @book-assessment="onBookAssessment"
+      />
+    </template>
+
+    <!-- ── legacy sim quiz (disabled — replaced by V6QuizView) ──── -->
+    <template v-else-if="false">
       <div class="sim-root sim-root--web">
         <!-- ── Web nav ──────────────────────────────────────────── -->
         <header class="hsw-nav">
@@ -146,7 +222,10 @@
 
         <!-- Hero -->
         <div class="sim-hero">
-          <div class="sim-hero-eyebrow">🎯 Your HomeScore accuracy check</div>
+          <div class="sim-hero-eyebrow">
+            <span class="sim-live-dot" />HomeScore™ · Live
+            <span class="sim-pts-badge">+{{ Math.max(0, Math.round(simScoreDeltaTotal)) }} pts</span>
+          </div>
           <div class="sim-hero-body">
             Your EPC is from <b>{{ simEpcYear }}</b
             >. A lot may have changed. Tell us what's been done — we'll give you
@@ -185,11 +264,17 @@
             </div>
             <div class="sim-score-info">
               <div class="sim-score-band">{{ simScoreBand }}</div>
+              <div v-if="simScore < 55" class="sim-score-aim">
+                Aim for Level C (55+) to unlock the upgrade marketplace
+              </div>
+              <div v-else class="sim-score-aim sim-score-aim--hit">
+                ✓ Level C reached — upgrade marketplace unlocked
+              </div>
               <div class="sim-score-grade">
                 {{
                   simAnsweredCount === 0
-                    ? 'Answer the questions below to update'
-                    : `${simAnsweredCount} of ${simSteps.length} answered`
+                    ? 'Answer below to update · earn XP for every question'
+                    : `${simAnsweredCount} of ${simSteps.length} answered · earn XP`
                 }}
               </div>
             </div>
@@ -1962,6 +2047,24 @@
             </aside>
 
             <div class="bvw-content">
+        <!-- ── Tab bar (Energy / Costs / Sold / Risks / Area) ───── -->
+        <div class="bv-tabs" role="tablist">
+          <button
+            v-for="t in buyerTabs"
+            :key="t.id"
+            type="button"
+            class="bv-tab"
+            :class="{ active: buyerTab === t.id }"
+            role="tab"
+            :aria-selected="buyerTab === t.id"
+            @click="buyerTab = t.id"
+          >
+            <span class="bv-tab-ic">{{ t.icon }}</span>{{ t.label }}
+          </button>
+        </div>
+
+        <!-- ═══ RISKS tab ═══ -->
+        <div v-show="buyerTab === 'risks'" class="bv-tabpanel">
         <!-- ── Buyer risk summary ──────────────────────────────── -->
         <div class="bv-section-h">
           <div class="bv-section-h-icon warn">
@@ -1997,8 +2100,18 @@
               <div class="bv-risk-sub">{{ r.body }}</div>
             </div>
           </div>
+          <div v-if="buyerFlood" class="bv-risk-row" :class="/low|very low/i.test(buyerFlood) ? 'green' : 'amber'">
+            <span class="bv-risk-icon">🌊</span>
+            <div class="bv-risk-body">
+              <div class="bv-risk-title">Flood risk — {{ buyerFlood }}</div>
+              <div class="bv-risk-sub">Environment Agency surface & river data for this postcode.</div>
+            </div>
+          </div>
         </div>
+        </div><!-- /risks tab -->
 
+        <!-- ═══ ENERGY tab ═══ -->
+        <div v-show="buyerTab === 'energy'" class="bv-tabpanel">
         <!-- ── Score breakdown ─────────────────────────────────── -->
         <div class="bv-section-h">
           <div class="bv-section-h-icon">
@@ -2042,6 +2155,79 @@
           <div class="bv-bd-note">
             This is based on public EPC data only. Ask the owner to run a full
             HomeScore to get a verified picture.
+          </div>
+        </div>
+        </div><!-- /energy tab -->
+
+        <!-- ═══ COSTS tab ═══ -->
+        <div v-show="buyerTab === 'costs'" class="bv-tabpanel">
+          <div class="bv-costs-hero">
+            <div class="bv-costs-eyebrow">Estimated total per year</div>
+            <div class="bv-costs-num">
+              £{{ buyerCosts.total.toLocaleString() }}<span>/yr</span>
+            </div>
+            <div class="bv-costs-sub">
+              Energy from EPC data, council tax, and a regional water estimate.
+            </div>
+          </div>
+          <div class="bv-costs-rows">
+            <div class="bv-costs-row">
+              <span class="bv-costs-row-label">⚡ Energy <small>· heating, hot water & lighting</small></span>
+              <b>£{{ buyerCosts.energy.toLocaleString() }}/yr</b>
+            </div>
+            <div class="bv-costs-row">
+              <span class="bv-costs-row-label">🏛️ Council tax<template v-if="buyerCosts.councilTaxBand"> <small>· Band {{ buyerCosts.councilTaxBand }}</small></template></span>
+              <b>{{ buyerCosts.councilTax != null ? '£' + buyerCosts.councilTax.toLocaleString() + '/yr' : '—' }}</b>
+            </div>
+            <div class="bv-costs-row">
+              <span class="bv-costs-row-label">💧 Water & sewerage <small>· regional avg</small></span>
+              <b>£{{ buyerCosts.water.toLocaleString() }}/yr</b>
+            </div>
+          </div>
+          <div class="bv-bd-note">
+            Water is a published regional average — suppliers don't expose per-property metered bills.
+          </div>
+        </div>
+
+        <!-- ═══ SOLD tab ═══ -->
+        <div v-show="buyerTab === 'sold'" class="bv-tabpanel">
+          <div class="bv-costs-hero sold">
+            <div class="bv-costs-eyebrow">Estimated value</div>
+            <div class="bv-costs-num">
+              {{ buyerSold.estimated != null ? '£' + buyerSold.estimated.toLocaleString() : '—' }}
+            </div>
+            <div class="bv-costs-sub">Modelled from local sold prices (HPI-adjusted).</div>
+          </div>
+          <div class="bv-costs-rows">
+            <div v-if="buyerSold.lastPrice" class="bv-costs-row">
+              <span class="bv-costs-row-label">🏷️ Last sold<template v-if="buyerSold.lastDate"> <small>· {{ formatSoldDate(buyerSold.lastDate) }}</small></template></span>
+              <b>£{{ buyerSold.lastPrice.toLocaleString() }}</b>
+            </div>
+            <div v-else class="bv-bd-note" style="margin:0">
+              No Land Registry sale on record for this address yet.
+            </div>
+          </div>
+          <div class="bv-arealinks">
+            <div class="bv-arealink">🏘️ Comparable sales nearby<small>Similar homes in {{ property?.postcode || 'this area' }}</small></div>
+            <div class="bv-arealink">📜 Title &amp; tenure<small>Available via solicitor</small></div>
+          </div>
+        </div>
+
+        <!-- ═══ AREA tab ═══ -->
+        <div v-show="buyerTab === 'area'" class="bv-tabpanel">
+          <div class="bv-area-note">
+            <div class="bv-area-note-title">📍 Area insights</div>
+            <div class="bv-area-note-body">
+              Crime, schools, broadband and transport for {{ property?.postcode || 'this postcode' }}
+              come from external sources (data.police.uk, Ofsted, Ofcom). Wire these
+              endpoints to light up this tab.
+            </div>
+          </div>
+          <div class="bv-arealinks">
+            <div class="bv-arealink">🚨 Crime &amp; safety<small>data.police.uk · 1-mile radius</small></div>
+            <div class="bv-arealink">🎓 Schools nearby<small>Ofsted ratings</small></div>
+            <div class="bv-arealink">📶 Broadband &amp; mobile<small>Ofcom coverage</small></div>
+            <div class="bv-arealink">🚌 Transport<small>Stations &amp; bus stops</small></div>
           </div>
         </div>
 
@@ -2718,6 +2904,11 @@ import { usePassportClaim } from '~/composables/usePassportClaim'
 import { usePropertyActions } from '~/composables/usePropertyActions'
 import { useAppToast } from '~/composables/useCustomToast'
 import ResultDetail from '~/components/homescore/ResultDetail.vue'
+import V6ScoreView from '~/components/homescore/V6ScoreView.vue'
+import V6QuizView from '~/components/homescore/V6QuizView.vue'
+import V6BoostView from '~/components/homescore/V6BoostView.vue'
+import V6LevelUpView from '~/components/homescore/V6LevelUpView.vue'
+import V6NoEpcEstimator from '~/components/homescore/V6NoEpcEstimator.vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
@@ -2768,6 +2959,9 @@ type Screen =
   | 'loading'
   | 'landing'
   | 'questions'
+  | 'no-epc-estimator'
+  | 'level-up'
+  | 'boost'
   | 'results'
   | 'publish'
   | 'kyc'
@@ -2900,6 +3094,94 @@ const resolvedEpcYear = computed<number | null>(() => {
   const y = new Date(lodged).getFullYear()
   return Number.isFinite(y) ? y : null
 })
+
+// ── Real-data computeds for V6ScoreView (ported from Updated Application) ──
+const autoOpenClaim = ref(false)
+const passportProgressPct = computed(() => 0)
+const passportSectionsDone = computed(() => 0)
+const passportSectionsTotal = computed(() => 0)
+
+const resolvedCo2Now = computed<number | null>(() => {
+  const p: any = property.value
+  const v = p?.co2Emissions ?? p?.co2EmissionsCurrent
+  if (v == null) return null
+  const n = Number(v)
+  return Number.isFinite(n) ? Math.round(n * 10) / 10 : null
+})
+const resolvedCo2Potential = computed<number | null>(() => {
+  const v = (property.value as any)?.co2EmissionsPotential
+  if (v == null) return null
+  const n = Number(v)
+  return Number.isFinite(n) ? Math.round(n * 10) / 10 : null
+})
+const resolvedBillsSplit = computed<
+  { heating: number; hotWater: number; lighting: number } | null
+>(() => {
+  const p: any = property.value
+  const h = Number(p?.heatingCostCurrent ?? 0)
+  const w = Number(p?.hotWaterCostCurrent ?? 0)
+  const l = Number(p?.lightingCostCurrent ?? 0)
+  const total = h + w + l
+  if (total <= 0) return null
+  return {
+    heating: Math.round((h / total) * 100),
+    hotWater: Math.round((w / total) * 100),
+    lighting: Math.round((l / total) * 100),
+  }
+})
+const resolvedPotentialSaving = computed<number>(() => {
+  const p: any = property.value
+  const recs: any = p?.epcRecommendations
+  if (Array.isArray(recs) && recs.length) {
+    const sum = recs.reduce((acc: number, r: any) => {
+      const v = Number(r?.typicalSaving ?? r?.indicativeCost ?? 0)
+      return acc + (Number.isFinite(v) ? v : 0)
+    }, 0)
+    if (sum > 0) return Math.round(sum)
+  }
+  const cert: any = p?.epcCert
+  const curr = Number(cert?.energyCostCurrent ?? resolvedAnnualCost.value)
+  const pot = Number(cert?.energyCostPotential ?? 0)
+  if (curr > 0 && pot > 0 && pot < curr) return Math.round(curr - pot)
+  return 445
+})
+
+// ── V6 flow handlers (quiz → level-up → boost) ──────────────────────
+const v6QuizFinal = ref<{
+  finalScore: number
+  delta: number
+  answers: Record<string, string>
+} | null>(null)
+function onQuizFinish(payload: {
+  finalScore: number
+  delta: number
+  answers: Record<string, string>
+}) {
+  v6QuizFinal.value = payload
+  screen.value = 'level-up'
+}
+function onUploadBill(_file: File) {
+  // Bill-parsing endpoint not wired server-side yet (matches clone behaviour).
+}
+function onBookAssessment() {
+  window.open(
+    'https://www.gov.uk/find-energy-certificate/find-an-assessor',
+    '_blank',
+    'noopener,noreferrer',
+  )
+}
+function goToBoost() {
+  screen.value = 'boost'
+}
+function goToPathway() {
+  const from = screen.value
+  router.push(
+    `/homescore/pathway/${propertyId}?from=${encodeURIComponent(from)}`,
+  )
+}
+function onBoostStartPassport() {
+  claimOrAccessPassport()
+}
 
 function goToBuyerView() {
   // "I'm interested in buying" — let guests through to the buyer view so
@@ -3552,6 +3834,12 @@ const nbGapReasons = computed(() => {
 // ── Actions ───────────────────────────────────────────────────
 
 function startQuestions() {
+  // No-EPC path: run the self-contained visitor estimator (exact clone).
+  // Without an EPC there's no anchor score for the owner quiz to refine.
+  if (!property.value?.epcRating) {
+    screen.value = 'no-epc-estimator'
+    return
+  }
   // Read-only mode: don't let non-owners run the quiz
   if (readOnlyMode.value) {
     router.push(`/property/${propertyId}`)
@@ -4735,6 +5023,49 @@ const bvQuestions = [
     sub: 'Electrical Installation Condition Report — not legally required for sales, but worth asking.',
   },
 ]
+
+// ── Buyer report tabs (Energy / Costs / Sold / Risks / Area) ──────────
+type BuyerTab = 'energy' | 'costs' | 'sold' | 'risks' | 'area'
+const buyerTab = ref<BuyerTab>('energy')
+const buyerTabs: { id: BuyerTab; label: string; icon: string }[] = [
+  { id: 'energy', label: 'Energy', icon: '⚡' },
+  { id: 'costs', label: 'Costs', icon: '💰' },
+  { id: 'sold', label: 'Sold', icon: '🏷️' },
+  { id: 'risks', label: 'Risks', icon: '⚠️' },
+  { id: 'area', label: 'Area', icon: '📍' },
+]
+
+// Costs tab — energy (EPC) + council tax (real field) + regional water estimate.
+const buyerCosts = computed(() => {
+  const p: any = property.value
+  const energy = Math.round(buyerAnnualCost.value)
+  const councilTax: number | null = p?.councilTaxAnnual ?? null
+  const water = 471 // England & Wales regional average — no per-property meter data
+  return {
+    energy,
+    councilTax,
+    councilTaxBand: p?.councilTaxBand ?? null,
+    council: p?.councilTaxCouncilName ?? null,
+    water,
+    total: energy + (councilTax ?? 0) + water,
+  }
+})
+
+// Sold tab — estimated value + last Land Registry sale (real fields).
+const buyerSold = computed(() => {
+  const p: any = property.value
+  return {
+    estimated: p?.estimatedPrice ?? null,
+    lastPrice: p?.lastSoldPrice ?? null,
+    lastDate: p?.lastSoldDate ?? null,
+  }
+})
+function formatSoldDate(d: string): string {
+  const date = new Date(d)
+  if (isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+}
+const buyerFlood = computed<string | null>(() => property.value?.floodRisk ?? null)
 
 const buyerEpcGrade = computed(() => {
   const rating = property.value?.epcRating
@@ -9955,6 +10286,171 @@ watch(screen, (s) => {
 }
 
 /* ── Buyer risk summary card (amber outer + pastel inner rows) ── */
+/* ── Buyer report tabs ────────────────────────────────────────────── */
+.bv-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 22px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.bv-tabs::-webkit-scrollbar {
+  display: none;
+}
+.bv-tab {
+  flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  border: 1px solid #e7ecf2;
+  background: #fff;
+  color: #6b6783;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.bv-tab:hover {
+  color: #231d45;
+}
+.bv-tab.active {
+  background: #00a19a;
+  border-color: #00a19a;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(0, 161, 154, 0.24);
+}
+.bv-tab-ic {
+  font-size: 13px;
+}
+.bv-tabpanel {
+  animation: bv-tabfade 0.28s ease;
+}
+@keyframes bv-tabfade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Costs / Sold hero + rows */
+.bv-costs-hero {
+  margin: 0 22px 12px;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(150deg, #00a19a 0%, #00b6ad 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.22);
+}
+.bv-costs-hero.sold {
+  background: linear-gradient(150deg, #231d45 0%, #3a2f78 100%);
+  box-shadow: 0 10px 24px rgba(35, 29, 69, 0.22);
+}
+.bv-costs-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 6px;
+}
+.bv-costs-num {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.bv-costs-num span {
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+.bv-costs-sub {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+.bv-costs-rows {
+  margin: 0 22px 10px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+}
+.bv-costs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f7;
+}
+.bv-costs-row:last-child {
+  border-bottom: none;
+}
+.bv-costs-row-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #231d45;
+}
+.bv-costs-row-label small {
+  font-weight: 500;
+  color: #9c98ad;
+}
+.bv-costs-row b {
+  font-size: 14px;
+  font-weight: 900;
+  color: #231d45;
+  white-space: nowrap;
+}
+.bv-arealinks {
+  margin: 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bv-arealink {
+  display: flex;
+  flex-direction: column;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #231d45;
+  box-shadow: 0 4px 14px rgba(24, 52, 88, 0.05);
+}
+.bv-arealink small {
+  font-weight: 500;
+  color: #9c98ad;
+  margin-top: 2px;
+  font-size: 11.5px;
+}
+.bv-area-note {
+  margin: 0 22px 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f4faf8;
+  border: 1px solid #d7efea;
+}
+.bv-area-note-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #017a72;
+  margin-bottom: 6px;
+}
+.bv-area-note-body {
+  font-size: 12.5px;
+  color: #4a5570;
+  line-height: 1.5;
+}
+
 .bv-risks-card {
   margin: 0 22px;
   background: #fff;
@@ -10461,12 +10957,49 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .sim-hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 9px;
   font-weight: 800;
   color: var(--sim-teal-dark);
   letter-spacing: 1.4px;
   text-transform: uppercase;
   margin-bottom: 10px;
+}
+.sim-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00a19a;
+  box-shadow: 0 0 0 0 rgba(0, 161, 154, 0.5);
+  animation: sim-live-pulse 1.6s ease-out infinite;
+}
+@keyframes sim-live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 161, 154, 0.5); }
+  100% { box-shadow: 0 0 0 7px rgba(0, 161, 154, 0); }
+}
+.sim-pts-badge {
+  margin-left: auto;
+  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 900;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.12);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  text-transform: none;
+}
+.sim-score-aim {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b06a00;
+  line-height: 1.35;
+  margin: 2px 0 4px;
+}
+.sim-score-aim--hit {
+  color: #00857f;
 }
 .sim-hero-body {
   font-size: 13px;
