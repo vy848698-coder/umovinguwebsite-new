@@ -176,7 +176,6 @@
         <div v-show="activeTab === 'compliance'">
           <template v-for="group in complianceGroups" :key="group.label">
             <div v-if="group.sections.length > 0" class="section-heading">
-              <span class="section-heading-dash" />
               <span class="section-heading-label">{{ group.label }}</span>
               <span class="section-heading-rule" />
               <span class="section-heading-count">
@@ -233,7 +232,6 @@
           <!-- Fallback: any sections that didn't match a group bucket -->
           <template v-if="ungroupedSections.length > 0">
             <div class="section-heading">
-              <span class="section-heading-dash" />
               <span class="section-heading-label">Other</span>
               <span class="section-heading-rule" />
               <span class="section-heading-count">
@@ -288,7 +286,6 @@
         <!-- VAULT -->
         <div v-show="activeTab === 'vault'">
           <div class="section-heading">
-            <span class="section-heading-dash" />
             <span class="section-heading-label">All uploaded documents</span>
             <span class="section-heading-rule" />
             <span class="section-heading-count">
@@ -311,7 +308,6 @@
         <!-- TENANCY -->
         <div v-show="activeTab === 'tenancy'">
           <div class="section-heading">
-            <span class="section-heading-dash" />
             <span class="section-heading-label">Current tenancy</span>
             <span class="section-heading-rule" />
           </div>
@@ -335,7 +331,6 @@
           </div>
 
           <div v-if="tenancySections.length > 0" class="section-heading">
-            <span class="section-heading-dash" />
             <span class="section-heading-label">Documents to keep current</span>
             <span class="section-heading-rule" />
             <span class="section-heading-count">

@@ -239,8 +239,7 @@
             <p class="lp-eyebrow">The free first step</p>
             <h2 class="lp-h2 lp-h2--sans">How does your<br />home compare<span class="lp-q">?</span></h2>
             <p class="lp-lede">
-              HomeScore is your free way in. In 60 seconds it shows how your home compares on
-              bills, energy and value — against your street and your neighbours, with where you could save.
+               Bills vs. street. Value vs. neighbours. Where you could save. In 60 seconds.
             </p>
             <ol class="lp-steps">
               <li><span class="lp-step-n">1</span><div><strong>Enter your address</strong><p>No sign-up, no card. We pull live data from HM Land Registry and public records.</p></div></li>

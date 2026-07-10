@@ -39,7 +39,7 @@
       <!-- Page head — kicker + title + lede, role switch on the right -->
       <div class="ppv-head">
         <div class="ppv-head-text">
-          <p class="ppv-kicker"><span class="ppv-kicker-line" />Property Passport</p>
+          <p class="ppv-kicker">Property Passport</p>
           <h1>Your Passport</h1>
           <p class="ppv-lede">
             Manage, publish and share your property information —
@@ -286,7 +286,7 @@
         <div v-if="viewMode === 'list'" class="pp-sec-header">
           <div class="pp-sec-head-text">
             <div class="pp-sec-kicker">
-              <span class="ppv-kicker-line" />{{ steps.length }} Verified Sections
+              {{ steps.length }} Verified Sections
             </div>
             <h2 class="pp-sec-title">Build your record, section by section</h2>
           </div>

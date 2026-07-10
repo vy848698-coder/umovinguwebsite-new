@@ -28,7 +28,7 @@
             @click="onBack"
             aria-label="Back"
           >
-            <span class="pw-nav-back-arrow" aria-hidden="true">←</span>
+            <Icon name="i-lucide-arrow-left" class="pw-nav-back-arrow" />
             Back
           </button>
         </div>
@@ -47,315 +47,359 @@
     </header>
 
     <div class="hs-v6-pathway">
-    <!-- Page title -->
-    <div class="app-header">
-      <div class="app-header-info">
-        <div class="app-header-title">Your pathway</div>
-        <div class="app-header-sub">Level {{ fromLevel }} → Level {{ toLevel }} · {{ addressLine }}</div>
-      </div>
-    </div>
-
-    <!-- Pathway hero -->
-    <div class="pathway-hero anim-1">
-      <div class="pathway-eyebrow">✦ EPC-recommended route</div>
-      <div class="pathway-route">
-        <div class="pathway-level-from">
-          <div class="pathway-level-letter from">{{ fromLevel }}</div>
-          <div class="pathway-level-sub">Now · {{ fromScore }}</div>
+      <!-- Page heading -->
+      <div class="pw-pagehead anim-1">
+        <div class="pw-pagehead-eyebrow">
+          <Icon name="i-lucide-route" /> Your pathway
         </div>
-        <div class="pathway-arrow" />
-        <div class="pathway-level-to">
-          <div class="pathway-level-letter to">{{ toLevel }}</div>
-          <div class="pathway-level-sub">Potential · {{ toScore }}</div>
+        <h1 class="pw-pagehead-title">Level {{ fromLevel }} → Level {{ toLevel }}</h1>
+        <div class="pw-pagehead-sub">
+          <Icon name="i-lucide-map-pin" /> {{ addressLine }}
         </div>
       </div>
-      <div class="pathway-stats-row">
-        <div class="pathway-stat">
-          <div class="pathway-stat-num">+{{ pointsToGain }}</div>
-          <div class="pathway-stat-label">Points to gain</div>
-        </div>
-        <div class="pathway-stat">
-          <div class="pathway-stat-num">£{{ totalSavings }}</div>
-          <div class="pathway-stat-label">/yr saved</div>
-        </div>
-        <div v-if="co2Cut !== '0'" class="pathway-stat">
-          <div class="pathway-stat-num">{{ co2Cut }}t</div>
-          <div class="pathway-stat-label">CO₂ cut /yr</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Grant banner -->
-    <div class="grant-banner anim-2">
-      <div class="grant-banner-title">🎁 Grants listed on your EPC</div>
-      <div class="grant-banner-sub">
-        The EPC lists <b>Warm Homes Local Grant</b>, <b>Boiler Upgrade Scheme</b>, and
-        <b>Energy Company Obligation (ECO)</b>. Eligibility depends on income and area — your
-        installer will check.
-      </div>
-    </div>
-
-    <div class="pw-grid">
-    <div class="pw-main">
-    <!-- Section heading -->
-    <div class="section-h-row">
-      <div class="section-h">
-        EPC's {{ missions.length }} step{{ missions.length === 1 ? '' : 's' }} · in published order
-      </div>
-      <div v-if="fromScore && toScore" class="section-h-sub">
-        {{ fromScore }} → {{ toScore }} points
-      </div>
-    </div>
-
-    <!-- Empty state when the EPC has no improvement steps -->
-    <div v-if="missions.length === 0" class="pathway-empty">
-      <div class="pathway-empty-icon">✓</div>
-      <div class="pathway-empty-title">No improvements on this EPC</div>
-      <div class="pathway-empty-sub">
-        The certificate for this property doesn't list any energy-saving
-        steps — usually means it's already in good shape.
-      </div>
-    </div>
-
-    <!-- Mission list -->
-    <div v-else class="mission-list anim-3">
-      <div
-        v-for="(m, i) in missions"
-        :key="m.id"
-        class="mission-card"
-        :class="{ priority: i === 0 && !m.done, 'mission-card--done': m.done }"
-      >
-        <div class="mission-top">
-          <div class="mission-icon">
-            <span v-if="m.done" class="mission-done-tick">✓</span>
-            <template v-else>{{ m.icon }}</template>
+      <!-- Pathway hero -->
+      <section class="pathway-hero anim-1">
+        <div class="pathway-hero-lead">
+          <div class="pathway-eyebrow">
+            <Icon name="i-lucide-route" /> EPC-recommended route
           </div>
-          <div class="mission-info">
-            <div class="mission-title">
-              Step {{ i + 1 }} · {{ m.title }}
-              <span v-if="m.done" class="mission-done-pill">Already done</span>
+          <div class="pathway-route">
+            <div class="pathway-level-from">
+              <div class="pathway-level-letter from">{{ fromLevel }}</div>
+              <div class="pathway-level-sub">Now · {{ fromScore }}</div>
             </div>
-            <div class="mission-meta">
-              <template v-if="m.done">
-                You said this is in place — upload {{ m.docLabel }} to verify it on your Passport.
-              </template>
-              <template v-else>{{ m.meta }}</template>
+            <div class="pathway-track">
+              <span class="pathway-track-dot" />
+              <span class="pathway-track-dot" />
+              <div class="pathway-track-node">
+                <Icon name="i-lucide-arrow-right" />
+              </div>
+              <span class="pathway-track-dot" />
+              <span class="pathway-track-dot" />
+            </div>
+            <div class="pathway-level-to">
+              <div class="pathway-level-letter to">{{ toLevel }}</div>
+              <div class="pathway-level-sub accent">Potential · {{ toScore }}</div>
             </div>
           </div>
         </div>
-        <div v-if="!m.done" class="mission-rewards">
-          <span class="quest-reward stat">{{ m.pts }}</span>
-          <span class="quest-reward money">{{ m.save }}</span>
-          <span class="quest-reward grant">{{ m.cost }}</span>
-        </div>
-        <div class="mission-actions">
-          <template v-if="m.done">
-            <button class="mission-btn-verify" type="button" @click="verifyDocsOpen = true">
-              📎 Verify with a document
-            </button>
-          </template>
-          <template v-else>
-            <!-- Phase 1: no live marketplace, but the drawer captures
-                 real demand (match request + grant check + early
-                 access) so the pathway CTA does something useful.
-                 Backed by CaptureEvent rows on the backend — see
-                 useCaptureEvent / InstallerFlowSheet. -->
-            <button
-              class="mission-btn-supplier"
-              type="button"
-              @click="openInstallerSheet(m)"
-            >
-              🔧 {{ m.supplierLabel }}
-            </button>
-          </template>
-        </div>
-      </div>
-    </div>
 
-    </div><!-- /pw-main -->
-    <div class="pw-side">
-    <!-- Path summary -->
-    <div class="path-summary anim-4">
-      <div class="path-summary-icon">🛡️</div>
-      <div class="path-summary-body">
-        <div class="path-summary-title">All suppliers are UMU-verified</div>
-        <div class="path-summary-sub">
-          Payments held in escrow via UProtect. ECO4-registered installers only.
-        </div>
-      </div>
-    </div>
-
-    <!-- Beyond the pathway teaser — twin progress rings (v6-2) -->
-    <div class="moveready-teaser anim-4" @click="goToBoost">
-      <div class="moveready-teaser-head">
-        <div class="moveready-teaser-eyebrow">✨ Beyond the pathway</div>
-        <div class="moveready-teaser-title">See your MoveReady &amp; Passport scores</div>
-      </div>
-      <div class="moveready-teaser-row">
-        <div class="moveready-mini">
-          <div class="moveready-mini-ring">
-            <svg viewBox="0 0 60 60" aria-hidden="true">
-              <circle cx="30" cy="30" r="24" stroke="#E4E5ED" stroke-width="6" fill="none" />
-              <circle
-                cx="30" cy="30" r="24"
-                stroke="url(#mrGrad)" stroke-width="6" fill="none"
-                stroke-dasharray="150.8"
-                :stroke-dashoffset="150.8 - (mrPct / 100) * 150.8"
-                stroke-linecap="round"
-                transform="rotate(-90 30 30)"
-              />
-              <defs>
-                <linearGradient id="mrGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#7C6FB0" />
-                  <stop offset="100%" stop-color="#5B3795" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div class="moveready-mini-num">{{ mrPct }}</div>
-          </div>
-          <div class="moveready-mini-label">MoveReady</div>
-        </div>
-        <div class="moveready-mini">
-          <div class="moveready-mini-ring">
-            <svg viewBox="0 0 60 60" aria-hidden="true">
-              <circle cx="30" cy="30" r="24" stroke="#E4E5ED" stroke-width="6" fill="none" />
-              <circle
-                cx="30" cy="30" r="24"
-                stroke="url(#ppGrad)" stroke-width="6" fill="none"
-                stroke-dasharray="150.8"
-                :stroke-dashoffset="150.8 - (ppPct / 100) * 150.8"
-                stroke-linecap="round"
-                transform="rotate(-90 30 30)"
-              />
-              <defs>
-                <linearGradient id="ppGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#00B8B0" />
-                  <stop offset="100%" stop-color="#008A84" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div class="moveready-mini-num accent">{{ ppPct }}%</div>
-          </div>
-          <div class="moveready-mini-label">Passport</div>
-        </div>
-        <div class="moveready-teaser-body">
-          <div class="moveready-teaser-line">
-            <b>{{ passportDone }} of {{ passportTotal }}</b> Passport sections complete
-          </div>
-          <div class="moveready-teaser-line2">{{ passportSummary }}</div>
-        </div>
-        <div class="moveready-teaser-arrow">›</div>
-      </div>
-    </div>
-
-    <!-- Bottom CTAs
-         Phase 1: no live marketplace. Both buttons open the demand-
-         capture drawer instead — one collects early-access sign-ups
-         for the marketplace, the other lets the user see the
-         match requests they've already fired. All demand lands in
-         the CaptureEvent table on the backend. -->
-    <div class="bottom-cta">
-      <button
-        class="bottom-cta-btn"
-        type="button"
-        @click="openMarketplaceSheet"
-      >
-        🛒 Join the marketplace early access
-      </button>
-      <button
-        class="bottom-cta-secondary"
-        type="button"
-        @click="openTrackerSheet"
-      >
-        See your requests
-      </button>
-    </div>
-
-    </div><!-- /pw-side -->
-    </div><!-- /pw-grid -->
-
-    <!-- Demand-capture drawer — replaces the coming-soon badge with
-         a real flow that records grant checks, match requests and
-         early-access sign-ups against the current property. -->
-    <InstallerFlowSheet
-      v-model:open="installerSheetOpen"
-      :kind="installerKind"
-      :measure-title="installerMeasureTitle"
-      :property-id="propertyId"
-      :postcode="propertyPostcode"
-      :address="addressLine"
-      :initial-state="installerInitialState"
-    />
-
-    <!-- Floating "Verify your answers" pill — re-opens the modal if the
-         user dismissed it. Only shown when they've claimed at least one
-         improvement as done. -->
-    <button
-      v-if="doneMissionDocs.length > 0 && !verifyDocsOpen"
-      class="verify-pill"
-      type="button"
-      @click="verifyDocsOpen = true"
-    >
-      📎 Verify {{ doneMissionDocs.length }} answer{{ doneMissionDocs.length === 1 ? '' : 's' }}
-    </button>
-
-    <!-- Verify-documents modal — pops on first arrival when the user has
-         answered the quiz with at least one "already done" answer. Asks
-         for the supporting docs so the claimed work can be verified on
-         their Property Passport. -->
-    <Teleport to="body">
-      <div v-if="verifyDocsOpen" class="vd-overlay" @click.self="closeVerifyDocs">
-        <div class="vd-sheet">
-          <div class="vd-grip" />
-          <div class="vd-header">
-            <div class="vd-eyebrow">✓ You've already done some of these</div>
-            <div class="vd-title">Verify your answers with documents</div>
-            <div class="vd-sub">
-              You told us {{ doneMissionDocs.length }} improvement{{ doneMissionDocs.length === 1 ? ' is' : 's are' }}
-              already in place. Upload a document for each so buyers and lenders
-              see a verified record on your Property Passport.
+        <div class="pathway-stats-col">
+          <div class="pathway-stat">
+            <div class="pathway-stat-ic"><Icon name="i-lucide-line-chart" /></div>
+            <div class="pathway-stat-text">
+              <div class="pathway-stat-num">+{{ pointsToGain }}</div>
+              <div class="pathway-stat-label">Points to gain</div>
             </div>
           </div>
-          <div class="vd-list">
-            <label
-              v-for="m in doneMissionDocs"
+          <div class="pathway-stat">
+            <div class="pathway-stat-ic"><Icon name="i-lucide-wallet" /></div>
+            <div class="pathway-stat-text">
+              <div class="pathway-stat-num">£{{ totalSavings }}<span class="pathway-stat-unit">/yr</span></div>
+              <div class="pathway-stat-label">/yr saved</div>
+            </div>
+          </div>
+          <!-- Always rendered — mirrors the deployed app, which shows the
+               CO₂ stat (0t for a no-improvements property) as the third box
+               so the hero keeps its three-stat layout. -->
+          <div class="pathway-stat">
+            <div class="pathway-stat-ic"><Icon name="i-lucide-leaf" /></div>
+            <div class="pathway-stat-text">
+              <div class="pathway-stat-num">{{ co2Cut }}t</div>
+              <div class="pathway-stat-label">CO₂ cut /yr</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grant banner -->
+      <div class="grant-banner anim-2">
+        <div class="grant-banner-ic"><Icon name="i-lucide-gift" /></div>
+        <div class="grant-banner-body">
+          <div class="grant-banner-title">Grants listed on your EPC</div>
+          <div class="grant-banner-sub">
+            The EPC lists <b>Warm Homes Local Grant</b>, <b>Boiler Upgrade Scheme</b>, and
+            <b>Energy Company Obligation (ECO)</b>. Eligibility depends on income and area — your
+            installer will check.
+          </div>
+        </div>
+      </div>
+
+      <div class="pw-grid">
+        <div class="pw-main">
+          <!-- Section heading -->
+          <div class="section-h-row">
+            <div class="section-h">
+              EPC's {{ missions.length }} step{{ missions.length === 1 ? '' : 's' }} · in published order
+            </div>
+            <div v-if="fromScore && toScore" class="section-h-sub">
+              {{ fromScore }} → {{ toScore }} points
+            </div>
+          </div>
+
+          <!-- Empty state when the EPC has no improvement steps -->
+          <div v-if="missions.length === 0" class="pathway-empty">
+            <div class="pathway-empty-icon"><Icon name="i-lucide-check" /></div>
+            <div class="pathway-empty-title">No improvements on this EPC</div>
+            <div class="pathway-empty-sub">
+              The certificate for this property doesn't list any energy-saving
+              steps — usually means it's already in good shape.
+            </div>
+          </div>
+
+          <!-- Mission list -->
+          <div v-else class="mission-list anim-3">
+            <div
+              v-for="(m, i) in missions"
               :key="m.id"
-              class="vd-row"
-              :class="{ 'vd-row--filled': !!verifyDocsUploaded[m.docKey ?? ''] }"
+              class="mission-card"
+              :class="{ priority: i === 0 && !m.done, 'mission-card--done': m.done }"
             >
-              <div class="vd-row-ic">{{ m.icon }}</div>
-              <div class="vd-row-body">
-                <div class="vd-row-title">{{ m.title }}</div>
-                <div class="vd-row-sub">{{ m.docLabel }}</div>
-                <div v-if="verifyDocsUploaded[m.docKey ?? '']" class="vd-row-file">
-                  ✓ {{ verifyDocsUploaded[m.docKey ?? ''] }}
+              <span v-if="i === 0 && !m.done" class="mission-flag">
+                <Icon name="i-lucide-flag" /> Priority
+              </span>
+              <div class="mission-top">
+                <div class="mission-icon">
+                  <Icon v-if="m.done" name="i-lucide-check" />
+                  <Icon v-else :name="m.icon" />
+                </div>
+                <div class="mission-info">
+                  <div class="mission-step">Step {{ i + 1 }}</div>
+                  <div class="mission-title">
+                    {{ m.title }}
+                    <span v-if="m.done" class="mission-done-pill">Already done</span>
+                  </div>
+                  <div class="mission-meta">
+                    <template v-if="m.done">
+                      You said this is in place — upload {{ m.docLabel }} to verify it on your Passport.
+                    </template>
+                    <template v-else>{{ m.meta }}</template>
+                  </div>
                 </div>
               </div>
-              <div class="vd-row-cta">
-                <span v-if="verifyDocsUploaded[m.docKey ?? '']">Replace</span>
-                <span v-else>+ Add</span>
+              <div v-if="!m.done" class="mission-rewards">
+                <span v-if="m.pts" class="quest-reward stat">
+                  <Icon name="i-lucide-arrow-up-right" />{{ m.pts }}
+                </span>
+                <span v-if="m.save" class="quest-reward money">
+                  <Icon name="i-lucide-piggy-bank" />{{ m.save }}
+                </span>
+                <span v-if="m.cost" class="quest-reward grant">
+                  <Icon name="i-lucide-tag" />{{ m.cost }}
+                </span>
               </div>
-              <input
-                type="file"
-                class="vd-row-file-input"
-                accept=".pdf,.jpg,.jpeg,.png,.heic"
-                @change="onVerifyDocPicked($event, m.docKey ?? '')"
-              />
-            </label>
+              <div class="mission-actions">
+                <template v-if="m.done">
+                  <button class="mission-btn-verify" type="button" @click="verifyDocsOpen = true">
+                    <Icon name="i-lucide-paperclip" /> Verify with a document
+                  </button>
+                </template>
+                <template v-else>
+                  <!-- Phase 1: no live marketplace, but the drawer captures
+                       real demand (match request + grant check + early
+                       access) so the pathway CTA does something useful.
+                       Backed by CaptureEvent rows on the backend — see
+                       useCaptureEvent / InstallerFlowSheet. -->
+                  <button
+                    class="mission-btn-supplier"
+                    :class="{ ghost: i !== 0 }"
+                    type="button"
+                    @click="openInstallerSheet(m)"
+                  >
+                    <Icon name="i-lucide-wrench" /> {{ m.supplierLabel }}
+                    <Icon name="i-lucide-arrow-right" class="mission-btn-arrow" />
+                  </button>
+                </template>
+              </div>
+            </div>
           </div>
-          <div class="vd-footer">
-            <button class="vd-btn ghost" type="button" @click="closeVerifyDocs">
-              Maybe later
+        </div><!-- /pw-main -->
+
+        <div class="pw-side">
+          <!-- Path summary -->
+          <div class="path-summary anim-4">
+            <div class="path-summary-icon"><Icon name="i-lucide-shield-check" /></div>
+            <div class="path-summary-body">
+              <div class="path-summary-title">All suppliers are UMU-verified</div>
+              <div class="path-summary-sub">
+                Payments held in escrow via UProtect. ECO4-registered installers only.
+              </div>
+            </div>
+          </div>
+
+          <!-- Beyond the pathway teaser — twin progress rings (v6-2) -->
+          <div class="moveready-teaser anim-4" @click="goToBoost">
+            <div class="moveready-teaser-head">
+              <div class="moveready-teaser-eyebrow">
+                <Icon name="i-lucide-sparkles" /> Beyond the pathway
+              </div>
+              <div class="moveready-teaser-title">See your MoveReady &amp; Passport scores</div>
+            </div>
+            <div class="moveready-teaser-row">
+              <div class="moveready-mini">
+                <div class="moveready-mini-ring">
+                  <svg viewBox="0 0 60 60" aria-hidden="true">
+                    <circle cx="30" cy="30" r="24" stroke="#E4E5ED" stroke-width="6" fill="none" />
+                    <circle
+                      cx="30" cy="30" r="24"
+                      stroke="url(#mrGrad)" stroke-width="6" fill="none"
+                      stroke-dasharray="150.8"
+                      :stroke-dashoffset="150.8 - (mrPct / 100) * 150.8"
+                      stroke-linecap="round"
+                      transform="rotate(-90 30 30)"
+                    />
+                    <defs>
+                      <linearGradient id="mrGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#7C6FB0" />
+                        <stop offset="100%" stop-color="#5B3795" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="moveready-mini-num">{{ mrPct }}</div>
+                </div>
+                <div class="moveready-mini-label">MoveReady</div>
+              </div>
+              <div class="moveready-mini">
+                <div class="moveready-mini-ring">
+                  <svg viewBox="0 0 60 60" aria-hidden="true">
+                    <circle cx="30" cy="30" r="24" stroke="#E4E5ED" stroke-width="6" fill="none" />
+                    <circle
+                      cx="30" cy="30" r="24"
+                      stroke="url(#ppGrad)" stroke-width="6" fill="none"
+                      stroke-dasharray="150.8"
+                      :stroke-dashoffset="150.8 - (ppPct / 100) * 150.8"
+                      stroke-linecap="round"
+                      transform="rotate(-90 30 30)"
+                    />
+                    <defs>
+                      <linearGradient id="ppGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00B8B0" />
+                        <stop offset="100%" stop-color="#008A84" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="moveready-mini-num accent">{{ ppPct }}%</div>
+                </div>
+                <div class="moveready-mini-label">Passport</div>
+              </div>
+              <div class="moveready-teaser-body">
+                <div class="moveready-teaser-line">
+                  <b>{{ passportDone }} of {{ passportTotal }}</b> Passport sections complete
+                </div>
+                <div class="moveready-teaser-line2">{{ passportSummary }}</div>
+              </div>
+              <Icon name="i-lucide-chevron-right" class="moveready-teaser-arrow" />
+            </div>
+          </div>
+
+          <!-- Bottom CTAs
+               Phase 1: no live marketplace. Both buttons open the demand-
+               capture drawer instead — one collects early-access sign-ups
+               for the marketplace, the other lets the user see the
+               match requests they've already fired. All demand lands in
+               the CaptureEvent table on the backend. -->
+          <div class="bottom-cta">
+            <button
+              class="bottom-cta-btn"
+              type="button"
+              @click="openMarketplaceSheet"
+            >
+              <Icon name="i-lucide-shopping-cart" /> Join the marketplace early access
             </button>
-            <button class="vd-btn primary" type="button" @click="closeVerifyDocs">
-              Done
+            <button
+              class="bottom-cta-secondary"
+              type="button"
+              @click="openTrackerSheet"
+            >
+              <Icon name="i-lucide-list-checks" /> See your requests
             </button>
+          </div>
+        </div><!-- /pw-side -->
+      </div><!-- /pw-grid -->
+
+      <!-- Demand-capture drawer — replaces the coming-soon badge with
+           a real flow that records grant checks, match requests and
+           early-access sign-ups against the current property. -->
+      <InstallerFlowSheet
+        v-model:open="installerSheetOpen"
+        :kind="installerKind"
+        :measure-title="installerMeasureTitle"
+        :property-id="propertyId"
+        :postcode="propertyPostcode"
+        :address="addressLine"
+        :initial-state="installerInitialState"
+      />
+
+      <!-- Floating "Verify your answers" pill — re-opens the modal if the
+           user dismissed it. Only shown when they've claimed at least one
+           improvement as done. -->
+      <button
+        v-if="doneMissionDocs.length > 0 && !verifyDocsOpen"
+        class="verify-pill"
+        type="button"
+        @click="verifyDocsOpen = true"
+      >
+        <Icon name="i-lucide-paperclip" /> Verify {{ doneMissionDocs.length }} answer{{ doneMissionDocs.length === 1 ? '' : 's' }}
+      </button>
+
+      <!-- Verify-documents modal — pops on first arrival when the user has
+           answered the quiz with at least one "already done" answer. Asks
+           for the supporting docs so the claimed work can be verified on
+           their Property Passport. -->
+      <Teleport to="body">
+        <div v-if="verifyDocsOpen" class="vd-overlay" @click.self="closeVerifyDocs">
+          <div class="vd-sheet">
+            <div class="vd-grip" />
+            <div class="vd-header">
+              <div class="vd-eyebrow">
+                <Icon name="i-lucide-circle-check" /> You've already done some of these
+              </div>
+              <div class="vd-title">Verify your answers with documents</div>
+              <div class="vd-sub">
+                You told us {{ doneMissionDocs.length }} improvement{{ doneMissionDocs.length === 1 ? ' is' : 's are' }}
+                already in place. Upload a document for each so buyers and lenders
+                see a verified record on your Property Passport.
+              </div>
+            </div>
+            <div class="vd-list">
+              <label
+                v-for="m in doneMissionDocs"
+                :key="m.id"
+                class="vd-row"
+                :class="{ 'vd-row--filled': !!verifyDocsUploaded[m.docKey ?? ''] }"
+              >
+                <div class="vd-row-ic"><Icon :name="m.icon" /></div>
+                <div class="vd-row-body">
+                  <div class="vd-row-title">{{ m.title }}</div>
+                  <div class="vd-row-sub">{{ m.docLabel }}</div>
+                  <div v-if="verifyDocsUploaded[m.docKey ?? '']" class="vd-row-file">
+                    <Icon name="i-lucide-check" /> {{ verifyDocsUploaded[m.docKey ?? ''] }}
+                  </div>
+                </div>
+                <div class="vd-row-cta">
+                  <span v-if="verifyDocsUploaded[m.docKey ?? '']">Replace</span>
+                  <span v-else>+ Add</span>
+                </div>
+                <input
+                  type="file"
+                  class="vd-row-file-input"
+                  accept=".pdf,.jpg,.jpeg,.png,.heic"
+                  @change="onVerifyDocPicked($event, m.docKey ?? '')"
+                />
+              </label>
+            </div>
+            <div class="vd-footer">
+              <button class="vd-btn ghost" type="button" @click="closeVerifyDocs">
+                Maybe later
+              </button>
+              <button class="vd-btn primary" type="button" @click="closeVerifyDocs">
+                Done
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Teleport>
-
-    <div style="height: 32px" />
+      </Teleport>
     </div><!-- /hs-v6-pathway -->
 
     <!-- Shared site footer (full-bleed) -->
@@ -494,39 +538,34 @@ const fromScore = computed(() => {
   const p: any = property.value
   return Number(p?.epcScore ?? p?.epcCert?.epcScore ?? 0) || 0
 })
+// Potential SAP straight from the payload — mirrors the deployed app,
+// which reads the EPC's `potentialScore` field directly with no
+// recommendation-derived fallback. A property with no potential on file
+// therefore shows Potential · 0 (grade G), exactly like the clone.
 const toScore = computed(() => {
   const p: any = property.value
-  const direct =
-    Number(p?.epcScorePotential ?? p?.epcCert?.potentialScore ?? 0) || 0
-  if (direct > fromScore.value) return direct
-  // No usable potential on the payload — derive it from the highest
-  // resulting SAP across the EPC recommendations (the final step's score
-  // is the property's potential). Prevents the hero from showing a worse
-  // grade + a negative "points to gain" (e.g. D → G, +-55) when the
-  // potential field is missing.
-  const recs: any[] = p?.epcRecommendations || p?.epcCert?.epcRecommendations
-  const maxSap = Array.isArray(recs)
-    ? recs.reduce((m, r) => Math.max(m, Number(r?.resultingSap) || 0), 0)
-    : 0
-  if (maxSap > fromScore.value) return maxSap
-  return Math.max(direct, fromScore.value)
+  return Number(p?.epcScorePotential ?? p?.epcCert?.potentialScore ?? 0) || 0
 })
-// Never negative — "points to gain" is meaningless below zero.
-const pointsToGain = computed(() => Math.max(0, toScore.value - fromScore.value))
+// Raw difference, as shown on the deployed build. For a property with a
+// real potential (e.g. 55 → 75) this is the true climb (+20); for a
+// no-improvements property whose potential field is 0 it mirrors the
+// clone's "+-55".
+const pointsToGain = computed(() => toScore.value - fromScore.value)
 
-// Pick an icon for each EPC recommendation type based on title keywords.
+// Pick a Lucide icon name for each EPC recommendation type based on title
+// keywords. Line icons matched to the app's outline aesthetic — no emoji.
 function iconForRec(title: string): string {
   const t = (title ?? '').toLowerCase()
-  if (/solar pv|photovoltaic/.test(t)) return '⚡'
-  if (/solar (?:water|thermal)/.test(t)) return '☀️'
-  if (/(loft|roof)/.test(t)) return '🏠'
-  if (/(cavity|wall)/.test(t)) return '🧱'
-  if (/floor/.test(t)) return '🪟'
-  if (/(led|light)/.test(t)) return '💡'
-  if (/(boiler|heat pump|heating)/.test(t)) return '🔥'
-  if (/thermostat|controls/.test(t)) return '🌡'
-  if (/hot water|cylinder/.test(t)) return '💧'
-  return '✦'
+  if (/solar pv|photovoltaic/.test(t)) return 'i-lucide-zap'
+  if (/solar (?:water|thermal)/.test(t)) return 'i-lucide-sun'
+  if (/(loft|roof)/.test(t)) return 'i-lucide-house'
+  if (/(cavity|wall)/.test(t)) return 'i-lucide-brick-wall'
+  if (/floor/.test(t)) return 'i-lucide-layers'
+  if (/(led|light)/.test(t)) return 'i-lucide-lightbulb'
+  if (/(boiler|heat pump|heating)/.test(t)) return 'i-lucide-flame'
+  if (/thermostat|controls/.test(t)) return 'i-lucide-thermometer'
+  if (/hot water|cylinder/.test(t)) return 'i-lucide-droplet'
+  return 'i-lucide-sparkles'
 }
 
 function supplierLabelForRec(title: string): string {
@@ -767,21 +806,21 @@ const passportSummary = computed(() => {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .hs-v6-pathway-shell > .hs-v6-pathway {
   flex: 1 0 auto;
 }
 
 /* Full-bleed page background behind everything (nav is translucent, the
-   footer paints its own dark panel). Without this the desktop gutters —
-   and, in OS dark mode, the whole page — fall back to the black body
-   default. Fixed so it always covers the viewport while scrolling. */
+   footer paints its own dark panel). Flat cream per the app-wide look —
+   no gradients, no ambient orbs. Fixed so it always covers the viewport. */
 .hs-v6-pathway-shell::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: #f3f2ef; /* landing page main background */
+  background: #f3f2ef;
   pointer-events: none;
 }
 
@@ -808,7 +847,7 @@ const passportSummary = computed(() => {
   align-items: center;
   gap: 12px;
 }
-/* Solid navy brand button — matches the app's primary CTA so the back
+/* Solid teal brand button — matches the app's primary CTA so the back
    control reads as an intentional action against the cream nav rather
    than a washed-out white box. */
 .pw-nav-back {
@@ -840,9 +879,8 @@ const passportSummary = computed(() => {
   box-shadow: 0 4px 10px rgba(0, 161, 154, 0.2);
 }
 .pw-nav-back-arrow {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
-  margin-top: -1px;
 }
 .pw-brand {
   display: inline-flex;
@@ -887,29 +925,6 @@ const passportSummary = computed(() => {
 }
 .pw-nav-links button:hover { color: #231d45; background: rgba(35, 29, 69, 0.05); }
 .pw-nav-actions { display: inline-flex; align-items: center; gap: 10px; }
-.pw-btn {
-  border: 1px solid transparent;
-  border-radius: 12px;
-  padding: 11px 18px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-  white-space: nowrap;
-}
-.pw-btn--solid {
-  background: #00a19a;
-  color: #fff;
-  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
-}
-.pw-btn--solid:hover { transform: translateY(-1px); background: #00857f; }
-.pw-btn--ghost {
-  background: #fff;
-  color: #231d45;
-  border-color: #ececf2;
-}
-.pw-btn--ghost:hover { border-color: #00a19a; }
 .pw-nav-burger {
   display: none;
   align-items: center;
@@ -922,23 +937,6 @@ const passportSummary = computed(() => {
   cursor: pointer;
   padding: 0;
 }
-.pw-nav-burger span,
-.pw-nav-burger span::before,
-.pw-nav-burger span::after {
-  content: '';
-  display: block;
-  width: 18px;
-  height: 2px;
-  border-radius: 2px;
-  background: #231d45;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-.pw-nav-burger span { position: relative; }
-.pw-nav-burger span::before { position: absolute; top: -6px; }
-.pw-nav-burger span::after { position: absolute; top: 6px; }
-.pw-nav-burger span.open { background: transparent; }
-.pw-nav-burger span.open::before { top: 0; transform: rotate(45deg); }
-.pw-nav-burger span.open::after { top: 0; transform: rotate(-45deg); }
 .pw-mobile-menu {
   display: none;
   border-top: 1px solid rgba(35, 29, 69, 0.07);
@@ -970,9 +968,9 @@ const passportSummary = computed(() => {
   .pw-nav-links { display: none; }
   .pw-nav-burger { display: inline-flex; }
   .pw-mobile-menu { display: flex; }
-  .pw-nav-signin { display: none; }
 }
 
+/* ── Content column ─────────────────────────────────────────────────── */
 .hs-v6-pathway {
   --primary: #231d45;
   --accent: #00a19a;
@@ -980,310 +978,315 @@ const passportSummary = computed(() => {
   --accent-light: #00b8b0;
   --accent-pale: #e5f4f2;
   --accent-paler: #f2faf8;
-  --bg: #f5f6fa;
-  --page: #f3f2ef;
   --card: #ffffff;
   --text: #231d45;
   --text-secondary: #6b7089;
   --text-faint: #a8a9ad;
-  --border: #e4e5ed;
-  --border-soft: #f0f1f5;
-  --warning-pale: #fff5e0;
-  --shadow-card: 0 2px 8px rgba(35, 29, 69, 0.05);
+  --border: #ececf2;
+  --border-soft: #f2f3f7;
+  --purple: #5b3795;
+  --purple-pale: #f4eefe;
+  --purple-border: #ddccf5;
+  --warning-pale: #fff6e6;
+  --shadow-sm: 0 1px 2px rgba(35, 29, 69, 0.04);
+  --shadow-card: 0 4px 20px rgba(35, 29, 69, 0.06);
+  --shadow-lift: 0 16px 40px rgba(35, 29, 69, 0.1);
 
-  /* Match the rest of the app: mobile-container width, SF Pro inherited */
-  max-width: 28rem;
-  width: 100%;
+  width: min(1180px, calc(100% - 56px));
   margin: 0 auto;
-  min-height: 100dvh;
-  background: var(--page);
+  padding: 30px 0 64px;
   color: var(--text);
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Premium desktop-first layout ───────────────────────────────────────
-   Mobile: column wrappers are transparent so the original single-column
-   order is preserved 1:1. Desktop (≥900px): a centred dashboard — full-width
-   hero + eligibility strip, then steps (main) beside a sticky action rail. */
-.pw-grid,
-.pw-main,
-.pw-side {
-  display: contents;
-}
-
-@media (min-width: 900px) {
-  .hs-v6-pathway {
-    max-width: 1180px !important;
-    min-height: auto;
-    padding: 10px 28px 56px;
-    background: transparent;
-  }
-  .hs-v6-pathway .app-header {
-    padding: 8px 2px 4px;
-  }
-  .hs-v6-pathway .pathway-hero {
-    margin: 10px 0 0 !important;
-    padding: 30px 34px !important;
-  }
-  .hs-v6-pathway .grant-banner {
-    margin: 16px 0 0 !important;
-  }
-
-  /* Hero → horizontal: route on the left, the three stats on the right. */
-  .hs-v6-pathway .pathway-hero {
-    display: grid;
-    grid-template-columns: 1fr minmax(320px, auto);
-    align-items: center;
-    gap: 34px;
-  }
-  .hs-v6-pathway .pathway-eyebrow {
-    grid-column: 1 / -1;
-    margin-bottom: 4px !important;
-  }
-  .hs-v6-pathway .pathway-route {
-    margin: 0 !important;
-  }
-  .hs-v6-pathway .pathway-stats-row {
-    margin: 0 !important;
-  }
-
-  /* Body: steps (main) + sticky action rail (side). */
-  .pw-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: 26px;
-    align-items: start;
-    margin-top: 22px;
-  }
-  .pw-main,
-  .pw-side {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-  }
-  .pw-side {
-    position: sticky;
-    top: 16px;
-  }
-  .pw-main > *,
-  .pw-side > * {
-    margin: 0 !important;
-  }
-  /* CTA rail: make the primary marketplace button the clear focal action. */
-  .hs-v6-pathway .bottom-cta {
-    position: static;
-    padding: 0;
-    background: none;
-    box-shadow: none;
-  }
-}
-
-/* Soften prototype's 800-weights to match the SF Pro app scale */
-.hs-v6-pathway :is(.app-header-title, .pathway-eyebrow, .pathway-stat-num,
-  .grant-banner-title, .mission-title, .path-summary-title,
-  .bottom-cta-btn, .moveready-teaser-title, .quest-reward) {
-  font-weight: 700;
-}
-.hs-v6-pathway :is(.app-header-sub, .pathway-stat-label, .grant-banner-sub,
-  .mission-meta, .path-summary-sub, .moveready-teaser-sub) {
-  font-weight: 500;
-}
-
 @keyframes hs-v6-fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.anim-1 { animation: hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.anim-2 { animation: hs-v6-fadeUp 0.35s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.anim-3 { animation: hs-v6-fadeUp 0.35s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.anim-4 { animation: hs-v6-fadeUp 0.35s 0.38s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-1 { animation: hs-v6-fadeUp 0.5s 0.04s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-2 { animation: hs-v6-fadeUp 0.5s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-3 { animation: hs-v6-fadeUp 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-4 { animation: hs-v6-fadeUp 0.5s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-/* Page title (below the navbar) */
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px 10px;
-  background: transparent;
-}
-.app-header-info {
-  flex: 1;
-  min-width: 0;
+/* ── Page heading ───────────────────────────────────────────────────── */
+.pw-pagehead {
   text-align: center;
+  margin-bottom: 22px;
 }
-.app-header-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.15;
-}
-.app-header-sub {
+.pw-pagehead-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  background: var(--accent-paler);
+  border: 1px solid var(--accent-pale);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.pw-pagehead-eyebrow :deep(svg) { width: 13px; height: 13px; }
+.pw-pagehead-title {
+  margin: 14px 0 4px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--text);
+  line-height: 1.1;
+}
+.pw-pagehead-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14.5px;
+  font-weight: 500;
   color: var(--text-secondary);
-  margin-top: 1px;
+}
+.pw-pagehead-sub :deep(svg) {
+  width: 15px;
+  height: 15px;
+  color: var(--accent-dark);
 }
 
-/* Pathway hero */
+/* ── Pathway hero ───────────────────────────────────────────────────── */
 .pathway-hero {
-  margin: 14px 20px 0;
-  padding: 20px 18px 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  border-radius: 14px;
-  color: white;
-  box-shadow: 0 8px 24px rgba(0, 161, 154, 0.25);
-  position: relative;
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  padding: 34px 36px;
+  background:
+    radial-gradient(130% 150% at 100% 0%, rgba(0, 161, 154, 0.5), transparent 58%),
+    linear-gradient(135deg, #2a2350 0%, #1a1540 100%);
+  border-radius: 26px;
+  color: #fff;
+  box-shadow: 0 20px 46px rgba(26, 21, 64, 0.3);
 }
-.pathway-hero::after {
-  content: '';
-  position: absolute;
-  top: -40%;
-  right: -15%;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, transparent 65%);
-  pointer-events: none;
+@media (min-width: 820px) {
+  .pathway-hero {
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+    align-items: center;
+    gap: 40px;
+  }
 }
-.pathway-hero > * {
-  position: relative;
-  z-index: 1;
+.pathway-hero-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  justify-content: center;
 }
 .pathway-eyebrow {
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.8);
-  letter-spacing: 1.4px;
+  color: #4fe0d3;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  margin-bottom: 10px;
 }
+.pathway-eyebrow :deep(svg) { width: 15px; height: 15px; }
 .pathway-route {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 16px;
 }
 .pathway-level-from,
 .pathway-level-to {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 .pathway-level-letter {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 800;
 }
 .pathway-level-letter.from {
-  background: rgba(255, 255, 255, 0.18);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
 }
 .pathway-level-letter.to {
-  background: white;
-  color: var(--accent-dark);
-  border: 2px solid white;
-  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, #00b8b0, #008a84);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.42);
 }
 .pathway-level-sub {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.8px;
-  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
 }
-.pathway-arrow {
+.pathway-level-sub.accent { color: #4fe0d3; }
+
+/* Dotted connector track with a circular arrow node in the centre. */
+.pathway-track {
   flex: 1;
-  height: 3px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), white);
-  position: relative;
-  border-radius: 100px;
-}
-.pathway-arrow::after {
-  content: '→';
-  position: absolute;
-  top: 50%;
-  right: -2px;
-  transform: translateY(-50%);
-  color: white;
-  font-size: 18px;
-  font-weight: 800;
-}
-.pathway-stats-row {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 0;
+}
+.pathway-track-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+.pathway-track-node {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.pathway-track-node :deep(svg) { width: 16px; height: 16px; color: #fff; }
+
+.pathway-stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .pathway-stat {
-  flex: 1;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(2px);
+}
+.pathway-stat-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(0, 184, 176, 0.2);
+  border: 1px solid rgba(0, 184, 176, 0.32);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.pathway-stat-ic :deep(svg) { width: 19px; height: 19px; color: #4fe0d3; }
+.pathway-stat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 .pathway-stat-num {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.6px;
+  line-height: 1;
+}
+.pathway-stat-unit {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0;
+  margin-left: 1px;
 }
 .pathway-stat-label {
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  margin-top: 2px;
 }
 
-/* Grant banner */
+/* ── Grant banner ───────────────────────────────────────────────────── */
 .grant-banner {
-  margin: 12px 20px 0;
-  padding: 14px 16px;
-  background: #f2ebfd;
-  border: 1px solid #c9b0f0;
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, var(--purple-pale), #fbf9ff);
+  border: 1px solid var(--purple-border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
 }
+.grant-banner-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: #fff;
+  border: 1px solid var(--purple-border);
+  color: var(--purple);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.grant-banner-ic :deep(svg) { width: 22px; height: 22px; }
 .grant-banner-title {
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 800;
   color: var(--text);
   margin-bottom: 4px;
-  letter-spacing: -0.1px;
+  letter-spacing: -0.2px;
 }
 .grant-banner-sub {
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--text-secondary);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .grant-banner-sub :deep(b) {
-  color: #5b3795;
-  font-weight: 800;
+  color: var(--purple);
+  font-weight: 700;
 }
 
-/* Section heading */
+/* ── Layout grid ────────────────────────────────────────────────────── */
+.pw-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 26px;
+}
+.pw-main,
+.pw-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .pw-grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(330px, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+  .pw-side {
+    position: sticky;
+    top: 92px;
+  }
+}
+
+/* ── Section heading ────────────────────────────────────────────────── */
 .section-h-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 18px 20px 10px;
+  gap: 12px;
+  padding: 4px 4px 2px;
 }
 .section-h {
   font-size: 11px;
@@ -1293,137 +1296,156 @@ const passportSummary = computed(() => {
   text-transform: uppercase;
 }
 .section-h-sub {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--accent-dark);
+  white-space: nowrap;
 }
 
-/* Mission list */
+/* ── Empty state ────────────────────────────────────────────────────── */
 .pathway-empty {
-  margin: 14px 20px 0;
-  padding: 22px 18px;
+  padding: 34px 24px;
   background: var(--card);
   border: 1.5px dashed var(--border);
-  border-radius: 14px;
+  border-radius: 20px;
   text-align: center;
   box-shadow: var(--shadow-card);
 }
 .pathway-empty-icon {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  margin: 0 auto 10px;
+  margin: 0 auto 14px;
   background: var(--accent-paler);
   color: var(--accent-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 700;
+  display: grid;
+  place-items: center;
 }
+.pathway-empty-icon :deep(svg) { width: 26px; height: 26px; }
 .pathway-empty-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--text);
   margin-bottom: 6px;
 }
 .pathway-empty-sub {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
+  max-width: 40ch;
+  margin: 0 auto;
 }
 
+/* ── Mission cards ──────────────────────────────────────────────────── */
 .mission-list {
-  padding: 10px 20px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .mission-card {
+  position: relative;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 18px;
+  padding: 18px;
   box-shadow: var(--shadow-card);
-  transition: all 0.18s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .mission-card:hover {
+  transform: translateY(-3px);
   border-color: var(--accent-pale);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-lift);
 }
 .mission-card.priority {
-  border-color: var(--accent);
-  background: linear-gradient(135deg, var(--accent-paler), var(--card));
-  position: relative;
+  border-color: rgba(0, 161, 154, 0.4);
+  background: linear-gradient(180deg, var(--accent-paler), #fff 60%);
 }
-.mission-card.priority::before {
-  content: 'PRIORITY';
+.mission-flag {
   position: absolute;
-  top: -9px;
-  left: 14px;
-  padding: 2px 8px;
-  font-size: 9px;
+  top: -11px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  font-size: 9.5px;
   font-weight: 800;
-  letter-spacing: 0.8px;
-  background: var(--accent);
-  color: white;
-  border-radius: 100px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(0, 161, 154, 0.3);
 }
+.mission-flag :deep(svg) { width: 11px; height: 11px; }
 .mission-top {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 13px;
+  margin-bottom: 13px;
 }
 .mission-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: #f4f5f9;
+  color: var(--primary);
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
+  border: 1px solid var(--border-soft);
 }
+.mission-icon :deep(svg) { width: 21px; height: 21px; }
 .mission-card.priority .mission-icon {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(0, 161, 154, 0.28);
 }
 .mission-info {
   flex: 1;
   min-width: 0;
 }
+.mission-step {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  margin-bottom: 4px;
+}
 .mission-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.2px;
-  margin-bottom: 3px;
-  line-height: 1.25;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+  line-height: 1.3;
 }
 .mission-meta {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 .mission-rewards {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 .quest-reward {
-  padding: 4px 9px;
-  border-radius: 100px;
-  font-size: 10px;
-  font-weight: 800;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 0.1px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
+.quest-reward :deep(svg) { width: 13px; height: 13px; }
 .quest-reward.stat {
   background: var(--accent-paler);
   color: var(--accent-dark);
@@ -1431,79 +1453,81 @@ const passportSummary = computed(() => {
 }
 .quest-reward.money {
   background: var(--warning-pale);
-  color: #7a5500;
-  border: 1px solid rgba(245, 166, 35, 0.3);
+  color: #966400;
+  border: 1px solid rgba(245, 166, 35, 0.28);
 }
 .quest-reward.grant {
-  background: #f2ebfd;
-  color: #5b3795;
-  border: 1px solid #c9b0f0;
+  background: var(--purple-pale);
+  color: var(--purple);
+  border: 1px solid var(--purple-border);
 }
 .mission-actions {
   display: flex;
-  gap: 8px;
-  padding-top: 10px;
+  gap: 10px;
+  padding-top: 13px;
   border-top: 1px solid var(--border-soft);
 }
 .mission-btn-supplier {
   flex: 1;
-  padding: 11px 12px;
+  padding: 12px 16px;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
+  color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  transition: filter 0.15s;
-  box-shadow: 0 3px 10px rgba(0, 161, 154, 0.25);
+  gap: 8px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.22);
+}
+.mission-btn-supplier :deep(svg) { width: 16px; height: 16px; }
+.mission-btn-supplier .mission-btn-arrow {
+  margin-left: -2px;
+  transition: transform 0.18s ease;
 }
 .mission-btn-supplier:hover {
-  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.3);
+}
+.mission-btn-supplier:hover .mission-btn-arrow {
+  transform: translateX(3px);
 }
 
-/* Phase-1 'Coming soon' state — dialled-back grey badge so the mission
-   card still says "this is where you'll book work" without the loud
-   teal CTA that would imply the flow is live. Removed when the
-   marketplace launches (see the <template v-else> in mission-actions). */
-.mission-btn-supplier--soon {
-  background: #f2f3f7;
-  color: #6a6e83;
-  cursor: not-allowed;
+/* Non-priority steps use a lighter outline treatment so the pathway
+   isn't wall-to-wall solid teal — only the priority (step 1) CTA stays
+   filled, giving the list a clear visual hierarchy. */
+.mission-btn-supplier.ghost {
+  background: #fff;
+  color: var(--accent-dark);
+  border: 1.5px solid var(--accent-pale);
   box-shadow: none;
-  border: 1px solid #e5e7eb;
 }
-.mission-btn-supplier--soon:hover {
-  filter: none;
+.mission-btn-supplier.ghost:hover {
+  background: var(--accent-paler);
+  border-color: var(--accent);
+  box-shadow: none;
 }
 
 /* "Already done" mission state — derived from quiz answers. Dialled
    back colours + a tick icon instead of the loud priority gradient. */
 .mission-card--done {
-  background: linear-gradient(135deg, #f2faf8, #fff);
+  background: linear-gradient(180deg, #f2faf8, #fff 60%);
   border-color: #cfe9df;
 }
 .mission-card--done .mission-icon {
-  background: #00a19a;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: #fff;
-  font-size: 18px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-}
-.mission-done-tick {
-  display: inline-block;
-  line-height: 1;
+  border-color: transparent;
 }
 .mission-done-pill {
   display: inline-block;
-  margin-left: 6px;
-  padding: 2px 8px;
+  margin-left: 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: rgba(0, 161, 154, 0.14);
   color: #007e78;
@@ -1515,53 +1539,246 @@ const passportSummary = computed(() => {
 }
 .mission-btn-verify {
   flex: 1;
-  padding: 11px 12px;
+  padding: 13px 16px;
   background: #fff;
   color: #007e78;
-  border: 1.5px solid #00a19a;
-  border-radius: 10px;
+  border: 1.5px solid var(--accent);
+  border-radius: 13px;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 800;
+  font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   transition: background 0.15s;
 }
+.mission-btn-verify :deep(svg) { width: 16px; height: 16px; }
 .mission-btn-verify:hover {
-  background: #e2f1ea;
+  background: var(--accent-paler);
 }
 
-/* Floating "Verify N answers" pill — appears at the bottom of the
-   pathway when at least one mission is marked done. */
+/* ── Floating "Verify N answers" pill ───────────────────────────────── */
 .verify-pill {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  padding: 11px 18px;
-  background: #231d45;
+  padding: 13px 22px;
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 999px;
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(35, 29, 69, 0.32);
+  box-shadow: 0 14px 34px rgba(35, 29, 69, 0.34);
   letter-spacing: -0.1px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  transition: transform 0.16s ease;
 }
+.verify-pill :deep(svg) { width: 15px; height: 15px; }
 .verify-pill:hover {
-  filter: brightness(1.1);
+  transform: translateX(-50%) translateY(-2px);
 }
 
-/* ── Verify-documents bottom sheet ──────────────────────────── */
+/* ── Sidebar: verified summary ──────────────────────────────────────── */
+.path-summary {
+  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.path-summary-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--accent-paler);
+  color: var(--accent-dark);
+  display: grid;
+  place-items: center;
+}
+.path-summary-icon :deep(svg) { width: 24px; height: 24px; }
+.path-summary-body { flex: 1; }
+.path-summary-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.path-summary-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Beyond the pathway teaser ──────────────────────────────────────── */
+.moveready-teaser {
+  padding: 20px;
+  background: linear-gradient(135deg, var(--purple-pale) 0%, #fff 100%);
+  border: 1px solid var(--purple-border);
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.moveready-teaser:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 38px rgba(91, 55, 149, 0.16);
+}
+.moveready-teaser-head {
+  margin-bottom: 16px;
+}
+.moveready-teaser-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--purple);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.moveready-teaser-eyebrow :deep(svg) { width: 13px; height: 13px; }
+.moveready-teaser-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-top: 5px;
+  line-height: 1.3;
+}
+.moveready-teaser-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.moveready-mini {
+  text-align: center;
+  flex-shrink: 0;
+}
+.moveready-mini-ring {
+  position: relative;
+  width: 58px;
+  height: 58px;
+}
+.moveready-mini-ring svg {
+  width: 100%;
+  height: 100%;
+}
+.moveready-mini-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--purple);
+  letter-spacing: -0.3px;
+}
+.moveready-mini-num.accent {
+  color: var(--accent-dark);
+}
+.moveready-mini-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.moveready-teaser-body {
+  flex: 1;
+  min-width: 0;
+}
+.moveready-teaser-line {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+.moveready-teaser-line :deep(b) {
+  color: var(--purple);
+  font-weight: 800;
+}
+.moveready-teaser-line2 {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.moveready-teaser-arrow {
+  width: 20px;
+  height: 20px;
+  color: var(--purple);
+  flex-shrink: 0;
+}
+
+/* ── Sidebar CTAs ───────────────────────────────────────────────────── */
+.bottom-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bottom-cta-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(0, 161, 154, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.bottom-cta-btn :deep(svg) { width: 18px; height: 18px; }
+.bottom-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(0, 161, 154, 0.38);
+}
+.bottom-cta-secondary {
+  width: 100%;
+  padding: 14px;
+  background: var(--card);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.bottom-cta-secondary :deep(svg) { width: 16px; height: 16px; }
+.bottom-cta-secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-paler);
+}
+
+/* ── Verify-documents bottom sheet ──────────────────────────────────── */
 .vd-overlay {
   position: fixed;
   inset: 0;
@@ -1569,68 +1786,73 @@ const passportSummary = computed(() => {
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  font-family: inherit;
+  padding: 20px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .vd-sheet {
   width: 100%;
-  max-width: 28rem;
+  max-width: 30rem;
   background: #fff;
-  border-radius: 22px 22px 0 0;
+  border-radius: 24px;
   max-height: 92dvh;
   overflow-y: auto;
-  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.3);
 }
 .vd-grip {
   width: 42px;
   height: 4px;
   background: #e4e5ed;
   border-radius: 100px;
-  margin: 10px auto 0;
+  margin: 12px auto 0;
 }
 .vd-header {
-  padding: 14px 22px 8px;
+  padding: 16px 26px 10px;
   text-align: center;
 }
 .vd-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   font-weight: 800;
   color: #007e78;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
+.vd-eyebrow :deep(svg) { width: 13px; height: 13px; }
 .vd-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: #231d45;
-  letter-spacing: -0.3px;
-  margin-bottom: 6px;
+  letter-spacing: -0.4px;
+  margin-bottom: 8px;
 }
 .vd-sub {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 500;
   color: #6b7089;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .vd-list {
-  padding: 14px 16px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .vd-row {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: #f5f6fa;
+  gap: 13px;
+  background: #f6f7fa;
   border: 1.5px solid transparent;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 15px;
+  padding: 14px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 .vd-row:hover { background: #eef0f6; }
 .vd-row--filled {
@@ -1638,36 +1860,42 @@ const passportSummary = computed(() => {
   border-color: rgba(0, 161, 154, 0.32);
 }
 .vd-row-ic {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   background: #fff;
+  border: 1px solid var(--border-soft);
+  color: var(--primary);
   display: grid;
   place-items: center;
-  font-size: 18px;
   flex-shrink: 0;
 }
+.vd-row-ic :deep(svg) { width: 20px; height: 20px; }
 .vd-row-body { flex: 1; min-width: 0; }
 .vd-row-title {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 800;
   color: #231d45;
   margin-bottom: 2px;
 }
 .vd-row-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
   color: #6b7089;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .vd-row-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   font-weight: 700;
   color: #007e78;
-  margin-top: 4px;
+  margin-top: 5px;
 }
+.vd-row-file :deep(svg) { width: 13px; height: 13px; }
 .vd-row-cta {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 800;
   color: #007e78;
   flex-shrink: 0;
@@ -1680,225 +1908,41 @@ const passportSummary = computed(() => {
 }
 .vd-footer {
   display: flex;
-  gap: 8px;
-  padding: 12px 16px 18px;
+  gap: 10px;
+  padding: 14px 20px 22px;
 }
 .vd-btn {
   flex: 1;
-  padding: 13px;
+  padding: 14px;
   font-family: inherit;
   font-size: 14px;
   font-weight: 800;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   border: none;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
 .vd-btn.primary {
   background: linear-gradient(135deg, #00a19a, #008a84);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.3);
 }
-.vd-btn.primary:hover { filter: brightness(1.06); }
+.vd-btn.primary:hover { transform: translateY(-1px); }
 .vd-btn.ghost {
   background: #fff;
   border: 1.5px solid #e4e5ed;
   color: #6b7089;
 }
-.vd-btn.ghost:hover { background: #f5f6fa; }
-.mission-btn-done {
-  padding: 11px 16px;
-  background: var(--card);
-  color: var(--text-secondary);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.mission-btn-done:hover {
-  border-color: var(--accent-pale);
-  background: var(--accent-paler);
-  color: var(--accent-dark);
-}
+.vd-btn.ghost:hover { background: #f6f7fa; }
 
-/* Path summary */
-.path-summary {
-  margin: 14px 20px 0;
-  padding: 14px 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.path-summary-icon {
-  font-size: 22px;
-  flex-shrink: 0;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: var(--accent-paler);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.path-summary-body {
-  flex: 1;
-}
-.path-summary-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 2px;
-}
-.path-summary-sub {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-/* Bottom CTA */
-.bottom-cta {
-  padding: 16px 20px 24px;
-}
-.bottom-cta-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
-  border: none;
-  border-radius: 14px;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: filter 0.15s;
-}
-.bottom-cta-btn:hover {
-  filter: brightness(1.06);
-}
-.bottom-cta-secondary {
-  width: 100%;
-  padding: 14px;
-  background: var(--card);
-  color: var(--text);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: all 0.15s;
-}
-.bottom-cta-secondary:hover {
-  border-color: var(--accent-pale);
-  background: var(--accent-paler);
-}
-
-/* Beyond the pathway teaser — two-section layout (v6-2) */
-.moveready-teaser {
-  margin: 12px 20px 0;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #f2ebfd 0%, var(--card) 100%);
-  border: 1.5px solid #c9b0f0;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-.moveready-teaser:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(91, 55, 149, 0.15);
-}
-.moveready-teaser-head {
-  margin-bottom: 10px;
-}
-.moveready-teaser-eyebrow {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: #5b3795;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-}
-.moveready-teaser-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  margin-top: 3px;
-}
-.moveready-teaser-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.moveready-mini {
-  text-align: center;
-  flex-shrink: 0;
-}
-.moveready-mini-ring {
-  position: relative;
-  width: 54px;
-  height: 54px;
-}
-.moveready-mini-ring svg {
-  width: 100%;
-  height: 100%;
-}
-.moveready-mini-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  color: #5b3795;
-  letter-spacing: -0.3px;
-}
-.moveready-mini-num.accent {
-  color: var(--accent-dark);
-}
-.moveready-mini-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-.moveready-teaser-body {
-  flex: 1;
-  min-width: 0;
-}
-.moveready-teaser-line {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-}
-.moveready-teaser-line :deep(b) {
-  color: #5b3795;
-  font-weight: 700;
-}
-.moveready-teaser-line2 {
-  font-size: 10.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: 3px;
-}
-.moveready-teaser-arrow {
-  font-size: 20px;
-  color: #5b3795;
-  flex-shrink: 0;
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .hs-v6-pathway { width: calc(100% - 32px); padding: 22px 0 56px; }
+  .pw-pagehead-title { font-size: 26px; }
+  .pathway-hero { padding: 26px 20px; border-radius: 20px; }
+  .pathway-route { gap: 14px; }
+  .pathway-level-letter { width: 56px; height: 56px; font-size: 26px; }
+  .mission-card { padding: 18px; }
+  .pw-nav-inner { width: calc(100% - 32px); }
 }
 </style>

@@ -286,7 +286,7 @@
       <div class="pps-explore-header">
         <div class="pps-explore-heading">
           <span class="pps-explore-eyebrow"
-            ><span class="pps-explore-eyebrow-dash" />Live record</span
+            >Live record</span
           >
           <h2 class="pps-explore-title">Explore this property</h2>
         </div>
@@ -346,7 +346,7 @@
       >
         <div class="pps-passport-eyebrow-row">
           <span class="pps-passport-eyebrow pps-passport-eyebrow--dark"
-            ><span class="pps-passport-eyebrow-line" />Property Passport</span
+            >Property Passport</span
           >
           <span
             class="pps-passport-price-pill pps-passport-price-pill--unclaimed-dark"

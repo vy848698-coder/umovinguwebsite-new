@@ -152,7 +152,7 @@
       <!-- ── Right content ─────────────────────────────────────────── -->
       <main class="tk-main">
         <div class="tk-content">
-          <span class="eyebrow"><span class="eyebrow-line"></span> This section</span>
+          <span class="eyebrow">This section</span>
 
           <div class="q-head">
             <div class="q-head-left">

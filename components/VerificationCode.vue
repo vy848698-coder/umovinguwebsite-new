@@ -1,60 +1,55 @@
 <template>
-  <div class="mobile-container" style="background: #fff">
-    <div class="relative z-10 flex flex-col min-h-screen">
-      <!-- Header -->
-      <div class="verification-header">
-        <BackButton />
-      </div>
+  <div class="otp-form">
+    <!-- Back -->
+    <button class="otp-back" type="button" @click="goBack">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      Back
+    </button>
 
-      <!-- Main Content -->
-      <div class="verification-content">
-        <div class="verification-content__header">
-          <h1 class="verification-content__title">Check your email</h1>
-          <p class="verification-content__subtitle">
-            We sent a 6-digit verification code to your email<br />
-            <span class="font-medium">{{ email }}</span>
-          </p>
-        </div>
+    <h1 class="otp-title">Check your email</h1>
+    <p class="otp-subtitle">
+      We sent a 6-digit verification code to
+      <template v-if="email"><br /><strong class="otp-email">{{ email }}</strong></template>
+      <template v-else>your email</template>
+    </p>
 
-        <!-- Code Input -->
-        <div class="verification-content__code">
-          <CodeInput
-            v-model="verificationCode"
-            @complete="handleCodeComplete"
-          />
-        </div>
+    <!-- Code Input -->
+    <div class="otp-fields">
+      <CodeInput
+        v-model="verificationCode"
+        @complete="handleCodeComplete"
+      />
+    </div>
 
-        <!-- Error Message -->
-        <div v-if="error" class="verification-content__error">
-          {{ error }}
-        </div>
+    <!-- Error -->
+    <p v-if="error" class="otp-error">{{ error }}</p>
 
-        <!-- Continue Button -->
-        <div class="verification-content__continue">
-          <button
-            @click="verifyCode"
-            :disabled="!isCodeComplete || isLoading"
-            class="verification-content__continue-button"
-          >
-            {{ isLoading ? 'Verifying...' : 'Continue' }}
-            <span class="ml-2">→</span>
-          </button>
-        </div>
+    <!-- Continue -->
+    <button
+      class="otp-continue"
+      :disabled="!isCodeComplete || isLoading"
+      @click="verifyCode"
+    >
+      {{ isLoading ? 'Verifying…' : 'Continue' }}
+      <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    </button>
 
-        <!-- Resend Code -->
-        <div class="verification-content__resend">
-          <button
-            @click="resendCode"
-            :disabled="!canResend"
-            class="verification-content__resend-button"
-            :class="{
-              'verification-content__resend-button--disabled': !canResend,
-            }"
-          >
-            {{ resendText }}
-          </button>
-        </div>
-      </div>
+    <!-- Resend -->
+    <div class="otp-resend">
+      <button
+        v-if="canResend"
+        type="button"
+        class="otp-resend-btn"
+        @click="resendCode"
+      >
+        Resend code
+      </button>
+      <span v-else class="otp-resend-timer">{{ resendText }}</span>
     </div>
   </div>
 </template>
@@ -62,9 +57,7 @@
 <script setup lang="ts">
 import { useVerificationCode } from '../composables/useVerificationCode'
 import CodeInput from './verification/CodeInput.vue'
-import BackButton from './core/BackButton.vue'
 
-// Use the composable for all data and methods
 const {
   email,
   verificationCode,
@@ -76,97 +69,130 @@ const {
   handleCodeComplete,
   verifyCode,
   resendCode,
+  goBack,
 } = useVerificationCode()
 </script>
 
 <style scoped>
-/* ── Desktop / website layout: centered phone-width card on a tinted
-   page (mobile unchanged below 768px) ── */
-@media (min-width: 768px) {
-  .mobile-container {
-    max-width: 460px;
-    margin: 40px auto;
-    min-height: calc(100dvh - 80px);
-    border-radius: 28px;
-    border: 1px solid #e7e9f0;
-    box-shadow: 0 24px 60px rgba(35, 29, 69, 0.14);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .mobile-container::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background:
-      radial-gradient(circle at 12% 10%, rgba(0, 161, 154, 0.08) 0%, transparent 38%),
-      radial-gradient(circle at 88% 8%, rgba(35, 29, 69, 0.06) 0%, transparent 42%),
-      #f4f6f9;
-  }
+.otp-form {
+  width: 100%;
+  max-width: 520px;
+  font-family:
+    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Inter, sans-serif;
 }
 
-/* Verification Header */
-.verification-header {
-  @apply pt-6 px-6;
+/* Back */
+.otp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: #00a19a;
+  padding: 0;
+  margin-bottom: 40px;
+}
+.otp-back svg {
+  width: 17px;
+  height: 17px;
+}
+.otp-back:hover {
+  color: #00857f;
 }
 
-.verification-header__back {
-  @apply text-white flex items-center hover:text-white/80 transition-colors;
+/* Heading */
+.otp-title {
+  font-size: clamp(34px, 4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -1.4px;
+  line-height: 1.05;
+  color: #231d45;
+  margin: 0 0 14px;
 }
-
-/* Verification Content */
-.verification-content {
-  @apply flex-1 flex flex-col justify-center px-6 pb-8;
+.otp-subtitle {
+  font-size: 17px;
+  font-weight: 500;
+  color: #6b6783;
+  line-height: 1.6;
+  margin: 0 0 40px;
 }
-
-.verification-content__header {
-  @apply text-center mb-12;
-}
-
-.verification-content__title {
-  @apply text-28-emphasized mb-4;
+.otp-email {
+  font-weight: 700;
   color: #231d45;
 }
 
-.verification-content__subtitle {
-  @apply text-16-medium leading-relaxed;
-  color: #4a5568;
+/* Fields */
+.otp-fields {
+  margin-bottom: 28px;
 }
 
-.verification-content__code {
-  @apply mb-8;
+.otp-error {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  margin: -14px 0 20px;
 }
 
-.verification-content__error {
-  @apply text-red-500 text-center text-sm mb-4;
+/* Continue */
+.otp-continue {
+  width: 100%;
+  height: 62px;
+  border: none;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: #00a19a;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.16s;
+  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.26);
 }
-
-.verification-content__resend {
-  @apply text-center mb-8;
+.otp-continue svg {
+  width: 18px;
+  height: 18px;
 }
-
-.verification-content__resend-button {
-  @apply text-brand-aqua font-medium text-base hover:text-brand-aqua/80 transition-colors;
+.otp-continue:hover:not(:disabled) {
+  background: #00b6ae;
+  transform: translateY(-1px);
 }
-
-.verification-content__resend-button--disabled {
-  @apply text-gray-400 cursor-not-allowed hover:text-gray-400;
-}
-
-.verification-content__continue {
-  @apply mb-8;
-}
-
-.verification-content__continue-button {
-  @apply w-full h-12 bg-brand-aqua hover:bg-brand-aqua/90 text-white font-medium text-base rounded-full flex items-center justify-center transition-colors;
-  box-shadow: 0 4px 18px rgba(0, 161, 154, 0.3);
-}
-
-.verification-content__continue-button:disabled {
-  background: #e2e8f0;
-  color: #94a3b8;
+.otp-continue:disabled {
+  background: #e7e6ef;
+  color: #a7a4b8;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+/* Resend */
+.otp-resend {
+  text-align: center;
+  margin-top: 22px;
+}
+.otp-resend-timer {
+  font-size: 15px;
+  font-weight: 500;
+  color: #9c98ad;
+}
+.otp-resend-btn {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #00a19a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.otp-resend-btn:hover {
+  color: #00857f;
 }
 </style>
