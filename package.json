@@ -30,6 +30,7 @@
     "vue": "latest"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.116",
     "@nuxt/devtools": "^1.5.2",
     "@nuxt/typescript-build": "^3.0.2",
     "@tailwindcss/typography": "^0.5.15",

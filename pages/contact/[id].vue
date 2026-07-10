@@ -31,7 +31,7 @@
 
         <!-- ── Header ─────────────────────────────────────────────────── -->
         <div class="cw-head">
-          <div class="cw-eyebrow"><span class="cw-eyebrow-dash" />Direct message</div>
+          <div class="cw-eyebrow">Direct message</div>
           <h1 class="cw-title">Message the owner</h1>
           <p class="cw-sub">
             Ask anything you need before you offer — your message goes straight

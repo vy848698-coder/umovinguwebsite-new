@@ -1,54 +1,84 @@
 <template>
-  <div class="mobile-container welcome-screen">
+  <div class="wl-page">
+    <main class="wl-hero">
+      <!-- ── Left: copy ── -->
+      <div class="wl-copy">
+        <div class="wl-eyebrow">
+          <span class="wl-dot" />Congratulations
+          <span class="wl-dot" />You're in
+        </div>
 
-    <!-- Topbar -->
-    <div class="auth-topbar">
-      <div class="auth-spacer" />
-      <div class="auth-brand-mini">
-        <OPIcon name="logo" class="w-[26px] h-[26px]" />
-      </div>
-    </div>
+        <div class="wl-allset">You're all set</div>
+        <h1 class="wl-title">Welcome,<br /><span class="wl-name">{{ firstName }}.</span></h1>
+        <p class="wl-sub">
+          Your home's already telling us things. Tap below to see what we found.
+        </p>
 
-    <!-- Top banner -->
-    <div class="welcome-top-banner">
-      Congratulations<span class="dot" />you're in
-    </div>
-
-    <div class="welcome-celebration">
-      <!-- Prototype-exact house illustration (auth-flow.html line 1212).
-           Confetti is fired from the top of the viewport by a canvas
-           overlay (see runConfetti below) so it falls down the whole
-           screen rather than erupting from the chimney. -->
-      <div class="welcome-house-wrap">
-        <img
-          class="welcome-house"
-          src="/welcome-house.png"
-          alt=""
-          width="240"
-          height="auto"
-        />
+        <button class="wl-cta" @click="continueToApp">
+          Let's start exploring
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </button>
       </div>
 
-      <div class="welcome-eyebrow-big">You're all set</div>
-      <div class="welcome-headline-big">Welcome, {{ firstName }}.</div>
-      <div class="welcome-sub-big">
-        Your home's already telling us things. Tap below to see what we found.
-      </div>
+      <!-- ── Right: illustration card ── -->
+      <div class="wl-visual">
+        <span class="wl-fleck wl-fleck-a" />
+        <span class="wl-fleck wl-fleck-b" />
+        <span class="wl-fleck wl-fleck-c" />
 
-      <button class="welcome-cta" @click="continueToApp">
-        Let's start exploring
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12" />
-          <polyline points="12 5 19 12 12 19" />
-        </svg>
-      </button>
-    </div>
+        <div class="wl-card">
+          <div class="wl-illus">
+            <svg viewBox="0 0 420 360" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <!-- sun -->
+              <circle cx="348" cy="66" r="34" fill="#FBE6AE" />
+              <!-- ground -->
+              <ellipse cx="210" cy="314" rx="172" ry="20" fill="#E3EDE7" />
+              <!-- left navy block -->
+              <rect x="70" y="196" width="96" height="106" rx="4" fill="#231d45" />
+              <rect x="90" y="216" width="56" height="56" rx="3" fill="#F6C560" />
+              <line x1="118" y1="216" x2="118" y2="272" stroke="#231d45" stroke-width="4" />
+              <line x1="90" y1="244" x2="146" y2="244" stroke="#231d45" stroke-width="4" />
+              <!-- main teal body -->
+              <rect x="150" y="150" width="160" height="152" rx="4" fill="#18B0A4" />
+              <!-- roof + chimney -->
+              <rect x="286" y="92" width="24" height="48" fill="#2C2551" />
+              <path d="M126 160 L219 72 L334 160 Z" fill="#231d45" />
+              <!-- upper split window -->
+              <rect x="196" y="170" width="54" height="62" rx="3" fill="#100D28" />
+              <rect x="199" y="173" width="21" height="27" fill="#F6C560" />
+              <!-- door -->
+              <rect x="250" y="224" width="42" height="78" rx="3" fill="#2C2551" />
+              <rect x="269" y="252" width="6" height="30" rx="3" fill="#F6C560" />
+              <!-- fence -->
+              <g fill="#231d45">
+                <rect x="316" y="258" width="8" height="44" rx="2" />
+                <rect x="330" y="258" width="8" height="44" rx="2" />
+                <rect x="344" y="258" width="8" height="44" rx="2" />
+              </g>
+              <!-- bushes -->
+              <ellipse cx="118" cy="300" rx="18" ry="12" fill="#3B8A50" />
+              <ellipse cx="150" cy="298" rx="27" ry="16" fill="#2F7D46" />
+              <ellipse cx="300" cy="300" rx="30" ry="16" fill="#37894F" />
+            </svg>
+          </div>
+
+          <div class="wl-caption">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Your home on umovingu
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import OPIcon from '~/components/ui/OPIcon.vue'
 
 definePageMeta({
   title: 'Welcome - UmovingU',
@@ -66,11 +96,6 @@ const firstName = computed(() => {
 })
 
 onMounted(async () => {
-  // Fire the top-of-screen confetti shower once on mount. Same canvas
-  // implementation we use after the onboarding-preferences flow — pieces
-  // start above the viewport and fall straight down through the page,
-  // so the celebration covers the whole screen instead of dribbling out
-  // of the chimney.
   runConfetti()
 
   try {
@@ -85,20 +110,17 @@ onMounted(async () => {
 })
 
 const continueToApp = async () => {
-  const redirectPath = typeof localStorage !== 'undefined' ? localStorage.getItem('redirectAfterLogin') : null
-  if (redirectPath) {
+  // Always finish onboarding in the app home. Clear any stashed return path
+  // (e.g. a HomeScore property the user came from) so it can't drag them back
+  // to an unrelated page.
+  if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('redirectAfterLogin')
-    await navigateTo(redirectPath)
-  } else {
-    await navigateTo('/')
   }
+  await navigateTo('/explore')
 }
 
-// Top-of-screen confetti — ported verbatim from
-// pages/onboarding/preferences.vue::runConfetti. Spawns 120 mixed
-// rectangle/circle pieces above the viewport and lets them fall straight
-// down with small horizontal drift + rotation. Honours
-// prefers-reduced-motion (skips the animation entirely).
+// Top-of-screen confetti shower — pieces start above the viewport and fall
+// straight down. Honours prefers-reduced-motion.
 function runConfetti() {
   if (typeof window === 'undefined') return
   const reduce =
@@ -173,201 +195,186 @@ function runConfetti() {
 </script>
 
 <style scoped>
-.welcome-screen {
-  background: #fff;
+.wl-page {
   min-height: 100dvh;
-  position: relative;
-  overflow: hidden;
-}
-
-/* ── Desktop / website layout: centered phone-width card on a tinted
-   page (mobile unchanged below 768px). The whole welcome screen is the
-   visual, so we frame it as a centered card rather than restyling its
-   internals. ── */
-@media (min-width: 768px) {
-  .welcome-screen.mobile-container {
-    max-width: 460px;
-    margin: 40px auto;
-    min-height: calc(100dvh - 80px);
-    border-radius: 28px;
-    border: 1px solid #e7e9f0;
-    box-shadow: 0 24px 60px rgba(35, 29, 69, 0.14);
-  }
-
-  /* Tinted page backdrop behind the centered card. */
-  .welcome-screen.mobile-container::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background:
-      radial-gradient(circle at 12% 10%, rgba(0, 161, 154, 0.08) 0%, transparent 38%),
-      radial-gradient(circle at 88% 8%, rgba(35, 29, 69, 0.06) 0%, transparent 42%),
-      #f4f6f9;
-    transform: none;
-    width: auto;
-    height: auto;
-    top: 0;
-    left: 0;
-  }
-}
-.welcome-screen::before {
-  content: '';
-  position: absolute;
-  top: 12%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 380px;
-  height: 320px;
-  background: radial-gradient(ellipse, #f2faf8 0%, rgba(242, 250, 248, 0.5) 40%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-.welcome-screen::after {
-  content: '';
-  position: absolute;
-  bottom: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 420px;
-  height: 220px;
-  background: radial-gradient(ellipse, rgba(247, 242, 232, 0.55) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Topbar */
-.auth-topbar {
-  display: flex;
-  align-items: center;
-  padding: 16px 22px 4px;
-  position: relative;
-  z-index: 5;
-}
-.auth-spacer { flex: 1; }
-.auth-brand-mini {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Top banner */
-.welcome-top-banner {
-  position: relative;
-  z-index: 5;
-  text-align: center;
-  padding: 24px 28px 12px;
-  font-size: 13px;
-  font-weight: 800;
-  color: #007e78;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  animation: welcome-fade-up 0.55s 0.1s both;
-}
-.welcome-top-banner .dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00a19a;
-  margin: 0 10px 2px;
-  vertical-align: middle;
-  animation: welcome-banner-pulse 1.6s ease-in-out infinite;
-}
-@keyframes welcome-banner-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.7; }
-}
-
-/* Centered celebration */
-.welcome-celebration {
-  position: relative;
-  z-index: 3;
-  padding: 14px 28px 44px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  background-color: #faf9f5;
 }
 
-/* House wrapper — prototype-exact 240 px container (auth-flow.html L582). */
-.welcome-house-wrap {
-  position: relative;
-  width: 240px;
-  margin: 36px auto 28px;
-  animation: welcome-fade-up 0.65s 0.2s both;
-}
-.welcome-house {
+.wl-hero {
+  flex: 1;
   width: 100%;
-  height: auto;
-  display: block;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 76px 40px 100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+  position: relative;
+}
+/* Soft mint glow behind the visual (top-right). */
+.wl-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: 4%;
+  width: 480px;
+  height: 380px;
+  background: radial-gradient(ellipse, rgba(23, 179, 166, 0.12) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Left copy ── */
+.wl-copy {
   position: relative;
   z-index: 1;
 }
-
-.welcome-eyebrow-big {
-  font-size: 11px;
+.wl-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
   font-weight: 800;
-  color: #007e78;
-  letter-spacing: 2px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  margin-bottom: 14px;
-  animation: welcome-fade-up 0.55s 0.25s both;
+  color: #00857f;
+  margin-bottom: 22px;
 }
-.welcome-headline-big {
-  font-size: 40px;
+.wl-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #17b3a6;
+}
+.wl-allset {
+  font-size: 13px;
   font-weight: 800;
-  color: #231d45;
-  letter-spacing: -1.4px;
-  line-height: 1;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #a29fb2;
   margin-bottom: 14px;
-  max-width: 300px;
-  animation: welcome-fade-up 0.65s 0.35s both;
 }
-.welcome-sub-big {
-  font-size: 14.5px;
-  font-weight: 500;
-  color: #6b6783;
+.wl-title {
+  font-size: clamp(46px, 5.6vw, 82px);
+  font-weight: 800;
+  letter-spacing: -2.4px;
+  line-height: 0.98;
+  color: #231d45;
+  margin: 0 0 24px;
+}
+.wl-name {
+  color: #00a19a;
+}
+.wl-sub {
+  font-size: 19px;
   line-height: 1.5;
-  letter-spacing: -0.05px;
-  max-width: 260px;
-  margin-bottom: 32px;
-  animation: welcome-fade-up 0.55s 0.5s both;
+  color: #6b6783;
+  max-width: 440px;
+  margin: 0 0 38px;
 }
-@keyframes welcome-fade-up {
-  from { transform: translateY(12px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.welcome-cta {
+.wl-cta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   color: #fff;
   background: #00a19a;
   border: none;
-  padding: 17px 32px;
+  padding: 20px 38px;
   border-radius: 100px;
   cursor: pointer;
   letter-spacing: -0.2px;
-  box-shadow: 0 12px 30px rgba(0, 161, 154, 0.30), 0 2px 6px rgba(0, 161, 154, 0.14);
+  box-shadow: 0 16px 36px rgba(0, 161, 154, 0.3), 0 2px 6px rgba(0, 161, 154, 0.16);
   transition: all 0.18s;
-  animation:
-    welcome-fade-up 0.55s 0.65s both,
-    welcome-cta-pulse 2.4s 1.4s ease-in-out infinite;
+  animation: wl-cta-pulse 2.4s 1.2s ease-in-out infinite;
 }
-.welcome-cta:hover {
+.wl-cta:hover {
   transform: translateY(-2px);
   background: #00b6ae;
 }
-.welcome-cta svg { width: 14px; height: 14px; }
-@keyframes welcome-cta-pulse {
-  0%, 100% { box-shadow: 0 12px 30px rgba(0, 161, 154, 0.30), 0 2px 6px rgba(0, 161, 154, 0.14), 0 0 0 0 rgba(0, 161, 154, 0); }
-  50% { box-shadow: 0 12px 30px rgba(0, 161, 154, 0.30), 0 2px 6px rgba(0, 161, 154, 0.14), 0 0 0 14px rgba(0, 161, 154, 0.08); }
+.wl-cta svg {
+  width: 18px;
+  height: 18px;
+}
+@keyframes wl-cta-pulse {
+  0%, 100% { box-shadow: 0 16px 36px rgba(0, 161, 154, 0.3), 0 2px 6px rgba(0, 161, 154, 0.16), 0 0 0 0 rgba(0, 161, 154, 0); }
+  50% { box-shadow: 0 16px 36px rgba(0, 161, 154, 0.3), 0 2px 6px rgba(0, 161, 154, 0.16), 0 0 0 16px rgba(0, 161, 154, 0.07); }
+}
+
+/* ── Right visual ── */
+.wl-visual {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wl-card {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 40px 90px rgba(35, 29, 69, 0.16);
+  padding: 26px 26px 22px;
+}
+.wl-illus {
+  border-radius: 20px;
+  background: linear-gradient(168deg, #e7f5f0 0%, #eef3ee 100%);
+  padding: 34px 30px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wl-illus svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+}
+.wl-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #00a19a;
+}
+.wl-caption svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Decorative flecks */
+.wl-fleck {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+.wl-fleck-a { width: 12px; height: 12px; background: #17b3a6; top: 6%; left: 2%; }
+.wl-fleck-b { width: 10px; height: 10px; background: #e0a43a; bottom: 4%; left: 12%; }
+.wl-fleck-c { width: 12px; height: 12px; background: #17b3a6; top: 44%; right: -2%; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .wl-hero {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 48px 24px 72px;
+    text-align: left;
+  }
+  .wl-visual {
+    order: -1;
+  }
+  .wl-hero::before {
+    display: none;
+  }
 }
 </style>

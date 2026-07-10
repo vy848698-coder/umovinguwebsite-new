@@ -169,7 +169,7 @@
 
             <!-- Documents & forms -->
             <section class="bp-block">
-              <div class="buyer-eyebrow"><span class="buyer-eyebrow-dash" />Solicitor-grade</div>
+              <div class="buyer-eyebrow">Solicitor-grade</div>
               <h2 class="buyer-section-title">Documents &amp; forms</h2>
               <p class="buyer-section-sub">
                 Ready-to-share packs — the paperwork a buyer's solicitor asks for
@@ -326,7 +326,7 @@
 
             <!-- Official Records -->
             <section class="bp-block">
-              <div class="buyer-eyebrow"><span class="buyer-eyebrow-dash" />Verified record</div>
+              <div class="buyer-eyebrow">Verified record</div>
               <h2 class="buyer-section-title">Official records</h2>
               <p class="buyer-section-sub">
                 Verified documents that define the legal and structural status of
@@ -442,7 +442,7 @@
 
             <!-- Comparable Sales -->
             <section v-if="comparables.length" class="bp-block">
-              <div class="buyer-eyebrow"><span class="buyer-eyebrow-dash" />Market context</div>
+              <div class="buyer-eyebrow">Market context</div>
               <h2 class="buyer-section-title">Nearby sold prices</h2>
               <p class="buyer-section-sub">
                 Recent Land Registry sales in the same postcode area.

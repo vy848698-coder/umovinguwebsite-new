@@ -1,272 +1,325 @@
 <template>
-  <div class="mobile-container">
-    <div class="ob-page">
-      <!-- ── HEADER (light, no purple block — prototype `.ob-header`) ── -->
-      <div class="ob-header">
-        <button
-          v-if="phase === 'detail'"
-          class="ob-back"
-          aria-label="Back"
-          @click="phase = 'role'"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <button
-          v-else
-          class="ob-back"
-          aria-label="Back"
-          @click="$router.back()"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <div class="ob-step">{{ stepIndicator }}</div>
-        <button class="ob-skip" @click="navigateTo('/')">Skip</button>
-      </div>
-      <div class="ob-progress">
-        <div
-          class="ob-progress-bar"
-          :style="{ width: phase === 'detail' ? '100%' : '50%' }"
-        />
-      </div>
+  <div class="pref-page">
+    <div class="pf-body">
+      <!-- ── Left context sidebar ── -->
+      <aside class="pf-side">
+        <div class="pf-side-inner">
+          <span class="pf-welcome">
+            <span class="pf-welcome-dot" />{{ phase === 'role' ? 'WELCOME TO UMOVINGU' : eyebrowLabel.toUpperCase() }}
+          </span>
 
-      <!-- ── INTRO BLOCK (eyebrow pill + title + sub) ── -->
-      <div class="ob-intro">
-        <div class="ob-eyebrow">
-          <span class="pulse" />{{ eyebrowLabel }}
-        </div>
-        <div class="ob-title">{{ headerTitle }}</div>
-        <div class="ob-sub">{{ headerSub }}</div>
-      </div>
+          <h2 class="pf-side-title">
+            {{ phase === 'role' ? "We'll set up the right journey for you — takes 30 seconds." : headerSub }}
+          </h2>
 
-      <!-- ── ROLE SELECTION (journey cards) ── -->
-      <template v-if="phase === 'role'">
-        <div class="journey-list">
-          <div
-            v-for="r in roles"
-            :key="r.key"
-            class="journey-card"
-            :class="{ selected: selectedRole === r.key }"
-            @click="selectRole(r.key)"
-          >
-            <div class="j-icon" :class="r.iconClass">
-              <span v-html="r.svg" />
-            </div>
-            <div class="j-body">
-              <div class="j-title">{{ r.label }}</div>
-              <div class="j-sub">{{ r.desc }}</div>
-            </div>
-            <div class="j-radio"><div class="j-radio-dot" /></div>
-          </div>
-        </div>
+          <!-- Step tracker -->
+          <ol class="pf-steps">
+            <li class="pf-step" :class="{ active: phase === 'role', done: phase === 'detail' }">
+              <span class="pf-step-num">
+                <svg v-if="phase === 'detail'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <template v-else>1</template>
+              </span>
+              <span class="pf-step-info">
+                <span class="pf-step-title">What do you want to do?</span>
+                <span class="pf-step-sub">{{ phase === 'detail' && selectedRoleLabel ? selectedRoleLabel : 'Choose your journey' }}</span>
+              </span>
+            </li>
+            <li class="pf-step" :class="{ active: phase === 'detail' }">
+              <span class="pf-step-num">2</span>
+              <span class="pf-step-info">
+                <span class="pf-step-title">Your move</span>
+                <span class="pf-step-sub">{{ phase === 'detail' ? moveSubLabel : 'Tell us about both sides' }}</span>
+              </span>
+            </li>
+          </ol>
 
-        <!-- Info stripe replaces the £900m green block -->
-        <div class="info-stripe">
-          <div class="info-stripe-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-          </div>
-          <div class="info-stripe-text">
-            UK consumers lose <strong>£900m a year</strong> on aborted property
-            transactions. A Passport-verified sale is <strong>12× faster</strong>
-            and far less likely to fall through.
-          </div>
-        </div>
-
-        <!-- Trust tiles -->
-        <div class="trust-row">
-          <div
-            v-for="t in trust"
-            :key="t.title"
-            class="trust-tile"
-          >
-            <div class="trust-icon" :class="{ gold: t.gold }">
-              <span v-html="t.svg" />
-            </div>
-            <div class="trust-title">{{ t.title }}</div>
-            <div class="trust-sub">{{ t.sub }}</div>
-          </div>
-        </div>
-      </template>
-
-      <!-- ── DETAIL SCREEN ── -->
-      <template v-else>
-        <div ref="scrollRef">
-          <template v-for="q in activeQuestions" :key="q.id">
-            <!-- Section group heading (used in landlord / selling+buying) -->
-            <div v-if="q.type === 'heading'" class="section-group">
-              <span class="section-group-emoji">{{ headingEmoji(q.label || '') }}</span>
-              <span class="section-group-h">{{ headingText(q.label || '') }}</span>
-            </div>
-
-            <!-- Text input -->
-            <div v-else-if="q.type === 'text'" class="pref-section">
-              <div class="pref-label">{{ q.label }}</div>
-              <div class="pref-input">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3.5-3.5" />
+          <!-- ── Role phase: info + trust cards ── -->
+          <template v-if="phase === 'role'">
+            <div class="pf-info">
+              <span class="pf-info-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z" />
+                  <path d="m9 12 2 2 4-4" />
                 </svg>
-                <input
-                  :value="(a as any)[q.id] || ''"
-                  type="text"
-                  :placeholder="q.placeholder"
-                  @input="(e: any) => ((a as any)[q.id] = e.target.value)"
-                />
-              </div>
+              </span>
+              <p>
+                UK consumers lose <strong>£900m a year</strong> on aborted property
+                transactions. A Passport-verified sale is <strong>12× faster</strong>
+                and far less likely to fall through.
+              </p>
             </div>
 
-            <!-- Locations: chip-autocomplete -->
-            <div v-else-if="q.type === 'locations'" class="pref-section">
-              <div class="pref-label">{{ q.label }}</div>
-              <div v-if="q.hint" class="pref-help">{{ q.hint }}</div>
-              <div class="pref-input">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                <input
-                  :value="locInputs[q.id] || ''"
-                  type="text"
-                  :placeholder="q.placeholder"
-                  autocomplete="off"
-                  @input="(e: any) => onLocInput(q.id, e.target.value)"
-                  @keydown.enter.prevent="commitLocFreeText(q.id)"
-                  @keydown.backspace="onLocBackspace(q.id, $event)"
-                />
-              </div>
-              <div
-                v-if="locOpen[q.id] && locSuggestions[q.id]?.length"
-                class="loc-drop"
-              >
-                <div
-                  v-for="(s, idx) in locSuggestions[q.id]"
-                  :key="`${s.kind}-${s.value}-${idx}`"
-                  class="loc-drop-item"
-                  @mousedown.prevent="addLocation(q.id, s.value)"
-                >
-                  <span class="loc-drop-ic">{{
-                    s.kind === 'postcode' ? '📮' : '🏙️'
-                  }}</span>
-                  <span class="loc-drop-text">
-                    <strong>{{ s.value }}</strong>
-                    <span v-if="s.sub" class="loc-drop-sub">{{ s.sub }}</span>
-                  </span>
-                </div>
-              </div>
-              <div
-                v-if="((a as any)[q.id] as string[]).length"
-                class="chip-row"
-                style="margin-top: 10px"
-              >
-                <button
-                  v-for="(loc, i) in (a as any)[q.id] as string[]"
-                  :key="`${q.id}-${loc}-${i}`"
-                  type="button"
-                  class="chip selected"
-                  @click="removeLocation(q.id, i)"
-                >
-                  {{ loc }}<span style="margin-left: 4px; opacity: 0.8">×</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Chips -->
-            <div v-else-if="q.type === 'chips'" class="pref-section">
-              <div class="pref-label">
-                {{ q.label
-                }}<span v-if="q.multiSelect" class="multi-hint">
-                  · pick all that apply</span
-                >
-              </div>
-              <div v-if="q.hint" class="pref-help">{{ q.hint }}</div>
-              <div class="chip-row">
-                <button
-                  v-for="opt in q.opts"
-                  :key="opt.v"
-                  type="button"
-                  class="chip"
-                  :class="{
-                    selected: isSelected(q.id, opt.v, !!q.multiSelect),
-                    dashed: !!opt.isExpand,
-                  }"
-                  @click="
-                    pick(
-                      q.id,
-                      opt.v,
-                      !!q.multiSelect,
-                      opt.expandKey,
-                      !!opt.isExpand,
-                    )
-                  "
-                >
-                  <span v-if="opt.icon" class="chip-emoji">{{ opt.icon }}</span
-                  >{{ opt.v }}
-                </button>
-                <template v-if="expanded[q.id] && q.expandOpts">
-                  <button
-                    v-for="opt in q.expandOpts"
-                    :key="opt.v"
-                    type="button"
-                    class="chip"
-                    :class="{ selected: isSelected(q.id, opt.v, !!q.multiSelect) }"
-                    @click="pick(q.id, opt.v, !!q.multiSelect)"
-                  >
-                    <span v-if="opt.icon" class="chip-emoji">{{ opt.icon }}</span
-                    >{{ opt.v }}
-                  </button>
-                </template>
+            <div class="pf-stats">
+              <div v-for="t in trust" :key="t.title" class="pf-stat">
+                <span class="pf-stat-ic"><span v-html="t.svg" /></span>
+                <span class="pf-stat-info">
+                  <span class="pf-stat-title">{{ t.title }}</span>
+                  <span class="pf-stat-sub">{{ t.sub }}</span>
+                </span>
               </div>
             </div>
           </template>
-          <div style="height: 14px" />
-        </div>
-      </template>
 
-      <!-- ── STICKY FOOTER ── -->
-      <div class="ob-footer">
-        <div class="ob-footer-meta">
-          <span v-if="phase === 'role'">
-            <strong>{{ selectedRole ? '1' : '0' }} of 4</strong> options chosen
-          </span>
-          <span v-else>
-            <strong>{{ answeredCount }} of {{ totalQuestions }}</strong>
-            answered · all optional
-          </span>
-          <span>{{ phase === 'role' ? 'Step 1 / 2' : 'Step 2 / 2' }}</span>
+          <!-- ── Detail phase: on-this-page nav + answered count ── -->
+          <template v-else>
+            <div v-if="pageSections.length" class="pf-onpage">
+              <span class="pf-onpage-label">On this page</span>
+              <button
+                v-for="sec in pageSections"
+                :key="sec.anchor"
+                type="button"
+                class="pf-onpage-item"
+                :class="`tint-${sec.tint}`"
+                @click="scrollToSection(sec.anchor)"
+              >
+                <span class="pf-onpage-ic"><span v-html="sec.icon" /></span>
+                {{ sec.title }}
+              </button>
+            </div>
+
+            <div class="pf-answered">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+              </svg>
+              <span><strong>{{ answeredCount }} of {{ totalQuestions }}</strong> answered · all optional</span>
+            </div>
+          </template>
         </div>
-        <button
-          v-if="phase === 'role'"
-          class="cta-primary"
-          :class="{ disabled: !selectedRole }"
-          :disabled="!selectedRole"
-          @click="advanceToDetail"
-        >
-          Continue
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-        <button
-          v-else
-          class="cta-primary"
-          :disabled="isLoading"
-          @click="save"
-        >
-          <span v-if="isLoading" class="spinner" />
-          {{ detailCtaLabel }}
-          <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-      </div>
+      </aside>
+
+      <!-- ── Right main panel ── -->
+      <main class="pf-main">
+        <div class="pf-main-inner" :class="{ 'is-detail': phase === 'detail' }">
+          <!-- Top bar -->
+          <div class="pf-top">
+            <button
+              class="pf-back"
+              aria-label="Back"
+              @click="phase === 'detail' ? (phase = 'role') : $router.back()"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span class="pf-top-step">{{ phase === 'role' ? 'STEP 1 OF 2' : 'STEP 2 OF 2 · YOUR MOVE' }}</span>
+            <div class="pf-top-progress">
+              <div class="pf-top-progress-bar" :style="{ width: phase === 'detail' ? '100%' : '50%' }" />
+            </div>
+            <button class="pf-skip" @click="navigateTo('/')">Skip</button>
+          </div>
+
+          <h1 class="pf-title">{{ headerTitle }}</h1>
+          <p class="pf-sub">{{ headerSub }}</p>
+
+          <!-- ── ROLE SELECTION ── -->
+          <template v-if="phase === 'role'">
+            <div class="pf-roles">
+              <button
+                v-for="r in roles"
+                :key="r.key"
+                type="button"
+                class="pf-role"
+                :class="[`tint-${r.key}`, { selected: selectedRole === r.key }]"
+                @click="selectRole(r.key)"
+              >
+                <span class="pf-role-ic"><span v-html="r.svg" /></span>
+                <span class="pf-role-info">
+                  <span class="pf-role-title">{{ r.label }}</span>
+                  <span class="pf-role-desc">{{ r.desc }}</span>
+                </span>
+                <span class="pf-radio" :class="{ on: selectedRole === r.key }">
+                  <span class="pf-radio-dot" />
+                </span>
+              </button>
+            </div>
+          </template>
+
+          <!-- ── DETAIL SCREEN ── -->
+          <template v-else>
+            <div class="pf-detail" ref="scrollRef">
+              <section
+                v-for="sec in sections"
+                :key="sec.anchor"
+                :id="sec.anchor"
+                class="pf-card"
+              >
+                <div v-if="sec.title" class="pf-card-head">
+                  <span class="pf-card-ic" :class="`tint-${sec.tint}`"><span v-html="sec.icon" /></span>
+                  <h3>{{ sec.title }}</h3>
+                </div>
+
+                <div class="pf-card-body">
+                  <template v-for="q in sec.questions" :key="q.id">
+                    <!-- Text input -->
+                    <div v-if="q.type === 'text'" class="pref-section">
+                      <div class="pref-label">{{ q.label }}</div>
+                      <div class="pref-input">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="11" cy="11" r="7" />
+                          <path d="m20 20-3.5-3.5" />
+                        </svg>
+                        <input
+                          :value="(a as any)[q.id] || ''"
+                          type="text"
+                          :placeholder="q.placeholder"
+                          @input="(e: any) => ((a as any)[q.id] = e.target.value)"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Locations: chip-autocomplete -->
+                    <div v-else-if="q.type === 'locations'" class="pref-section">
+                      <div class="pref-label">{{ q.label }}</div>
+                      <div v-if="q.hint" class="pref-help">{{ q.hint }}</div>
+                      <div class="pref-input">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <input
+                          :value="locInputs[q.id] || ''"
+                          type="text"
+                          :placeholder="q.placeholder"
+                          autocomplete="off"
+                          @input="(e: any) => onLocInput(q.id, e.target.value)"
+                          @keydown.enter.prevent="commitLocFreeText(q.id)"
+                          @keydown.backspace="onLocBackspace(q.id, $event)"
+                        />
+                      </div>
+                      <div
+                        v-if="locOpen[q.id] && locSuggestions[q.id]?.length"
+                        class="loc-drop"
+                      >
+                        <div
+                          v-for="(s, idx) in locSuggestions[q.id]"
+                          :key="`${s.kind}-${s.value}-${idx}`"
+                          class="loc-drop-item"
+                          @mousedown.prevent="addLocation(q.id, s.value)"
+                        >
+                          <span class="loc-drop-ic">{{
+                            s.kind === 'postcode' ? '📮' : '🏙️'
+                          }}</span>
+                          <span class="loc-drop-text">
+                            <strong>{{ s.value }}</strong>
+                            <span v-if="s.sub" class="loc-drop-sub">{{ s.sub }}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div
+                        v-if="((a as any)[q.id] as string[]).length"
+                        class="chip-row"
+                        style="margin-top: 10px"
+                      >
+                        <button
+                          v-for="(loc, i) in (a as any)[q.id] as string[]"
+                          :key="`${q.id}-${loc}-${i}`"
+                          type="button"
+                          class="chip selected"
+                          @click="removeLocation(q.id, i)"
+                        >
+                          {{ loc }}<span style="margin-left: 4px; opacity: 0.8">×</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Chips -->
+                    <div v-else-if="q.type === 'chips'" class="pref-section">
+                      <div class="pref-label">
+                        {{ q.label
+                        }}<span v-if="q.multiSelect" class="multi-hint">
+                          · pick all that apply</span
+                        >
+                      </div>
+                      <div v-if="q.hint" class="pref-help">{{ q.hint }}</div>
+                      <div class="chip-row">
+                        <button
+                          v-for="opt in q.opts"
+                          :key="opt.v"
+                          type="button"
+                          class="chip"
+                          :class="{
+                            selected: isSelected(q.id, opt.v, !!q.multiSelect),
+                            dashed: !!opt.isExpand,
+                          }"
+                          @click="
+                            pick(
+                              q.id,
+                              opt.v,
+                              !!q.multiSelect,
+                              opt.expandKey,
+                              !!opt.isExpand,
+                            )
+                          "
+                        >
+                          <span v-if="opt.icon" class="chip-emoji">{{ opt.icon }}</span
+                          >{{ opt.v }}
+                        </button>
+                        <template v-if="expanded[q.id] && q.expandOpts">
+                          <button
+                            v-for="opt in q.expandOpts"
+                            :key="opt.v"
+                            type="button"
+                            class="chip"
+                            :class="{ selected: isSelected(q.id, opt.v, !!q.multiSelect) }"
+                            @click="pick(q.id, opt.v, !!q.multiSelect)"
+                          >
+                            <span v-if="opt.icon" class="chip-emoji">{{ opt.icon }}</span
+                            >{{ opt.v }}
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </section>
+            </div>
+          </template>
+
+          <div class="pf-divider" />
+
+          <!-- ── Actions bar ── -->
+          <div class="pf-actions">
+            <div class="pf-actions-meta">
+              <span v-if="phase === 'role'">
+                <strong>{{ selectedRole ? '1' : '0' }} of 4</strong> options chosen
+              </span>
+              <span v-else>
+                <strong>{{ answeredCount }} of {{ totalQuestions }}</strong>
+                answered · all optional
+              </span>
+            </div>
+            <div class="pf-actions-right">
+              <span class="pf-actions-step">{{ phase === 'role' ? 'Step 1 / 2' : 'Step 2 / 2' }}</span>
+              <button
+                v-if="phase === 'role'"
+                class="pf-cta"
+                :class="{ disabled: !selectedRole }"
+                :disabled="!selectedRole"
+                @click="advanceToDetail"
+              >
+                Continue
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+              <button
+                v-else
+                class="pf-cta"
+                :disabled="isLoading"
+                @click="save"
+              >
+                <span v-if="isLoading" class="spinner" />
+                {{ detailCtaLabel }}
+                <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 </template>
@@ -282,6 +335,21 @@ const scrollRef = ref<HTMLElement | null>(null)
 const isLoading = ref(false)
 const phase = ref<'role' | 'detail'>('role')
 const selectedRole = ref('')
+
+// Preview / deep-link shortcut so the flow can be reviewed without clicking
+// through step 1. e.g. /onboarding/preferences?step=2&role=both jumps straight
+// to step 2 of the buying+selling journey. Harmless in normal use (only
+// activates when these query params are present).
+{
+  const qRole = route.query.role
+  const qStep = route.query.step
+  if (typeof qRole === 'string' && ['buy', 'sell', 'landlord', 'both'].includes(qRole)) {
+    selectedRole.value = qRole
+  }
+  if (qStep === '2' && selectedRole.value) {
+    phase.value = 'detail'
+  }
+}
 
 // ── Location chip autocomplete ───────────────────────────────────────────
 type LocSuggestion = { kind: 'postcode' | 'place'; value: string; sub?: string }
@@ -958,6 +1026,87 @@ function advanceToDetail() {
   phase.value = 'detail'
   scrollRef.value?.scrollTo({ top: 0 })
 }
+
+// ── Detail-phase section cards ────────────────────────────────────────────
+// Group the flat question list into cards, one per section heading. Icons +
+// tints are keyed off the heading emoji so the cards match the design.
+const sectionMeta: Record<string, { icon: string; tint: string }> = {
+  '🏠': {
+    tint: 'amber',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  },
+  '🔍': {
+    tint: 'teal',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  },
+  '📋': {
+    tint: 'purple',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>',
+  },
+}
+const defaultSectionIcon =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>'
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+interface Section {
+  title: string
+  icon: string
+  tint: string
+  anchor: string
+  questions: Question[]
+}
+
+const sections = computed<Section[]>(() => {
+  const secs: Section[] = []
+  let cur: Section | null = null
+  for (const q of activeQuestions.value) {
+    if (q.type === 'heading') {
+      const emoji = headingEmoji(q.label || '')
+      const title = headingText(q.label || '')
+      const meta = sectionMeta[emoji] ?? { icon: defaultSectionIcon, tint: 'teal' }
+      cur = {
+        title,
+        icon: meta.icon,
+        tint: meta.tint,
+        anchor: 'sec-' + slugify(title || String(secs.length)),
+        questions: [],
+      }
+      secs.push(cur)
+    } else {
+      if (!cur) {
+        cur = { title: '', icon: '', tint: '', anchor: 'sec-top', questions: [] }
+        secs.push(cur)
+      }
+      cur.questions.push(q)
+    }
+  }
+  return secs
+})
+
+// Only titled sections appear in the sidebar "On this page" nav.
+const pageSections = computed(() => sections.value.filter((s) => s.title))
+
+function scrollToSection(anchor: string) {
+  if (typeof document === 'undefined') return
+  document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+// Sidebar step-tracker sub-labels for the detail phase.
+const selectedRoleLabel = computed(
+  () => roles.find((r) => r.key === selectedRole.value)?.label ?? '',
+)
+const moveSubLabel = computed(() => {
+  const map: Record<string, string> = {
+    both: 'Buying & selling',
+    buy: 'Your search',
+    sell: 'Your property',
+    landlord: 'Investment criteria',
+  }
+  return map[selectedRole.value] ?? 'Tell us about both sides'
+})
 const headerTitle = computed(() => {
   if (phase.value === 'role') return 'What do you want to do?'
   const map: Record<string, string> = {
@@ -1196,8 +1345,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Prototype palette (one-to-one with onboarding-rebuilt.html `:root`). */
-.ob-page {
+/* Palette — defined on the page root so the detail-phase question styles
+   below (which use var(--teal) etc.) still resolve. */
+.pref-page {
   --navy: #231d45;
   --navy-soft: #4a4566;
   --navy-faint: #6e6985;
@@ -1217,42 +1367,640 @@ onMounted(() => {
   --gold-paler: #fcf6e9;
 
   min-height: 100dvh;
-  background: #fff;
+  display: flex;
+  flex-direction: column;
+  background: #faf9f5;
   color: var(--text);
   font-family:
     'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, Inter, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-/* ── Desktop / website layout ──────────────────────────────────────
-   Below 768px the page stays a full-bleed mobile screen. On wider
-   viewports it becomes a centered website card on a tinted page so it
-   reads as a web layout rather than a stretched phone screen. */
-@media (min-width: 768px) {
-  .mobile-container {
-    background:
-      radial-gradient(circle at 12% 10%, rgba(0, 161, 154, 0.08) 0%, transparent 38%),
-      radial-gradient(circle at 88% 8%, rgba(35, 29, 69, 0.06) 0%, transparent 42%),
-      #f4f6f9;
-    padding: 40px 20px 56px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
+/* ── Body: dark context sidebar + light main ── */
+.pf-body {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
 
-  .ob-page {
+/* Left sidebar */
+.pf-side {
+  flex: 0 0 clamp(340px, 30%, 460px);
+  padding: 44px 40px;
+  background:
+    radial-gradient(circle at 80% 6%, rgba(47, 191, 182, 0.10) 0%, transparent 44%),
+    linear-gradient(158deg, #241d47 0%, #2c2658 55%, #201b46 100%);
+}
+.pf-side-inner {
+  max-width: 400px;
+  margin-left: auto;
+}
+.pf-welcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #6fe6dc;
+  border: 1px solid rgba(47, 191, 182, 0.4);
+  background: rgba(47, 191, 182, 0.1);
+  border-radius: 100px;
+  padding: 7px 14px;
+}
+.pf-welcome-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #17b3a6;
+}
+.pf-side-title {
+  font-size: 29px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.8px;
+  color: #fff;
+  margin: 24px 0 34px;
+}
+
+/* Step tracker */
+.pf-steps {
+  list-style: none;
+  margin: 0 0 36px;
+  padding: 0;
+}
+.pf-step {
+  display: flex;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 22px;
+}
+.pf-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  bottom: 4px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.pf-step-num {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+}
+.pf-step-num svg {
+  width: 15px;
+  height: 15px;
+}
+.pf-step.active .pf-step-num {
+  background: #fff;
+  color: #231d45;
+  border-color: #fff;
+}
+.pf-step.done .pf-step-num {
+  background: #17b3a6;
+  color: #fff;
+  border-color: #17b3a6;
+}
+.pf-step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+.pf-step-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.pf-step:not(.active):not(.done) .pf-step-title {
+  color: rgba(255, 255, 255, 0.62);
+}
+.pf-step-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.44);
+}
+
+/* Info card */
+.pf-info {
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.pf-info-ic {
+  flex-shrink: 0;
+  color: #6fe6dc;
+}
+.pf-info-ic svg {
+  width: 22px;
+  height: 22px;
+}
+.pf-info p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+.pf-info strong {
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Trust stat cards */
+.pf-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pf-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.pf-stat-ic {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e0a43a;
+  background: rgba(224, 164, 58, 0.14);
+  border: 1px solid rgba(224, 164, 58, 0.28);
+}
+.pf-stat-ic :deep(svg) {
+  width: 19px;
+  height: 19px;
+}
+.pf-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.pf-stat-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+}
+.pf-stat-sub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Right main panel ── */
+.pf-main {
+  flex: 1;
+  min-width: 0;
+  background: #faf9f5;
+  padding: 40px 48px 64px;
+}
+.pf-main-inner {
+  max-width: 1080px;
+}
+
+/* Top bar */
+.pf-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 40px;
+}
+.pf-back {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid #e7e2d6;
+  background: #fff;
+  color: #231d45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pf-back svg {
+  width: 17px;
+  height: 17px;
+}
+.pf-back:hover {
+  border-color: #cfc9ba;
+}
+.pf-top-step {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: #9c98ad;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.pf-top-progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 100px;
+  background: #ece8e0;
+  overflow: hidden;
+  max-width: 360px;
+}
+.pf-top-progress-bar {
+  height: 100%;
+  border-radius: 100px;
+  background: #00a19a;
+  transition: width 0.3s;
+}
+.pf-skip {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b6783;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.pf-skip:hover {
+  color: #231d45;
+}
+
+.pf-title {
+  font-size: clamp(32px, 3.4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  line-height: 1.04;
+  color: #231d45;
+  margin: 0 0 12px;
+}
+.pf-sub {
+  font-size: 16.5px;
+  color: #6b6783;
+  margin: 0 0 32px;
+}
+
+/* Role grid */
+.pf-roles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.pf-role {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  text-align: left;
+  background: #fff;
+  border: 1.5px solid #ece7dc;
+  border-radius: 18px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.16s;
+  box-shadow: 0 8px 22px rgba(35, 29, 69, 0.05);
+}
+.pf-role:hover {
+  border-color: #d9d3c5;
+  transform: translateY(-1px);
+}
+.pf-role.selected {
+  border-color: #00a19a;
+  background: #f4fbfa;
+  box-shadow: 0 10px 26px rgba(0, 161, 154, 0.14);
+}
+.pf-role-ic {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-role-ic :deep(svg) {
+  width: 24px;
+  height: 24px;
+}
+.pf-role.tint-buy .pf-role-ic {
+  color: #00a19a;
+  background: rgba(0, 161, 154, 0.12);
+}
+.pf-role.tint-sell .pf-role-ic {
+  color: #c98a1e;
+  background: rgba(224, 164, 58, 0.16);
+}
+.pf-role.tint-landlord .pf-role-ic {
+  color: #7a6fb0;
+  background: rgba(122, 111, 176, 0.16);
+}
+.pf-role.tint-both .pf-role-ic {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.13);
+}
+.pf-role-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.pf-role-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #231d45;
+}
+.pf-role-desc {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #6b6783;
+}
+.pf-radio {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #d8d2c6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.pf-radio.on {
+  border-color: #00a19a;
+  background: #00a19a;
+}
+.pf-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pf-radio.on .pf-radio-dot {
+  opacity: 1;
+}
+
+/* ── Detail phase (step 2) ── */
+.pf-main-inner.is-detail {
+  max-width: 840px;
+}
+.pf-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-top: 6px;
+}
+
+/* Section card */
+.pf-card {
+  background: #fff;
+  border: 1px solid #efece3;
+  border-radius: 22px;
+  padding: 30px 32px 34px;
+  box-shadow: 0 10px 30px rgba(35, 29, 69, 0.05);
+  scroll-margin-top: 90px;
+}
+.pf-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.pf-card-head h3 {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #231d45;
+  margin: 0;
+}
+.pf-card-ic {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-card-ic :deep(svg) {
+  width: 21px;
+  height: 21px;
+}
+.tint-amber {
+  color: #c98a1e;
+  background: rgba(224, 164, 58, 0.16);
+}
+.tint-teal {
+  color: #00a19a;
+  background: rgba(0, 161, 154, 0.12);
+}
+.tint-purple {
+  color: #7a6fb0;
+  background: rgba(122, 111, 176, 0.16);
+}
+
+/* Question rows inside a card (override the old narrow-card padding) */
+.pf-card-body .pref-section {
+  padding: 20px 0 0;
+}
+.pf-card-body .loc-drop {
+  left: 0;
+  right: 0;
+}
+
+/* ── Sidebar: On this page nav (detail phase) ── */
+.pf-onpage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.pf-onpage-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 2px;
+}
+.pf-onpage-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+  padding: 13px 15px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pf-onpage-item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.pf-onpage-ic {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-onpage-ic :deep(svg) {
+  width: 17px;
+  height: 17px;
+}
+
+/* Answered count card */
+.pf-answered {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+  padding: 14px 16px;
+}
+.pf-answered svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #6fe6dc;
+}
+.pf-answered strong {
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Divider + actions */
+.pf-divider {
+  height: 1px;
+  background: #ece7dc;
+  margin: 34px 0 22px;
+}
+.pf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.pf-actions-meta {
+  font-size: 14px;
+  color: #6b6783;
+}
+.pf-actions-meta strong {
+  color: #231d45;
+  font-weight: 800;
+}
+.pf-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.pf-actions-step {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9c98ad;
+}
+.pf-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #00a19a;
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 16px 34px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.16s;
+  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.28);
+}
+.pf-cta svg {
+  width: 17px;
+  height: 17px;
+}
+.pf-cta:hover:not(:disabled) {
+  background: #00b6ae;
+  transform: translateY(-1px);
+}
+.pf-cta:disabled,
+.pf-cta.disabled {
+  background: #e2ddd0;
+  color: #a7a08c;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ── */
+@media (max-width: 980px) {
+  .pf-body {
+    flex-direction: column;
+  }
+  .pf-side {
+    flex: none;
     width: 100%;
-    max-width: 720px;
-    min-height: auto;
-    border-radius: 24px;
-    border: 1px solid #e7e9f0;
-    background: #fff;
-    box-shadow: 0 24px 60px rgba(35, 29, 69, 0.12);
-    overflow: hidden;
+    padding: 32px 24px;
+  }
+  .pf-side-inner {
+    max-width: none;
+    margin: 0;
+  }
+  .pf-main {
+    padding: 32px 24px 56px;
+  }
+  .pf-roles {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .pf-top {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pf-top-progress {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .pf-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pf-actions-right {
+    justify-content: space-between;
+  }
+  .pf-cta {
+    flex: 1;
+    justify-content: center;
   }
 }
 

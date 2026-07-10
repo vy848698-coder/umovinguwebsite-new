@@ -113,9 +113,12 @@
 }
 
 .uf-brand-logo {
-  height: 30px;
-  width: auto;
-  object-fit: contain;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
 .uf-brand strong {

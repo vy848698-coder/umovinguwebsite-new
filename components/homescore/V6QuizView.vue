@@ -1,200 +1,257 @@
 <template>
   <div class="hs-v6-quiz">
-    <!-- ── HomeScore address card — same component as the results
-             screen so both surfaces share the prototype-ported hero. -->
-    <div class="hs-addr-card-wrap anim-1">
-      <HomescoreAddressCard
-        :address="addressLine"
-        :postcode="property?.postcode ?? null"
-        :property-type="property?.propertyType ?? null"
-        :sqm="property?.floorAreaSqm ?? property?.sqm ?? null"
-        :epc-rating="epcRating"
-        :home-score="initialScore"
-        :searches-today="searchesToday"
-        :watchers-count="watchersCount"
-        :passport-state="passportState"
+    <div class="nq-report">
+      <!-- ═══════════════ HERO ═══════════════ -->
+      <section class="nq-hero anim-1">
+        <div class="nq-hero-main">
+          <div class="nd-eyebrow">HOMESCORE<sup>™</sup> · OWNER QUIZ</div>
+          <h1 class="nq-hero-title">{{ addressLine }}</h1>
+
+          <div class="nd-hero-chips">
+            <span v-if="property?.postcode" class="nd-chip">
+              <Icon name="i-lucide-map-pin" />
+              {{ property.postcode }}
+            </span>
+            <span v-if="property?.propertyType" class="nd-chip">
+              <Icon name="i-lucide-home" />
+              {{ property.propertyType }}
+            </span>
+            <span class="nd-chip nd-chip--epc">
+              <span class="nd-chip-grade" :style="{ background: epcColor }">{{ epcRating || '?' }}</span>
+              EPC rating
+            </span>
+          </div>
+
+          <div class="nd-hero-social">
+            <span class="nd-social"><span class="nd-social-dot is-live" /><b>{{ searchesTodayDisplay }}</b>&nbsp;checked this HomeScore today</span>
+            <span class="nd-social-sep">·</span>
+            <span class="nd-social"><span class="nd-social-dot" /><b>{{ watchersDisplay }}</b>&nbsp;{{ (watchersCount || 0) === 1 ? 'is' : 'are' }} watching this property</span>
+          </div>
+
+          <!-- Claim / passport-state card (drawer driven by headless
+               PassportClaimBox below, matching the score screen) -->
+          <button
+            v-if="passportState === 'unclaimed'"
+            class="nd-claim"
+            type="button"
+            @click="openClaimSheet"
+          >
+            <div class="nd-claim-text">
+              <div class="nd-claim-title">This property is unclaimed</div>
+              <div class="nd-claim-sub">Is it yours? Build your verified Passport in minutes.</div>
+              <div class="nd-claim-link">What does it mean to claim?</div>
+            </div>
+            <span class="nd-claim-arrow">
+              <Icon name="i-lucide-arrow-right" />
+            </span>
+          </button>
+          <button
+            v-else
+            class="nd-claim"
+            type="button"
+            @click="openClaimSheet"
+          >
+            <div class="nd-claim-text">
+              <div class="nd-claim-title">{{ passportState === 'published' ? 'Passport published' : 'Passport in progress' }}</div>
+              <div class="nd-claim-sub">View the verified Property Passport for this home.</div>
+              <div class="nd-claim-link">Open the Passport</div>
+            </div>
+            <span class="nd-claim-arrow">
+              <Icon name="i-lucide-arrow-right" />
+            </span>
+          </button>
+        </div>
+
+        <!-- ── Live HomeScore card (animates as user answers) ──────── -->
+        <aside class="nq-scorecard">
+          <div class="nq-scorecard-top">
+            <div class="nq-scorecard-mark">
+              <span class="nq-live-dot" /> HOMESCORE<sup>™</sup> · LIVE
+            </div>
+            <span class="nq-delta-pill" :class="{ flash: deltaFlash }">{{ deltaText }}</span>
+          </div>
+
+          <div class="nq-scorecard-body">
+            <div class="nq-ring">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <defs>
+                  <linearGradient id="quizGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="100%" stop-color="#d7fbf6" />
+                  </linearGradient>
+                </defs>
+                <circle class="nq-ring-bg" cx="60" cy="60" r="52" stroke-width="8" />
+                <circle
+                  class="nq-ring-fill"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  stroke-width="8"
+                  stroke-dasharray="326.73"
+                  :stroke-dashoffset="ringOffset"
+                  stroke="url(#quizGrad)"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <div class="nq-ring-num">
+                <span class="nq-ring-big">{{ liveScore }}</span>
+                <span class="nq-ring-small">out of 100</span>
+              </div>
+            </div>
+            <div class="nq-scorecard-info">
+              <div class="nq-scorecard-band">Climbing as you answer</div>
+              <div class="nq-scorecard-copy">
+                Each question updates your live score in real time.
+                <b>Aim for Level C (55+)</b> to unlock the upgrade marketplace.
+              </div>
+            </div>
+          </div>
+
+          <div class="nq-scorecard-foot">
+            <div class="nq-progress-track">
+              <div class="nq-progress-fill" :style="{ width: progressPct + '%' }" />
+            </div>
+            <div class="nq-progress-label">
+              {{ answeredCount }} of {{ QUESTS.length }} answered · earn XP for every question
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- Headless claim/passport explainer — renders no visible box; the
+           styled claim card above drives its drawer via v-model:open-sheet. -->
+      <PassportClaimBox
+        headless
+        :state="passportState"
+        :progress-pct="passportProgressPct"
+        :sections-done="passportSectionsDone"
+        :sections-total="passportSectionsTotal"
+        v-model:open-sheet="claimSheet"
+        @claim-passport="$emit('claim-passport')"
+        @watch="$emit('watch-property')"
+        @buy="$emit('buy-passport')"
       />
-    </div>
 
-    <!-- Claim / Passport-state box + explainer drawers (matches HomeScore) -->
-    <PassportClaimBox
-      :state="passportState"
-      :progress-pct="passportProgressPct"
-      :sections-done="passportSectionsDone"
-      :sections-total="passportSectionsTotal"
-      @claim-passport="$emit('claim-passport')"
-      @watch="$emit('watch-property')"
-      @buy="$emit('buy-passport')"
-    />
-
-    <!-- ── Live HomeScore card (animates as user answers) ──────────── -->
-    <div class="score-card anim-2" style="margin-top: 12px">
-      <div class="score-eyebrow-row">
-        <div class="score-eyebrow-mark">HomeScore<sup>™</sup> · Live</div>
-        <span class="quiz-live-delta-pill" :class="{ flash: deltaFlash }">{{
-          deltaText
-        }}</span>
-      </div>
-      <div class="score-top">
-        <div class="score-gauge">
-          <svg viewBox="0 0 120 120">
-            <defs>
-              <linearGradient id="quizGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#00a19a" />
-                <stop offset="100%" stop-color="#00b8b0" />
-              </linearGradient>
-            </defs>
-            <circle class="g-bg" cx="60" cy="60" r="50" stroke-width="9" />
-            <circle
-              class="g-fill"
-              cx="60"
-              cy="60"
-              r="50"
-              stroke-width="9"
-              stroke-dasharray="314.16"
-              :stroke-dashoffset="ringOffset"
-              stroke="url(#quizGrad)"
-              fill="none"
-              stroke-linecap="round"
-              style="
-                transition: stroke-dashoffset 0.6s
-                  cubic-bezier(0.22, 1, 0.36, 1);
-              "
-            />
-          </svg>
-          <div class="g-num">
-            <div class="gn-big">{{ liveScore }}</div>
-            <div class="gn-small">/ 100</div>
-          </div>
-        </div>
-        <div class="score-summary">
-          <div class="score-band">Climbing as you answer</div>
-          <div class="score-explainer">
-            Each question updates your live score in real time.
-            <b>Aim for Level C (55+)</b> to unlock the upgrade marketplace.
-          </div>
-        </div>
-      </div>
-      <div class="score-footer" style="padding-top: 12px; margin-top: 12px">
-        <div style="flex: 1">
-          <div class="quiz-progress-bar-bg">
-            <div
-              class="quiz-progress-bar-fill"
-              :style="{ width: progressPct + '%' }"
-            />
-          </div>
-          <div class="quiz-progress-label">
-            {{ answeredCount }} of {{ QUESTS.length }} answered · earn XP for
-            every question
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Two ways to update your score ───────────────────────────── -->
-    <!-- Bill upload is hidden for now (re-enable via SHOW_BILL_UPLOAD). -->
-    <div v-if="SHOW_BILL_UPLOAD" class="two-ways anim-1">
-      <div class="two-ways-title">Two ways to update your score</div>
-      <div class="two-ways-grid">
+      <!-- ── Two ways to update your score ─────────────────────────── -->
+      <!-- Bill upload is hidden for now (re-enable via SHOW_BILL_UPLOAD). -->
+      <div v-if="SHOW_BILL_UPLOAD" class="nq-twoways anim-2">
         <button
-          class="two-ways-opt"
+          class="nq-twoways-opt"
           :class="{ active: mode === 'quiz' }"
           type="button"
           @click="mode = 'quiz'"
         >
-          <div class="two-ways-opt-icon">📋</div>
-          <div class="two-ways-opt-title">Answer questions</div>
-          <div class="two-ways-opt-sub">Work through the list below</div>
+          <span class="nq-twoways-ico"><Icon name="i-lucide-list-checks" /></span>
+          <span class="nq-twoways-text">
+            <span class="nq-twoways-title">Answer questions</span>
+            <span class="nq-twoways-sub">Work through the list below</span>
+          </span>
         </button>
-        <div class="two-ways-or">or</div>
         <button
-          class="two-ways-opt"
+          class="nq-twoways-opt"
           :class="{ active: mode === 'bill' }"
           type="button"
           @click="onUploadBill"
         >
-          <div class="two-ways-opt-icon">💡</div>
-          <div class="two-ways-opt-title">Upload a bill</div>
-          <div class="two-ways-opt-sub">Skip the questions</div>
+          <span class="nq-twoways-ico"><Icon name="i-lucide-receipt" /></span>
+          <span class="nq-twoways-text">
+            <span class="nq-twoways-title">Upload a bill</span>
+            <span class="nq-twoways-sub">Skip the questions</span>
+          </span>
         </button>
       </div>
-    </div>
 
-    <!-- ── Section header ─────────────────────────────────────────── -->
-    <div class="section-h-row" style="padding-top: 18px; padding-bottom: 6px">
-      <div class="section-h">Has your home had these improvements?</div>
-      <div class="section-h-sub">
-        {{ answeredCount }} of {{ QUESTS.length }} answered
-      </div>
-    </div>
-
-    <!-- ── Quest list (collapsible · 4 options each) ──────────────── -->
-    <div class="quest-list">
-      <div
-        v-for="q in QUESTS"
-        :key="q.id"
-        class="quest-card v2"
-        :class="{
-          open: openQuest === q.id,
-          answered: !!questState[q.id],
-        }"
-      >
-        <div class="quest-summary" @click="toggleQuest(q.id)">
-          <div class="quest-num-circle">{{ q.n }}</div>
-          <div class="quest-summary-info">
-            <div class="quest-summary-title">{{ q.title }}</div>
-            <div class="quest-summary-sub">{{ q.summary }}</div>
+      <!-- ═══════════════ QUESTIONS ═══════════════ -->
+      <section class="nq-quiz anim-2">
+        <div class="nd-block-head">
+          <div class="nq-quiz-head">
+            <div class="nd-eyebrow">HAS YOUR HOME HAD THESE IMPROVEMENTS?</div>
+            <h2 class="nq-quiz-title">Answer what you know</h2>
           </div>
-          <div class="quest-summary-chev">›</div>
+          <span class="nq-quiz-count">{{ answeredCount }} / {{ QUESTS.length }} answered</span>
         </div>
-        <div v-if="openQuest === q.id" class="quest-detail">
-          <div class="quest-desc">{{ q.desc }}</div>
-          <div class="quest-impact">
-            ✦ Score +{{ q.pts }} pts · saves ~£{{ q.save }}/yr · cost {{ q.cost
-            }}<template v-if="q.grant"> · 🎁 {{ q.grant }}</template>
-          </div>
-          <div v-if="q.resultingSap != null" class="quest-resulting">
-            Potential rating after step {{ q.n }}:
-            <span
-              class="quest-resulting-pill"
-              :class="'grade-' + (q.resultingGrade ?? '').toLowerCase()"
-            >
-              {{ q.resultingSap }} {{ q.resultingGrade }}
-            </span>
-          </div>
-          <div class="quest-question">
-            Has this been done since the last EPC?
-          </div>
-          <div class="quest-options-4">
-            <button
-              v-for="(o, key) in OPT"
-              :key="key"
-              type="button"
-              class="quest-opt-btn"
-              :class="[o.cls, { selected: questState[q.id] === key }]"
-              @click.stop="answerQuest(q.id, key)"
-            >
-              <span class="opt-icon-tile">{{ o.icon }}</span>
-              <span>{{ o.label }}</span>
+
+        <div class="nq-quest-grid">
+          <div
+            v-for="q in QUESTS"
+            :key="q.id"
+            class="nq-quest"
+            :class="{ open: openQuest === q.id, answered: !!questState[q.id] }"
+          >
+            <button class="nq-quest-summary" type="button" @click="toggleQuest(q.id)">
+              <span class="nq-quest-num">
+                <Icon v-if="questState[q.id]" name="i-lucide-check" class="nq-quest-num-check" />
+                <template v-else>{{ q.n }}</template>
+              </span>
+              <span class="nq-quest-info">
+                <span class="nq-quest-title">{{ q.title }}</span>
+                <span class="nq-quest-sub">{{ q.summary }}</span>
+              </span>
+              <span class="nq-quest-chev"><Icon name="i-lucide-chevron-right" /></span>
             </button>
+
+            <div v-if="openQuest === q.id" class="nq-quest-detail">
+              <p class="nq-quest-desc">{{ q.desc }}</p>
+
+              <div class="nq-quest-impact">
+                <span class="nq-impact-chip">
+                  <Icon name="i-lucide-sparkles" /> +{{ q.pts }} pts
+                </span>
+                <span class="nq-impact-chip">
+                  <Icon name="i-lucide-piggy-bank" /> saves ~£{{ q.save }}/yr
+                </span>
+                <span class="nq-impact-chip">
+                  <Icon name="i-lucide-tag" /> {{ q.cost }}
+                </span>
+                <span v-if="q.grant" class="nq-impact-chip is-grant">
+                  <Icon name="i-lucide-gift" /> {{ q.grant }}
+                </span>
+              </div>
+
+              <div v-if="q.resultingSap != null" class="nq-quest-resulting">
+                Potential rating after step {{ q.n }}:
+                <span
+                  class="nq-resulting-pill"
+                  :class="'grade-' + (q.resultingGrade ?? '').toLowerCase()"
+                >
+                  {{ q.resultingSap }} {{ q.resultingGrade }}
+                </span>
+              </div>
+
+              <div class="nq-quest-question">Has this been done since the last EPC?</div>
+              <div class="nq-quest-options">
+                <button
+                  v-for="(o, key) in OPT"
+                  :key="key"
+                  type="button"
+                  class="nq-opt-btn"
+                  :class="[o.cls, { selected: questState[q.id] === key }]"
+                  @click.stop="answerQuest(q.id, key)"
+                >
+                  <span class="nq-opt-ico"><Icon :name="OPT_ICON[key]" /></span>
+                  <span>{{ o.label }}</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ── Finish CTA ─────────────────────────────────────────────── -->
-    <div class="quiz-finish">
-      <button class="quiz-finish-btn" type="button" @click="onFinish">
-        Get my real HomeScore →
-      </button>
-      <div v-if="answeredCount < QUESTS.length" class="quiz-finish-hint">
-        Skipped questions count as "not done". Answer what you know and tap
-        above to see your score.
-      </div>
+        <!-- ── Finish CTA ───────────────────────────────────────────── -->
+        <div class="nq-finish">
+          <button class="nq-finish-btn" type="button" @click="onFinish">
+            Get my real HomeScore
+            <Icon name="i-lucide-arrow-right" />
+          </button>
+          <div v-if="answeredCount < QUESTS.length" class="nq-finish-hint">
+            Skipped questions count as "not done". Answer what you know and tap above to see your score.
+          </div>
+          <button class="nq-reset" type="button" @click="resetQuests">
+            <Icon name="i-lucide-rotate-ccw" /> Start again
+          </button>
+        </div>
+      </section>
     </div>
-    <div class="quiz-reset" @click="resetQuests">↺ Start again</div>
-
-    <div style="height: 32px" />
 
     <!-- ── "Answer at least one question" prompt ───────────────────── -->
     <Teleport to="body">
@@ -205,7 +262,7 @@
           @click.self="needAnswerModalOpen = false"
         >
           <div class="need-answer-sheet" @click.stop>
-            <div class="need-answer-icon">📋</div>
+            <div class="need-answer-icon"><Icon name="i-lucide-list-checks" /></div>
             <div class="need-answer-title">Answer at least one question</div>
             <div class="need-answer-sub">
               To work out your updated EPC and real HomeScore, we need to know
@@ -325,7 +382,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import PassportClaimBox from '~/components/property/PassportClaimBox.vue'
-import HomescoreAddressCard from '~/components/homescore/HomescoreAddressCard.vue'
 
 interface Props {
   property: any | null
@@ -593,6 +649,26 @@ const OPT = {
 
 type OptKey = keyof typeof OPT
 
+// Lucide icon per answer option (memory: use <Icon> not emoji).
+const OPT_ICON: Record<OptKey, string> = {
+  yes: 'i-lucide-check',
+  different: 'i-lucide-rotate-ccw',
+  notyet: 'i-lucide-minus',
+  na: 'i-lucide-ban',
+}
+
+// ── Claim / passport drawer (headless PassportClaimBox, driven from the
+//    styled claim card in the hero — mirrors V6ScoreView). ──────────────
+const claimSheet = ref<'unclaimed' | 'progress' | 'published' | null>(null)
+function openClaimSheet() {
+  claimSheet.value =
+    props.passportState === 'published'
+      ? 'published'
+      : props.passportState === 'inProgress'
+        ? 'progress'
+        : 'unclaimed'
+}
+
 const questState = ref<Record<string, OptKey>>({})
 const openQuest = ref<string | null>(null)
 const mode = ref<'quiz' | 'bill'>('quiz')
@@ -605,7 +681,7 @@ const progressPct = computed(
   () => (answeredCount.value / QUESTS.value.length) * 100,
 )
 const ringOffset = computed(() => {
-  const circumference = 2 * Math.PI * 50 // 314.16
+  const circumference = 2 * Math.PI * 52 // 326.73
   return circumference - (liveScore.value / 100) * circumference
 })
 
@@ -740,16 +816,11 @@ watch(
 </script>
 
 <style scoped>
-/* Premium desktop: focused centered column instead of full-bleed mobile. */
-@media (min-width: 920px) {
-  .hs-v6-quiz {
-    max-width: 880px !important;
-    margin: 0 auto !important;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-  }
-}
-/* Inherit the same design tokens as V6ScoreView */
+/* ═══════════════════════════════════════════════════════════════════
+   V6QuizView — premium desktop redesign.
+   Shares the nd-* design language and brand tokens with V6ScoreView so
+   the owner-quiz surface reads as one system with the score report.
+   ═══════════════════════════════════════════════════════════════════ */
 .hs-v6-quiz {
   --primary: #231d45;
   --accent: #00a19a;
@@ -757,8 +828,6 @@ watch(
   --accent-light: #00b8b0;
   --accent-pale: #e5f4f2;
   --accent-paler: #f2faf8;
-  --bg: #f5f6fa;
-  --page: #f0f2f8;
   --card: #ffffff;
   --text: #231d45;
   --text-secondary: #6b7089;
@@ -767,1224 +836,681 @@ watch(
   --border-soft: #f0f1f5;
   --shadow-card: 0 2px 8px rgba(35, 29, 69, 0.05);
 
-  background: var(--page);
+  background: #f3f2ef;
   color: var(--text);
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
+  /* Contain any full-bleed children so they can't add a horizontal
+     scrollbar on the web canvas. */
+  overflow-x: clip;
+}
+.hs-v6-quiz *,
+.hs-v6-quiz *::before,
+.hs-v6-quiz *::after { box-sizing: border-box; }
+
+.nq-report {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 30px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  color: #231d45;
 }
 
-/* Soften prototype's 800-weights to match SF Pro app scale */
-.hs-v6-quiz
-  :is(
-    .hs-addr-line,
-    .score-band,
-    .gn-big,
-    .quest-summary-title,
-    .quest-question,
-    .quest-impact,
-    .two-ways-opt-title
-  ) {
+/* ── Entrance animation ─────────────────────────────────────────── */
+@keyframes nq-fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-1 { animation: nq-fadeUp 0.4s 0.05s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-2 { animation: nq-fadeUp 0.4s 0.16s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── Shared eyebrow ─────────────────────────────────────────────── */
+.nd-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
   font-weight: 700;
-}
-.hs-v6-quiz
-  :is(
-    .hs-addr-meta,
-    .score-explainer,
-    .quiz-progress-label,
-    .quest-summary-sub,
-    .quest-desc,
-    .two-ways-opt-sub
-  ) {
-  font-weight: 500;
-}
-
-/* App header */
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-}
-.back-btn,
-.app-icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text);
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-.back-btn:hover,
-.app-icon-btn:hover {
-  background: var(--accent-paler);
-  border-color: var(--accent-pale);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
   color: var(--accent-dark);
 }
-.back-btn svg,
-.app-icon-btn svg {
-  width: 16px;
-  height: 16px;
+.nd-eyebrow sup { font-size: 0.7em; }
+
+/* ═══════════════ HERO ═══════════════ */
+.nq-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  gap: 34px;
+  align-items: start;
 }
-.app-header-info {
-  flex: 1;
+.nq-hero-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
   min-width: 0;
 }
-.app-header-title {
-  font-size: 15px;
+.nq-hero-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
   font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.15;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #231d45;
 }
-.app-header-sub {
-  font-size: 11px;
+
+.nd-hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.nd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--border);
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-top: 1px;
+  box-shadow: 0 1px 2px rgba(35, 29, 69, 0.04);
 }
-
-/* Animation utility */
-@keyframes hs-v6-fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.anim-1 {
-  animation: hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.anim-2 {
-  animation: hs-v6-fadeUp 0.35s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* Amber address card */
-.hs-addr-card-wrap {
-  margin: 14px 20px 0;
-}
-.hs-addr-card {
-  margin: 14px 20px 0;
-  padding: 22px 22px 18px;
-  background: linear-gradient(135deg, #f0a030 0%, #c67c18 50%, #8b4e0a 100%);
-  border: none;
-  border-radius: 14px;
-  box-shadow:
-    0 12px 32px -8px rgba(180, 100, 20, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-.hs-addr-card::after {
-  content: '';
-  position: absolute;
-  top: -45%;
-  right: -15%;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 65%
-  );
-  pointer-events: none;
-}
-.hs-addr-card > * {
-  position: relative;
-  z-index: 1;
-}
-.hs-addr-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.hs-addr-pin {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: white;
-  margin-top: 8px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
-}
-.hs-addr-block {
-  flex: 1;
-  min-width: 0;
-}
-.hs-addr-line {
-  font-size: 20px;
-  font-weight: 800;
-  color: white;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-  margin-bottom: 2px;
-}
-.hs-addr-meta {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-}
-.hs-addr-pills {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-.hs-addr-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10.5px;
-  font-weight: 800;
-  padding: 5px 10px 5px 7px;
-  border-radius: 100px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: white;
-}
-.hs-addr-pill svg {
-  width: 10px;
-  height: 10px;
-}
-.hs-addr-pill .epc-letter {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  color: white;
+.nd-chip svg { width: 14px; height: 14px; opacity: 0.7; }
+.nd-chip--epc { padding-left: 6px; color: #231d45; }
+.nd-chip-grade {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 800;
-}
-/* Claim CTA + views row — consistent with the Score screen */
-.claim-cta-btn {
-  display: flex;
-  width: 100%;
-  margin-top: 14px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  border: none;
-  color: white;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  letter-spacing: -0.1px;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.35);
-  transition: filter 0.15s;
-}
-.claim-cta-btn:hover {
-  filter: brightness(1.06);
-}
-.claim-cta-btn svg {
-  width: 14px;
-  height: 14px;
-}
-.claim-cta-btn.published {
-  background: white;
-  color: #8b4e0a;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-}
-.claim-cta-btn.progress {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: white;
-  box-shadow: none;
-}
-.hs-addr-stat-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 14px;
-  flex-wrap: wrap;
-}
-.hs-addr-stat-row + .hs-addr-stat-row {
-  margin-top: 6px;
-}
-.hs-addr-stat-row .pulse-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-light);
-  flex-shrink: 0;
-}
-.hs-addr-stat-count {
-  font-weight: 800;
-  color: white;
-}
-
-/* Pill background — matches V6ScoreView so both surfaces (results + quiz)
-   share the exact same social-proof treatment. */
-.hs-addr-stat-row .hs-live-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.22);
   color: #fff;
 }
-.hs-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #5eead4;
-  box-shadow: 0 0 8px rgba(94, 234, 212, 0.7);
-  flex-shrink: 0;
+
+.nd-hero-social {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
-.hs-live-bars {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 14px;
-}
-.hs-live-bar {
-  width: 3px;
-  background: #fff;
-  border-radius: 1.5px;
-  animation: hsLiveBars 1.2s ease-in-out infinite;
-  transform-origin: bottom;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
-}
-.hs-live-bar:nth-child(1) {
-  height: 5px;
-  animation-delay: 0s;
-}
-.hs-live-bar:nth-child(2) {
-  height: 9px;
-  animation-delay: 0.15s;
-}
-.hs-live-bar:nth-child(3) {
-  height: 13px;
-  animation-delay: 0.3s;
-}
-@keyframes hsLiveBars {
-  0%,
-  100% {
-    transform: scaleY(0.55);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scaleY(1);
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hs-live-bar {
-    animation: none;
-    transform: scaleY(1);
-    opacity: 0.9;
-  }
-}
-.hs-live-text {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: -0.05px;
-  line-height: 1.25;
-}
-.hs-live-text b {
-  font-weight: 800;
-}
-.hs-addr-stat-row .hs-addr-stat-eye {
-  width: 15px;
-  height: 15px;
-  color: #ffffff;
-  flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.28));
+.nd-social { display: inline-flex; align-items: center; gap: 7px; }
+.nd-social b { font-weight: 700; color: #231d45; }
+.nd-social-sep { color: var(--text-faint); }
+.nd-social-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); }
+.nd-social-dot.is-live {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.18);
 }
 
-/* Score card */
-.score-card {
-  margin: 14px 20px 0;
-  padding: 20px 20px 18px;
-  background: linear-gradient(180deg, var(--accent-paler) 0%, var(--card) 60%);
-  border: 2px solid var(--accent);
-  border-radius: 14px;
-  position: relative;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.12);
+/* Claim card */
+.nd-claim {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+  padding: 20px;
+  border: none;
+  border-radius: 16px;
+  text-align: left;
+  cursor: pointer;
+  color: #fff;
+  font-family: inherit;
+  background:
+    radial-gradient(120% 160% at 100% 0%, rgba(0, 161, 154, 0.55), transparent 60%),
+    linear-gradient(135deg, #2a2350, #1a1540);
+  box-shadow: 0 14px 34px rgba(26, 21, 64, 0.28);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
-.score-eyebrow-row {
+.nd-claim:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(26, 21, 64, 0.34); }
+.nd-claim-text { flex: 1; min-width: 0; }
+.nd-claim-title { font-size: 16px; font-weight: 700; }
+.nd-claim-sub { margin-top: 3px; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
+.nd-claim-link { margin-top: 9px; font-size: 12.5px; font-weight: 600; color: #4fe0d3; }
+.nd-claim-arrow {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+}
+.nd-claim-arrow svg { width: 20px; height: 20px; }
+
+/* ── Live score card (teal gradient) ────────────────────────────── */
+.nq-scorecard {
+  position: sticky;
+  top: 88px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border: 1px solid var(--accent-dark);
+  border-radius: 20px;
+  padding: 22px;
+  color: #fff;
+  box-shadow: 0 18px 44px rgba(0, 138, 132, 0.28);
+}
+.nq-scorecard-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  gap: 12px;
 }
-.score-eyebrow-mark {
+.nq-scorecard-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 11px;
   font-weight: 800;
-  color: var(--text-secondary);
-  letter-spacing: 1.4px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
 }
-.score-eyebrow-mark sup {
-  color: var(--accent);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0;
+.nq-scorecard-mark sup { font-size: 0.7em; }
+.nq-live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #d7fbf6;
+  box-shadow: 0 0 0 0 rgba(215, 251, 246, 0.7);
+  animation: nq-pulse 1.8s ease-out infinite;
 }
-.quiz-live-delta-pill {
+@keyframes nq-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(215, 251, 246, 0.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(215, 251, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(215, 251, 246, 0); }
+}
+.nq-delta-pill {
   font-size: 11px;
   font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 100px;
-  background: var(--accent-paler);
+  letter-spacing: 0.02em;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  transition: transform 0.2s, background 0.2s;
+}
+.nq-delta-pill.flash {
+  background: #fff;
   color: var(--accent-dark);
-  border: 1px solid var(--accent-pale);
-  transition: all 0.25s;
+  transform: scale(1.1);
 }
-.quiz-live-delta-pill.flash {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent-dark);
-  transform: scale(1.08);
-}
-.score-top {
+
+.nq-scorecard-body {
   display: flex;
   align-items: center;
   gap: 18px;
-}
-.score-gauge {
-  position: relative;
-  width: 104px;
-  height: 104px;
-  flex-shrink: 0;
-}
-.score-gauge svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-.g-bg {
-  stroke: var(--border-soft);
-  fill: none;
-}
-.g-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.gn-big {
-  font-size: 34px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -1.2px;
-  line-height: 1;
-}
-.gn-small {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-faint);
-  margin-top: 2px;
-}
-.score-summary {
-  flex: 1;
-  min-width: 0;
-}
-.score-band {
-  font-size: 19px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.4px;
-  margin-bottom: 6px;
-  line-height: 1.1;
-}
-.score-explainer {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.score-explainer b {
-  color: var(--accent-dark);
-  font-weight: 800;
-}
-.score-footer {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding-top: 14px;
-  margin-top: 14px;
-  border-top: 1px solid var(--border-soft);
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-.quiz-progress-bar-bg {
-  height: 5px;
-  background: var(--bg);
-  border-radius: 100px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.quiz-progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-light));
-  border-radius: 100px;
-  transition: width 0.4s ease;
-}
-.quiz-progress-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  margin-top: 6px;
-}
-
-/* Two ways card */
-.two-ways {
-  margin: 14px 20px 0;
-  padding: 14px 16px;
-  background: var(--accent-paler);
-  border: 1px solid var(--accent-pale);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-}
-.two-ways-title {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--accent-dark);
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  text-align: center;
-}
-.two-ways-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
-}
-.two-ways-or {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-.two-ways-opt {
-  padding: 14px 8px;
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  font-family: inherit;
-}
-.two-ways-opt:hover {
-  border-color: var(--accent-pale);
-}
-.two-ways-opt.active {
-  border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(0, 161, 154, 0.15);
-}
-.two-ways-opt-icon {
-  font-size: 22px;
-  margin-bottom: 5px;
-}
-.two-ways-opt-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 2px;
-  letter-spacing: -0.1px;
-}
-.two-ways-opt.active .two-ways-opt-title {
-  color: var(--accent-dark);
-}
-.two-ways-opt-sub {
-  font-size: 10.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.3;
-}
-
-/* Section heading row */
-.section-h-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 18px 20px 10px;
-}
-.section-h {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-secondary);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-.section-h-sub {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent-dark);
-}
-
-/* Quest list */
-.quest-list {
-  margin: 0 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.quest-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: var(--shadow-card);
-  transition: all 0.18s;
-  position: relative;
-}
-.quest-card.answered {
-  border-color: var(--accent);
-  background: linear-gradient(135deg, var(--accent-paler), var(--card));
-}
-.quest-card.answered::after {
-  content: '✓';
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: white;
-  font-size: 13px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.quest-card.v2 .quest-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-}
-.quest-num-circle {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--bg);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-.quest-card.v2.answered .quest-num-circle {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
-  border-color: transparent;
-}
-.quest-summary-info {
-  flex: 1;
-  min-width: 0;
-}
-.quest-summary-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.25;
-  margin-bottom: 2px;
-}
-.quest-summary-sub {
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  line-height: 1.35;
-}
-.quest-summary-chev {
-  font-size: 18px;
-  color: var(--text-faint);
-  transition: transform 0.2s;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.quest-card.v2.open .quest-summary-chev {
-  transform: rotate(90deg);
-  color: var(--accent-dark);
-}
-.quest-detail {
-  padding-top: 12px;
-  margin-top: 12px;
-  border-top: 1px solid var(--border-soft);
-  animation: fadeSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.quest-desc {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  margin-bottom: 10px;
-}
-.quest-impact {
-  padding: 9px 12px;
-  background: var(--accent-paler);
-  border: 1px solid var(--accent-pale);
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--accent-dark);
-  margin-bottom: 14px;
-}
-.quest-resulting {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 14px;
-}
-.quest-resulting-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 100px;
-  font-size: 11px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: 0.2px;
-}
-.quest-resulting-pill.grade-a {
-  background: #008a84;
-}
-.quest-resulting-pill.grade-b {
-  background: #00a19a;
-}
-.quest-resulting-pill.grade-c {
-  background: #7ab040;
-}
-.quest-resulting-pill.grade-d {
-  background: #e6a23c;
-}
-.quest-resulting-pill.grade-e {
-  background: #d86f4a;
-}
-.quest-resulting-pill.grade-f {
-  background: #c04a1a;
-}
-.quest-resulting-pill.grade-g {
-  background: #a52a2a;
-}
-
-.quest-question {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 8px;
-  letter-spacing: -0.2px;
-}
-.quest-options-4 {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.quest-opt-btn {
-  padding: 11px 14px;
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.quest-opt-btn:hover {
-  border-color: var(--accent-pale);
-  background: var(--bg);
-}
-.quest-opt-btn .opt-icon-tile {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: white;
-  flex-shrink: 0;
-}
-.quest-opt-btn.opt-yes .opt-icon-tile {
-  background: var(--accent);
-}
-.quest-opt-btn.opt-yes.selected {
-  border-color: var(--accent);
-  background: var(--accent-paler);
-  color: var(--accent-dark);
-}
-.quest-opt-btn.opt-different .opt-icon-tile {
-  background: #7c6fb0;
-}
-.quest-opt-btn.opt-different.selected {
-  border-color: #7c6fb0;
-  background: #f2ebfd;
-  color: #5b3795;
-}
-.quest-opt-btn.opt-not-yet .opt-icon-tile {
-  background: #a8a9ad;
-}
-.quest-opt-btn.opt-not-yet.selected {
-  border-color: #7c6fb0;
-  background: #f7f2fb;
-  color: #5b3795;
-}
-.quest-opt-btn.opt-na {
-  color: var(--text-faint);
-}
-.quest-opt-btn.opt-na .opt-icon-tile {
-  background: var(--text-faint);
-}
-.quest-opt-btn.opt-na.selected {
-  border-color: var(--text-faint);
-  background: var(--bg);
-}
-
-/* Finish */
-.quiz-finish {
-  margin: 14px 20px 0;
-}
-.quiz-finish-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
-  border: none;
-  border-radius: 14px;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: filter 0.15s;
-}
-.quiz-finish-btn:hover:not(:disabled) {
-  filter: brightness(1.06);
-}
-.quiz-finish-hint {
+  margin-top: 18px;
+}
+.nq-ring { position: relative; width: 128px; height: 128px; flex-shrink: 0; }
+.nq-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.nq-ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.22); }
+.nq-ring-fill { transition: stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.nq-ring-num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.nq-ring-big { font-size: 40px; font-weight: 800; line-height: 1; color: #fff; }
+.nq-ring-small {
+  margin-top: 3px; font-size: 10px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.nq-scorecard-info { min-width: 0; }
+.nq-scorecard-band { font-size: 18px; font-weight: 700; color: #fff; }
+.nq-scorecard-copy {
   margin-top: 8px;
-  padding: 0 4px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
 }
-.quiz-finish-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.nq-scorecard-copy b { color: #fff; font-weight: 700; }
+
+.nq-scorecard-foot {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
 }
-.quiz-reset {
-  padding: 10px 20px 0;
-  text-align: center;
-  font-size: 12px;
+.nq-progress-track {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+.nq-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #fff;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nq-progress-label {
+  margin-top: 9px;
+  font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-/* ── Bill upload drawer ─────────────────────────────────────── */
-.modal-overlay {
-  /* Re-declare design tokens locally — the modal is teleported to
-     <body> so it loses access to the CSS custom properties defined on
-     `.hs-v6-quiz`. Without these, the white sheet renders transparent
-     and the supplier tiles / buttons lose their tinted backgrounds. */
-  --accent: #00a19a;
-  --accent-dark: #008a84;
-  --accent-light: #00b8b0;
-  --accent-pale: #e5f4f2;
-  --accent-paler: #f2faf8;
-  --bg: #f5f6fa;
-  --card: #ffffff;
-  --text: #231d45;
-  --text-secondary: #6b7089;
-  --text-faint: #a8a9ad;
-  --border: #e4e5ed;
-  --border-soft: #f0f1f5;
-  --shadow-card: 0 2px 8px rgba(35, 29, 69, 0.05);
+/* ── Two-ways (bill upload — hidden unless SHOW_BILL_UPLOAD) ─────── */
+.nq-twoways {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.nq-twoways-opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.nq-twoways-opt:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(35, 29, 69, 0.1); }
+.nq-twoways-opt.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12); }
+.nq-twoways-ico {
+  width: 42px; height: 42px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+}
+.nq-twoways-ico svg { width: 20px; height: 20px; }
+.nq-twoways-title { display: block; font-size: 15px; font-weight: 700; color: var(--text); }
+.nq-twoways-sub { display: block; margin-top: 2px; font-size: 12.5px; color: var(--text-secondary); }
 
-  position: fixed;
-  inset: 0;
-  background: rgba(35, 29, 69, 0.55);
-  z-index: 1000;
+/* ═══════════════ QUESTIONS ═══════════════ */
+.nq-quiz { display: flex; flex-direction: column; gap: 18px; }
+.nd-block-head {
   display: flex;
   align-items: flex-end;
-  justify-content: center;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  /* Match the app font (Plus Jakarta Sans). Teleport breaks the
-     font-family inherit chain, so the full stack is re-declared here. */
-  font-family:
-    'Plus Jakarta Sans',
-    'SF Pro Display',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  color: var(--text);
+  justify-content: space-between;
+  gap: 12px;
 }
-.modal-sheet {
-  width: 100%;
-  max-width: 28rem;
-  background: var(--card);
-  border-radius: 22px 22px 0 0;
-  padding: 10px 20px calc(22px + env(safe-area-inset-bottom));
-  box-shadow: 0 -8px 32px rgba(35, 29, 69, 0.25);
-  max-height: 90dvh;
-  overflow-y: auto;
-}
-/* "Answer at least one question" prompt */
-.need-answer-sheet {
-  width: 100%;
-  max-width: 28rem;
-  background: var(--card);
-  border-radius: 22px 22px 0 0;
-  padding: 26px 24px calc(24px + env(safe-area-inset-bottom));
-  box-shadow: 0 -8px 32px rgba(35, 29, 69, 0.25);
-  text-align: center;
-}
-.need-answer-icon {
-  width: 54px;
-  height: 54px;
-  margin: 0 auto 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent-paler), var(--accent-pale));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-}
-.need-answer-title {
-  font-size: 18px;
+.nq-quiz-title {
+  margin: 6px 0 0;
+  font-size: clamp(22px, 2.6vw, 30px);
   font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.3px;
-  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #231d45;
 }
-.need-answer-sub {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  margin-bottom: 20px;
-}
-.need-answer-sub b {
-  color: var(--text);
-  font-weight: 800;
-}
-.need-answer-btn {
-  width: 100%;
-  padding: 14px 16px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.35);
-  transition: filter 0.15s;
-}
-.need-answer-btn:hover {
-  filter: brightness(1.06);
-}
-.modal-grip {
-  width: 40px;
-  height: 4px;
-  border-radius: 100px;
-  background: var(--border);
-  margin: 0 auto 14px;
-}
-.modal-head {
-  text-align: center;
-  margin-bottom: 16px;
-}
-.modal-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--accent-dark);
-  background: var(--accent-paler);
-  border: 1px solid var(--accent-pale);
-  padding: 4px 10px;
-  border-radius: 100px;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.4px;
-  margin-bottom: 6px;
-}
-.modal-sub {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.drop-zone {
-  display: block;
-  text-align: center;
-  padding: 22px 16px;
-  background: var(--accent-paler);
-  border: 1.5px dashed var(--accent-pale);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-bottom: 14px;
-}
-.drop-zone:hover {
-  background: var(--accent-pale);
-  border-color: var(--accent);
-}
-.drop-zone.has-file {
-  background: var(--accent-paler);
-  border-style: solid;
-  border-color: var(--accent);
-}
-.drop-zone-input {
-  display: none;
-}
-.drop-zone-icon {
-  font-size: 32px;
-  line-height: 1;
-  margin-bottom: 8px;
-  color: var(--accent-dark);
-}
-.drop-zone-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  margin-bottom: 4px;
-  word-break: break-word;
-}
-.drop-zone-sub {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-.drop-zone-tap {
-  color: var(--accent-dark);
-  font-weight: 700;
-}
-.drop-zone-formats {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-faint);
-  letter-spacing: 0.4px;
-  margin-top: 8px;
-  text-transform: uppercase;
-}
-.modal-read-row {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 12px 14px;
-  background: var(--bg);
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
-  margin-bottom: 14px;
-}
-.modal-read-icon {
-  font-size: 16px;
+.nq-quiz-count {
   flex-shrink: 0;
-}
-.modal-read-text {
-  flex: 1;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.modal-read-text :deep(b) {
-  color: var(--text);
+  font-size: 12.5px;
   font-weight: 700;
+  color: var(--accent-dark);
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--accent-pale);
+  white-space: nowrap;
 }
-.modal-suppliers {
-  margin-bottom: 14px;
-}
-.modal-suppliers-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.modal-supplier-grid {
+
+.nq-quest-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
 }
-.modal-supplier-tile {
-  padding: 8px 6px;
-  background: var(--card);
+.nq-quest {
+  background: #fff;
   border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: border-color 0.16s, box-shadow 0.16s, transform 0.16s;
+}
+.nq-quest:hover { box-shadow: 0 10px 26px rgba(35, 29, 69, 0.08); transform: translateY(-1px); }
+.nq-quest.answered { border-color: var(--accent-pale); background: linear-gradient(180deg, var(--accent-paler), #fff 60%); }
+.nq-quest.open {
+  grid-column: 1 / -1;
+  border-color: var(--accent);
+  box-shadow: 0 16px 40px rgba(0, 138, 132, 0.14);
+  transform: none;
+}
+
+.nq-quest-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.nq-quest-num {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
   border-radius: 10px;
-  text-align: center;
-  font-size: 10.5px;
-  font-weight: 600;
+  background: #f4f5f9;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  transition: background 0.16s, color 0.16s, border-color 0.16s;
+}
+.nq-quest.answered .nq-quest-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.nq-quest-num-check { width: 18px; height: 18px; }
+.nq-quest-info { flex: 1; min-width: 0; }
+.nq-quest-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.nq-quest-sub { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
+.nq-quest-chev {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  color: var(--text-faint);
+  transition: transform 0.2s, color 0.16s;
+}
+.nq-quest-chev svg { width: 18px; height: 18px; }
+.nq-quest.open .nq-quest-chev { transform: rotate(90deg); color: var(--accent-dark); }
+
+.nq-quest-detail {
+  padding: 4px 18px 18px;
+  animation: nq-fadeUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.nq-quest-desc {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
   color: var(--text-secondary);
 }
-.modal-cta-row {
+.nq-quest-impact {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
 }
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  border: none;
-}
-.modal-btn.secondary {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-}
-.modal-btn.secondary:hover {
-  background: var(--card);
+.nq-impact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #f4f5f9;
+  border: 1px solid var(--border-soft);
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text);
 }
-.modal-btn.primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
-  box-shadow: 0 3px 12px rgba(0, 161, 154, 0.25);
+.nq-impact-chip svg { width: 13px; height: 13px; color: var(--accent-dark); }
+.nq-impact-chip.is-grant {
+  background: #fff3db;
+  border-color: #f2d79a;
+  color: #8a5a00;
 }
-.modal-btn.primary:hover:not(:disabled) {
-  filter: brightness(1.05);
-}
-.modal-btn.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.modal-privacy {
+.nq-impact-chip.is-grant svg { color: #b07d16; }
+
+.nq-quest-resulting {
   display: flex;
-  gap: 6px;
-  align-items: flex-start;
-  font-size: 10.5px;
-  font-weight: 500;
-  color: var(--text-faint);
-  line-height: 1.5;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.nq-resulting-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--text-faint);
+}
+.nq-resulting-pill.grade-a { background: #008a84; }
+.nq-resulting-pill.grade-b { background: #00a19a; }
+.nq-resulting-pill.grade-c { background: #7ab040; }
+.nq-resulting-pill.grade-d { background: #e6a23c; }
+.nq-resulting-pill.grade-e { background: #d86f4a; }
+.nq-resulting-pill.grade-f { background: #c04a1a; }
+.nq-resulting-pill.grade-g { background: #a52a2a; }
+
+.nq-quest-question {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.nq-quest-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.nq-opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
   text-align: left;
+  transition: border-color 0.14s, background 0.14s, box-shadow 0.14s, transform 0.14s;
 }
-.modal-privacy-icon {
-  flex-shrink: 0;
-  margin-top: 1px;
+.nq-opt-btn:hover { transform: translateY(-1px); border-color: #d4d6e2; box-shadow: 0 6px 16px rgba(35, 29, 69, 0.07); }
+.nq-opt-ico {
+  width: 26px; height: 26px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  background: #f4f5f9;
+  color: var(--text-secondary);
+  transition: background 0.14s, color 0.14s;
+}
+.nq-opt-ico svg { width: 15px; height: 15px; }
+
+/* Selected states — tinted per answer semantics */
+.nq-opt-btn.selected { color: #fff; }
+.nq-opt-btn.opt-yes.selected {
+  background: var(--accent); border-color: var(--accent-dark);
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.32);
+}
+.nq-opt-btn.opt-different.selected {
+  background: #7c6ff0; border-color: #6a5be0;
+  box-shadow: 0 8px 20px rgba(124, 111, 240, 0.3);
+}
+.nq-opt-btn.opt-not-yet.selected {
+  background: #6b7089; border-color: #565b74;
+  box-shadow: 0 8px 20px rgba(107, 112, 137, 0.3);
+}
+.nq-opt-btn.opt-na.selected {
+  background: #a8a9ad; border-color: #94959a;
+  box-shadow: 0 8px 20px rgba(168, 169, 173, 0.3);
+}
+.nq-opt-btn.selected .nq-opt-ico {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
 }
 
-/* Transition for the bottom-sheet drawer */
-.bill-modal-enter-active,
-.bill-modal-leave-active {
-  transition: opacity 0.2s ease;
+/* ── Finish CTA ─────────────────────────────────────────────────── */
+.nq-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
 }
-.bill-modal-enter-active .modal-sheet,
-.bill-modal-leave-active .modal-sheet {
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+.nq-finish-btn {
+  width: 100%;
+  max-width: 460px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 17px 24px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 12px 30px rgba(0, 161, 154, 0.34);
+  transition: transform 0.16s, box-shadow 0.16s, filter 0.16s;
 }
-.bill-modal-enter-from,
-.bill-modal-leave-to {
-  opacity: 0;
+.nq-finish-btn:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: 0 16px 38px rgba(0, 161, 154, 0.42); }
+.nq-finish-btn svg { width: 18px; height: 18px; }
+.nq-finish-hint {
+  max-width: 460px;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
-.bill-modal-enter-from .modal-sheet,
-.bill-modal-leave-to .modal-sheet {
-  transform: translateY(100%);
+.nq-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-faint);
+  transition: color 0.14s;
+}
+.nq-reset:hover { color: var(--accent-dark); }
+.nq-reset svg { width: 15px; height: 15px; }
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media (max-width: 920px) {
+  .nq-report { padding: 20px 16px 44px; gap: 24px; }
+  .nq-hero { grid-template-columns: 1fr; gap: 20px; }
+  .nq-scorecard { position: static; order: -1; }
+  .nq-quest-grid { grid-template-columns: 1fr; }
+  .nq-quest.open { grid-column: auto; }
+  .nq-twoways { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .nq-scorecard-body { flex-direction: column; align-items: flex-start; }
+  .nq-quest-options { grid-template-columns: 1fr; }
+  .nd-block-head { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
 
-/* ── Desktop: centred dialog instead of a phone bottom-sheet ──────── */
-@media (min-width: 768px) {
-  .modal-overlay {
-    align-items: center;
-    padding: 32px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
-  .modal-sheet,
-  .need-answer-sheet {
-    max-width: 460px;
-    border-radius: 24px;
-    max-height: min(88dvh, 760px);
-    box-shadow:
-      0 32px 72px -20px rgba(35, 29, 69, 0.4),
-      0 12px 28px -12px rgba(35, 29, 69, 0.22);
-  }
-  .modal-sheet {
-    padding: 26px 28px 28px;
-  }
-  .modal-grip {
-    display: none;
-  }
-  .bill-modal-enter-from .modal-sheet,
-  .bill-modal-leave-to .modal-sheet {
-    transform: translateY(14px) scale(0.97);
-  }
+/* ═══════════════ MODALS (need-answer + bill upload) ═══════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(20, 16, 46, 0.5);
+  backdrop-filter: blur(4px);
 }
+.need-answer-sheet,
+.modal-sheet {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 22px;
+  padding: 30px 26px 26px;
+  box-shadow: 0 30px 70px rgba(20, 16, 46, 0.4);
+  animation: nq-fadeUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.need-answer-sheet { text-align: center; }
+.need-answer-icon {
+  width: 60px; height: 60px;
+  margin: 0 auto 16px;
+  display: grid; place-items: center;
+  border-radius: 16px;
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+}
+.need-answer-icon svg { width: 28px; height: 28px; }
+.need-answer-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.need-answer-sub {
+  margin: 10px 0 22px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.need-answer-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 10px 26px rgba(0, 161, 154, 0.32);
+  transition: transform 0.15s, filter 0.15s;
+}
+.need-answer-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+
+.modal-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 16px; }
+.modal-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-dark); }
+.modal-title { margin-top: 6px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.modal-sub { margin-top: 8px; font-size: 14px; line-height: 1.55; color: var(--text-secondary); }
+.drop-zone {
+  display: block;
+  margin: 18px 0;
+  padding: 26px;
+  border-radius: 16px;
+  border: 2px dashed var(--border);
+  background: #f9fafc;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.drop-zone:hover, .drop-zone.has-file { border-color: var(--accent); background: var(--accent-paler); }
+.drop-zone-input { display: none; }
+.drop-zone-icon { font-size: 30px; }
+.drop-zone-title { margin-top: 8px; font-size: 15px; font-weight: 700; color: var(--text); }
+.drop-zone-sub { margin-top: 4px; font-size: 13px; color: var(--text-secondary); }
+.drop-zone-tap { color: var(--accent-dark); font-weight: 700; }
+.drop-zone-formats { margin-top: 8px; font-size: 11.5px; color: var(--text-faint); }
+.modal-read-row { display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #f4f5f9; font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); }
+.modal-read-icon { flex-shrink: 0; }
+.modal-suppliers { margin-top: 16px; }
+.modal-suppliers-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); }
+.modal-supplier-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.modal-supplier-tile { padding: 6px 11px; border-radius: 999px; background: #f4f5f9; border: 1px solid var(--border-soft); font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.modal-cta-row { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btn { flex: 1; padding: 14px; border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; transition: filter 0.15s, transform 0.15s; }
+.modal-btn.secondary { background: #f4f5f9; border: 1px solid var(--border); color: var(--text); }
+.modal-btn.primary { border: none; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); box-shadow: 0 8px 20px rgba(0, 161, 154, 0.3); }
+.modal-btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-btn:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.03); }
+.modal-privacy { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--text-faint); }
+
+/* Modal transitions */
+.bill-modal-enter-active, .bill-modal-leave-active { transition: opacity 0.25s ease; }
+.bill-modal-enter-from, .bill-modal-leave-to { opacity: 0; }
 </style>

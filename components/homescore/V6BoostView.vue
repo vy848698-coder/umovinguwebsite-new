@@ -1,8 +1,10 @@
 <template>
   <div class="hs-v6-boost">
-    <!-- Mini header (back + title + help) -->
-    <div class="boost-header">
+    <!-- Mini header (back + title + help). The back arrow is hidden when the
+         host page renders its own top nav (hideBack). -->
+    <div class="boost-header" :class="{ 'boost-header--nav': hideBack }">
       <button
+        v-if="!hideBack"
         class="boost-back"
         type="button"
         @click="$emit('back')"
@@ -28,11 +30,18 @@
       </button>
     </div>
 
+    <!-- Desktop dashboard body: fills the 1140px nav shell and lays the
+         cards into a two-column grid at desktop widths. On mobile it
+         collapses to the original single-column stack (source order). -->
+    <div class="boost-body">
     <!-- Your property journey · gauge rings -->
     <div class="boost-journey-card anim-1">
       <div class="boost-journey-head">
-        <div class="boost-journey-eyebrow">✨ Your property journey</div>
-        <div class="boost-journey-update">Updates as you add docs</div>
+        <div class="boost-journey-eyebrow"><Icon name="i-lucide-sparkles" /> Your property journey</div>
+        <div class="boost-journey-update"><Icon name="i-lucide-file-plus-2" /> Updates as you add docs</div>
+      </div>
+      <div class="boost-journey-headline">
+        Every document you add unlocks <b>more of your Passport</b>.
       </div>
       <div class="boost-gauges-row">
         <div
@@ -75,12 +84,14 @@
               }}<span v-if="g.suffix">{{ g.suffix }}</span>
             </div>
           </div>
-          <div class="boost-gauge-cat">{{ g.label }}</div>
-          <div class="boost-gauge-sub">{{ g.sub }}</div>
+          <div class="boost-gauge-meta">
+            <div class="boost-gauge-cat">{{ g.label }}</div>
+            <div class="boost-gauge-sub">{{ g.sub }}</div>
+          </div>
         </div>
       </div>
       <div class="boost-journey-foot">
-        <div class="boost-journey-foot-icon">📊</div>
+        <div class="boost-journey-foot-icon"><Icon name="i-lucide-bar-chart-3" /></div>
         <div class="boost-journey-foot-text">
           Each document you add unlocks
           <b>more of your Passport</b>.
@@ -118,7 +129,7 @@
         where it counts. A new EPC syncs the public record to your verified
         score.
       </p>
-      <button class="bes-btn" type="button" @click="$emit('open-marketplace', 'epc')">
+      <button class="bes-btn" type="button" @click="$emit('view-report', 'epc')">
         Update my EPC · from £60 →
       </button>
       <div class="bes-micro">
@@ -129,8 +140,9 @@
     <!-- Upload a document. One question at a time — only the next
          unuploaded doc renders. After upload, the congratulations
          overlay celebrates the impact, then the next card slides in. -->
+    <div class="boost-block boost-block--upload">
     <div class="boost-section-h">
-      <span class="ico">📎</span> Upload a document
+      <span class="ico"><Icon name="i-lucide-paperclip" /></span> Upload a document
       <span class="pill-progress"
         >{{ uploadedDocs.length }} of {{ docs.length }}</span
       >
@@ -139,7 +151,7 @@
          see their progress. Only the next-unuploaded card is rendered
          after them; later docs stay hidden until their turn. -->
     <div v-for="d in completedDocs" :key="d.id" class="boost-row added">
-      <div class="boost-row-icon" :class="d.tone">{{ d.icon }}</div>
+      <div class="boost-row-icon" :class="d.tone"><Icon :name="d.icon" /></div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ d.title }}</div>
         <div class="boost-row-sub">Verified · +{{ d.mrDelta }}% Move Ready</div>
@@ -153,7 +165,7 @@
       @click="onAddDoc(currentDoc.id)"
     >
       <div class="boost-row-icon" :class="currentDoc.tone">
-        {{ currentDoc.icon }}
+        <Icon :name="currentDoc.icon" />
       </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ currentDoc.title }}</div>
@@ -164,7 +176,7 @@
 
     <!-- All documents uploaded celebration -->
     <div v-else class="boost-row alldone">
-      <div class="boost-row-icon gold">🏆</div>
+      <div class="boost-row-icon gold"><Icon name="i-lucide-trophy" /></div>
       <div class="boost-row-info">
         <div class="boost-row-title">All documents uploaded</div>
         <div class="boost-row-sub">
@@ -173,6 +185,7 @@
       </div>
       <div class="boost-row-chev">›</div>
     </div>
+    </div><!-- /boost-block--upload -->
 
     <!-- Per-upload congratulations overlay. Fireworks burst behind a
          centered impact card with the points won + what this document
@@ -207,7 +220,7 @@
         </div>
         <div class="bcv-card">
           <div class="bcv-ico" :class="celebrateDoc.tone">
-            {{ celebrateDoc.icon }}
+            <Icon :name="celebrateDoc.icon" />
           </div>
           <div class="bcv-eyebrow">DOCUMENT VERIFIED</div>
           <div class="bcv-headline">
@@ -224,38 +237,41 @@
     </Teleport>
 
     <!-- Book a professional -->
+    <div class="boost-block boost-block--book">
     <div class="boost-section-h">
-      <span class="ico">🔧</span> Book a professional
+      <span class="ico"><Icon name="i-lucide-wrench" /></span> Book a professional
     </div>
     <div
       v-for="b in bookings"
       :key="b.id"
       class="boost-row"
-      @click="$emit('open-marketplace', b.id)"
+      @click="$emit('view-report', b.id)"
     >
-      <div class="boost-row-icon" :class="b.tone">{{ b.icon }}</div>
+      <div class="boost-row-icon" :class="b.tone"><Icon :name="b.icon" /></div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ b.title }}</div>
         <div class="boost-row-sub">{{ b.sub }}</div>
       </div>
       <div class="boost-row-chev">›</div>
     </div>
+    </div><!-- /boost-block--book -->
 
     <!-- Next step on your journey · 1:1 with `.nextstep` from the
          umu-owner-journey prototype (lines 342-347). Reads as a single
          decisive teal CTA — the rings live up top in the journey card
          so we don't double up the dial language here. -->
     <div class="nextstep anim-2">
-      <div class="ns-eye">✦ Next step on your journey</div>
+      <div class="ns-eye"><Icon name="i-lucide-sparkles" /> Next step on your journey</div>
       <div class="ns-h">Your Passport is {{ passportPct }}% there.</div>
       <div class="ns-p">
         Each document you add lifts your scores. Reach Move Ready and publish
         your Passport to lock in everything you've built.
       </div>
       <button type="button" class="ns-btn" @click="$emit('start-passport')">
-        🚀 Continue my Passport →
+        <Icon name="i-lucide-rocket" /> Continue my Passport →
       </button>
     </div>
+    </div><!-- /boost-body -->
 
     <div style="height: 32px" />
 
@@ -268,7 +284,7 @@
       <div v-if="activeDoc" class="bd-upload">
         <div class="bd-upload-head">
           <div class="bd-upload-ico" :class="activeDoc.tone">
-            {{ activeDoc.icon }}
+            <Icon :name="activeDoc.icon" />
           </div>
           <div class="bd-upload-sub">{{ activeDoc.sub }}</div>
         </div>
@@ -281,7 +297,9 @@
             class="bd-dropzone-input"
             @change="onFileChange"
           />
-          <div class="bd-dropzone-icon">{{ selectedFile ? '✓' : '📄' }}</div>
+          <div class="bd-dropzone-icon">
+            <Icon :name="selectedFile ? 'i-lucide-check' : 'i-lucide-file-text'" />
+          </div>
           <div class="bd-dropzone-title">
             {{ selectedFile ? selectedFile.name : 'Drop your document here' }}
           </div>
@@ -297,7 +315,7 @@
         </label>
 
         <div class="bd-upload-note">
-          🔒 We read the key details only — the file is stored against your
+          <Icon name="i-lucide-lock" /> We read the key details only — the file is stored against your
           property and never shared without your say-so.
         </div>
       </div>
@@ -329,6 +347,8 @@ interface Props {
   publicEpcRating?: string | null
   publicEpcScore?: number | null
   publicEpcYear?: string | number | null
+  /** Hide the internal back arrow when the host page renders its own nav. */
+  hideBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -337,6 +357,7 @@ const props = withDefaults(defineProps<Props>(), {
   publicEpcRating: null,
   publicEpcScore: null,
   publicEpcYear: null,
+  hideBack: false,
 })
 
 // Score → EPC band letter. Matches the prototype's verified-score badge.
@@ -358,6 +379,7 @@ const officialVerifiedScore = computed(() => Math.round(props.homeScore))
 defineEmits<{
   (e: 'back'): void
   (e: 'open-marketplace', kind: string): void
+  (e: 'view-report', kind: string): void
   (e: 'start-passport'): void
 }>()
 
@@ -365,7 +387,7 @@ defineEmits<{
 const docs = [
   {
     id: 'bills',
-    icon: '💡',
+    icon: 'i-lucide-lightbulb',
     tone: 'yellow',
     title: 'Utility bills',
     sub: 'See your actual spend vs your EPC estimate — most impactful first step',
@@ -374,7 +396,7 @@ const docs = [
   },
   {
     id: 'gas',
-    icon: '🔥',
+    icon: 'i-lucide-flame',
     tone: 'amber',
     title: 'Gas Safety Certificate',
     sub: 'Annual safety check from a Gas Safe engineer · +25% MoveReady',
@@ -383,7 +405,7 @@ const docs = [
   },
   {
     id: 'eicr',
-    icon: '⚡',
+    icon: 'i-lucide-zap',
     tone: 'violet',
     title: 'EICR · Electrical safety report',
     sub: '5-yearly · required for letting · +20% MoveReady',
@@ -392,7 +414,7 @@ const docs = [
   },
   {
     id: 'boiler',
-    icon: '🛠',
+    icon: 'i-lucide-wrench',
     tone: 'teal',
     title: 'Boiler service record',
     sub: 'Annual service invoice or certificate · +12% MoveReady',
@@ -404,21 +426,21 @@ const docs = [
 const bookings = [
   {
     id: 'gas-safe',
-    icon: '🔥',
+    icon: 'i-lucide-flame',
     tone: 'amber',
     title: 'Book a Gas Safe engineer',
     sub: 'Service your boiler · cert auto-lands in your score',
   },
   {
     id: 'eicr',
-    icon: '⚡',
+    icon: 'i-lucide-zap',
     tone: 'violet',
     title: 'Book an electrician (EICR)',
     sub: 'Electrical check · from £150',
   },
   {
     id: 'new-epc',
-    icon: '🏠',
+    icon: 'i-lucide-house',
     tone: 'green',
     title: 'New EPC assessment',
     sub: 'From £60 · required if yours is 10+ years old',
@@ -489,11 +511,11 @@ const gauges = ref<Gauge[]>([
     target: passportPct.value,
     max: 100,
     suffix: '%',
-    // Passport ring uses white so it reads as a neutral "completion"
-    // metric — distinct from Move Ready (amber) without competing with
-    // HomeScore (teal) for tone weight on the dark navy card.
-    gradFrom: '#ffffff',
-    gradTo: '#e5e7eb',
+    // Passport ring uses a soft lavender so it reads as a distinct
+    // "ownership" metric — separate from Move Ready (amber) and
+    // HomeScore (teal) on the dark navy card, matching the design mock.
+    gradFrom: '#C4B5FD',
+    gradTo: '#A78BFA',
     animatedValue: 0,
   },
 ])
@@ -676,13 +698,237 @@ function formatFileSize(bytes: number): string {
 </script>
 
 <style scoped>
-/* Premium desktop: focused centered column instead of full-bleed mobile. */
-@media (min-width: 768px) {
-  .hs-v6-boost {
-    max-width: 780px !important;
-    margin: 0 auto !important;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+/* ── Layout shell ─────────────────────────────────────────────────
+   The body wrapper centres the content on the same 1140px shell as the
+   site nav so the page reads as a full desktop dashboard rather than a
+   narrow mobile column floating in whitespace. On mobile it's a simple
+   vertical stack; at desktop it becomes a two-column grid. */
+.boost-body {
+  width: min(1140px, calc(100% - 40px));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* Cards carry their own mobile margins — inside .boost-body the wrapper
+   owns the horizontal rhythm, so neutralise them. */
+.boost-body > .boost-journey-card,
+.boost-body > .boost-epcstatus,
+.boost-body > .nextstep,
+.boost-body > .boost-block {
+  margin: 0;
+}
+.boost-block {
+  display: flex;
+  flex-direction: column;
+}
+.boost-block .boost-section-h {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.boost-block .boost-row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+@media (min-width: 980px) {
+  /* `.hs-v6-boost` prefix lifts specificity above the base `.boost-header`
+     shorthand so the heading lines up flush with the card column below
+     instead of sitting indented. */
+  .hs-v6-boost .boost-header {
+    width: min(1140px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 18px 2px 14px;
+  }
+  .hs-v6-boost .boost-header-title {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .hs-v6-boost .boost-header-sub {
+    font-size: 14px;
+    margin-top: 6px;
+    color: var(--text-secondary);
+  }
+  .hs-v6-boost .boost-help {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  /* Dashboard grid: the journey card is a full-width hero banner; below it
+     the primary action lists (upload / book) sit in the left column with the
+     "make it official" EPC upsell as a tall right-hand sidebar; the next-step
+     CTA closes the page full width. */
+  .boost-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-areas:
+      'journey  journey'
+      'upload   epc'
+      'book     epc'
+      'nextstep nextstep';
+    gap: 22px 24px;
+    align-items: start;
+    margin-top: 2px;
+  }
+  .hs-v6-boost .boost-journey-card {
+    grid-area: journey;
+    padding: 34px 40px 30px;
+    border-radius: 24px;
+  }
+  .hs-v6-boost .boost-journey-card .boost-journey-head {
+    margin-bottom: 10px;
+  }
+  .hs-v6-boost .boost-epcstatus {
+    grid-area: epc;
+    align-self: start;
+    padding: 26px 26px 24px;
+    border-radius: 22px;
+  }
+  .hs-v6-boost .boost-block--upload {
+    grid-area: upload;
+  }
+  .hs-v6-boost .boost-block--book {
+    grid-area: book;
+  }
+
+  /* Left-column lists: larger section labels + roomier rows to match the mock. */
+  .hs-v6-boost .boost-section-h {
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    padding: 4px 4px 12px;
+  }
+  .hs-v6-boost .boost-block--book .boost-section-h {
+    padding-top: 22px;
+  }
+  .hs-v6-boost .boost-row {
+    padding: 20px 22px;
+    border-radius: 16px;
+    gap: 16px;
+  }
+  .hs-v6-boost .boost-row-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+  .hs-v6-boost .boost-row-title {
+    font-size: 15.5px;
+  }
+  .hs-v6-boost .boost-row-sub {
+    font-size: 12.5px;
+  }
+  .hs-v6-boost .boost-row-plus {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  /* Big hero headline, matching the mock. */
+  .hs-v6-boost .boost-journey-headline {
+    font-size: 33px;
+    font-weight: 800;
+    line-height: 1.22;
+    letter-spacing: -0.6px;
+    margin: 4px 0 30px;
+    max-width: 640px;
+  }
+  .hs-v6-boost .boost-journey-eyebrow {
+    font-size: 11px;
+    letter-spacing: 1.6px;
+  }
+  .hs-v6-boost .boost-journey-update {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+
+  /* Stat tiles: each stat sits in its own translucent bordered box with the
+     ring on the left and the label/sub to the right — matching the mock. */
+  .hs-v6-boost .boost-gauges-row {
+    gap: 18px;
+  }
+  .hs-v6-boost .boost-gauge-col {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 22px;
+    text-align: left;
+    padding: 26px 26px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 18px;
+  }
+  .hs-v6-boost .boost-gauge-col:hover {
+    transform: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .hs-v6-boost .boost-gauge-ring {
+    width: 104px;
+    height: 104px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .hs-v6-boost .boost-gauge-num {
+    font-size: 30px;
+  }
+  .hs-v6-boost .boost-gauge-num.pct {
+    font-size: 26px;
+  }
+  .hs-v6-boost .boost-gauge-meta {
+    min-width: 0;
+  }
+  .hs-v6-boost .boost-gauge-cat {
+    margin-top: 0;
+    font-size: 14px;
+    letter-spacing: 0.8px;
+  }
+  .hs-v6-boost .boost-gauge-sub {
+    margin-top: 5px;
+    font-size: 12.5px;
+  }
+
+  /* Footer strip inside the journey card. */
+  .hs-v6-boost .boost-journey-foot {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+
+  /* Next-step becomes a wide horizontal banner: copy left, CTA right. */
+  .hs-v6-boost .nextstep {
+    grid-area: nextstep;
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'eye btn'
+      'h   btn'
+      'p   btn';
+    align-items: center;
+    column-gap: 32px;
+    padding: 32px 40px;
+    border-radius: 24px;
+  }
+  .hs-v6-boost .nextstep .ns-eye {
+    grid-area: eye;
+  }
+  .hs-v6-boost .nextstep .ns-h {
+    grid-area: h;
+    font-size: 30px;
+  }
+  .hs-v6-boost .nextstep .ns-p {
+    grid-area: p;
+    max-width: 640px;
+  }
+  .hs-v6-boost .nextstep .ns-btn {
+    grid-area: btn;
+    width: auto;
+    margin-top: 0;
+    padding: 17px 32px;
+    white-space: nowrap;
   }
 }
 .hs-v6-boost {
@@ -692,8 +938,10 @@ function formatFileSize(bytes: number): string {
   --accent-light: #00b8b0;
   --accent-pale: #e5f4f2;
   --accent-paler: #f2faf8;
-  --bg: #f5f6fa;
-  --page: #f0f2f8;
+  /* Match the app-wide flat cream canvas (#f3f2ef) used on the landing /
+     explore pages and behind the translucent cream nav — not a bluish tint. */
+  --bg: #f3f2ef;
+  --page: #f3f2ef;
   --card: #ffffff;
   --text: #231d45;
   --text-secondary: #6b7089;
@@ -716,6 +964,14 @@ function formatFileSize(bytes: number): string {
   gap: 12px;
   padding: 14px 20px;
   padding-top: calc(14px + env(safe-area-inset-top));
+}
+/* When the host page supplies its own top nav, the back arrow is gone —
+   left-align the title so it reads as a proper page heading. */
+.boost-header--nav {
+  padding-top: 22px;
+}
+.boost-header--nav .boost-header-info {
+  text-align: left;
 }
 .boost-back,
 .boost-help {
@@ -829,13 +1085,35 @@ function formatFileSize(bytes: number): string {
   text-transform: uppercase;
 }
 .boost-journey-update {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10.5px;
   font-weight: 700;
   color: white;
-  padding: 3px 9px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 100px;
+}
+.boost-journey-update :deep(svg) {
+  width: 14px;
+  height: 14px;
+  opacity: 0.9;
+}
+
+/* Hero headline inside the journey card */
+.boost-journey-headline {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  color: #fff;
+  margin: 12px 0 18px;
+}
+.boost-journey-headline b {
+  color: #f5a94b;
+  font-weight: 800;
 }
 
 /* Gauges */
@@ -881,7 +1159,7 @@ function formatFileSize(bytes: number): string {
   filter: drop-shadow(0 0 9px rgba(255, 179, 71, 0.7));
 }
 .boost-gauge-col.pp .boost-gauge-ring svg circle:last-of-type {
-  filter: drop-shadow(0 0 9px rgba(255, 255, 255, 0.7));
+  filter: drop-shadow(0 0 9px rgba(167, 139, 250, 0.7));
 }
 .boost-gauge-num {
   position: absolute;
@@ -1370,6 +1648,42 @@ function formatFileSize(bytes: number): string {
 .bcv-ico.green {
   background: #d4f2e0;
 }
+
+/* ── Lucide icon sizing / tint (emoji → <Icon> swap) ──────────────── */
+.boost-journey-eyebrow,
+.ns-eye {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.boost-journey-eyebrow :deep(svg),
+.ns-eye :deep(svg) { width: 12px; height: 12px; }
+.boost-journey-foot-icon {
+  display: inline-flex;
+  color: rgba(255, 255, 255, 0.9);
+}
+.boost-journey-foot-icon :deep(svg) { width: 16px; height: 16px; }
+.boost-section-h .ico { display: inline-flex; }
+.boost-section-h .ico :deep(svg) { width: 13px; height: 13px; }
+.boost-row-icon :deep(svg),
+.bd-upload-ico :deep(svg) { width: 22px; height: 22px; }
+.bcv-ico :deep(svg) { width: 27px; height: 27px; }
+.bd-dropzone-icon { color: var(--accent-dark); }
+.bd-dropzone-icon :deep(svg) { width: 30px; height: 30px; margin: 0 auto; }
+.ns-btn :deep(svg) { width: 16px; height: 16px; }
+.bd-upload-note :deep(svg) {
+  display: inline-block;
+  vertical-align: -2px;
+  width: 13px;
+  height: 13px;
+  margin-right: 3px;
+}
+/* Tint each pale icon chip to match its hue (Lucide is monochrome). */
+.boost-row-icon.yellow, .bd-upload-ico.yellow, .bcv-ico.yellow { color: #c99700; }
+.boost-row-icon.amber, .bd-upload-ico.amber, .bcv-ico.amber { color: #b45309; }
+.boost-row-icon.teal, .bd-upload-ico.teal, .bcv-ico.teal { color: var(--accent-dark); }
+.boost-row-icon.green, .bd-upload-ico.green, .bcv-ico.green { color: #0f9d58; }
+.boost-row-icon.violet, .bd-upload-ico.violet, .bcv-ico.violet { color: #7c3aed; }
 .bcv-eyebrow {
   font-size: 9px;
   font-weight: 800;

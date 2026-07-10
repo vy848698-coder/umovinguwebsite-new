@@ -1,7 +1,8 @@
 <template>
-  <div class="hs-v6-levelup">
-    <!-- Minimal back-only mini-header (no title strip, no bell) -->
-    <div class="lu-mini-header">
+  <div class="hs-v6-levelup" :class="{ 'lu-has-nav': hideBack }">
+    <!-- Minimal back-only mini-header (no title strip, no bell).
+         Hidden when the page provides its own top nav (hideBack). -->
+    <div v-if="!hideBack" class="lu-mini-header">
       <button
         class="lu-back"
         type="button"
@@ -21,91 +22,103 @@
       </button>
     </div>
 
-    <!-- Level up hero -->
-    <div class="levelup-hero anim-1 level-up">
-      <div class="levelup-eyebrow">🎉 Level up · Quiz complete</div>
-      <div class="levelup-title">You levelled up your home.</div>
-      <div class="levelup-sub">
-        Your refined HomeScore reflects what's been done since the EPC. More
-        accurate. Higher confidence.
-      </div>
-      <div class="levelup-row">
-        <div class="levelup-from">
-          <div class="levelup-from-num">{{ fromScore }}</div>
-          <div class="levelup-from-label">Was · Level {{ fromLevel }}</div>
-        </div>
-        <div class="levelup-arrow">→</div>
-        <div class="levelup-to">
-          <div class="levelup-to-num">{{ animatedToScore }}</div>
-          <div class="levelup-to-label">Now · Level {{ toLevel }}</div>
-        </div>
-      </div>
-      <div class="levelup-delta">{{ deltaLabel }}</div>
-    </div>
-
-    <!-- "What happens next" explainer — two paths side-by-side (v6-2) -->
-    <div class="boost-explain anim-2">
-      <div class="boost-explain-row">
-        <div class="boost-explain-step">
-          <div class="boost-explain-num">1</div>
-          <div class="boost-explain-text">
-            <b>Follow the pathway</b> — take recommended steps to keep climbing
-            your HomeScore.
+    <div class="lu-shell">
+      <!-- Top row: level-up hero (left) + what-happens-next (right) -->
+      <div class="lu-top-grid">
+        <!-- Level up hero -->
+        <div class="levelup-hero anim-1 level-up">
+          <div class="levelup-eyebrow"><Icon name="i-lucide-party-popper" /> Level up · Quiz complete</div>
+          <div class="levelup-title">You levelled up your home.</div>
+          <div class="levelup-sub">
+            Your refined HomeScore reflects what's been done since the EPC. More
+            accurate. Higher confidence.
+          </div>
+          <div class="levelup-row">
+            <div class="levelup-from">
+              <div class="levelup-from-num">{{ fromScore }}</div>
+              <div class="levelup-from-label">Was · Level {{ fromLevel }}</div>
+            </div>
+            <div class="levelup-arrow">
+              <Icon name="i-lucide-arrow-right" />
+            </div>
+            <div class="levelup-to">
+              <div class="levelup-to-num">{{ animatedToScore }}</div>
+              <div class="levelup-to-label">Now · Level {{ toLevel }}</div>
+            </div>
+          </div>
+          <div class="levelup-delta">
+            <Icon name="i-lucide-trending-up" /> {{ deltaLabel }}
           </div>
         </div>
-        <div class="boost-explain-step">
-          <div class="boost-explain-num">2</div>
-          <div class="boost-explain-text">
-            <b>Boost your score</b> — add docs and book pros to grow your
-            Passport.
+
+        <!-- "What happens next" explainer — two paths (v6-3) -->
+        <div class="boost-explain anim-2">
+          <div class="boost-explain-steps">
+            <div class="boost-explain-step">
+              <div class="boost-explain-num">1</div>
+              <div class="boost-explain-icon path"><Icon name="i-lucide-route" /></div>
+              <div class="boost-explain-text">
+                <b>Follow the pathway</b> — take recommended steps to keep
+                climbing your HomeScore.
+              </div>
+            </div>
+            <div class="boost-explain-hr" />
+            <div class="boost-explain-step">
+              <div class="boost-explain-num">2</div>
+              <div class="boost-explain-icon boost"><Icon name="i-lucide-zap" /></div>
+              <div class="boost-explain-text">
+                <b>Boost your score</b> — add docs and book pros to grow your
+                Passport.
+              </div>
+            </div>
+          </div>
+          <div class="boost-explain-foot">
+            Pathway lifts your <b>HomeScore</b> · Boost lifts your
+            <b>Move Ready</b> &amp; <b>Passport</b>.
           </div>
         </div>
       </div>
-      <div class="boost-explain-foot">
-        Pathway lifts your <b>HomeScore</b> · Boost lifts your
-        <b>Move Ready</b> &amp; <b>Passport</b>.
-      </div>
-    </div>
 
-    <!-- Refined stats -->
-    <div class="section-h-row">
-      <div class="section-h">Your refined stats</div>
-      <div class="section-h-sub">{{ toScore }}/100 points</div>
-    </div>
-    <div class="refined-stats-card">
-      <div v-for="s in refinedStats" :key="s.id" class="stat-row gained">
-        <div class="stat-icon">{{ s.icon }}</div>
-        <div class="stat-label">{{ s.label }}</div>
-        <div class="stat-bar-wrap">
-          <div
-            class="stat-bar-fill"
-            :class="s.tone"
-            :style="{ width: barsAnimated ? s.pct + '%' : '0%' }"
-          />
+      <!-- Refined stats -->
+      <div class="section-h-row">
+        <div class="section-h">Your refined stats</div>
+        <div class="section-h-sub">{{ toScore }}/100 points</div>
+      </div>
+      <div class="refined-stats-card">
+        <div v-for="s in refinedStats" :key="s.id" class="stat-row gained">
+          <div class="stat-icon" :class="s.tone"><Icon :name="s.icon" /></div>
+          <div class="stat-label">{{ s.label }}</div>
+          <div class="stat-bar-wrap">
+            <div
+              class="stat-bar-fill"
+              :class="s.tone"
+              :style="{ width: barsAnimated ? s.pct + '%' : '0%' }"
+            />
+          </div>
+          <div class="stat-value">{{ s.value }}/{{ s.max }}</div>
         </div>
-        <div class="stat-value">{{ s.value }}/{{ s.max }}</div>
       </div>
-    </div>
 
-    <!-- Bottom CTAs (v6-2: primary filled pathway + outlined boost) -->
-    <div class="bottom-cta">
-      <button
-        class="bottom-cta-btn"
-        type="button"
-        @click="$emit('open-pathway')"
-      >
-        🎯 See the EPC's pathway
-      </button>
-      <button
-        class="bottom-cta-secondary outlined"
-        type="button"
-        @click="$emit('open-boost')"
-      >
-        ⚡ Boost your score
-      </button>
-    </div>
+      <!-- Bottom CTAs (v6-2: primary filled pathway + outlined boost) -->
+      <div class="bottom-cta">
+        <button
+          class="bottom-cta-btn"
+          type="button"
+          @click="$emit('open-pathway')"
+        >
+          <Icon name="i-lucide-target" /> See the EPC's pathway
+        </button>
+        <button
+          class="bottom-cta-secondary outlined"
+          type="button"
+          @click="$emit('open-boost')"
+        >
+          <Icon name="i-lucide-zap" /> Boost your score
+        </button>
+      </div>
 
-    <div style="height: 32px" />
+      <div style="height: 32px" />
+    </div>
   </div>
 </template>
 
@@ -118,10 +131,13 @@ interface Props {
   toScore: number
   delta: number
   estSavings?: number
+  /** Hide the internal back arrow when the host page renders its own nav. */
+  hideBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   estSavings: 309,
+  hideBack: false,
 })
 
 defineEmits<{
@@ -183,7 +199,7 @@ onMounted(() => {
 const refinedStats = [
   {
     id: 'heating',
-    icon: '🔥',
+    icon: 'i-lucide-flame',
     label: 'Heating',
     value: 16,
     max: 20,
@@ -192,7 +208,7 @@ const refinedStats = [
   },
   {
     id: 'structure',
-    icon: '🧱',
+    icon: 'i-lucide-brick-wall',
     label: 'Structure',
     value: 17,
     max: 25,
@@ -201,7 +217,7 @@ const refinedStats = [
   },
   {
     id: 'efficiency',
-    icon: '💡',
+    icon: 'i-lucide-lightbulb',
     label: 'Efficiency',
     value: 6,
     max: 15,
@@ -210,7 +226,7 @@ const refinedStats = [
   },
   {
     id: 'electrics',
-    icon: '⚡',
+    icon: 'i-lucide-zap',
     label: 'Electrics',
     value: 10,
     max: 20,
@@ -219,7 +235,7 @@ const refinedStats = [
   },
   {
     id: 'plumbing',
-    icon: '💧',
+    icon: 'i-lucide-droplet',
     label: 'Plumbing',
     value: 13,
     max: 20,
@@ -231,13 +247,28 @@ const refinedStats = [
 </script>
 
 <style scoped>
-/* Premium desktop: narrow celebratory centered column. */
-@media (min-width: 768px) {
-  .hs-v6-levelup {
-    max-width: 640px !important;
-    margin: 0 auto !important;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+/* Centered desktop shell — matches the page's 1140px nav shell so the
+   hero/explainer/stats align under the top nav. */
+.lu-shell {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+/* Top row: hero + "what happens next" side-by-side on desktop,
+   stacked on mobile. */
+.lu-top-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 4px;
+}
+@media (min-width: 900px) {
+  .lu-top-grid {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 20px;
+    align-items: stretch;
+    margin-top: 8px;
   }
 }
 .hs-v6-levelup {
@@ -248,7 +279,7 @@ const refinedStats = [
   --accent-pale: #e5f4f2;
   --accent-paler: #f2faf8;
   --bg: #f5f6fa;
-  --page: #f0f2f8;
+  --page: #f3f2ef;
   --card: #ffffff;
   --text: #231d45;
   --text-secondary: #6b7089;
@@ -364,11 +395,15 @@ const refinedStats = [
 .levelup-hero {
   position: relative;
   z-index: 2;
-  margin: 14px 20px 0;
-  padding: 24px 22px 22px;
-  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 28px 28px 24px;
+  background:
+    radial-gradient(120% 130% at 100% 0%, rgba(0, 161, 154, 0.14), transparent 55%),
+    linear-gradient(160deg, #e6f6f3 0%, #f4fcfa 46%, #ffffff 100%);
   border: 2px solid var(--accent);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: 0 12px 32px -8px rgba(0, 161, 154, 0.3);
   overflow: hidden;
 }
@@ -384,14 +419,16 @@ const refinedStats = [
   font-size: 11px;
   font-weight: 800;
   color: var(--accent-dark);
-  background: var(--accent-paler);
+  background: #ffffff;
   padding: 6px 12px;
   border-radius: 100px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   border: 1px solid var(--accent-pale);
+  box-shadow: 0 1px 2px rgba(0, 138, 132, 0.06);
   margin-bottom: 12px;
 }
+.levelup-eyebrow :deep(svg) { width: 13px; height: 13px; }
 .levelup-title {
   font-size: 28px;
   font-weight: 800;
@@ -411,7 +448,8 @@ const refinedStats = [
   display: flex;
   align-items: center;
   gap: 18px;
-  padding-top: 14px;
+  margin-top: auto;
+  padding-top: 18px;
   border-top: 1px solid var(--border-soft);
 }
 .levelup-from,
@@ -420,10 +458,10 @@ const refinedStats = [
   flex: 1;
 }
 .levelup-from-num {
-  font-size: 34px;
+  font-size: 42px;
   font-weight: 800;
   color: var(--text-faint);
-  letter-spacing: -1.2px;
+  letter-spacing: -1.6px;
   line-height: 1;
 }
 .levelup-from-label {
@@ -435,15 +473,21 @@ const refinedStats = [
   margin-top: 4px;
 }
 .levelup-arrow {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--accent);
-  font-weight: 800;
+}
+.levelup-arrow :deep(svg) {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.4;
 }
 .levelup-to-num {
-  font-size: 42px;
+  font-size: 52px;
   font-weight: 800;
   color: var(--accent-dark);
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
   line-height: 1;
 }
 .levelup-to-label {
@@ -458,15 +502,21 @@ const refinedStats = [
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
   margin-top: 14px;
-  padding: 8px 14px;
-  background: var(--accent-paler);
+  padding: 10px 14px;
+  background: #ffffff;
   border: 1px solid var(--accent-pale);
   border-radius: 100px;
   font-size: 13px;
   font-weight: 800;
   color: var(--accent-dark);
+  box-shadow: 0 1px 2px rgba(0, 138, 132, 0.06);
+}
+.levelup-delta :deep(svg) {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 /* Section heading */
@@ -476,7 +526,7 @@ const refinedStats = [
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 18px 20px 10px;
+  padding: 24px 4px 12px;
 }
 .section-h {
   font-size: 11px;
@@ -495,35 +545,54 @@ const refinedStats = [
 .refined-stats-card {
   position: relative;
   z-index: 2;
-  margin: 0 20px;
-  padding: 14px 16px;
+  margin: 0;
+  padding: 20px 24px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--shadow-card);
 }
 .stat-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  gap: 14px;
+  padding: 9px 0;
 }
 .stat-icon {
-  font-size: 14px;
-  width: 22px;
-  text-align: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg);
   flex-shrink: 0;
 }
+.stat-icon :deep(svg) { width: 17px; height: 17px; }
+/* Tone-tinted icon chips echo the bar colour */
+.stat-icon.high {
+  color: var(--accent-dark);
+  background: var(--accent-paler);
+}
+.stat-icon.mid {
+  color: var(--warning);
+  background: #fff6e8;
+}
+.stat-icon.low {
+  color: var(--error);
+  background: #fdeef0;
+}
 .stat-label {
-  width: 70px;
-  font-size: 11px;
+  width: 96px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
 }
 .stat-bar-wrap {
   flex: 1;
-  height: 8px;
+  height: 10px;
   background: var(--bg);
   border-radius: 100px;
   overflow: hidden;
@@ -544,9 +613,9 @@ const refinedStats = [
   background: linear-gradient(90deg, var(--error), var(--error-light));
 }
 .stat-value {
-  width: 46px;
+  width: 58px;
   text-align: right;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text);
   flex-shrink: 0;
@@ -559,7 +628,7 @@ const refinedStats = [
 .bottom-cta {
   position: relative;
   z-index: 2;
-  padding: 16px 20px 24px;
+  padding: 20px 0 4px;
 }
 .bottom-cta-btn {
   width: 100%;
@@ -582,6 +651,8 @@ const refinedStats = [
 .bottom-cta-btn:hover {
   filter: brightness(1.06);
 }
+.bottom-cta-btn :deep(svg),
+.bottom-cta-secondary :deep(svg) { width: 17px; height: 17px; }
 .bottom-cta-secondary {
   width: 100%;
   margin-top: 10px;
@@ -621,6 +692,11 @@ const refinedStats = [
   padding: 12px 20px;
   padding-top: calc(12px + env(safe-area-inset-top));
 }
+/* When the host page supplies its own top nav (hideBack), the mini-header
+   is gone — add top breathing room so the hero clears the sticky nav. */
+.hs-v6-levelup.lu-has-nav {
+  padding-top: 22px;
+}
 .lu-back {
   width: 36px;
   height: 36px;
@@ -640,35 +716,39 @@ const refinedStats = [
   height: 16px;
 }
 
-/* "What happens next" explainer — side-by-side two-path layout (v6-2) */
+/* "What happens next" explainer — stacked two-path layout with icon
+   chips + a summary footer (v6-3) */
 .boost-explain {
   position: relative;
   z-index: 2;
-  margin: 14px 20px 0;
-  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 22px 24px;
   background: var(--card);
-  border: 1.5px solid var(--border-soft);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
   box-shadow: var(--shadow-card);
 }
-.boost-explain-row {
+.boost-explain-steps {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
 }
 .boost-explain-step {
-  flex: 1;
   display: flex;
-  align-items: flex-start;
-  gap: 9px;
+  align-items: center;
+  gap: 14px;
   min-width: 0;
 }
 .boost-explain-num {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: white;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -676,8 +756,29 @@ const refinedStats = [
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 161, 154, 0.3);
 }
+.boost-explain-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--accent-paler);
+  color: var(--accent-dark);
+}
+.boost-explain-icon.boost {
+  background: #fff6e8;
+  color: var(--warning);
+}
+.boost-explain-icon :deep(svg) { width: 21px; height: 21px; }
+.boost-explain-hr {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 16px 0;
+}
 .boost-explain-text {
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.45;
@@ -687,17 +788,20 @@ const refinedStats = [
   font-weight: 700;
 }
 .boost-explain-foot {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border-soft);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin-top: 18px;
+  padding: 12px 16px;
+  background: var(--accent-paler);
+  border: 1px solid var(--accent-pale);
+  border-radius: 12px;
   text-align: center;
+  line-height: 1.5;
 }
 .boost-explain-foot :deep(b) {
   color: var(--accent-dark);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 @keyframes hs-v6-fadeUp-anim2 {

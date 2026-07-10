@@ -566,8 +566,11 @@ function hasAuth(): boolean {
 // goToBuyPassport routing).
 function redirectTargetFor(action: PrimaryAction): string | null {
   if (!props.propertyId) return null
-  const flag = action === 'claim-passport' ? 'claim=1' : 'unlock=1'
-  return `/property/${props.propertyId}?${flag}`
+  // Claim → the dedicated claim flow, which opens the "Choose your passport"
+  // (Seller / Landlord) type drawer on mount. Watch / buy → the property
+  // page's £99 unlock drawer.
+  if (action === 'claim-passport') return `/claim/${props.propertyId}`
+  return `/property/${props.propertyId}?unlock=1`
 }
 
 // ── Animated stats in the unclaimed drawer ─────────────────────────

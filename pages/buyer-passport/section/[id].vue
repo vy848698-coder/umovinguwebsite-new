@@ -188,7 +188,7 @@
 
         <!-- ── Section heading ─────────────────────────────────────────── -->
         <div class="ov-sechead">
-          <span class="ov-eyebrow"><span class="ov-eyebrow-line" /> This Section</span>
+          <span class="ov-eyebrow">This Section</span>
           <div class="ov-sechead-row">
             <h2 class="ov-sechead-title">Tasks in this section</h2>
             <span class="ov-taskcount">{{ sectionTaskCount }} {{ sectionTaskCount === 1 ? 'task' : 'tasks' }}</span>

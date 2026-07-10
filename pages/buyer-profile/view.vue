@@ -59,7 +59,7 @@
       <!-- ── Page hero ── -->
       <div class="hsw-shell bpvw-hero">
         <div class="bpvw-hero-text">
-          <p class="bpvw-eyebrow"><span class="bpvw-eyebrow-dash" />Buyer Profile</p>
+          <p class="bpvw-eyebrow">Buyer Profile</p>
           <h1 class="bpvw-h1">Your verified <span class="bpvw-h1-accent">buyer profile</span></h1>
           <p class="bpvw-sub">
             Share proof of identity, funds and chain position with agents and

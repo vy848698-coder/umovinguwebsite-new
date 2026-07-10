@@ -78,7 +78,7 @@
           <!-- Question navigation header -->
           <div class="qhead">
             <div class="qhead-left">
-              <span class="qeyebrow"><span class="qeyebrow-line" /> This Section</span>
+              <span class="qeyebrow">This Section</span>
               <h2 class="qhead-title">Question {{ activeIndex + 1 }}</h2>
               <p class="qhead-sub">{{ activeIndex + 1 }} of {{ visibleQuestions.length }} in this section</p>
             </div>

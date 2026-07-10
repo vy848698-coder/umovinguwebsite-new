@@ -116,7 +116,7 @@
       <div class="stw-layout">
         <section class="stw-content">
           <div class="section-head">
-            <span class="eyebrow"><span class="eyebrow-line"></span> This section</span>
+            <span class="eyebrow">This section</span>
             <h2 class="section-title">Question groups</h2>
             <p class="section-desc">
               {{ totalTaskCount }} {{ totalTaskCount === 1 ? 'task makes' : 'tasks make' }} up the

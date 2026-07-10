@@ -44,7 +44,7 @@
       <section class="ppw-hero">
         <div class="pp-shell ppw-hero-grid">
           <div class="ppw-head" data-tour="hero">
-            <p class="ppw-kicker"><span class="ppw-kicker-dash" />Your property journey</p>
+            <p class="ppw-kicker">Your property journey</p>
             <h1>
               Passports —<br />welcome back,<br /><span class="ppw-head-name">{{ profile?.firstName || 'there' }}</span>
             </h1>

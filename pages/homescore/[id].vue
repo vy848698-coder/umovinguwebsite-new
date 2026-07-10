@@ -100,7 +100,7 @@
         @see-street="goToStreetCompare"
         @view-passport="goToPassport"
         @buy-passport="goToBuyerView"
-        @claim-passport="claimOrAccessPassport"
+        @claim-passport="goToClaimPassport"
         @claim-modal-closed="autoOpenClaim = false"
       />
     </template>
@@ -108,6 +108,31 @@
     <!-- ── QUESTIONS — prototype-style: teal address card + live gauge ── -->
     <!-- ── OWNER QUIZ — exact clone V6QuizView ──────────────────── -->
     <template v-else-if="screen === 'questions'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <V6QuizView
         :property="property"
         :initial-score="autoScoreVal"
@@ -130,23 +155,76 @@
 
     <!-- ── BOOST YOUR SCORE — exact clone V6BoostView ───────────── -->
     <template v-else-if="screen === 'boost'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <V6BoostView
         :home-score="autoScoreVal"
         :public-epc-rating="property?.epcRating ?? null"
         :public-epc-score="(property as any)?.epcScore ?? null"
         :public-epc-year="resolvedEpcYear"
+        :hide-back="true"
         @back="goBack"
         @open-marketplace="goToRunningCosts"
+        @view-report="goToBuyerView"
         @start-passport="onBoostStartPassport"
       />
     </template>
 
     <!-- ── LEVEL UP — exact clone V6LevelUpView ─────────────────── -->
     <template v-else-if="screen === 'level-up'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <V6LevelUpView
         :from-score="autoScoreVal"
         :to-score="v6QuizFinal?.finalScore ?? autoScoreVal"
         :delta="v6QuizFinal?.delta ?? 0"
+        :hide-back="true"
         @back="goBack"
         @open-pathway="goToPathway"
         @open-boost="goToBoost"
@@ -155,6 +233,31 @@
 
     <!-- ── NO-EPC ESTIMATOR — exact clone V6NoEpcEstimator ──────── -->
     <template v-else-if="screen === 'no-epc-estimator'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <V6NoEpcEstimator
         :property="property"
         @close="goBack"
@@ -694,7 +797,7 @@
             class="pq-hero-btn pq-hero-btn--primary"
             @click="goToRunningCosts"
           >
-            <span class="pq-hero-btn-emoji">📊</span>
+            <span class="pq-hero-btn-emoji"><Icon name="i-lucide-chart-column" /></span>
             <span class="pq-hero-btn-label">See full running costs</span>
             <svg
               class="pq-hero-btn-arrow"
@@ -714,7 +817,7 @@
             class="pq-hero-btn pq-hero-btn--ghost"
             @click="goToPublish"
           >
-            <span class="pq-hero-btn-emoji">🏘️</span>
+            <span class="pq-hero-btn-emoji"><Icon name="i-lucide-house" /></span>
             <span class="pq-hero-btn-label">Publish to your street</span>
             <svg
               class="pq-hero-btn-arrow"
@@ -835,7 +938,7 @@
               type="button"
               @click="onBoostScore"
             >
-              <span class="pq-interest-opt-icon">📎</span>
+              <span class="pq-interest-opt-icon"><Icon name="i-lucide-paperclip" /></span>
               <span class="pq-interest-opt-body">
                 <span class="pq-interest-opt-title">Boost your score</span>
                 <span class="pq-interest-opt-sub"
@@ -2010,19 +2113,56 @@
               <span>Verified Passport live</span>
             </div>
           </div>
+          <!-- Live checked / watching counts (real /search-stats data) -->
+          <div class="bv-addr-live">
+            <div class="bv-addr-live-row">
+              <span class="bv-addr-live-ic">🔎</span>
+              <span
+                ><b>{{ bvSearches }}</b>
+                {{ bvSearches === 1 ? 'person' : 'people' }} checked this
+                HomeScore today</span
+              >
+            </div>
+            <div class="bv-addr-live-row">
+              <span class="bv-addr-live-ic">👁️</span>
+              <span
+                ><b>{{ bvWatchers }}</b>
+                {{ bvWatchers === 1 ? 'person is' : 'people are' }} watching this
+                property</span
+              >
+            </div>
+          </div>
         </div>
 
-        <!-- ── Running cost hero (navy gradient) ───────────────── -->
-        <div class="bv-cost-hero">
+        <!-- ── This property is unclaimed (navy CTA) ───────────── -->
+        <div
+          v-if="bvPassportState === 'unclaimed'"
+          class="bv-claim-banner"
+          @click="goToClaimPassport"
+        >
+          <div class="bv-claim-body">
+            <div class="bv-claim-title">This property is unclaimed</div>
+            <div class="bv-claim-sub">
+              Is it yours? Build your verified Passport in minutes.
+            </div>
+          </div>
+          <div class="bv-claim-arrow" aria-hidden="true">→</div>
+        </div>
+
+        <!-- ── Running cost hero (only when the EPC publishes real costs) ── -->
+        <div v-if="bvAnnualCostDisplay != null" class="bv-cost-hero">
           <div class="bv-cost-eyebrow">Estimated annual running cost</div>
           <div class="bv-cost-num">
             ~£{{ bvAnnualCostDisplay.toLocaleString()
             }}<span class="bv-cost-unit"> / year</span>
           </div>
           <div class="bv-cost-sub">
-            Based on EPC data. The best homes on this street cost
-            <b>£{{ bvStreetBest.toLocaleString() }}/yr</b> — there's potential
-            to negotiate or factor in upgrade costs.
+            From the property's EPC (heating, hot water &amp; lighting).
+            <template v-if="bvStreetBest != null">
+              The best homes on this street cost
+              <b>£{{ bvStreetBest.toLocaleString() }}/yr</b> — there's
+              potential to negotiate or factor in upgrade costs.
+            </template>
           </div>
           <div class="bv-cost-stats">
             <div class="bv-cost-stat">
@@ -2042,6 +2182,39 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- ── Buyer confidence gauge ──────────────────────────── -->
+        <div class="bv-confidence-card">
+          <div class="bv-confidence-head">
+            <div class="bv-confidence-shield" :style="{ color: buyerConfidence.color }">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            </div>
+            <div class="bv-confidence-text">
+              <div class="bv-confidence-eyebrow">Buyer confidence</div>
+              <div class="bv-confidence-title">{{ buyerConfidence.label }}</div>
+            </div>
+            <div class="bv-confidence-dial">
+              <svg viewBox="0 0 80 80">
+                <circle class="bv-dial-bg" cx="40" cy="40" r="32" stroke-width="7" />
+                <circle
+                  class="bv-dial-fill"
+                  cx="40"
+                  cy="40"
+                  r="32"
+                  stroke-width="7"
+                  :stroke="buyerConfidence.color"
+                  :stroke-dasharray="buyerConfidence.ringLen"
+                  :stroke-dashoffset="buyerConfidence.ringOffset"
+                />
+              </svg>
+              <div class="bv-dial-num">{{ buyerConfidence.score }}</div>
+            </div>
+          </div>
+          <div class="bv-confidence-note">{{ buyerConfidence.note }}</div>
         </div>
 
             </aside>
@@ -2100,7 +2273,23 @@
               <div class="bv-risk-sub">{{ r.body }}</div>
             </div>
           </div>
-          <div v-if="buyerFlood" class="bv-risk-row" :class="/low|very low/i.test(buyerFlood) ? 'green' : 'amber'">
+          <!-- Public-record risks from the backend (flood / mining / planning) -->
+          <template v-if="buyerPublicRisks.length">
+            <div
+              v-for="r in buyerPublicRisks"
+              :key="r.key"
+              class="bv-risk-row"
+              :class="r.tone === 'ok' ? 'green' : 'amber'"
+            >
+              <span class="bv-risk-icon">{{ r.icon }}</span>
+              <div class="bv-risk-body">
+                <div class="bv-risk-title">{{ r.title }}</div>
+                <div class="bv-risk-sub">{{ r.body }}</div>
+              </div>
+            </div>
+          </template>
+          <!-- Fallback flood row from the property record if running-costs unavailable -->
+          <div v-else-if="buyerFlood" class="bv-risk-row" :class="/low|very low/i.test(buyerFlood) ? 'green' : 'amber'">
             <span class="bv-risk-icon">🌊</span>
             <div class="bv-risk-body">
               <div class="bv-risk-title">Flood risk — {{ buyerFlood }}</div>
@@ -2161,31 +2350,42 @@
 
         <!-- ═══ COSTS tab ═══ -->
         <div v-show="buyerTab === 'costs'" class="bv-tabpanel">
-          <div class="bv-costs-hero">
-            <div class="bv-costs-eyebrow">Estimated total per year</div>
-            <div class="bv-costs-num">
-              £{{ buyerCosts.total.toLocaleString() }}<span>/yr</span>
+          <template v-if="buyerCosts.hasAny">
+            <div class="bv-costs-hero">
+              <div class="bv-costs-eyebrow">Estimated total per year</div>
+              <div class="bv-costs-num">
+                £{{ buyerCosts.total.toLocaleString() }}<span>/yr</span>
+              </div>
+              <div class="bv-costs-sub">
+                Energy from EPC data, plus water and council tax for this address.
+              </div>
             </div>
-            <div class="bv-costs-sub">
-              Energy from EPC data, council tax, and a regional water estimate.
+            <div class="bv-costs-rows">
+              <div class="bv-costs-row">
+                <span class="bv-costs-row-label">⚡ Energy <small>· heating, hot water & lighting</small></span>
+                <b>{{ buyerCosts.energy != null ? '£' + buyerCosts.energy.toLocaleString() + '/yr' : '—' }}</b>
+              </div>
+              <div v-if="buyerCosts.water != null" class="bv-costs-row">
+                <span class="bv-costs-row-label">💧 Water &amp; sewerage<template v-if="buyerCosts.waterLabel"> <small>· {{ buyerCosts.waterLabel }}</small></template></span>
+                <b>£{{ buyerCosts.water.toLocaleString() }}/yr</b>
+              </div>
+              <div class="bv-costs-row">
+                <span class="bv-costs-row-label">🏛️ Council tax<template v-if="buyerCosts.councilTaxBand"> <small>· Band {{ buyerCosts.councilTaxBand }}<template v-if="buyerCosts.council"> · {{ buyerCosts.council }}</template></small></template></span>
+                <b>{{ buyerCosts.councilTax != null ? '£' + buyerCosts.councilTax.toLocaleString() + '/yr' : '—' }}</b>
+              </div>
             </div>
-          </div>
-          <div class="bv-costs-rows">
-            <div class="bv-costs-row">
-              <span class="bv-costs-row-label">⚡ Energy <small>· heating, hot water & lighting</small></span>
-              <b>£{{ buyerCosts.energy.toLocaleString() }}/yr</b>
+            <div class="bv-bd-note">
+              Energy is modelled from the EPC; water is the region's published
+              average and council tax is the VOA band. Upload a bill to replace
+              these with your real figures.
             </div>
-            <div class="bv-costs-row">
-              <span class="bv-costs-row-label">🏛️ Council tax<template v-if="buyerCosts.councilTaxBand"> <small>· Band {{ buyerCosts.councilTaxBand }}</small></template></span>
-              <b>{{ buyerCosts.councilTax != null ? '£' + buyerCosts.councilTax.toLocaleString() + '/yr' : '—' }}</b>
+          </template>
+          <div v-else class="bv-area-note">
+            <div class="bv-area-note-title">💰 No published costs yet</div>
+            <div class="bv-area-note-body">
+              This property has no EPC energy cost or council tax band on the public
+              record yet. They'll show here once the data is available.
             </div>
-            <div class="bv-costs-row">
-              <span class="bv-costs-row-label">💧 Water & sewerage <small>· regional avg</small></span>
-              <b>£{{ buyerCosts.water.toLocaleString() }}/yr</b>
-            </div>
-          </div>
-          <div class="bv-bd-note">
-            Water is a published regional average — suppliers don't expose per-property metered bills.
           </div>
         </div>
 
@@ -2207,60 +2407,212 @@
               No Land Registry sale on record for this address yet.
             </div>
           </div>
-          <div class="bv-arealinks">
-            <div class="bv-arealink">🏘️ Comparable sales nearby<small>Similar homes in {{ property?.postcode || 'this area' }}</small></div>
-            <div class="bv-arealink">📜 Title &amp; tenure<small>Available via solicitor</small></div>
-          </div>
-        </div>
 
-        <!-- ═══ AREA tab ═══ -->
-        <div v-show="buyerTab === 'area'" class="bv-tabpanel">
-          <div class="bv-area-note">
-            <div class="bv-area-note-title">📍 Area insights</div>
-            <div class="bv-area-note-body">
-              Crime, schools, broadband and transport for {{ property?.postcode || 'this postcode' }}
-              come from external sources (data.police.uk, Ofsted, Ofcom). Wire these
-              endpoints to light up this tab.
+          <!-- ── Sale history for this exact address ─────────────── -->
+          <div class="bv-section-h" style="margin-top:16px">
+            <div class="bv-section-h-icon"><Icon name="i-lucide-history" /></div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Sale history</div>
+              <div class="bv-section-h-sub">
+                <template v-if="buyerSold.history.length">
+                  {{ buyerSold.history.length }} recorded
+                  {{ buyerSold.history.length === 1 ? 'sale' : 'sales' }} · HM Land Registry
+                </template>
+                <template v-else>No recorded sales of this property</template>
+              </div>
             </div>
           </div>
-          <div class="bv-arealinks">
-            <div class="bv-arealink">🚨 Crime &amp; safety<small>data.police.uk · 1-mile radius</small></div>
-            <div class="bv-arealink">🎓 Schools nearby<small>Ofsted ratings</small></div>
-            <div class="bv-arealink">📶 Broadband &amp; mobile<small>Ofcom coverage</small></div>
-            <div class="bv-arealink">🚌 Transport<small>Stations &amp; bus stops</small></div>
-          </div>
-        </div>
-
-        <!-- ── Questions to ask the owner ──────────────────────── -->
-        <div class="bv-section-h">
-          <div class="bv-section-h-icon save">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
+          <div v-if="buyerSold.history.length" class="bv-costs-rows">
+            <div
+              v-for="(s, i) in buyerSold.history"
+              :key="'own' + i"
+              class="bv-costs-row"
             >
-              <circle cx="12" cy="12" r="9" />
-              <line x1="12" y1="11" x2="12" y2="17" />
-              <circle cx="12" cy="7.5" r="0.9" fill="currentColor" />
-            </svg>
-          </div>
-          <div class="bv-section-h-text">
-            <div class="bv-section-h-title">Questions to ask the owner</div>
-            <div class="bv-section-h-sub">
-              Based on what the EPC data flags for this property
+              <span class="bv-costs-row-label">{{ formatSoldDate(s.date) }}<template v-if="s.tenure"> <small>· {{ s.tenure }}</small></template></span>
+              <b>£{{ Number(s.price).toLocaleString() }}</b>
             </div>
           </div>
+          <div v-else class="bv-bd-note" style="margin:0">
+            No Land Registry Price Paid record exists for this exact address —
+            it may be new-build, last sold before 1995, or transferred without a
+            recorded price.
+          </div>
+
+          <!-- ── Comparable sales nearby ─────────────────────────── -->
+          <template v-if="buyerSold.comparables.length">
+            <div class="bv-section-h" style="margin-top:16px">
+              <div class="bv-section-h-icon"><Icon name="i-lucide-house" /></div>
+              <div class="bv-section-h-text">
+                <div class="bv-section-h-title">Comparable sales nearby</div>
+                <div class="bv-section-h-sub">
+                  {{ buyerSold.comparables.length }} similar
+                  {{ buyerSold.comparables.length === 1 ? 'home' : 'homes' }} ·
+                  {{ property?.postcode || 'this postcode' }} · HM Land Registry
+                </div>
+              </div>
+            </div>
+            <div class="bv-costs-rows">
+              <div
+                v-for="(c, i) in buyerSold.comparables"
+                :key="'cmp' + i"
+                class="bv-costs-row"
+              >
+                <span class="bv-costs-row-label">{{ titleCaseAddress(c.address) }}<br /><small>{{ formatSoldDate(c.date) }}<template v-if="c.propertyType"> · {{ c.propertyType }}</template><template v-if="c.tenure"> · {{ c.tenure }}</template></small></span>
+                <b>£{{ Number(c.price).toLocaleString() }}</b>
+              </div>
+            </div>
+          </template>
         </div>
-        <div class="bv-questions-card">
-          <div v-for="q in bvQuestions" :key="q.title" class="bv-q-row">
-            <span class="bv-q-icon">{{ q.icon }}</span>
-            <div class="bv-q-body">
-              <div class="bv-q-title">{{ q.title }}</div>
-              <div class="bv-q-sub">{{ q.sub }}</div>
+
+        <!-- ═══ AREA tab — real data.police.uk crime data ═══ -->
+        <div v-show="buyerTab === 'area'" class="bv-tabpanel">
+          <div
+            v-if="!areaCrime || areaCrime.status === 'loading'"
+            class="bv-area-note"
+          >
+            <div class="bv-area-note-title">📍 Loading area crime…</div>
+            <div class="bv-area-note-body">
+              Fetching street-level crime within 1 mile from data.police.uk.
             </div>
           </div>
+
+          <div v-else-if="areaCrime.status === 'error'" class="bv-area-note">
+            <div class="bv-area-note-title">📍 Area data unavailable</div>
+            <div class="bv-area-note-body">
+              Couldn't reach data.police.uk right now. Try again shortly.
+            </div>
+          </div>
+
+          <div v-else-if="areaCrime.status === 'empty'" class="bv-area-note">
+            <div class="bv-area-note-title">📍 No crime recorded</div>
+            <div class="bv-area-note-body">
+              data.police.uk has no street-level crime within 1 mile of this
+              property for the latest published month.
+            </div>
+          </div>
+
+          <template v-else>
+            <div class="bv-costs-hero sold">
+              <div class="bv-costs-eyebrow">Crimes within 1 mile</div>
+              <div class="bv-costs-num">
+                {{ areaCrime.total.toLocaleString() }}<span>/mo</span>
+              </div>
+              <div class="bv-costs-sub">
+                Street-level crime for {{ formatCrimeMonth(areaCrime.month || '') }} ·
+                data.police.uk
+              </div>
+            </div>
+            <div class="bv-crime-card">
+              <div class="bv-crime-head">Crime breakdown</div>
+              <div
+                v-for="c in areaCrime.categories"
+                :key="c.key"
+                class="bv-crime-row"
+              >
+                <div class="bv-crime-label">{{ c.label }}</div>
+                <div class="bv-crime-bar-wrap">
+                  <div
+                    class="bv-crime-bar"
+                    :style="{
+                      width: `${Math.max(4, (c.count / areaCrime.categories[0].count) * 100)}%`,
+                    }"
+                  />
+                </div>
+                <div class="bv-crime-val">{{ c.count.toLocaleString() }}</div>
+              </div>
+            </div>
+            <div class="bv-bd-note">
+              Counts are street-level crimes reported within a 1-mile radius for
+              the latest month published by police forces (data lags ~2 months).
+            </div>
+          </template>
+        </div>
+
+        <!-- ── Questions to ask the owner (real EPC recommendations) ── -->
+        <template v-if="bvQuestions.length">
+          <div class="bv-section-h">
+            <div class="bv-section-h-icon save">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="11" x2="12" y2="17" />
+                <circle cx="12" cy="7.5" r="0.9" fill="currentColor" />
+              </svg>
+            </div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Questions to ask the owner</div>
+              <div class="bv-section-h-sub">
+                {{
+                  property?.epcRecommendations?.length
+                    ? "Based on this property's EPC recommendations"
+                    : 'Key documents to request before you offer'
+                }}
+              </div>
+            </div>
+          </div>
+          <div class="bv-questions-card">
+            <div v-for="q in bvQuestions" :key="q.title" class="bv-q-row">
+              <span class="bv-q-icon">{{ q.icon }}</span>
+              <div class="bv-q-body">
+                <div class="bv-q-title">{{ q.title }}</div>
+                <div class="bv-q-sub">{{ q.sub }}</div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- ── Watch this property (notification triggers) ─────── -->
+        <div class="bv-watch-card">
+          <div class="bv-watch-eyebrow">👁 Watch this property</div>
+          <div class="bv-watch-title">Be the first to know if anything changes here.</div>
+          <div class="bv-watch-lede">
+            No Passport exists yet. Adding this to your profile turns on
+            notifications for every meaningful change at
+            <b>{{ property?.addressLine1 || 'this property' }}</b>.
+          </div>
+          <div class="bv-watch-rows">
+            <div v-for="t in bvWatchTriggers" :key="t.title" class="bv-watch-row">
+              <span class="bv-watch-ic">{{ t.icon }}</span>
+              <div class="bv-watch-body">
+                <div class="bv-watch-row-title">{{ t.title }}</div>
+                <div class="bv-watch-row-sub">{{ t.sub }}</div>
+              </div>
+            </div>
+          </div>
+          <button
+            class="bv-watch-btn"
+            type="button"
+            @click="openWatchDrawer"
+          >
+            {{ notifiedOfPublish ? '✓ Watching — edit alerts' : 'Watch this property →' }}
+          </button>
+        </div>
+
+        <!-- ── Verified buyer upsell (£35 one-off) ─────────────── -->
+        <div class="bv-verified-card">
+          <div class="bv-verified-eyebrow">🛡 Verified buyer · £35 one-off</div>
+          <div class="bv-verified-title">Be viewing-ready before anyone else.</div>
+          <div class="bv-verified-lede">
+            Owners building a Passport are choosing who to sell to. Get verified
+            and here's what you unlock.
+          </div>
+          <div class="bv-verified-rows">
+            <div v-for="p in bvVerifiedPerks" :key="p.title" class="bv-verified-row">
+              <span class="bv-verified-ic">{{ p.icon }}</span>
+              <div class="bv-verified-body">
+                <div class="bv-verified-row-title">{{ p.title }}</div>
+                <div class="bv-verified-row-sub">{{ p.sub }}</div>
+              </div>
+            </div>
+          </div>
+          <button class="bv-verified-btn" type="button" @click="saveToBuyerProfile">
+            ✓ See what verification gets you →
+          </button>
         </div>
 
         <!-- ── Save to Buyer Profile CTA ───────────────────────── -->
@@ -2646,6 +2998,14 @@
     <!-- Shared site footer (all web screens; hidden during the brief loader) -->
     <SiteFooter v-if="screen !== 'loading'" />
 
+    <!-- Watch this property drawer (buyer notification preferences) -->
+    <WatchPropertyDrawer
+      :open="watchDrawerOpen"
+      :address-label="property?.addressLine1 || ''"
+      @close="watchDrawerOpen = false"
+      @submit="onWatchSubmit"
+    />
+
     <!-- Auth gate modal — shown when a guest taps "I'm interested in buying"
          or "Save to Buyer Profile". Returns user to this property after login. -->
     <div
@@ -2911,6 +3271,7 @@ import V6LevelUpView from '~/components/homescore/V6LevelUpView.vue'
 import V6NoEpcEstimator from '~/components/homescore/V6NoEpcEstimator.vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
 import type { TopWin, Opportunity } from '~/types/homescore'
 import { QUESTIONS } from '~/utils/homescoreScoring'
@@ -2921,6 +3282,18 @@ const config = useRuntimeConfig()
 const propertyId = route.params.id as string
 
 const property = ref<any>(null)
+// Full running-costs breakdown from the backend (energy + water + council tax
+// + flood/mining/planning risks + environmental). The buyer report Costs and
+// Risks tabs read from this so they match the deployed app. Fetched in
+// onMounted alongside the property record; stays null until it resolves.
+const runningCosts = ref<any>(null)
+// Land Registry sold history from the backend: { thisProperty: [...],
+// nearbySales: [...] }. Powers the buyer report Sold tab (sale history +
+// comparable sales nearby). Fetched in onMounted; stays null until it lands.
+const soldHistory = ref<{
+  thisProperty: any[]
+  nearbySales: any[]
+} | null>(null)
 
 // ── Coach-mark tour for the detail screens (auto-starts on first visit) ──
 const resultTour = useHomescoreTour({
@@ -3069,9 +3442,29 @@ const resolvedPassportState = computed<
   return 'unclaimed'
 })
 
+// Read an EPC field from BOTH the top-level Property row and the nested
+// `epcCert` sub-object (the backend exposes both shapes). Ported from the
+// Updated Application so running-cost / CO₂ figures use real EPC data
+// wherever it lives instead of falling back to the rating map.
+function epcField(name: string): any {
+  const p: any = property.value
+  if (!p) return null
+  const top = p[name]
+  if (top != null && top !== '') return top
+  const cert = p.epcCert
+  if (cert && cert[name] != null && cert[name] !== '') return cert[name]
+  return null
+}
+
 const resolvedAnnualCost = computed<number>(() => {
-  const cert: any = (property.value as any)?.epcCert
-  if (cert?.energyCostCurrent) return Math.round(Number(cert.energyCostCurrent))
+  // Try the summed cost first (real EPC), then individual cost fields,
+  // then a rating-based map. Anything > 0 is preferred over the map.
+  const summed =
+    Number(epcField('energyCostCurrent') ?? 0) ||
+    (Number(epcField('heatingCostCurrent') ?? 0) +
+      Number(epcField('hotWaterCostCurrent') ?? 0) +
+      Number(epcField('lightingCostCurrent') ?? 0))
+  if (summed > 0) return Math.round(summed)
   const map: Record<string, number> = {
     A: 980,
     B: 1100,
@@ -3087,9 +3480,7 @@ const resolvedAnnualCost = computed<number>(() => {
 })
 
 const resolvedEpcYear = computed<number | null>(() => {
-  const cert: any = (property.value as any)?.epcCert
-  const lodged =
-    cert?.lodgementDate || (property.value as any)?.epcLodgementDate
+  const lodged = epcField('lodgementDate') || epcField('epcLodgementDate')
   if (!lodged) return null
   const y = new Date(lodged).getFullYear()
   return Number.isFinite(y) ? y : null
@@ -3102,14 +3493,13 @@ const passportSectionsDone = computed(() => 0)
 const passportSectionsTotal = computed(() => 0)
 
 const resolvedCo2Now = computed<number | null>(() => {
-  const p: any = property.value
-  const v = p?.co2Emissions ?? p?.co2EmissionsCurrent
+  const v = epcField('co2Emissions') ?? epcField('co2EmissionsCurrent')
   if (v == null) return null
   const n = Number(v)
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : null
 })
 const resolvedCo2Potential = computed<number | null>(() => {
-  const v = (property.value as any)?.co2EmissionsPotential
+  const v = epcField('co2EmissionsPotential')
   if (v == null) return null
   const n = Number(v)
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : null
@@ -3117,10 +3507,9 @@ const resolvedCo2Potential = computed<number | null>(() => {
 const resolvedBillsSplit = computed<
   { heating: number; hotWater: number; lighting: number } | null
 >(() => {
-  const p: any = property.value
-  const h = Number(p?.heatingCostCurrent ?? 0)
-  const w = Number(p?.hotWaterCostCurrent ?? 0)
-  const l = Number(p?.lightingCostCurrent ?? 0)
+  const h = Number(epcField('heatingCostCurrent') ?? 0)
+  const w = Number(epcField('hotWaterCostCurrent') ?? 0)
+  const l = Number(epcField('lightingCostCurrent') ?? 0)
   const total = h + w + l
   if (total <= 0) return null
   return {
@@ -3225,6 +3614,23 @@ function notifyWhenPublished() {
 // invest time in the quick-wins flow.
 function onBoostScore() {
   gateOwnerAction('quick-wins')
+}
+
+/**
+ * HomeScore claim card / the "Claim it →" button inside the passport
+ * explainer drawer → the dedicated claim flow at /claim/<id>, which opens
+ * the "Choose your passport" (Seller / Landlord) type drawer on mount.
+ * Guests are auth-gated first and bounced back to /claim/<id> after login.
+ */
+function goToClaimPassport() {
+  if (isGuest.value) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('redirectAfterLogin', `/claim/${propertyId}`)
+    }
+    showAuthGate.value = true
+    return
+  }
+  router.push(`/claim/${propertyId}`)
 }
 
 /**
@@ -3381,9 +3787,17 @@ function handleAnswer(qId: string, val: string) {
 
 // ── Computed ──────────────────────────────────────────────────
 
-const autoScoreVal = computed(
-  () => autoScore.value?.total ?? result.value.total,
-)
+// The heuristic scoring engine was seeded from a handful of EPC rating
+// buckets and produces a score close to BASE_SCORE (≈50) for most
+// properties even when the real SAP was much higher. When we have a real
+// `epcScore` on the property row (the actual gov SAP number), use that as
+// the headline instead of the heuristic — mirrors the deployed app so the
+// card shows the true score (e.g. 69 · C) rather than an under-scored ~36.
+const autoScoreVal = computed(() => {
+  const real = Number((property.value as any)?.epcScore)
+  if (Number.isFinite(real) && real > 0) return real
+  return autoScore.value?.total ?? result.value.total
+})
 const autoBreakdown = computed(
   () => autoScore.value?.breakdown ?? result.value.breakdown,
 )
@@ -4894,14 +5308,17 @@ function goToPassport() {
 
 // ── Buyer results helpers ─────────────────────────────────────
 
-const buyerAnnualCost = computed(() => {
-  const cert = property.value?.epcCert
-  const heating = Number(cert?.heatingCostCurrent ?? 0)
-  const hotWater = Number(cert?.hotWaterCostCurrent ?? 0)
-  const lighting = Number(cert?.lightingCostCurrent ?? 0)
+// Real per-property EPC running cost. The backend exposes these three
+// figures directly on the property row (heating / hot water / lighting
+// current cost). If none are on file yet we return null so the UI can show
+// an honest "no verified figure" state rather than an invented number.
+const buyerAnnualCost = computed<number | null>(() => {
+  const p: any = property.value
+  const heating = Number(p?.heatingCostCurrent ?? 0)
+  const hotWater = Number(p?.hotWaterCostCurrent ?? 0)
+  const lighting = Number(p?.lightingCostCurrent ?? 0)
   const sum = Math.round(heating + hotWater + lighting)
-  if (sum > 0) return sum
-  return 1347
+  return sum > 0 ? sum : null
 })
 
 // Buyer-results screen: address typewriter + £ count-up. Same pattern as
@@ -4913,9 +5330,10 @@ const bvAddressTyped = makeTypewriterRef(() => bvAddressFull.value, 32)
 const bvAddressTypingDone = computed(
   () => bvAddressTyped.value.length >= bvAddressFull.value.length,
 )
-const bvAnnualCostAnimated = makeAnimRef(() => buyerAnnualCost.value, 900)
-const bvAnnualCostDisplay = computed(() =>
-  Math.round(bvAnnualCostAnimated.value),
+const bvAnnualCostAnimated = makeAnimRef(() => buyerAnnualCost.value ?? 0, 900)
+// null when the backend has no verified running-cost figure on file.
+const bvAnnualCostDisplay = computed<number | null>(() =>
+  buyerAnnualCost.value == null ? null : Math.round(bvAnnualCostAnimated.value),
 )
 
 // ── Buyer-results (watch screen) helpers ─────────────────────
@@ -4943,13 +5361,12 @@ async function loadStreetEnergyRank() {
   }
 }
 
-// Real cheapest-on-street figure when ≥3 neighbours are enriched, else
-// falls back to a heuristic so the line still renders.
-const bvStreetBest = computed(() => {
+// Real cheapest-on-street figure from the backend street-energy-rank
+// endpoint. null when fewer than 3 neighbours are enriched — the template
+// hides the comparison line rather than showing an invented number.
+const bvStreetBest = computed<number | null>(() => {
   const real = streetEnergyRank.value?.bestCost
-  if (typeof real === 'number' && real > 0) return real
-  const own = buyerAnnualCost.value
-  return Math.max(680, Math.round(own * 0.78))
+  return typeof real === 'number' && real > 0 ? real : null
 })
 
 // "Nth" label (1st, 2nd, 3rd, 4th, …) for the cost-hero stats row.
@@ -5000,29 +5417,48 @@ const bvSearches = computed<number>(() => searchStats.value?.today ?? 0)
 const bvMonthSearches = computed<number>(
   () => searchStats.value?.thisMonth ?? 0,
 )
+// Live "watching" count from the same /search-stats payload.
+const bvWatchers = computed<number>(
+  () => (searchStats.value as any)?.watchers ?? 0,
+)
 
-const bvQuestions = [
-  {
+// Questions to ask the owner — built from the property's real EPC
+// recommendations (title, cost range and typical £/yr saving all come
+// straight from the backend). Empty when the EPC has no recommendations on
+// file, in which case the whole section is hidden.
+const bvQuestions = computed(() => {
+  const out: { icon: string; title: string; sub: string }[] = []
+  const recs = (property.value as any)?.epcRecommendations
+  if (Array.isArray(recs)) {
+    for (const r of recs.slice(0, 3)) {
+      const saving = Number(r?.typicalSaving) || 0
+      const cost = String(r?.costRange ?? '').trim()
+      const bits = [
+        "On this home's EPC as a recommended improvement.",
+        saving > 0 ? `Saves ~£${saving}/yr` : null,
+        cost ? `cost ${cost}` : null,
+      ].filter(Boolean)
+      out.push({
+        icon: '🔧',
+        title: `Ask about: ${String(r?.title ?? 'an EPC improvement').trim()}`,
+        sub: bits.join(' · '),
+      })
+    }
+  }
+  // Always-relevant safety-document questions (general buyer due diligence,
+  // not property-specific figures) — mirrors the deployed report.
+  out.push({
     icon: '🔥',
-    title: 'When was the boiler last serviced?',
-    sub: 'Heating scores low — ask for the service record or Gas Safe certificate.',
-  },
-  {
-    icon: '🧱',
-    title: 'Is there cavity wall or loft insulation?',
-    sub: 'The biggest cost driver at this score. Ask for any installer guarantees.',
-  },
-  {
-    icon: '📄',
-    title: 'Can you share the full EPC report?',
-    sub: 'The public register only shows the grade — the full document lists every item.',
-  },
-  {
+    title: 'Do you have a Gas Safety certificate?',
+    sub: 'A CP12 from a Gas Safe registered engineer confirms the boiler and gas appliances are safe — ask for the latest one.',
+  })
+  out.push({
     icon: '⚡',
     title: 'Do you have an EICR certificate?',
-    sub: 'Electrical Installation Condition Report — not legally required for sales, but worth asking.',
-  },
-]
+    sub: 'Electrical Installation Condition Report — not legally required, but worth asking.',
+  })
+  return out
+})
 
 // ── Buyer report tabs (Energy / Costs / Sold / Risks / Area) ──────────
 type BuyerTab = 'energy' | 'costs' | 'sold' | 'risks' | 'area'
@@ -5035,29 +5471,159 @@ const buyerTabs: { id: BuyerTab; label: string; icon: string }[] = [
   { id: 'area', label: 'Area', icon: '📍' },
 ]
 
-// Costs tab — energy (EPC) + council tax (real field) + regional water estimate.
+// ── Area tab — real crime data from data.police.uk ────────────
+// Public, keyless API. `crimes-street/all-crime?lat=&lng=&date=YYYY-MM`
+// returns every street-level crime within a 1-mile radius of the point for
+// that month. We load the latest available month lazily when the Area tab is
+// first opened, then aggregate by category for the breakdown bars.
+const CRIME_LABELS: Record<string, string> = {
+  'anti-social-behaviour': 'Anti-social behaviour',
+  'bicycle-theft': 'Bicycle theft',
+  burglary: 'Burglary',
+  'criminal-damage-arson': 'Criminal damage & arson',
+  drugs: 'Drugs',
+  'other-crime': 'Other crime',
+  'other-theft': 'Other theft',
+  'possession-of-weapons': 'Possession of weapons',
+  'public-order': 'Public order',
+  robbery: 'Robbery',
+  shoplifting: 'Shoplifting',
+  'theft-from-the-person': 'Theft from the person',
+  'vehicle-crime': 'Vehicle crime',
+  'violent-crime': 'Violence & sexual offences',
+}
+type AreaCrime = {
+  status: 'loading' | 'ready' | 'empty' | 'error'
+  month: string | null
+  total: number
+  categories: { key: string; label: string; count: number }[]
+}
+const areaCrime = ref<AreaCrime | null>(null)
+
+function formatCrimeMonth(m: string): string {
+  const [y, mo] = m.split('-').map(Number)
+  const d = new Date(y, (mo || 1) - 1, 1)
+  return isNaN(d.getTime())
+    ? m
+    : d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+}
+
+async function loadAreaCrime() {
+  if (areaCrime.value) return // already attempted
+  const p: any = property.value
+  const lat = Number(p?.latitude)
+  const lng = Number(p?.longitude)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    areaCrime.value = { status: 'empty', month: null, total: 0, categories: [] }
+    return
+  }
+  areaCrime.value = { status: 'loading', month: null, total: 0, categories: [] }
+  try {
+    // Newest available month (police data lags ~2 months).
+    let month = ''
+    try {
+      const dRes = await fetch('https://data.police.uk/api/crimes-street-dates')
+      if (dRes.ok) {
+        const dates = await dRes.json()
+        month = Array.isArray(dates) && dates[0]?.date ? dates[0].date : ''
+      }
+    } catch {}
+    if (!month) {
+      const now = new Date()
+      now.setMonth(now.getMonth() - 2)
+      month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    }
+    const res = await fetch(
+      `https://data.police.uk/api/crimes-street/all-crime?lat=${lat}&lng=${lng}&date=${month}`,
+    )
+    if (!res.ok) throw new Error(String(res.status))
+    const crimes = await res.json()
+    if (!Array.isArray(crimes) || crimes.length === 0) {
+      areaCrime.value = { status: 'empty', month, total: 0, categories: [] }
+      return
+    }
+    const counts: Record<string, number> = {}
+    for (const c of crimes) {
+      const key = String(c?.category ?? 'other-crime')
+      counts[key] = (counts[key] ?? 0) + 1
+    }
+    const categories = Object.entries(counts)
+      .map(([key, count]) => ({
+        key,
+        label: CRIME_LABELS[key] ?? key,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count)
+    areaCrime.value = {
+      status: 'ready',
+      month,
+      total: crimes.length,
+      categories,
+    }
+  } catch {
+    areaCrime.value = { status: 'error', month: null, total: 0, categories: [] }
+  }
+}
+
+// Lazy-load the crime data the first time the Area tab is opened.
+watch(buyerTab, (t) => {
+  if (t === 'area') loadAreaCrime()
+})
+
+// Costs tab — real backend figures. Prefers the /running-costs breakdown
+// (energy from the EPC tariff model + water regional avg + council tax band),
+// which is what the deployed app and the standalone costs page show. Falls
+// back to the bare property fields until running-costs resolves. All numbers
+// come from the backend — the water figure is the region's published average
+// (labelled as such), not an invented per-property estimate.
 const buyerCosts = computed(() => {
   const p: any = property.value
-  const energy = Math.round(buyerAnnualCost.value)
-  const councilTax: number | null = p?.councilTaxAnnual ?? null
-  const water = 471 // England & Wales regional average — no per-property meter data
+  const rc: any = runningCosts.value
+
+  const energy: number | null =
+    rc?.energy?.total ?? buyerAnnualCost.value ?? null
+  const water: number | null = rc?.water?.cost ?? null
+  const waterLabel: string | null = rc?.water?.label ?? null
+  const councilTax: number | null =
+    rc?.councilTax?.cost ?? p?.councilTaxAnnual ?? null
+  const councilTaxBand: string | null =
+    rc?.councilTax?.band ?? p?.councilTaxBand ?? null
+  const council: string | null =
+    rc?.councilTax?.council ?? p?.councilTaxCouncilName ?? null
+
+  const total = (energy ?? 0) + (water ?? 0) + (councilTax ?? 0)
   return {
     energy,
-    councilTax,
-    councilTaxBand: p?.councilTaxBand ?? null,
-    council: p?.councilTaxCouncilName ?? null,
     water,
-    total: energy + (councilTax ?? 0) + water,
+    waterLabel,
+    councilTax,
+    councilTaxBand,
+    council,
+    hasAny: energy != null || water != null || councilTax != null,
+    total,
   }
 })
 
 // Sold tab — estimated value + last Land Registry sale (real fields).
 const buyerSold = computed(() => {
   const p: any = property.value
+  const sh = soldHistory.value
+  // Sale history for this exact address — prefer the Land Registry list,
+  // fall back to the single lastSold* fields on the property record.
+  const own: any[] = (sh?.thisProperty ?? []).slice().sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  )
+  const lastFromHistory = own[0] ?? null
+  const nearby: any[] = (sh?.nearbySales ?? [])
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 6)
   return {
     estimated: p?.estimatedPrice ?? null,
-    lastPrice: p?.lastSoldPrice ?? null,
-    lastDate: p?.lastSoldDate ?? null,
+    lastPrice: lastFromHistory?.price ?? p?.lastSoldPrice ?? null,
+    lastDate: lastFromHistory?.date ?? p?.lastSoldDate ?? null,
+    history: own,
+    comparables: nearby,
   }
 })
 function formatSoldDate(d: string): string {
@@ -5065,7 +5631,40 @@ function formatSoldDate(d: string): string {
   if (isNaN(date.getTime())) return ''
   return date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
 }
+// Title-cases a Land Registry address ("78, MANTILLA DRIVE" → "78, Mantilla Drive").
+function titleCaseAddress(s: string): string {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
 const buyerFlood = computed<string | null>(() => property.value?.floodRisk ?? null)
+
+// Public-record risk rows from the backend running-costs endpoint (flood,
+// mining subsidence, planning). Same source the deployed app / costs page use.
+// tone: 'warn' for low/medium/high flags, 'ok' for a clear result.
+const buyerPublicRisks = computed(() => {
+  const risks: any = runningCosts.value?.risks
+  if (!risks) return [] as { key: string; icon: string; title: string; body: string; pill: string; tone: 'warn' | 'ok' }[]
+  const rows: { key: string; icon: string; title: string; body: string; pill: string; tone: 'warn' | 'ok' }[] = []
+  const map: { key: string; icon: string; title: string }[] = [
+    { key: 'flood', icon: '🌊', title: 'Flood risk' },
+    { key: 'mining', icon: '⛏️', title: 'Mining subsidence' },
+    { key: 'planning', icon: '📋', title: 'Planning history' },
+  ]
+  for (const m of map) {
+    const r = risks[m.key]
+    if (!r) continue
+    rows.push({
+      key: m.key,
+      icon: m.icon,
+      title: `${m.title} — ${r.pill}`,
+      body: r.label,
+      pill: r.pill,
+      tone: r.level === 'clear' ? 'ok' : 'warn',
+    })
+  }
+  return rows
+})
 
 const buyerEpcGrade = computed(() => {
   const rating = property.value?.epcRating
@@ -5176,6 +5775,102 @@ const buyerRisks = computed(() => {
   return all.slice(0, 3)
 })
 
+// ── Buyer confidence gauge ────────────────────────────────────
+// Headline confidence read for buyers, driven by the real EPC-derived
+// HomeScore + a count of pillars that fall below 60% of their max (the
+// "flags" a buyer should look into). No invented data — all from the EPC.
+const buyerConfidence = computed(() => {
+  const s = Number(result.value.total) || 0
+  const bd = autoBreakdown.value as any
+  const maxes: Record<string, number> = {
+    heating: 20,
+    structure: 25,
+    efficiency: 20,
+    electrics: 15,
+    plumbing: 20,
+  }
+  let flags = 0
+  for (const k of Object.keys(maxes)) {
+    const v = Number(bd?.[k] ?? 0)
+    if (maxes[k] > 0 && v / maxes[k] < 0.6) flags++
+  }
+  let label: string
+  let tone: 'good' | 'ok' | 'warn'
+  if (s >= 80) {
+    label = 'Strong — well documented'
+    tone = 'good'
+  } else if (s >= 65) {
+    label = 'Solid — a few things to check'
+    tone = 'ok'
+  } else if (s >= 45) {
+    label = 'Worth investigating'
+    tone = 'ok'
+  } else {
+    label = 'Proceed with caution'
+    tone = 'warn'
+  }
+  const note =
+    flags > 0
+      ? `${flags} ${flags === 1 ? 'flag' : 'flags'} from the public EPC — see the Risks tab`
+      : 'No major flags on the public EPC'
+  const color =
+    tone === 'good' ? '#16a34a' : tone === 'ok' ? '#00a19a' : '#e6a23c'
+  // dasharray for the r=32 ring used elsewhere on this page (2πr ≈ 201.06)
+  const RING = 201.06
+  return {
+    score: s,
+    label,
+    tone,
+    note,
+    color,
+    ringLen: RING,
+    ringOffset: RING - (s / 100) * RING,
+  }
+})
+
+// ── Watch this property — notification triggers (reference §6) ─
+const bvWatchTriggers = computed(() => [
+  {
+    icon: '🏠',
+    title: 'Owner claims this property',
+    sub: "You'll get pinged the moment they verify ownership.",
+  },
+  {
+    icon: '📋',
+    title: 'Passport started or progress milestones hit',
+    sub: "Get a ping at 25% / 50% / 75% so you can register interest before it's published.",
+  },
+  {
+    icon: '🎉',
+    title: 'Passport published · property goes live',
+    sub: "Buy access for £15 — or free if you're a verified buyer.",
+  },
+  {
+    icon: '🏘️',
+    title: 'Comparable sales nearby',
+    sub: `New Land Registry data on ${property.value?.postcode || 'this postcode'} — keeps your estimated value fresh.`,
+  },
+])
+
+// ── Verified buyer upsell perks (reference §6) ────────────────
+const bvVerifiedPerks = [
+  {
+    icon: '↑',
+    title: 'Go to the front of the queue',
+    sub: 'Owners see verified buyers first when choosing who to sell to.',
+  },
+  {
+    icon: '✓',
+    title: 'Get your Passport free on day one',
+    sub: "Skip the £35 charge once you're verified and registered.",
+  },
+  {
+    icon: '★',
+    title: '3× more likely to have an offer accepted',
+    sub: 'Owners favour verified buyers, so your offers land more often.',
+  },
+]
+
 const { toggleSave } = usePropertyActions()
 const { showToast } = useAppToast()
 
@@ -5195,6 +5890,42 @@ async function saveToBuyerProfile() {
     return
   }
   router.push('/buyer-profile')
+}
+
+// ── Watch this property drawer (mirrors deployed app) ─────────
+// The buyer-report "Watch this property" button opens a bottom-sheet where
+// the buyer picks which notifications to receive. On submit we persist the
+// choice locally, then redirect to the property page (which registers the
+// watch on their profile) — guests sign in first, exactly like the app.
+const watchDrawerOpen = ref(false)
+function openWatchDrawer() {
+  watchDrawerOpen.value = true
+}
+function onWatchSubmit(prefs: Record<string, boolean>) {
+  watchDrawerOpen.value = false
+  // Remember the prefs + mark this property as watched so the button reflects
+  // the state if the buyer returns here.
+  try {
+    localStorage.setItem(
+      `hs_watch_${propertyId}`,
+      JSON.stringify({ prefs, at: Date.now() }),
+    )
+    localStorage.setItem(`hs_notify_publish_${propertyId}`, String(Date.now()))
+  } catch {}
+  notifiedOfPublish.value = true
+  showToast({ message: 'Watching this property', iconEmoji: '✓' })
+  // Redirect to the property page, resuming after sign-in for guests.
+  const target = `/property/${propertyId}?watched=1`
+  const token =
+    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) {
+    try {
+      localStorage.setItem('redirectAfterLogin', target)
+    } catch {}
+    router.push('/onboarding/signin')
+    return
+  }
+  router.push(target)
 }
 
 // ── Quick wins / boost score ──────────────────────────────────
@@ -5488,6 +6219,31 @@ onMounted(async () => {
     }
   } catch {}
 
+  // Full running-costs breakdown (energy + water + council tax + risks). This
+  // is what powers the buyer report Costs & Risks tabs — the same backend
+  // endpoint the standalone /homescore/costs page and the deployed app use.
+  // Fire-and-forget: the tabs fall back to bare property fields until it lands.
+  fetch(`${config.public.apiBase}/property/${propertyId}/running-costs`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((j) => {
+      if (j) runningCosts.value = j
+    })
+    .catch(() => {})
+
+  // Land Registry sold history — powers the buyer report Sold tab (this
+  // property's sale history + comparable sales nearby). Fire-and-forget.
+  fetch(`${config.public.apiBase}/property/${propertyId}/sold-history`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((j) => {
+      if (j) {
+        soldHistory.value = {
+          thisProperty: Array.isArray(j.thisProperty) ? j.thisProperty : [],
+          nearbySales: Array.isArray(j.nearbySales) ? j.nearbySales : [],
+        }
+      }
+    })
+    .catch(() => {})
+
   // Fire-and-forget: log this view + fetch search stats so we can render
   // the "People searched this address this month" card.
   try {
@@ -5596,6 +6352,8 @@ onMounted(async () => {
     'kyc',
     'kyc-pending',
     'published',
+    'boost',
+    'level-up',
   ]
   if (token && requested && (allowed as string[]).includes(requested)) {
     if (requested === 'questions') {
@@ -9982,12 +10740,12 @@ watch(screen, (s) => {
   margin: 16px 22px 0;
   border-radius: 22px;
   padding: 22px 22px 18px;
-  background: linear-gradient(135deg, #f0a030 0%, #c67c18 50%, #8b4e0a 100%);
+  background: linear-gradient(135deg, var(--bv-teal-bright) 0%, var(--bv-teal) 50%, #007e78 100%);
   color: #fff;
   position: relative;
   overflow: hidden;
   box-shadow:
-    0 12px 32px -8px rgba(180, 100, 20, 0.4),
+    0 12px 32px -8px rgba(0, 130, 125, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .bv-addr-card::after {
@@ -10091,7 +10849,7 @@ watch(screen, (s) => {
 .bv-state-progress {
   background: rgba(255, 255, 255, 0.94);
   border-color: rgba(255, 255, 255, 0.94);
-  color: #7a3a05;
+  color: var(--bv-teal-deep);
 }
 .bv-state-published {
   background: rgba(255, 255, 255, 0.94);
@@ -10229,6 +10987,352 @@ watch(screen, (s) => {
   height: 32px;
   background: rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
+}
+/* ── Live checked / watching rows (inside amber address card) ── */
+.bv-addr-live {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bv-addr-live-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.3;
+}
+.bv-addr-live-row b {
+  font-weight: 800;
+  color: #fff;
+}
+.bv-addr-live-ic {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ── "This property is unclaimed" navy banner ────────────────── */
+.bv-claim-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--bv-navy-soft) 0%, var(--bv-navy) 70%, #0d1a3a 100%);
+  color: #fff;
+  box-shadow: 0 12px 30px -10px rgba(35, 29, 69, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.bv-claim-banner:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px -10px rgba(35, 29, 69, 0.55);
+}
+.bv-claim-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-claim-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+.bv-claim-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.4;
+}
+.bv-claim-arrow {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ── Buyer confidence gauge card ─────────────────────────────── */
+.bv-confidence-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  box-shadow: 0 6px 20px rgba(24, 52, 88, 0.07);
+}
+.bv-confidence-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bv-confidence-shield {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #f5f7fb;
+}
+.bv-confidence-shield svg {
+  width: 22px;
+  height: 22px;
+}
+.bv-confidence-text {
+  flex: 1;
+  min-width: 0;
+}
+.bv-confidence-eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9c98ad;
+}
+.bv-confidence-title {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+.bv-confidence-dial {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.bv-confidence-dial svg {
+  width: 56px;
+  height: 56px;
+  transform: rotate(-90deg);
+}
+.bv-dial-bg {
+  fill: none;
+  stroke: #eef0f4;
+}
+.bv-dial-fill {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bv-dial-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bv-navy);
+}
+.bv-confidence-note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f1f5;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--bv-text-soft);
+  line-height: 1.4;
+}
+
+/* ── Watch this property card ────────────────────────────────── */
+.bv-watch-card {
+  margin: 0 22px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  box-shadow: 0 6px 20px rgba(24, 52, 88, 0.07);
+}
+.bv-watch-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9c98ad;
+}
+.bv-watch-title {
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.3px;
+}
+.bv-watch-lede {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bv-text-soft);
+  line-height: 1.5;
+}
+.bv-watch-lede b {
+  color: var(--bv-navy);
+  font-weight: 700;
+}
+.bv-watch-rows {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+}
+.bv-watch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #f2f3f7;
+}
+.bv-watch-row:last-child {
+  border-bottom: none;
+}
+.bv-watch-ic {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: #f5f7fb;
+  font-size: 15px;
+}
+.bv-watch-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-watch-row-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.1px;
+}
+.bv-watch-row-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--bv-text-soft);
+  line-height: 1.4;
+}
+.bv-watch-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: var(--bv-teal);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(0, 161, 154, 0.5);
+  transition: transform 0.15s, filter 0.15s;
+}
+.bv-watch-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+.bv-watch-btn:disabled {
+  background: #eaf6f5;
+  color: #017a72;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* ── Verified buyer upsell (navy) ────────────────────────────── */
+.bv-verified-card {
+  margin: 14px 22px 0;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, var(--bv-navy) 0%, #2f2760 55%, #0d1a3a 100%);
+  color: #fff;
+  box-shadow: 0 14px 32px -10px rgba(35, 29, 69, 0.5);
+}
+.bv-verified-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.bv-verified-title {
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.bv-verified-lede {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+}
+.bv-verified-rows {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bv-verified-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.bv-verified-ic {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: rgba(107, 212, 205, 0.18);
+  color: #6bd4cd;
+  font-size: 14px;
+  font-weight: 800;
+}
+.bv-verified-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-verified-row-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+}
+.bv-verified-row-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.4;
+}
+.bv-verified-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: var(--bv-teal);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(0, 161, 154, 0.55);
+  transition: transform 0.15s, filter 0.15s;
+}
+.bv-verified-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 /* ── Section header (mirrors costs page) ───────────────────── */
@@ -10449,6 +11553,62 @@ watch(screen, (s) => {
   font-size: 12.5px;
   color: #4a5570;
   line-height: 1.5;
+}
+
+/* ── Crime breakdown (Area tab · data.police.uk) ─────────────── */
+.bv-crime-card {
+  margin: 0 22px 10px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+}
+.bv-crime-head {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9c98ad;
+  margin-bottom: 12px;
+}
+.bv-crime-row {
+  display: grid;
+  grid-template-columns: 148px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+.bv-crime-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bv-navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bv-crime-bar-wrap {
+  height: 8px;
+  border-radius: 6px;
+  background: #f0f1f5;
+  overflow: hidden;
+}
+.bv-crime-bar {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #00a19a, #33b1aa);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bv-crime-val {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  text-align: right;
+}
+@media (max-width: 460px) {
+  .bv-crime-row {
+    grid-template-columns: 110px 1fr 36px;
+  }
 }
 
 .bv-risks-card {
