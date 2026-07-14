@@ -83,7 +83,7 @@
             <article class="lp-passport-card">
               <span class="lp-passport-kicker">Your HomeScore</span>
               <div class="lp-passport-logo">
-                <img src="/op-icons/logo.svg" alt="umu" class="lp-passport-logo-mark" />
+                <img src="/logo.png" alt="umu" class="lp-passport-logo-mark" />
               </div>
               <div class="lp-passport-addr">
                 <strong>55, Woodfield Road</strong>
@@ -233,16 +233,50 @@
           </div>
 
           <div class="lp-dark-card-col">
-            <article class="lp-card lp-dark-card">
-              <div class="lp-dark-card-head">
-                <div><strong>55, Woodfield Road</strong><span>CV5 6AJ</span></div>
-                <span class="lp-issued">Issued</span>
+            <article class="pp-card">
+              <span class="pp-card-glow" aria-hidden="true" />
+
+              <header class="pp-card-top">
+                <span class="pp-eyebrow"><i class="pp-eyebrow-dot" />Property Passport</span>
+                <span class="pp-grade">Solicitor-grade</span>
+              </header>
+
+              <div class="pp-hero">
+                <figure class="pp-passport">
+                  <img src="/umu-passport.png" alt="UMU Property Passport" loading="lazy" />
+                  <figcaption class="pp-passport-addr">
+                    55, Woodfield Rd
+                    <span>CV5 6AJ</span>
+                  </figcaption>
+                </figure>
+                <div class="pp-hero-meta">
+                  <span class="pp-issued"><i class="pp-issued-dot" />Issued</span>
+                  <strong class="pp-addr">55, Woodfield Road</strong>
+                  <span class="pp-post">Coventry · CV5 6AJ</span>
+                  <span class="pp-verified">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    17 verified sections
+                  </span>
+                </div>
               </div>
-              <p class="lp-dark-card-body">
-                Open the live Property Passport — 17 <span class="lp-hl">verified sections</span>, <span class="lp-hl">documents</span>,
-                <span class="lp-hl">buyer matching</span> and collaborator access.
+
+              <p class="pp-body">
+                Everything a buyer's solicitor needs — <b>title deeds</b>, <b>searches</b>,
+                <b>documents</b> and <b>buyer matching</b>, ready before your first viewing.
               </p>
-              <button class="lp-btn lp-btn--solid lp-btn--block" type="button" @click="navigateTo('/passport/sample')">Open the sample Passport</button>
+
+              <div class="pp-tags">
+                <span>Deeds</span>
+                <span>Planning</span>
+                <span>Surveys</span>
+                <span>Fittings</span>
+                <span class="pp-tags-more">+13 more</span>
+              </div>
+
+              <button class="pp-cta" type="button" @click="navigateTo('/passport/sample')">
+                Open the sample Passport
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+              </button>
             </article>
           </div>
         </div>
@@ -1110,17 +1144,18 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.55);
 }
 .lp-passport-logo {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: rgba(35, 29, 69, 0.18);
-  border: 2px solid var(--navy);
-  box-shadow: 0 0 0 4px rgba(35, 29, 69, 0.14);
+  /* Simple navy ring. White fill keeps the navy + teal house mark readable —
+     on a translucent circle its teal parts blended into the green card. */
+  /* background: #ffffff; */
+  border: 3px solid #231d45;
   display: grid;
   place-items: center;
   margin: 14px 0 18px;
 }
-.lp-passport-logo-mark { width: 28px; height: auto; display: block; }
+.lp-passport-logo-mark { width: 34px; height: auto; display: block; }
 .lp-passport-addr strong { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
 .lp-passport-addr span { font-size: 13px; color: rgba(255, 255, 255, 0.55); }
 .lp-passport-stats {
@@ -1199,8 +1234,8 @@ onUnmounted(() => {
   display: flex;
   gap: 12px;
   align-items: center;
-  background: rgba(35, 29, 69, 0.2);
-  border: 1px solid rgba(35, 29, 69, 0.34);
+  background: #231d45;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
   padding: 14px;
 }
@@ -1209,7 +1244,7 @@ onUnmounted(() => {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--navy);
+  background: #00a99f;
   color: #ffffff;
   display: grid;
   place-items: center;
@@ -1569,43 +1604,230 @@ onUnmounted(() => {
 .lp-dark-foot { font-size: 13.5px; font-weight: 700; color: #c18a38; margin-top: 30px; gap: 8px; display: inline-flex; align-items: center; }
 .lp-star { color: #c18a38; }
 
-.lp-dark-card {
-  background: #fff;
+/* ── Premium Property Passport card (navy-on-navy) ───────────────── */
+.pp-card {
+  position: relative;
   width: 100%;
   max-width: 480px;
-  padding: 20px;
-  border-radius: 24px;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28);
+  padding: 24px;
+  border-radius: 26px;
+  overflow: hidden;
+  isolation: isolate;
+  /* A subtly lighter navy so the #231d45 card lifts off the #231d45 section */
+  background:
+    radial-gradient(120% 90% at 85% -10%, rgba(0, 161, 154, 0.20) 0%, transparent 55%),
+    linear-gradient(165deg, #2a2352 0%, #231d45 46%, #1b1638 100%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 40px 80px -24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
-/* Navy header bar inside the card */
-.lp-dark-card-head {
+/* Soft teal glow blooming behind the passport */
+.pp-card-glow {
+  position: absolute;
+  top: 8%;
+  left: -12%;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.38) 0%, transparent 68%);
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: 0;
+}
+.pp-card > *:not(.pp-card-glow) { position: relative; z-index: 1; }
+
+.pp-card-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  background: var(--navy);
-  border-radius: 16px;
-  padding: 18px 20px;
+  margin-bottom: 22px;
 }
-.lp-dark-card-head strong { display: block; font-size: 18px; font-weight: 800; color: #fff; }
-.lp-dark-card-head span { font-size: 12.5px; color: rgba(255, 255, 255, 0.55); margin-top: 2px; display: block; }
-.lp-issued {
+.pp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+}
+.pp-eyebrow-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--teal-bright);
+  box-shadow: 0 0 0 4px rgba(47, 208, 198, 0.16);
+}
+.pp-grade {
   flex-shrink: 0;
-  font-size: 10.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
-  background: rgba(217, 154, 43, 0.16); color: #e0a93f;
-  border: 1px solid rgba(217, 154, 43, 0.4);
-  padding: 5px 11px; border-radius: 8px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 6px 12px;
+  border-radius: 100px;
 }
-.lp-dark-card-body {
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: var(--ink-soft);
+
+/* Hero: real passport image + address / status */
+.pp-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.pp-passport {
+  position: relative;
+  flex-shrink: 0;
+  width: 104px;
+  margin: 0;
+  transform: rotate(-4deg);
+  transition: transform 0.3s ease;
+}
+.pp-passport img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  /* Lift the faded printed text: brighter, crisper, a touch more saturated */
+  filter:
+    brightness(1.1) contrast(1.12) saturate(1.06)
+    drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+}
+/* Address printed on the passport cover, below the umu logo */
+.pp-passport-addr {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 15%;
   text-align: center;
-  margin: 18px 0 18px;
-  padding: 0 10px;
+  font-size: 7.5px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0.1px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
-.lp-dark-card-body .lp-hl { color: var(--teal-dark); font-weight: 700; }
-.lp-dark-card .lp-btn--block { padding: 15px 18px; font-size: 15px; border-radius: 14px; }
+.pp-passport-addr span {
+  display: block;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 1px;
+}
+.pp-card:hover .pp-passport { transform: rotate(-2deg) translateY(-3px); }
+
+.pp-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.pp-issued {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
+  color: #4ad9c9;
+  background: rgba(0, 161, 154, 0.16);
+  border: 1px solid rgba(0, 161, 154, 0.4);
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 8px;
+}
+.pp-issued-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4ad9c9;
+  box-shadow: 0 0 6px rgba(74, 217, 201, 0.9);
+}
+.pp-addr {
+  font-size: 19px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+.pp-post {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.1px;
+}
+.pp-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+}
+.pp-verified svg {
+  width: 13px; height: 13px;
+  padding: 2.5px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  box-sizing: content-box;
+}
+
+.pp-body {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0 0 18px;
+}
+.pp-body b { color: #fff; font-weight: 700; }
+
+/* Section tags */
+.pp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.pp-tags span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 7px 13px;
+  border-radius: 100px;
+}
+.pp-tags .pp-tags-more {
+  color: var(--teal-bright);
+  background: rgba(0, 161, 154, 0.14);
+  border-color: rgba(0, 161, 154, 0.34);
+}
+
+/* CTA */
+.pp-cta {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+  color: #fff;
+  background: var(--teal);
+  border: none;
+  border-radius: 14px;
+  padding: 15px 18px;
+  cursor: pointer;
+  box-shadow: 0 12px 26px -6px rgba(0, 161, 154, 0.5);
+  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+.pp-cta:hover {
+  transform: translateY(-1px);
+  background: var(--teal-dark);
+  box-shadow: 0 16px 30px -6px rgba(0, 161, 154, 0.55);
+}
+.pp-cta svg { width: 16px; height: 16px; }
 
 /* ── Story ───────────────────────────────────────────────────────── */
 .lp-story { text-align: center; }
@@ -2022,7 +2244,7 @@ onUnmounted(() => {
   .lp-hero-visual { min-height: 320px; max-width: 420px; margin: 0 auto; }
   .lp-market-grid { grid-template-columns: 1fr; }
   .lp-dark-card-col { justify-content: flex-start; margin-top: 0; }
-  .lp-dark-card { max-width: 100%; }
+  .pp-card { max-width: 100%; }
   .lp-footer-grid { grid-template-columns: 1fr 1fr; }
 
   /* Swap desktop links for the hamburger menu */

@@ -108,11 +108,18 @@
             :key="item.title"
             :title="item.title"
             :meta="item.description"
-            :iconTone="rowToneFor(item.title)"
+            :iconTone="item.image ? 'photo' : rowToneFor(item.title)"
             @click="onPreferenceClick(item)"
           >
             <template #icon>
-              <OPIcon :name="item.icon" class="w-[20px] h-[20px]" />
+              <img
+                v-if="item.image"
+                :src="item.image"
+                :alt="item.title"
+                class="prow-photo"
+                loading="lazy"
+              />
+              <OPIcon v-else :name="item.icon" class="w-[20px] h-[20px]" />
             </template>
           </ProfileRow>
         </div>
@@ -377,6 +384,7 @@ const profileItems = [
     title: 'Your Personal Information',
     description: 'Manage how we know and communicate with you.',
     icon: 'personalInformation',
+    image: '/profile%20new%20icon/personalInfomation.jpeg',
     route: '/profile/personal-information',
   },
   {
@@ -384,6 +392,7 @@ const profileItems = [
     description:
       'Verified ID, proof of funds and chain position — share with sellers, agents and solicitors.',
     icon: 'personalInformation',
+    image: '/profile%20new%20icon/buyerProfile.jpeg',
     route: '/buyer-profile',
   },
   {
@@ -391,12 +400,14 @@ const profileItems = [
     description:
       'Invite, manage, and control who you work with across your property journey.',
     icon: 'collaborators',
+    image: '/profile%20new%20icon/collaborators.jpeg',
     route: '/profile/collaborator-information',
   },
   {
     title: 'Your Documents',
     description: 'View and manage your essential property documents.',
     icon: 'yourDocuments',
+    image: '/profile%20new%20icon/yourDocuments.jpeg',
     route: '/profile/document',
   },
   // Downloaded Snapshots — hidden for now; route still exists at
@@ -412,6 +423,7 @@ const profileItems = [
     title: 'Saved Properties',
     description: 'All your saved and recently viewed properties, organized.',
     icon: 'savedProperties',
+    image: '/profile%20new%20icon/savedProperties.jpeg',
     route: '/profile/saved-properties',
   },
   // Billing & Payment History — hidden for now; route still exists at
@@ -426,18 +438,21 @@ const profileItems = [
     title: 'Settings',
     description: 'Customize your experience, privacy, and account security.',
     icon: 'settings',
+    image: '/profile%20new%20icon/settings.jpeg',
     route: '/profile/settings',
   },
   {
     title: 'Help & Support',
     description: 'Need help? Browse FAQs or speak to support.',
     icon: 'helpSupport',
+    image: '/profile%20new%20icon/helpAndSupport.jpeg',
     route: '/profile/support',
   },
   {
     title: 'Calendar',
     description: 'Stay on top of viewings, deadlines, and reminders.',
     icon: 'calendar',
+    image: '/profile%20new%20icon/calendar.jpeg',
     route: '/profile/calendar',
   },
   {
@@ -993,6 +1008,32 @@ const deleteAccount = async () => {
 
 :deep(.prow:hover .prow-icon img) {
   filter: brightness(0) invert(1);
+}
+
+/* Photo tiles hold full-colour illustrations. Keep the tile white and the
+   artwork true-to-colour on hover — no navy fill, no invert — so the only
+   hover motion is the shared card lift + gentle icon scale. */
+:deep(.prow-icon--photo) {
+  background: #fff;
+  border: 1px solid #e7edf5;
+  color: inherit;
+  padding: 0;
+  overflow: hidden;
+}
+:deep(.prow:hover .prow-icon--photo) {
+  background: #fff !important;
+  border-color: #e7edf5 !important;
+  color: inherit !important;
+  box-shadow: 0 10px 20px rgba(19, 51, 82, 0.16) !important;
+}
+:deep(.prow-icon--photo img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+:deep(.prow:hover .prow-icon--photo img) {
+  filter: none !important;
 }
 
 :deep(.prow-body) {
