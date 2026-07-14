@@ -297,17 +297,17 @@
 
           <div class="lp-market-grid">
             <article class="lp-market-card">
-              <strong>179<small>days</small></strong>
+              <strong><span data-count="179">179</span><small>days</small></strong>
               <em>Average sale</em>
               <p>Offer accepted to completion. With a Passport: around 14.</p>
             </article>
             <article class="lp-market-card">
-              <strong>1<small>in</small>3</strong>
+              <strong>1<small>in</small><span data-count="3">3</span></strong>
               <em>Sales collapse</em>
               <p>Usually a problem surfaced weeks in — after both sides have spent thousands.</p>
             </article>
             <article class="lp-market-card">
-              <strong>£2.7<small>k</small></strong>
+              <strong>£<span data-count="2.7" data-decimals="1">2.7</span><small>k</small></strong>
               <em>Lost per fall-through</em>
               <p>Roughly £900m a year nationwide in wasted fees and stress.</p>
             </article>
@@ -1072,12 +1072,12 @@ onUnmounted(() => {
 .lp-passport-card {
   position: relative;
   z-index: 1;
-  background: linear-gradient(160deg, #2c2456 0%, #231d45 60%, #1c1838 100%);
+  background: linear-gradient(160deg, #00a99f 0%, #008d86 58%, #00736d 100%);
   border-radius: 22px;
   padding: 30px 28px;
   color: #fff;
-  box-shadow: 0 36px 80px rgba(35, 29, 69, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 36px 80px rgba(0, 115, 109, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   max-width: 380px;
   margin-left: auto;
   transform: rotate(6deg);
@@ -1113,9 +1113,9 @@ onUnmounted(() => {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: rgba(0, 161, 154, 0.12);
-  border: 2px solid var(--teal-bright);
-  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+  background: rgba(35, 29, 69, 0.18);
+  border: 2px solid var(--navy);
+  box-shadow: 0 0 0 4px rgba(35, 29, 69, 0.14);
   display: grid;
   place-items: center;
   margin: 14px 0 18px;
@@ -1161,9 +1161,9 @@ onUnmounted(() => {
 .lp-hs-ring-wrap { position: relative; width: 104px; height: 104px; }
 .lp-hs-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
 .lp-hs-ring-bg, .lp-hs-ring-meter { fill: none; stroke-width: 11; }
-.lp-hs-ring-bg { stroke: rgba(255, 255, 255, 0.12); }
+.lp-hs-ring-bg { stroke: rgba(255, 255, 255, 0.22); }
 .lp-hs-ring-meter {
-  stroke: var(--teal-bright);
+  stroke: #ffffff;
   stroke-linecap: round;
   stroke-dasharray: 364;
   stroke-dashoffset: 95;
@@ -1178,7 +1178,7 @@ onUnmounted(() => {
   align-items: center; justify-content: center;
 }
 .lp-hs-center strong { font-size: 34px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -1px; }
-.lp-hs-center span { font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--teal-bright); margin-top: 4px; }
+.lp-hs-center span { font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.92); margin-top: 4px; }
 .lp-hs-rows { list-style: none; margin: 0; padding: 0; }
 .lp-hs-rows li {
   display: flex;
@@ -1193,14 +1193,14 @@ onUnmounted(() => {
 .lp-hs-rows li:last-child { border-bottom: 0; padding-bottom: 0; }
 .lp-hs-rows span { color: rgba(255, 255, 255, 0.6); line-height: 1.3; }
 .lp-hs-rows b { color: #fff; font-weight: 700; text-align: right; }
-.lp-hs-rows b.up { color: var(--teal-bright); }
-.lp-hs-rows b.warn { color: #e6a94e; }
+.lp-hs-rows b.up { color: #ffffff; }
+.lp-hs-rows b.warn { color: #ffd27a; }
 .lp-hs-note {
   display: flex;
   gap: 12px;
   align-items: center;
-  background: rgba(0, 161, 154, 0.12);
-  border: 1px solid rgba(0, 161, 154, 0.3);
+  background: rgba(35, 29, 69, 0.2);
+  border: 1px solid rgba(35, 29, 69, 0.34);
   border-radius: 14px;
   padding: 14px;
 }
@@ -1209,8 +1209,8 @@ onUnmounted(() => {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--teal-bright);
-  color: #10233f;
+  background: var(--navy);
+  color: #ffffff;
   display: grid;
   place-items: center;
 }
@@ -1827,7 +1827,7 @@ onUnmounted(() => {
 
 .lp-quote {
   margin: 60px auto 0;
-  font-family: plus-jakarta-sans,;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: clamp(22px, 2.6vw, 30px);
@@ -1841,7 +1841,7 @@ onUnmounted(() => {
 .lp-quote cite {
   display: block;
   margin-top: 16px;
-  font-family: plus-jakarta-sans,;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-style: normal;
   font-size: 14px;
   font-weight: 700;

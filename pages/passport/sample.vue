@@ -74,15 +74,15 @@
 
             <div class="sp-hero-stats">
               <div class="sp-stat">
-                <span class="sp-stat-num">74</span>
+                <span class="sp-stat-num">{{ animA }}</span>
                 <span class="sp-stat-label">HS</span>
               </div>
               <div class="sp-stat">
-                <span class="sp-stat-num">38</span>
+                <span class="sp-stat-num">{{ animB }}</span>
                 <span class="sp-stat-label">Docs</span>
               </div>
               <div class="sp-stat">
-                <span class="sp-stat-num">17<em>/17</em></span>
+                <span class="sp-stat-num">{{ animC }}<em>/17</em></span>
                 <span class="sp-stat-label">Sections</span>
               </div>
             </div>
@@ -111,10 +111,10 @@
                   cy="48"
                   r="40"
                   :stroke-dasharray="ringCirc"
-                  stroke-dashoffset="0"
+                  :stroke-dashoffset="ringOffset"
                 />
               </svg>
-              <span class="sp-ring-val">100%</span>
+              <span class="sp-ring-val">{{ ringPct }}%</span>
             </span>
             <span class="sp-progress-label">Passport progress</span>
             <span class="sp-progress-chip"><i />Passport issued</span>
@@ -165,7 +165,7 @@
 
         <!-- ── Section cards ───────────────────────────────────────── -->
         <div class="sp-sections">
-          <article v-for="s in sections" :key="s.title" class="sp-card">
+          <article v-for="s in sections" :key="s.title" class="sp-card" data-reveal-card>
             <div class="sp-card-head">
               <span class="sp-card-ic" v-html="s.icon" />
               <div class="sp-card-titles">
@@ -234,15 +234,15 @@
 
               <div class="lp-hero-stats">
                 <div class="lp-stat">
-                  <span class="lp-stat-num">83<em>%</em></span>
+                  <span class="lp-stat-num">{{ animA }}<em>%</em></span>
                   <span class="lp-stat-label">Compliant</span>
                 </div>
                 <div class="lp-stat">
-                  <span class="lp-stat-num">11</span>
+                  <span class="lp-stat-num">{{ animB }}</span>
                   <span class="lp-stat-label">Docs</span>
                 </div>
                 <div class="lp-stat">
-                  <span class="lp-stat-num">10<em>/12</em></span>
+                  <span class="lp-stat-num">{{ animC }}<em>/12</em></span>
                   <span class="lp-stat-label">Sections</span>
                 </div>
               </div>
@@ -263,10 +263,10 @@
                     cy="48"
                     r="40"
                     :stroke-dasharray="ringCirc"
-                    :stroke-dashoffset="landlordRingOffset"
+                    :stroke-dashoffset="ringOffset"
                   />
                 </svg>
-                <span class="sp-ring-val">83%</span>
+                <span class="sp-ring-val">{{ ringPct }}%</span>
               </span>
               <span class="sp-progress-label">Compliance progress</span>
               <span class="sp-progress-chip"><i />Passport issued</span>
@@ -311,7 +311,7 @@
           <div v-for="group in landlordGroups" :key="group.label" class="lp-group">
             <p class="lp-group-label">{{ group.label }}</p>
             <div class="sp-sections">
-              <article v-for="s in group.items" :key="s.title" class="sp-card">
+              <article v-for="s in group.items" :key="s.title" class="sp-card" data-reveal-card>
                 <div class="sp-card-head">
                   <span class="sp-card-ic" :class="s.iconClass" v-html="s.icon" />
                   <div class="sp-card-titles">
@@ -393,9 +393,9 @@
               <h2 class="by-hero-addr">55, Woodfield Road</h2>
               <p class="by-hero-place">Coventry, CV5 6AJ</p>
               <div class="by-hero-stats">
-                <div class="by-hstat"><span class="by-hstat-num">74</span><span class="by-hstat-label">HS</span></div>
-                <div class="by-hstat"><span class="by-hstat-num">38</span><span class="by-hstat-label">Docs</span></div>
-                <div class="by-hstat"><span class="by-hstat-num">100%</span><span class="by-hstat-label">Answered</span></div>
+                <div class="by-hstat"><span class="by-hstat-num">{{ animA }}</span><span class="by-hstat-label">HS</span></div>
+                <div class="by-hstat"><span class="by-hstat-num">{{ animB }}</span><span class="by-hstat-label">Docs</span></div>
+                <div class="by-hstat"><span class="by-hstat-num">{{ animC }}%</span><span class="by-hstat-label">Answered</span></div>
               </div>
             </div>
 
@@ -410,10 +410,10 @@
                     cy="48"
                     r="40"
                     :stroke-dasharray="ringCirc"
-                    stroke-dashoffset="0"
+                    :stroke-dashoffset="ringOffset"
                   />
                 </svg>
-                <span class="sp-ring-val">100%</span>
+                <span class="sp-ring-val">{{ ringPct }}%</span>
               </span>
               <span class="sp-progress-label">Questions answered</span>
               <span class="sp-progress-chip"><i />Verified passport</span>
@@ -518,7 +518,7 @@
           </div>
 
           <div class="sp-sections">
-            <article v-for="r in buyerRecords" :key="r.title" class="by-record">
+            <article v-for="r in buyerRecords" :key="r.title" class="by-record" data-reveal-card>
               <span class="by-record-thumb" :class="r.thumb" v-html="r.icon" />
               <div class="by-record-body">
                 <h4>{{ r.title }}</h4>
@@ -576,7 +576,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
@@ -594,8 +594,92 @@ const activeRole = computed(
 
 // Circumference for the progress ring (r = 40)
 const ringCirc = 2 * Math.PI * 40
-// Landlord compliance sits at 83%, so the meter is partially open.
-const landlordRingOffset = ringCirc * (1 - 0.83)
+
+// ── Hero count-up animation ─────────────────────────────────────────
+// The three hero stat figures and the progress ring animate from 0 to
+// their target whenever the view mounts or the role toggle changes, so the
+// header feels alive rather than static. Shared refs work because only one
+// role's hero is in the DOM at a time (v-if per role).
+const animA = ref(0)
+const animB = ref(0)
+const animC = ref(0)
+const ringPct = ref(0)
+const ringOffset = computed(() => ringCirc * (1 - ringPct.value / 100))
+
+const heroTargets = {
+  seller: { a: 74, b: 38, c: 17, ring: 100 },
+  landlord: { a: 83, b: 11, c: 10, ring: 83 },
+  buyer: { a: 74, b: 38, c: 100, ring: 100 },
+}
+
+const prefersReduced = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+function animateValue(target, to, duration = 1200) {
+  if (prefersReduced()) {
+    target.value = to
+    return
+  }
+  target.value = 0
+  const start = performance.now()
+  const step = (now) => {
+    const t = Math.min((now - start) / duration, 1)
+    const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic
+    target.value = Math.round(to * eased)
+    if (t < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
+
+function runHeroAnim() {
+  const t = heroTargets[role.value] || heroTargets.seller
+  animateValue(animA, t.a)
+  animateValue(animB, t.b)
+  animateValue(animC, t.c)
+  animateValue(ringPct, t.ring, 1400)
+}
+
+// ── Scroll reveal for section / record cards ────────────────────────
+// Cards are only hidden once JS has run (we add `reveal-el` ourselves), so
+// with JS disabled everything stays visible. The observer then fades each
+// card up as it scrolls into view.
+let revealObserver = null
+function setupReveal() {
+  if (typeof window === 'undefined' || prefersReduced()) return
+  revealObserver?.disconnect()
+  const els = document.querySelectorAll('[data-reveal-card]')
+  els.forEach((el) => el.classList.add('reveal-el'))
+  revealObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in')
+          revealObserver?.unobserve(entry.target)
+        }
+      }
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+  )
+  els.forEach((el) => revealObserver.observe(el))
+}
+
+onMounted(() => {
+  runHeroAnim()
+  setupReveal()
+})
+
+// Re-run both when the perspective changes (a fresh hero + card set render).
+watch(role, async () => {
+  runHeroAnim()
+  await nextTick()
+  setupReveal()
+})
+
+onBeforeUnmount(() => {
+  revealObserver?.disconnect()
+  revealObserver = null
+})
 
 // "Start a Property Passport" — logged-in users go to Explore to claim a
 // property; visitors without an account are sent to sign up first.
@@ -1047,17 +1131,17 @@ const buyerRecords = [
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 36px;
-  padding: 34px 40px;
-  border-radius: 28px;
+  gap: 26px;
+  padding: 22px 28px;
+  border-radius: 24px;
   background:
     radial-gradient(120% 140% at 100% 0%, #2f2760 0%, transparent 55%),
     linear-gradient(135deg, #241e47 0%, #1c1738 100%);
-  box-shadow: 0 30px 60px rgba(35, 29, 69, 0.24);
+  box-shadow: 0 24px 50px rgba(35, 29, 69, 0.22);
 }
 
 .sp-hero-book {
-  width: 210px;
+  width: 150px;
   flex-shrink: 0;
 }
 
@@ -1080,8 +1164,8 @@ const buyerRecords = [
 }
 
 .sp-hero-addr {
-  margin: 10px 0 0;
-  font-size: clamp(28px, 3.2vw, 40px);
+  margin: 6px 0 0;
+  font-size: clamp(22px, 2.4vw, 30px);
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.02em;
@@ -1089,16 +1173,16 @@ const buyerRecords = [
 }
 
 .sp-hero-place {
-  margin: 8px 0 0;
-  font-size: 16px;
+  margin: 5px 0 0;
+  font-size: 14.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.62);
 }
 
 .sp-hero-stats {
   display: flex;
-  gap: 34px;
-  margin: 22px 0 24px;
+  gap: 24px;
+  margin: 14px 0 16px;
 }
 
 .sp-stat {
@@ -1108,7 +1192,7 @@ const buyerRecords = [
 }
 
 .sp-stat-num {
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   line-height: 1;
@@ -1139,11 +1223,11 @@ const buyerRecords = [
 .sp-hero-btn {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  height: 50px;
-  padding: 0 24px;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
 }
@@ -1182,9 +1266,9 @@ const buyerRecords = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 28px 34px;
-  border-radius: 22px;
+  gap: 9px;
+  padding: 18px 24px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.09);
   flex-shrink: 0;
@@ -1192,8 +1276,8 @@ const buyerRecords = [
 
 .sp-ring {
   position: relative;
-  width: 128px;
-  height: 128px;
+  width: 96px;
+  height: 96px;
   display: grid;
   place-items: center;
 }
@@ -1221,7 +1305,7 @@ const buyerRecords = [
 
 .sp-ring-val {
   position: relative;
-  font-size: 28px;
+  font-size: 23px;
   font-weight: 800;
   color: #fff;
 }
@@ -1594,14 +1678,14 @@ const buyerRecords = [
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 36px;
-  padding: 34px 40px;
-  border-radius: 28px;
+  gap: 26px;
+  padding: 22px 28px;
+  border-radius: 24px;
   background:
     radial-gradient(120% 150% at 100% 0%, rgba(0, 161, 154, 0.12) 0%, transparent 55%),
     linear-gradient(135deg, #eef4f0 0%, #e6efe9 100%);
   border: 1px solid rgba(0, 161, 154, 0.14);
-  box-shadow: 0 20px 44px rgba(35, 29, 69, 0.08);
+  box-shadow: 0 18px 40px rgba(35, 29, 69, 0.08);
 }
 
 /* Compliance-progress ring card. Sits on the light landlord hero, so instead
@@ -1611,9 +1695,9 @@ const buyerRecords = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 28px 34px;
-  border-radius: 22px;
+  gap: 9px;
+  padding: 18px 24px;
+  border-radius: 18px;
   background:
     radial-gradient(130% 120% at 50% 0%, rgba(0, 161, 154, 0.1) 0%, transparent 62%),
     linear-gradient(160deg, #ffffff 0%, #f1faf8 100%);
@@ -1646,9 +1730,9 @@ const buyerRecords = [
 
 .lp-hero-book {
   position: relative;
-  width: 190px;
+  width: 148px;
   flex-shrink: 0;
-  filter: drop-shadow(0 18px 34px rgba(20, 20, 32, 0.32));
+  filter: drop-shadow(0 14px 28px rgba(20, 20, 32, 0.3));
 }
 
 .lp-hero-book-img {
@@ -1704,8 +1788,8 @@ const buyerRecords = [
 }
 
 .lp-hero-addr {
-  margin: 10px 0 0;
-  font-size: clamp(26px, 3vw, 38px);
+  margin: 6px 0 0;
+  font-size: clamp(22px, 2.4vw, 30px);
   font-weight: 800;
   color: var(--navy);
   letter-spacing: -0.02em;
@@ -1713,16 +1797,16 @@ const buyerRecords = [
 }
 
 .lp-hero-place {
-  margin: 6px 0 0;
-  font-size: 15.5px;
+  margin: 5px 0 0;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--ink-faint);
 }
 
 .lp-hero-stats {
   display: flex;
-  gap: 34px;
-  margin: 20px 0 22px;
+  gap: 24px;
+  margin: 14px 0 14px;
 }
 
 .lp-stat {
@@ -1732,7 +1816,7 @@ const buyerRecords = [
 }
 
 .lp-stat-num {
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--navy);
   line-height: 1;
@@ -2026,17 +2110,17 @@ const buyerRecords = [
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 36px;
-  padding: 34px 40px;
-  border-radius: 28px;
+  gap: 26px;
+  padding: 22px 28px;
+  border-radius: 24px;
   background:
     radial-gradient(120% 140% at 100% 0%, #2f2760 0%, transparent 55%),
     linear-gradient(135deg, #241e47 0%, #1c1738 100%);
-  box-shadow: 0 30px 60px rgba(35, 29, 69, 0.24);
+  box-shadow: 0 24px 50px rgba(35, 29, 69, 0.22);
 }
 
 .by-hero-book {
-  width: 168px;
+  width: 132px;
   flex-shrink: 0;
 }
 
@@ -2065,8 +2149,8 @@ const buyerRecords = [
 }
 
 .by-hero-addr {
-  margin: 12px 0 0;
-  font-size: clamp(26px, 3vw, 38px);
+  margin: 6px 0 0;
+  font-size: clamp(22px, 2.4vw, 30px);
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.02em;
@@ -2074,17 +2158,17 @@ const buyerRecords = [
 }
 
 .by-hero-place {
-  margin: 8px 0 0;
-  font-size: 16px;
+  margin: 5px 0 0;
+  font-size: 14.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.62);
 }
 
 .by-hero-stats {
   display: flex;
-  gap: 40px;
-  margin-top: 22px;
-  padding-top: 20px;
+  gap: 30px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
@@ -2095,7 +2179,7 @@ const buyerRecords = [
 }
 
 .by-hstat-num {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   line-height: 1;
@@ -2780,6 +2864,97 @@ const buyerRecords = [
   }
   .sp-hero-stats {
     gap: 22px;
+  }
+}
+
+/* ══ Engagement motion ═══════════════════════════════════════════
+   Scroll-reveal for cards, progress-bar fills, and a living passport
+   visual. Entrance uses the individual `translate` property so the
+   card hover (which uses `transform`) keeps working independently. */
+.reveal-el {
+  opacity: 0;
+  translate: 0 20px;
+  transition: opacity 0.6s ease, translate 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-el.is-in {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* Small in-row stagger so a grid row doesn't pop in all at once. */
+.sp-sections .reveal-el:nth-child(2) {
+  transition-delay: 0.07s;
+}
+.sp-sections .reveal-el:nth-child(3) {
+  transition-delay: 0.12s;
+}
+.sp-sections .reveal-el:nth-child(4) {
+  transition-delay: 0.18s;
+}
+
+/* Progress bars sit full at rest and replay the fill sweep only while their
+   card is hovered. Applies to all three perspectives (shared fill classes). */
+.sp-card-fill,
+.by-record-fill,
+.by-completion-fill {
+  transform-origin: left;
+}
+
+.sp-card:hover .sp-card-fill,
+.by-record:hover .by-record-fill,
+.by-completion:hover .by-completion-fill {
+  animation: sp-bar-fill 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes sp-bar-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Living passport visual — gentle float + tilt, straightens & lifts on hover. */
+.sp-hero-book,
+.by-hero-book {
+  animation: sp-book-float 6.5s ease-in-out infinite;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+@keyframes sp-book-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(1.5deg); }
+}
+
+.sp-hero:hover .sp-hero-book,
+.by-hero:hover .by-hero-book {
+  animation-play-state: paused;
+  transform: translateY(-10px) rotate(0deg) scale(1.03);
+}
+
+/* A touch more life on the section-card hover + its arrow. */
+.sp-card:hover {
+  transform: translateY(-5px);
+}
+.sp-card:hover .sp-card-go {
+  transform: scale(1.12);
+  transition: transform 0.2s ease;
+}
+.by-record:hover {
+  transform: translateY(-5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-el {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
+  .sp-card:hover .sp-card-fill,
+  .by-record:hover .by-record-fill,
+  .by-completion:hover .by-completion-fill,
+  .sp-hero-book,
+  .by-hero-book {
+    animation: none;
   }
 }
 </style>
