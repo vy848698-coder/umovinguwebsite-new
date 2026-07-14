@@ -128,41 +128,49 @@ defineProps({
 
 .passport-address {
   position: absolute;
-  bottom: 14%;
+  bottom: 9.5%;
   left: 50%;
   transform: translateX(-50%);
-  width: 76%;
-  max-width: 76%;
+  width: 84%;
+  max-width: 84%;
   text-align: center;
   color: #fff;
-  line-height: 1.15;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 2.5%;
+  /* Soft shadow keeps the label legible on the textured teal cover */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
-/* Address typography scales with the card's container width via cqi.
-   clamp() pins it between sensible min/max so a tiny resume tile stays
-   readable and a large grid tile doesn't blow up. */
+/* Address typography scales with the card's container width via cqi so a
+   tiny 58 px grid thumbnail and a larger tile both stay proportional.
+   Kept small and clamped to 2 clean lines (whole words only) so the block
+   sits neatly in the lower cover and never climbs into the umu logo. */
 .address-line {
-  font-size: clamp(8px, 7.5cqi, 14px);
-  font-weight: 700;
+  font-size: clamp(6.5px, 7cqi, 13px);
+  font-weight: 800;
   margin: 0;
-  letter-spacing: -0.01em;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
+  /* Prefer two balanced lines over one edge-to-edge line */
+  text-wrap: balance;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .address-line-small {
-  font-size: clamp(7px, 5.5cqi, 11px);
-  font-weight: 600;
-  opacity: 0.9;
-  letter-spacing: 0.04em;
+  font-size: clamp(5.5px, 5cqi, 9.5px);
+  font-weight: 700;
+  line-height: 1.1;
+  opacity: 0.95;
+  letter-spacing: 0.06em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -173,10 +181,10 @@ defineProps({
    size — not perfect, but never broken. */
 @supports not (container-type: inline-size) {
   .address-line {
-    font-size: 11px;
+    font-size: 8px;
   }
   .address-line-small {
-    font-size: 9px;
+    font-size: 6.5px;
   }
 }
 </style>
