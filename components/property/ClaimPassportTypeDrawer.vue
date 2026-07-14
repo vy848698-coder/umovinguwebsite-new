@@ -20,10 +20,8 @@
             :class="{ active: chosen === 'seller' }"
             @click="chosen = 'seller'"
           >
-            <div class="cpt-card-icon cpt-card-icon--seller">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z" />
-              </svg>
+            <div class="cpt-card-icon">
+              <img src="/umu-passport.png" alt="" class="cpt-card-passport" />
             </div>
             <div class="cpt-card-body">
               <div class="cpt-card-title">Seller passport</div>
@@ -34,11 +32,7 @@
                 <li>Buyer-shareable digital passport</li>
               </ul>
             </div>
-            <div class="cpt-card-tick">
-              <svg v-if="chosen === 'seller'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
+            <div class="cpt-card-tick"><span class="cpt-card-dot" /></div>
           </button>
 
           <button
@@ -47,11 +41,8 @@
             :class="{ active: chosen === 'landlord' }"
             @click="chosen = 'landlord'"
           >
-            <div class="cpt-card-icon cpt-card-icon--landlord">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
+            <div class="cpt-card-icon">
+              <img src="/landlordPassport.png" alt="" class="cpt-card-passport" />
             </div>
             <div class="cpt-card-body">
               <div class="cpt-card-title">Landlord passport</div>
@@ -62,11 +53,7 @@
                 <li>Tenant-shareable doc bundle</li>
               </ul>
             </div>
-            <div class="cpt-card-tick">
-              <svg v-if="chosen === 'landlord'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
+            <div class="cpt-card-tick"><span class="cpt-card-dot" /></div>
           </button>
 
           <div v-if="chosen === 'landlord'" class="cpt-hmo">
@@ -218,25 +205,24 @@ const confirm = () => {
   transition: all 0.18s;
 }
 .cpt-card:hover { border-color: #d9dee2; }
-.cpt-card.active { border-color: #3dbda3; background: linear-gradient(135deg, #f1f9f4, #ffffff); }
+.cpt-card.active {
+  border-color: #14a892;
+  background: #f1faf6;
+  box-shadow: 0 0 0 3px rgba(20, 168, 146, 0.1);
+}
 
 .cpt-card-icon {
-  width: 40px; height: 40px;
-  border-radius: 11px;
+  width: 48px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   flex-shrink: 0;
-  color: #fff;
 }
-.cpt-card-icon svg { width: 20px; height: 20px; }
-.cpt-card-icon--seller {
-  background: linear-gradient(135deg, #d4a659, #6f4d14);
-  box-shadow: 0 4px 12px rgba(212, 166, 89, 0.32);
-}
-.cpt-card-icon--landlord {
-  background: linear-gradient(135deg, #2c5f56, #143f38);
-  box-shadow: 0 4px 12px rgba(31, 122, 102, 0.32);
+.cpt-card-passport {
+  width: 48px;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .cpt-card-body { flex: 1; min-width: 0; }
@@ -269,19 +255,23 @@ const confirm = () => {
 .cpt-card-tick {
   width: 22px; height: 22px;
   border-radius: 50%;
-  border: 2px solid #d9dee2;
+  border: 2px solid #d3d8dd;
   background: #fff;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  transition: border-color 0.15s;
 }
-.cpt-card.active .cpt-card-tick {
-  background: #3dbda3;
-  border-color: #3dbda3;
+.cpt-card.active .cpt-card-tick { border-color: #14a892; }
+.cpt-card-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #14a892;
+  transform: scale(0);
+  transition: transform 0.15s ease;
 }
-.cpt-card-tick svg { width: 12px; height: 12px; }
+.cpt-card.active .cpt-card-dot { transform: scale(1); }
 
 /* HMO toggle */
 .cpt-hmo { margin-top: 8px; }
@@ -319,7 +309,7 @@ const confirm = () => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   transition: transform 0.2s;
 }
-.cpt-toggle.on { background: #3dbda3; }
+.cpt-toggle.on { background: #14a892; }
 .cpt-toggle.on::after { transform: translateX(18px); }
 
 /* Footer */

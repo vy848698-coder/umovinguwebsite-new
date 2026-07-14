@@ -4472,7 +4472,7 @@ function onHeroPrimaryClick() {
   else onAccessPassport()
 }
 function onSampleClick() {
-  navigateTo('/passport/collections')
+  navigateTo('/passport/sample')
 }
 
 // Real-time per-section status from the backend. Used by the "Passport

@@ -30,21 +30,23 @@
     </header>
 
     <main class="hsw-shell claim-main">
-    <!-- ── Sticky topbar + progress (not shown on fullscreen steps) ── -->
-    <div
-      v-if="!isFullscreenStep"
-      class="cl-topbar"
-    >
-      <button class="cl-back" @click="onBack" aria-label="Back">‹</button>
-      <div class="cl-top-text">
-        <div class="cl-top-title">{{ topbarTitle }}</div>
-        <div v-if="topbarSub" class="cl-top-sub">{{ topbarSub }}</div>
+      <!-- ── Desktop page header (title + progress span the canvas) ── -->
+      <div v-if="!isFullscreenStep" class="claim-head">
+        <button class="cl-back" @click="onBack" aria-label="Back">‹</button>
+        <div class="claim-head-text">
+          <div class="claim-head-title">{{ topbarTitle }}</div>
+          <div v-if="topbarSub" class="claim-head-sub">{{ topbarSub }}</div>
+        </div>
+        <div class="claim-head-prog">
+          <span :style="{ width: `${progressPct}%` }" />
+        </div>
       </div>
-      <div class="cl-spacer" />
-    </div>
-    <div v-if="!isFullscreenStep" class="cl-prog-strip">
-      <span :style="{ width: `${progressPct}%` }" />
-    </div>
+
+      <div
+        class="claim-layout"
+        :class="{ 'claim-layout--full': isFullscreenStep }"
+      >
+        <section class="claim-panel">
 
     <!-- ════════════════════════════ SEARCH ════════════════════════════ -->
     <div v-if="step === 'search'" class="cl-screen">
@@ -499,19 +501,57 @@
       </div>
     </div>
 
+          <!-- Inline CTA (desktop — replaces the mobile fixed action bar) -->
+          <div v-if="showCta" class="cl-cta-inline">
+            <button
+              class="cl-btn-brand"
+              :disabled="ctaDisabled"
+              @click="onPrimary"
+            >
+              <span v-if="ctaLoading" class="cl-btn-spinner" />
+              {{ ctaLabel }}
+            </button>
+          </div>
+
+        </section>
+
+        <!-- Reassurance rail (hidden on the immersive full-screen steps) -->
+        <aside v-if="!isFullscreenStep" class="claim-aside">
+          <div class="claim-aside-card">
+            <div class="claim-aside-eyebrow">Why this is safe</div>
+            <ul class="claim-aside-list">
+              <li>
+                <span class="claim-aside-ic">🏛️</span>
+                <div>
+                  <div class="claim-aside-t">HM Land Registry</div>
+                  <p>Ownership verified against the official register.</p>
+                </div>
+              </li>
+              <li>
+                <span class="claim-aside-ic">🪪</span>
+                <div>
+                  <div class="claim-aside-t">Identity by Persona</div>
+                  <p>Bank-grade ID &amp; liveness checks, used by major UK fintechs.</p>
+                </div>
+              </li>
+              <li>
+                <span class="claim-aside-ic">🔒</span>
+                <div>
+                  <div class="claim-aside-t">Encrypted &amp; private</div>
+                  <p>Your documents are encrypted and never sold.</p>
+                </div>
+              </li>
+            </ul>
+            <div class="claim-aside-trust">
+              <span>🔒 Encrypted</span>
+              <span>🚫 Never sold</span>
+            </div>
+          </div>
+        </aside>
+      </div>
     </main>
 
-    <!-- ════════════════════════════ BOTTOM CTA BAR ════════════════════════════ -->
-    <div v-if="showCta" class="cl-cta-bar">
-      <button
-        class="cl-btn-brand"
-        :disabled="ctaDisabled"
-        @click="onPrimary"
-      >
-        <span v-if="ctaLoading" class="cl-btn-spinner" />
-        {{ ctaLabel }}
-      </button>
-    </div>
+    <SiteFooter />
 
     <ClaimPassportTypeDrawer
       v-model="showTypeDrawer"
@@ -524,6 +564,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -1066,7 +1107,7 @@ async function issuePassport() {
 .claim-root {
   min-height: 100dvh;
   background: #f3f2ef;
-  padding-bottom: 96px;
+  padding-bottom: 0;
   color: #231d45;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Inter, system-ui, sans-serif;
@@ -1237,11 +1278,155 @@ async function issuePassport() {
   height: 15px;
 }
 
-/* ── Wizard column (focused, centered on the web canvas) ──────────── */
+/* ── Desktop wizard canvas ────────────────────────────────────────── */
 .claim-main {
-  padding-top: 30px;
+  padding-top: 40px;
+  padding-bottom: 56px;
   display: flex;
   flex-direction: column;
+}
+
+/* Page header — title + progress span the full canvas width */
+.claim-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: min(100%, 1040px);
+  margin: 0 auto 26px;
+}
+.claim-head-text {
+  min-width: 160px;
+}
+.claim-head-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
+}
+.claim-head-sub {
+  font-size: 12.5px;
+  color: #6b6783;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.claim-head-prog {
+  flex: 1;
+  height: 6px;
+  background: rgba(219, 231, 245, 0.9);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.claim-head-prog span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #00a19a, #4dd4ce);
+  transition: width 0.35s ease;
+}
+
+/* Two-column layout: framed panel + reassurance rail */
+.claim-layout {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+}
+.claim-layout--full {
+  width: min(100%, 640px);
+  grid-template-columns: 1fr;
+}
+
+.claim-panel {
+  background: #fff;
+  border: 1px solid rgba(174, 201, 231, 0.5);
+  border-radius: 22px;
+  padding: 32px 32px 26px;
+  box-shadow:
+    0 18px 44px rgba(17, 52, 88, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+/* Reassurance rail */
+.claim-aside {
+  position: sticky;
+  top: 90px;
+}
+.claim-aside-card {
+  padding: 24px 22px;
+  border: 1px solid rgba(231, 236, 242, 0.9);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 34px rgba(17, 52, 88, 0.06);
+}
+.claim-aside-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+.claim-aside-list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+.claim-aside-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.claim-aside-ic {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+}
+.claim-aside-t {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #231d45;
+  margin-bottom: 2px;
+}
+.claim-aside-list p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6b6783;
+  line-height: 1.5;
+}
+.claim-aside-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f6;
+}
+.claim-aside-trust span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #4a5570;
+  background: #f6fafd;
+  border: 1px solid #e7ecf2;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+/* Inline CTA sits at the foot of the panel (no more mobile fixed bar) */
+.cl-cta-inline {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid #eef2f7;
+}
+.cl-cta-inline .cl-btn-brand {
+  width: 100%;
 }
 
 /* ── Topbar ─────────────────────────────────────────── */
@@ -1312,10 +1497,9 @@ async function issuePassport() {
 
 /* ── Screen ─────────────────────────────────────────── */
 .cl-screen {
-  width: min(100%, 620px);
-  margin: 0 auto;
-  padding: 22px 18px 24px;
-  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   animation: cl-step-enter 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -1362,9 +1546,9 @@ async function issuePassport() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px 24px;
+  padding: 20px 8px;
   text-align: center;
-  min-height: 100vh;
+  min-height: 440px;
 }
 
 .cl-icon-square {
@@ -2069,6 +2253,18 @@ async function issuePassport() {
   }
 }
 
+@media (max-width: 980px) {
+  .claim-layout {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .claim-aside {
+    position: static;
+    top: auto;
+  }
+}
+
 @media (max-width: 899px) {
   .hsw-links {
     display: none;
@@ -2084,17 +2280,17 @@ async function issuePassport() {
 }
 
 @media (max-width: 700px) {
-  .cl-topbar {
-    border-radius: 16px;
-    padding: 12px 14px 8px;
+  .claim-head {
+    flex-wrap: wrap;
   }
 
-  .cl-prog-strip {
-    border-radius: 100px;
+  .claim-head-prog {
+    flex-basis: 100%;
   }
 
-  .cl-screen {
-    padding: 18px 12px 22px;
+  .claim-panel {
+    padding: 22px 16px 20px;
+    border-radius: 18px;
   }
 
   .cl-h1 {

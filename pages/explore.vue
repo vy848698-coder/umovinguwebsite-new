@@ -349,7 +349,7 @@
               Title, planning, surveys, fittings and more — organised, verified
               and ready before you make an offer.
             </p>
-            <button class="ex-btn navy" type="button" @click="navigateTo('/passport/collections')">See a sample Passport →</button>
+            <button class="ex-btn navy" type="button" @click="navigateTo('/passport/sample')">See a sample Passport →</button>
           </div>
 
           <div class="ex-promo-aside">
@@ -496,7 +496,7 @@
           <h5>Get started</h5>
           <button type="button" @click="navigateTo('/homescore')">Free HomeScore</button>
           <button type="button" @click="startClaimFlow">Add a property</button>
-          <button type="button" @click="navigateTo('/passport/collections')">Sample Passport</button>
+          <button type="button" @click="navigateTo('/passport/sample')">Sample Passport</button>
         </div>
       </div>
       <div class="ex-shell ex-footer-bottom">© 2026 umovingu. All rights reserved.</div>
