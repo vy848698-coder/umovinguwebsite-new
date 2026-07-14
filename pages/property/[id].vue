@@ -182,11 +182,8 @@
       <!-- ─── SECTION 2: Quick actions ─────────────────────────────── -->
       <div class="pps-actions">
         <button type="button" class="pps-actionbar" @click="onWatchClick">
-          <span class="pps-actionbar-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .53-.21 1.04-.59 1.41L4 17h5" />
-              <path d="M10 17a2 2 0 0 0 4 0" />
-            </svg>
+          <span class="pps-actionbar-ic pps-actionbar-ic--img">
+            <img src="/property-cards/watchThis.jpeg" alt="" loading="lazy" />
           </span>
           <span class="pps-actionbar-body">
             <strong>{{ pageState === 'progress' ? 'Get notified' : 'Watch this property' }}</strong>
@@ -195,10 +192,8 @@
           <span class="pps-actionbar-arrow">→</span>
         </button>
         <button type="button" class="pps-actionbar" @click="onContactClick">
-          <span class="pps-actionbar-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
+          <span class="pps-actionbar-ic pps-actionbar-ic--img">
+            <img src="/property-cards/askAQuestion.jpeg" alt="" loading="lazy" />
           </span>
           <span class="pps-actionbar-body">
             <strong>{{ pageState === 'published' ? 'Make contact' : 'Ask a question' }}</strong>
@@ -303,9 +298,22 @@
         >
           <div
             class="pps-tile-icon"
-            :style="{ background: tileIcon(tile.key).bg, color: tileIcon(tile.key).color }"
+            :class="{ 'pps-tile-icon--img': tileImage(tile.key) }"
+            :style="
+              tileImage(tile.key)
+                ? {}
+                : { background: tileIcon(tile.key).bg, color: tileIcon(tile.key).color }
+            "
           >
+            <img
+              v-if="tileImage(tile.key)"
+              :src="tileImage(tile.key)"
+              :alt="tile.title"
+              class="pps-tile-img"
+              loading="lazy"
+            />
             <svg
+              v-else
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -689,11 +697,8 @@
         <div class="pps-details-header">Property details</div>
         <div class="pps-details-grid">
           <div v-if="property.propertyType" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 10.5 12 3l9 7.5" />
-                <path d="M5 9.5V21h14V9.5" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/type.jpeg" alt="Type" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">Type</div>
@@ -745,10 +750,8 @@
             </div>
           </div>
           <div v-if="property.epcRating" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M13 2 4.5 13.5H11L9.5 22 19 10h-6.5L13 2z" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/epc.jpeg" alt="EPC rating" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">EPC rating</div>
@@ -761,11 +764,8 @@
             </div>
           </div>
           <div v-if="property.uprn" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="3" width="14" height="18" rx="2" />
-                <path d="M9 8h6M9 12h6M9 16h4" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/uprn.jpeg" alt="UPRN" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">UPRN</div>
@@ -4901,6 +4901,30 @@ function tileIcon(key: string) {
   return TILE_ICON[key] || TILE_ICON_FALLBACK
 }
 
+// Illustrated card artwork (public/property-cards/*). When a tile key has a
+// matching image it replaces the flat line-art glyph; keys without artwork
+// fall back to the SVG above. Paths are pre-encoded for the spaces/ampersands
+// in the original filenames.
+const TILE_IMAGE: Record<string, string> = {
+  history: '/property-cards/propertyHistory.jpeg',
+  street: '/property-cards/streetData.jpeg',
+  schools: '/property-cards/schools.jpeg',
+  trains: '/property-cards/trainstations.jpeg',
+  buses: '/property-cards/busStops.jpeg',
+  airports: '/property-cards/airports.jpeg',
+  map: '/property-cards/locationAndMap.jpeg',
+  flood: '/property-cards/floodAndRisj.jpeg',
+  planning: '/property-cards/planning.jpeg',
+  council: '/property-cards/councilTax.jpeg',
+  broadband: '/property-cards/broadband.jpeg',
+  'stamp-duty': '/property-cards/stampDuty.jpeg',
+  listed: '/property-cards/listedBuildings.jpeg',
+  crime: '/property-cards/crime.jpeg',
+}
+function tileImage(key: string): string | null {
+  return TILE_IMAGE[key] || null
+}
+
 const stampDutyEstimate = computed<number>(() => {
   const price = estimatedPrice.value || 0
   if (price <= 250000) return 0
@@ -6866,6 +6890,15 @@ function formatSaleDate(dateStr: string): string {
   width: 20px;
   height: 20px;
 }
+.pps-actionbar-ic--img {
+  background: #fff;
+  overflow: hidden;
+}
+.pps-actionbar-ic--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .pps-actionbar-body {
   flex: 1;
   min-width: 0;
@@ -7652,6 +7685,16 @@ function formatSaleDate(dateStr: string): string {
   width: 22px;
   height: 22px;
 }
+.pps-tile-icon--img {
+  background: transparent;
+  overflow: hidden;
+}
+.pps-tile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 .pps-tile-title {
   font-size: 16px;
   font-weight: 800;
@@ -8265,6 +8308,16 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
 .pps-detail-tile-icon svg {
   width: 20px;
   height: 20px;
+}
+.pps-detail-tile-icon--img {
+  padding: 0;
+  overflow: hidden;
+}
+.pps-detail-tile-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
 }
 .pps-detail-tile-body {
   min-width: 0;

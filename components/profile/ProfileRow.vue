@@ -99,6 +99,21 @@ function onClick(e) {
   border-color: #e2e8f0;
   color: #4a5568;
 }
+/* Photo tone: holds a full-colour illustration, so keep the tile plain white
+   and let the image fill it edge to edge. */
+.prow-icon--photo {
+  background: #fff;
+  border-color: #eef0f6;
+  color: inherit;
+  padding: 0;
+  overflow: hidden;
+}
+.prow-icon--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
 .prow-emoji {
   font-size: 18px;
   line-height: 1;
