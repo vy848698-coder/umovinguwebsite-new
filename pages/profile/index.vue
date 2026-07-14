@@ -573,7 +573,7 @@ const deleteAccount = async () => {
 
 .pf-quick-btn.solid {
   border-color: transparent;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  background: #00a19a;
   color: #fff;
 }
 
@@ -1076,7 +1076,7 @@ const deleteAccount = async () => {
   height: 52px;
   border-radius: 13px;
   border: 0;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   display: inline-flex;
   align-items: center;

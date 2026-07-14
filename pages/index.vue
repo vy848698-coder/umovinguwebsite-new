@@ -65,23 +65,11 @@
               for — so you sell without the surprises, and stay in control.
             </p>
 
-            <form class="lp-hero-search" @submit.prevent="onHomeScoreCheckClick">
-              <div class="lp-hero-search-field">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lp-pin">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" />
-                </svg>
-                <PropertySearchInput
-                  placeholder="Postcode or address"
-                  variant="light"
-                  :show-passport-status="true"
-                  @select="onHomeScoreResultSelect"
-                  @enter="onHomeScoreSearchEnter"
-                />
-              </div>
-              <button class="lp-btn lp-btn--solid lp-btn--lg" type="submit" @click="trackCtaClick('hero_search_button', '/homescore')">
-                {{ primaryCtaLabel === 'Check HomeScore' ? 'Check my HomeScore — free' : primaryCtaLabel }}
+            <div class="lp-hero-cta">
+              <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScoreFrom('hero_cta')">
+                Check my HomeScore — free
               </button>
-            </form>
+            </div>
 
             <ul class="lp-hero-ticks">
               <li>No card needed</li>
@@ -93,7 +81,7 @@
           <!-- Passport card mockup -->
           <div class="lp-hero-visual">
             <article class="lp-passport-card">
-              <span class="lp-passport-kicker">Property Passport</span>
+              <span class="lp-passport-kicker">Your HomeScore</span>
               <div class="lp-passport-logo">
                 <img src="/op-icons/logo.svg" alt="umu" class="lp-passport-logo-mark" />
               </div>
@@ -101,12 +89,28 @@
                 <strong>55, Woodfield Road</strong>
                 <span>Coventry · CV5 6AJ</span>
               </div>
-              <div class="lp-passport-stats">
-                <div><b>17<small>/17</small></b><span>Sections</span></div>
-                <div><b>38</b><span>Documents</span></div>
-                <div><b>74</b><span>HomeScore</span></div>
+              <div class="lp-hs-top">
+                <div class="lp-hs-ring-wrap">
+                  <svg class="lp-hs-ring" viewBox="0 0 140 140">
+                    <circle class="lp-hs-ring-bg" cx="70" cy="70" r="58" />
+                    <circle class="lp-hs-ring-meter" cx="70" cy="70" r="58" />
+                  </svg>
+                  <div class="lp-hs-center"><strong>74</strong><span>Good</span></div>
+                </div>
+                <ul class="lp-hs-rows">
+                  <li><span>Bills vs. your street</span><b class="warn">22% above</b></li>
+                  <li><span>EPC rating</span><b>C</b></li>
+                  <li><span>Potential saving</span><b class="up">£330/yr</b></li>
+                  <li><span>Value vs. neighbours</span><b class="up">+£13k</b></li>
+                </ul>
               </div>
-              <div class="lp-passport-issued"><i class="lp-tick" />Passport issued · 100% complete</div>
+              <div class="lp-hs-note">
+                <span class="lp-hs-note-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                </span>
+                <p>Add your real bills and improvements to sharpen your score — then move from
+                <strong>HomeScore</strong> to a <strong>Property Passport</strong> when you're move-ready.</p>
+              </div>
             </article>
 
             <div class="lp-badge lp-badge--solicitor lp-float-b">
@@ -207,50 +211,6 @@
         </div>
       </section>
 
-      <!-- ─────────────────── HOMESCORE / COMPARE ─────────────────── -->
-      <section id="homescore" class="lp-section reveal" data-reveal>
-        <div class="lp-shell lp-split">
-          <article class="lp-card lp-score-card">
-            <div class="lp-score-top">
-              <div class="lp-score-ring-wrap">
-                <svg class="lp-score-ring" viewBox="0 0 140 140">
-                  <circle class="lp-ring-bg" cx="70" cy="70" r="58" />
-                  <circle class="lp-ring-meter" cx="70" cy="70" r="58" />
-                </svg>
-                <div class="lp-score-center"><strong>{{ displayScore }}</strong><span>Good</span></div>
-              </div>
-              <ul class="lp-score-rows">
-                <li><span>Bills vs. your street</span><b class="warn">22% above</b></li>
-                <li><span>EPC rating</span><b>C</b></li>
-                <li><span>Potential saving</span><b class="up">£330/yr</b></li>
-                <li><span>Value vs. neighbours</span><b class="up">+£13k</b></li>
-              </ul>
-            </div>
-            <div class="lp-score-note">
-              <span class="lp-score-note-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </span>
-              <p>Add your real bills and improvements to sharpen your score — then move from
-              <strong>HomeScore</strong> to a <strong>Property Passport</strong> when you're move-ready.</p>
-            </div>
-          </article>
-
-          <div class="lp-copy">
-            <p class="lp-eyebrow">The free first step</p>
-            <h2 class="lp-h2 lp-h2--sans">How does your<br />home compare<span class="lp-q">?</span></h2>
-            <p class="lp-lede">
-               Bills vs. street. Value vs. neighbours. Where you could save. In 60 seconds.
-            </p>
-            <ol class="lp-steps">
-              <li><span class="lp-step-n">1</span><div><strong>Enter your address</strong><p>No sign-up, no card. We pull live data from HM Land Registry and public records.</p></div></li>
-              <li><span class="lp-step-n">2</span><div><strong>See your score in seconds</strong><p>Bills, energy and value scored out of 100 — compared to your street and neighbours.</p></div></li>
-              <li><span class="lp-step-n">3</span><div><strong>Sharpen it, then go move-ready</strong><p>Add your real bills and improvements to confirm your score — the on-ramp to a Property Passport.</p></div></li>
-            </ol>
-            <button class="lp-btn lp-btn--navy lp-btn--lg" type="button" @click="goToHomeScore">See how my home compares</button>
-          </div>
-        </div>
-      </section>
-
       <!-- ───────────────────── PASSPORT (DARK) ───────────────────── -->
       <section id="passport" class="lp-section lp-dark reveal" data-reveal>
         <div class="lp-shell lp-split lp-split--passport">
@@ -282,7 +242,7 @@
                 Open the live Property Passport — 17 <span class="lp-hl">verified sections</span>, <span class="lp-hl">documents</span>,
                 <span class="lp-hl">buyer matching</span> and collaborator access.
               </p>
-              <button class="lp-btn lp-btn--solid lp-btn--block" type="button" @click="navigateTo('/passport/collections')">Open the sample Passport</button>
+              <button class="lp-btn lp-btn--solid lp-btn--block" type="button" @click="navigateTo('/passport/sample')">Open the sample Passport</button>
             </article>
           </div>
         </div>
@@ -374,7 +334,7 @@
           </p>
           <div class="lp-cta-actions">
             <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScore">Get my free HomeScore</button>
-            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg lp-btn--icon" type="button" @click="navigateTo('/passport/collections')"><OPIcon name="passport" class="lp-btn-ic" />See a sample Passport</button>
+            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg lp-btn--icon" type="button" @click="navigateTo('/passport/sample')"><OPIcon name="passport" class="lp-btn-ic" />See a sample Passport</button>
           </div>
           <p class="lp-cta-foot">No card needed · Free HomeScore · Property Passport from day one</p>
         </div>
@@ -415,7 +375,7 @@
             <h5>Get started</h5>
             <button type="button" @click="navigateTo('/homescore')">Free HomeScore</button>
             <button type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
-            <button type="button" @click="navigateTo('/passport/collections')">Sample Passport</button>
+            <button type="button" @click="navigateTo('/passport/sample')">Sample Passport</button>
           </div>
         </div>
         <div class="lp-shell lp-footer-bottom">© 2026 umovingu. All rights reserved.</div>
@@ -587,9 +547,7 @@ const primaryCtaLabel = computed(() =>
   ctaVariant.value === 'A' ? 'Check HomeScore' : 'Start in 60 seconds',
 )
 
-const stickyCtaLabel = computed(() =>
-  ctaVariant.value === 'A' ? 'Check your HomeScore' : 'Start your Property Passport',
-)
+const stickyCtaLabel = computed(() => 'Check your HomeScore')
 
 
 function scrollToTop() {
@@ -654,11 +612,6 @@ function onHomeScoreCheckClick() {
 }
 
 function goToStickyCtaDestination() {
-  if (ctaVariant.value === 'B') {
-    trackCtaClick('sticky_cta', '/passport/collections')
-    navigateTo('/passport/collections')
-    return
-  }
   goToHomeScoreFrom('sticky_cta')
 }
 
@@ -1030,6 +983,8 @@ onUnmounted(() => {
 }
 .lp-hero-sub strong { color: var(--navy); font-weight: 700; }
 
+.lp-hero-cta { margin-bottom: 20px; }
+.lp-hero-cta .lp-btn--lg { padding: 15px 26px; font-size: 16px; }
 .lp-hero-search {
   position: relative;
   display: flex;
@@ -1191,6 +1146,84 @@ onUnmounted(() => {
   font-weight: 700;
   padding: 7px 12px;
   border-radius: 9px;
+}
+
+/* HomeScore content inside the dark hero card (ring + compare rows + note) */
+.lp-hs-top {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 18px;
+  align-items: center;
+  margin: 20px 0 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.lp-hs-ring-wrap { position: relative; width: 104px; height: 104px; }
+.lp-hs-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.lp-hs-ring-bg, .lp-hs-ring-meter { fill: none; stroke-width: 11; }
+.lp-hs-ring-bg { stroke: rgba(255, 255, 255, 0.12); }
+.lp-hs-ring-meter {
+  stroke: var(--teal-bright);
+  stroke-linecap: round;
+  stroke-dasharray: 364;
+  stroke-dashoffset: 95;
+  animation: lp-hs-draw 1.4s cubic-bezier(0.25, 1, 0.3, 1) both;
+}
+@keyframes lp-hs-draw {
+  from { stroke-dashoffset: 364; }
+  to { stroke-dashoffset: 95; }
+}
+.lp-hs-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.lp-hs-center strong { font-size: 34px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -1px; }
+.lp-hs-center span { font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--teal-bright); margin-top: 4px; }
+.lp-hs-rows { list-style: none; margin: 0; padding: 0; }
+.lp-hs-rows li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.lp-hs-rows li:first-child { padding-top: 0; }
+.lp-hs-rows li:last-child { border-bottom: 0; padding-bottom: 0; }
+.lp-hs-rows span { color: rgba(255, 255, 255, 0.6); line-height: 1.3; }
+.lp-hs-rows b { color: #fff; font-weight: 700; text-align: right; }
+.lp-hs-rows b.up { color: var(--teal-bright); }
+.lp-hs-rows b.warn { color: #e6a94e; }
+.lp-hs-note {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(0, 161, 154, 0.12);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 14px;
+  padding: 14px;
+}
+.lp-hs-note-ic {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal-bright);
+  color: #10233f;
+  display: grid;
+  place-items: center;
+}
+.lp-hs-note-ic svg { width: 15px; height: 15px; }
+.lp-hs-note p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+.lp-hs-note p strong { color: #fff; font-weight: 800; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-hs-ring-meter { animation: none; }
 }
 .lp-passport-progress-head {
   display: flex;
@@ -1963,7 +1996,7 @@ onUnmounted(() => {
   box-shadow: 0 16px 34px rgba(0, 161, 154, 0.4);
   cursor: pointer;
 }
-.variant-b .lp-sticky-cta { background: var(--navy); box-shadow: 0 16px 34px rgba(35, 29, 69, 0.4); }
+.variant-b .lp-sticky-cta { background: #00a19a; box-shadow: 0 16px 34px rgba(0, 161, 154, 0.4); }
 
 /* ── Reveal / animation ──────────────────────────────────────────── */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
@@ -2033,6 +2066,11 @@ onUnmounted(() => {
   .lp-passport-card { transform: none; margin: 0 auto; max-width: 320px; }
   .lp-badge--solicitor { top: -10px; right: 0; max-width: 200px; }
   .lp-badge--score { bottom: -10px; left: 0; }
+
+  /* Keep the hero HomeScore ring + rows comfortable on narrow screens */
+  .lp-hs-top { grid-template-columns: 88px 1fr; gap: 14px; }
+  .lp-hs-ring-wrap { width: 88px; height: 88px; }
+  .lp-hs-center strong { font-size: 30px; }
 
   /* HomeScore card — stack ring above the rows so it never squeezes */
   .lp-score-top { grid-template-columns: 1fr; gap: 20px; justify-items: center; }

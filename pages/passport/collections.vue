@@ -88,12 +88,15 @@
             <span class="ppw-dots" />
             <div class="ppw-visual-glow" />
             <article class="ppw-book">
-              <span class="ppw-book-shine" />
-              <span class="ppw-book-kicker">Property Passport</span>
-              <span class="ppw-book-mark">
-                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 30 32 12l22 18" /><path d="M16 27v23h32V27" /><path d="M27 50V37h10v13" /></svg>
-              </span>
-              <span class="ppw-book-addr"><b>{{ heroBook.line1 }}</b><span>{{ heroBook.line2 }}</span></span>
+              <img
+                src="/umu-passport.png"
+                alt="umovingu Property Passport"
+                class="ppw-book-img"
+              />
+              <div class="ppw-book-plate">
+                <span class="ppw-book-line1">{{ heroBook.line1 }}</span>
+                <span class="ppw-book-line2">{{ heroBook.line2 }}</span>
+              </div>
             </article>
 
             <div class="ppw-chip ppw-chip--docs">
@@ -1224,56 +1227,51 @@ const executeDelete = async () => {
 .ppw-book {
   position: relative;
   z-index: 1;
-  width: 208px;
-  height: 290px;
-  border-radius: 8px 16px 16px 8px;
-  background:
-    linear-gradient(150deg, #1f6b5f 0%, #14564c 45%, #0e3f37 100%);
-  box-shadow:
-    0 40px 70px rgba(14, 58, 52, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  color: #e3d3a4;
+  width: 232px;
+  transform: rotate(-6deg);
+  animation: ppw-sway 7s ease-in-out infinite;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Real passport artwork — the PNG carries its own cover + soft shadow */
+.ppw-book-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Sample address + reference embossed into the empty lower cover */
+.ppw-book-plate {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 13%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 30px 22px;
-  transform: rotate(-6deg);
-  animation: ppw-sway 7s ease-in-out infinite;
-  overflow: hidden;
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Spine shadow on the left */
-.ppw-book::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 14px;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0));
-}
-
-/* Page edge highlight on the right */
-.ppw-book::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 5px;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.08));
-}
-
-/* Soft diagonal sheen across the cover */
-.ppw-book-shine {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 38%);
+  gap: 3px;
+  text-align: center;
   pointer-events: none;
+}
+
+.ppw-book-line1 {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.ppw-book-line2 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 @keyframes ppw-sway {
@@ -1281,14 +1279,10 @@ const executeDelete = async () => {
   50% { transform: rotate(-2.5deg); }
 }
 
-/* Book straightens, lifts and deepens its shadow on hover; the chips drift
-   outward so the layered stack reads with depth. */
+/* Book straightens and lifts on hover; the chips drift outward for depth. */
 .ppw-visual:hover .ppw-book {
   animation-play-state: paused;
   transform: rotate(0deg) translateY(-6px) scale(1.025);
-  box-shadow:
-    0 50px 90px rgba(14, 58, 52, 0.46),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .ppw-book-kicker {

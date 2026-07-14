@@ -126,8 +126,8 @@
 const router = useRouter()
 
 function goToPassportSample() {
-  // Landing page deck has the full sample passport viewer (seller / landlord / buyer)
-  router.push('/?sample=seller')
+  // Public sample passport page (seller / landlord / buyer perspectives)
+  router.push('/passport/sample')
 }
 </script>
 
