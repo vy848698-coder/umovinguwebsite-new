@@ -2751,7 +2751,13 @@
             @click="triggerDocUpload(doc.key)"
           >
             <div class="boost-doc-icon" :style="{ background: doc.bg }">
-              {{ doc.icon }}
+              <img
+                v-if="doc.img"
+                :src="doc.img"
+                :alt="doc.label"
+                class="boost-doc-icon-img"
+              />
+              <template v-else>{{ doc.icon }}</template>
             </div>
             <div class="boost-doc-body">
               <div class="boost-doc-title">{{ doc.label }}</div>
@@ -2782,7 +2788,13 @@
             @click="openMarketplace"
           >
             <div class="boost-doc-icon" :style="{ background: pro.bg }">
-              {{ pro.icon }}
+              <img
+                v-if="pro.img"
+                :src="pro.img"
+                :alt="pro.label"
+                class="boost-doc-icon-img"
+              />
+              <template v-else>{{ pro.icon }}</template>
             </div>
             <div class="boost-doc-body">
               <div class="boost-doc-title">{{ pro.label }}</div>
@@ -5940,6 +5952,7 @@ const qwDocs = [
     sub: 'See your actual spend vs your EPC estimate — most impactful first step',
     pts: 12,
     icon: '💡',
+    img: '/Boost/utilityBills.png',
     bg: '#FFFBEB',
   },
   {
@@ -5994,6 +6007,7 @@ const qwPros = [
     label: 'Book a Gas Safe engineer',
     sub: 'Service your boiler · cert auto-lands in your score',
     icon: '🛠️',
+    img: '/Boost/gasSafety.png',
     bg: '#fef3c7',
   },
   {
@@ -6001,6 +6015,7 @@ const qwPros = [
     label: 'Book an electrician (EICR)',
     sub: 'Electrical check · from £150',
     icon: '⚡',
+    img: '/Boost/electrician.png',
     bg: '#eff6ff',
   },
   {
@@ -6008,6 +6023,7 @@ const qwPros = [
     label: 'New EPC assessment',
     sub: 'From £60 · required if yours is 10+ years old',
     icon: '🏡',
+    img: '/Boost/epcAssessment.png',
     bg: '#f0fdf4',
   },
 ]
@@ -15325,6 +15341,12 @@ watch(screen, (s) => {
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.boost-doc-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 .boost-doc-body {
   flex: 1;

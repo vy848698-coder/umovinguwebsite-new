@@ -63,7 +63,7 @@
         <section class="sp-hero">
           <!-- passport card -->
           <div class="sp-hero-book">
-            <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+            <PassportCard hero line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
           </div>
 
           <!-- middle info -->
@@ -167,7 +167,7 @@
         <div class="sp-sections">
           <article v-for="s in sections" :key="s.title" class="sp-card" data-reveal-card>
             <div class="sp-card-head">
-              <span class="sp-card-ic" v-html="s.icon" />
+              <span class="sp-card-ic sp-card-ic--img" v-html="s.icon" />
               <div class="sp-card-titles">
                 <h3>{{ s.title }}</h3>
                 <p>{{ s.points }} points earned so far</p>
@@ -383,7 +383,7 @@
           <!-- ── Verified hero ─────────────────────────────────────── -->
           <section class="by-hero">
             <div class="by-hero-book">
-              <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+              <PassportCard hero line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
             </div>
             <div class="by-hero-info">
               <span class="by-hero-kicker">
@@ -696,7 +696,7 @@ const sections = [
     docs: '2/2',
     questions: '3/3',
     pct: 100,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>',
+    icon: '<img src="/sample-passport-icon/titleDeedsAndPlan.png" alt="" />',
   },
   {
     title: 'Searches',
@@ -704,7 +704,7 @@ const sections = [
     docs: '3/3',
     questions: '4/4',
     pct: 100,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>',
+    icon: '<img src="/sample-passport-icon/searches.png" alt="" />',
   },
   {
     title: 'Fixtures and Fittings',
@@ -712,7 +712,7 @@ const sections = [
     docs: '24/24',
     questions: '6/6',
     pct: 100,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0-2-2z"/><path d="M5 11V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3"/><path d="M8 11v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><line x1="5" y1="20" x2="5" y2="17"/><line x1="19" y1="20" x2="19" y2="17"/></svg>',
+    icon: '<img src="/sample-passport-icon/fixturesAndFittings.png" alt="" />',
   },
   {
     title: 'Boundaries',
@@ -720,7 +720,7 @@ const sections = [
     docs: '1/1',
     questions: '3/3',
     pct: 100,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 8 6-3-6-3v10"/><path d="m8 11.99-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4.86a1 1 0 0 0 0-1.74L18 12"/><path d="m6.49 12.85 11.02 6.3"/><path d="M17.51 12.85 6.5 19.15"/></svg>',
+    icon: '<img src="/sample-passport-icon/boundaries.png" alt="" />',
   },
 ]
 
@@ -737,8 +737,8 @@ const landlordGroups = [
         pct: 68,
         tone: 'amber',
         foot: 'Action by 30 May',
-        iconClass: 'sp-card-ic--amber',
-        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+        iconClass: 'sp-card-ic--amber sp-card-ic--emoji',
+        icon: '🔥',
       },
       {
         title: 'Electrical Safety (EICR)',
@@ -747,8 +747,8 @@ const landlordGroups = [
         status: { label: 'Satisfactory', tone: 'ok' },
         pct: 100,
         tone: 'teal',
-        iconClass: 'sp-card-ic--green',
-        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9 13 2"/></svg>',
+        iconClass: 'sp-card-ic--green sp-card-ic--emoji',
+        icon: '⚡',
       },
     ],
   },
@@ -762,8 +762,8 @@ const landlordGroups = [
         status: { label: 'Active', tone: 'ok' },
         pct: 100,
         tone: 'teal',
-        iconClass: 'sp-card-ic--cream',
-        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V6z"/><path d="M4 7v14a2 2 0 0 0 2 2h9"/><line x1="10" y1="9" x2="16" y2="9"/><line x1="10" y1="13" x2="16" y2="13"/><line x1="10" y1="17" x2="13" y2="17"/></svg>',
+        iconClass: 'sp-card-ic--cream sp-card-ic--emoji',
+        icon: '📄',
       },
     ],
   },
@@ -777,8 +777,8 @@ const landlordGroups = [
         status: { label: 'Active', tone: 'ok' },
         pct: 100,
         tone: 'teal',
-        iconClass: 'sp-card-ic--red',
-        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+        iconClass: 'sp-card-ic--red sp-card-ic--emoji',
+        icon: '🛡️',
       },
     ],
   },
@@ -843,26 +843,26 @@ const buyerRecords = [
   {
     title: 'Title Deeds and Plan',
     sub: 'Official copies and title plan.',
-    thumb: 'by-record-thumb--teal',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>',
+    thumb: 'by-record-thumb--img',
+    icon: '<img src="/sample-passport-icon/titleDeedsAndPlan.png" alt="" />',
   },
   {
     title: 'Searches',
     sub: 'Local authority, water and environmental searches.',
-    thumb: 'by-record-thumb--blue',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>',
+    thumb: 'by-record-thumb--img',
+    icon: '<img src="/sample-passport-icon/searches.png" alt="" />',
   },
   {
     title: 'Fixtures and Fittings',
     sub: 'What stays and what goes (TA10).',
-    thumb: 'by-record-thumb--amber',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0-2-2z"/><path d="M5 11V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3"/><path d="M8 11v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/></svg>',
+    thumb: 'by-record-thumb--img',
+    icon: '<img src="/sample-passport-icon/fixturesAndFittings.png" alt="" />',
   },
   {
     title: 'Boundaries',
     sub: 'Fences, walls and boundary responsibilities.',
-    thumb: 'by-record-thumb--green',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 8 6-3-6-3v10"/><path d="m8 11.99-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4.86a1 1 0 0 0 0-1.74L18 12"/><path d="m6.49 12.85 11.02 6.3"/><path d="M17.51 12.85 6.5 19.15"/></svg>',
+    thumb: 'by-record-thumb--img',
+    icon: '<img src="/sample-passport-icon/boundaries.png" alt="" />',
   },
 ]
 </script>
@@ -1513,9 +1513,22 @@ const buyerRecords = [
   flex-shrink: 0;
 }
 
-.sp-card-ic :deep(svg) {
-  width: 22px;
-  height: 22px;
+/* Illustrated PNG icons (seller sections) — let the artwork fill the tile */
+.sp-card-ic--img {
+  background: transparent;
+  border-radius: 12px;
+}
+
+.sp-card-ic--img :deep(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Emoji icons (landlord cards) sit on the tinted tile */
+.sp-card-ic--emoji {
+  font-size: 24px;
+  line-height: 1;
 }
 
 .sp-card-titles {
@@ -2623,29 +2636,15 @@ const buyerRecords = [
   flex-shrink: 0;
 }
 
-.by-record-thumb :deep(svg) {
-  width: 26px;
-  height: 26px;
+/* Illustrated PNG record icons */
+.by-record-thumb--img {
+  background: transparent;
 }
 
-.by-record-thumb--teal {
-  background: rgba(0, 161, 154, 0.12);
-  color: var(--teal);
-}
-
-.by-record-thumb--blue {
-  background: rgba(45, 108, 223, 0.12);
-  color: #2d6cdf;
-}
-
-.by-record-thumb--amber {
-  background: rgba(214, 158, 46, 0.16);
-  color: #cf9b2c;
-}
-
-.by-record-thumb--green {
-  background: rgba(52, 168, 110, 0.14);
-  color: #2f9e63;
+.by-record-thumb--img :deep(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .by-record-body {

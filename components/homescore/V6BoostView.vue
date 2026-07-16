@@ -151,7 +151,10 @@
          see their progress. Only the next-unuploaded card is rendered
          after them; later docs stay hidden until their turn. -->
     <div v-for="d in completedDocs" :key="d.id" class="boost-row added">
-      <div class="boost-row-icon" :class="d.tone"><Icon :name="d.icon" /></div>
+      <div class="boost-row-icon" :class="[d.tone, { 'has-img': d.img }]">
+        <img v-if="d.img" :src="d.img" :alt="d.title" class="boost-row-icon-img" />
+        <Icon v-else :name="d.icon" />
+      </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ d.title }}</div>
         <div class="boost-row-sub">Verified · +{{ d.mrDelta }}% Move Ready</div>
@@ -164,8 +167,14 @@
       class="boost-row boost-row--active"
       @click="onAddDoc(currentDoc.id)"
     >
-      <div class="boost-row-icon" :class="currentDoc.tone">
-        <Icon :name="currentDoc.icon" />
+      <div class="boost-row-icon" :class="[currentDoc.tone, { 'has-img': currentDoc.img }]">
+        <img
+          v-if="currentDoc.img"
+          :src="currentDoc.img"
+          :alt="currentDoc.title"
+          class="boost-row-icon-img"
+        />
+        <Icon v-else :name="currentDoc.icon" />
       </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ currentDoc.title }}</div>
@@ -247,7 +256,10 @@
       class="boost-row"
       @click="$emit('view-report', b.id)"
     >
-      <div class="boost-row-icon" :class="b.tone"><Icon :name="b.icon" /></div>
+      <div class="boost-row-icon" :class="[b.tone, { 'has-img': b.img }]">
+        <img v-if="b.img" :src="b.img" :alt="b.title" class="boost-row-icon-img" />
+        <Icon v-else :name="b.icon" />
+      </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ b.title }}</div>
         <div class="boost-row-sub">{{ b.sub }}</div>
@@ -388,6 +400,7 @@ const docs = [
   {
     id: 'bills',
     icon: 'i-lucide-lightbulb',
+    img: '/Boost/utilityBills.png',
     tone: 'yellow',
     title: 'Utility bills',
     sub: 'See your actual spend vs your EPC estimate — most impactful first step',
@@ -427,6 +440,7 @@ const bookings = [
   {
     id: 'gas-safe',
     icon: 'i-lucide-flame',
+    img: '/Boost/gasSafety.png',
     tone: 'amber',
     title: 'Book a Gas Safe engineer',
     sub: 'Service your boiler · cert auto-lands in your score',
@@ -434,6 +448,7 @@ const bookings = [
   {
     id: 'eicr',
     icon: 'i-lucide-zap',
+    img: '/Boost/electrician.png',
     tone: 'violet',
     title: 'Book an electrician (EICR)',
     sub: 'Electrical check · from £150',
@@ -441,6 +456,7 @@ const bookings = [
   {
     id: 'new-epc',
     icon: 'i-lucide-house',
+    img: '/Boost/epcAssessment.png',
     tone: 'green',
     title: 'New EPC assessment',
     sub: 'From £60 · required if yours is 10+ years old',
@@ -1307,6 +1323,17 @@ function formatFileSize(bytes: number): string {
   justify-content: center;
   font-size: 22px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.boost-row-icon-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+/* Rows showing a real PNG icon sit on plain white, not the tinted tile.
+   Extra .has-img raises specificity above the .boost-row-icon.<tone> rules. */
+.boost-row-icon.has-img.has-img {
+  background: #fff;
 }
 .boost-row-icon.yellow {
   background: #fff6d5;

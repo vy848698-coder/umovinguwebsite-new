@@ -460,6 +460,7 @@ const profileItems = [
     title: 'Learn & Ask AI',
     description: 'Get expert guidance and answers at any step.',
     icon: 'learnAskAI',
+    image: '/profile%20new%20icon/learnAdnAskAi.jpeg',
     route: '/profile/learn',
   },
 ]

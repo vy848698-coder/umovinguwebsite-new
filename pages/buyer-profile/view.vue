@@ -604,7 +604,9 @@ function goEdit() { router.push('/buyer-profile/build') }
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  position: relative; overflow-x: hidden;
+  /* clip (not hidden) so it doesn't create a scroll container that breaks
+     position: sticky on the left profile panel */
+  position: relative; overflow-x: clip;
 }
 
 /* ── Ambient orbs ── */
@@ -672,13 +674,21 @@ function goEdit() { router.push('/buyer-profile/build') }
   box-shadow: 0 14px 36px rgba(15, 44, 76, 0.07);
   overflow: hidden;
   animation: bp-fadeUp 0.4s 0.1s both;
+  /* Track the taller right column instead of leaving dead space on scroll */
+  position: sticky;
+  top: 82px;
+  align-self: start;
 }
 .bpvw-aside-body {
   display: flex; flex-direction: column; gap: 18px;
   padding: 22px;
 }
-.bpvw-content { display: flex; flex-direction: column; align-items: stretch; gap: 28px; min-width: 0; }
+.bpvw-content { display: flex; flex-direction: column; align-items: stretch; gap: 0; min-width: 0; }
 .bpvw-content > * { width: 100%; }
+/* Spacing rhythm: header hugs its content, sections get a larger gap between them */
+.bpvw-content > .section-header { margin-bottom: 16px; }
+.bpvw-content > .section-header:not(:first-child) { margin-top: 34px; }
+.bpvw-content > .bp-access-banner { margin-bottom: 20px; }
 
 /* ── Loading / empty ── */
 .bp-loading { padding: 80px 22px; text-align: center; color: #6b6783; font-size: 13px; font-weight: 600; }

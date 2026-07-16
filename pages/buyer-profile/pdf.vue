@@ -200,6 +200,8 @@
         </aside>
       </div>
     </main>
+
+    <SiteFooter />
   </div>
 </template>
 
@@ -212,6 +214,7 @@ import {
 import { useProfile } from '~/composables/useProfile'
 import { useAppToast } from '~/composables/useCustomToast'
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({ title: 'Profile PDF — UmovingU', middleware: 'auth' })
 
@@ -646,6 +649,7 @@ function downloadPdf() {
 @media print {
   .pv-side, .pv-head, .pv-ambient { display: none !important; }
   :deep(.bpnav) { display: none !important; }
+  :deep(.uf) { display: none !important; }
   .pv-page { background: white; }
   .pv-shell { width: 100%; padding: 0; }
   .pv-grid { display: block; }
