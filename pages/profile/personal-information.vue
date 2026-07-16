@@ -274,33 +274,27 @@
       :title="`Change ${contactEditLabel}`"
       :show-back-button="false"
     >
-      <div class="pt-1 pb-2">
-        <p class="text-[15px] leading-[24px] text-[#7f8084]">
-          The changes will reflect immediately.
-        </p>
+      <div class="pi-df-wrap">
+        <p class="pi-df-note">The changes will reflect immediately.</p>
         <div
           v-if="contactDetails[activeContactIndex]?.key === 'phone'"
-          class="mt-6"
+          class="pi-df"
         >
+          <span class="pi-df-label">Phone number</span>
           <PhoneInput v-model="contactEditValue" />
-          <p class="mt-2 text-[13px] text-[#8e8e93]">
+          <p class="pi-df-hint">
             Select your country code, then enter your number without the leading
             0.
           </p>
         </div>
-        <label v-else class="mt-6 block">
-          <div
-            class="h-16 rounded-[20px] border border-[#e2e2e7] bg-[#f4f4f5] flex items-center gap-3 px-5"
-          >
-            <Icon
-              name="i-heroicons-pencil-square"
-              class="w-5 h-5 text-[#b3b3b7]"
-            />
+        <label v-else class="pi-df">
+          <span class="pi-df-label">{{ contactEditLabel }}</span>
+          <div class="pi-df-input">
+            <Icon name="i-heroicons-pencil-square" class="pi-df-ic" />
             <input
               v-model="contactEditValue"
               :type="contactEditInputType"
-              :placeholder="`Enter new ${contactEditLabel}`"
-              class="w-full bg-transparent outline-none text-[16px] leading-[22px] text-[#1f2024] placeholder:text-[#8e8e93]"
+              :placeholder="`Enter new ${contactEditLabel.toLowerCase()}`"
             />
           </div>
         </label>
@@ -324,18 +318,16 @@
       :title="editingAddress?.id ? 'Edit address' : 'Add address'"
       :show-back-button="false"
     >
-      <div class="pt-1 pb-2 space-y-3">
-        <div
-          v-for="field in addressFields"
-          :key="field.key"
-          class="h-14 rounded-[16px] border border-[#e8eceb] bg-white flex items-center gap-3 px-4"
-        >
-          <input
-            v-model="editingAddress[field.key]"
-            :placeholder="field.label"
-            class="w-full bg-transparent outline-none text-[15px] leading-[22px] text-[#0e2840] placeholder:text-[#8a95a0] font-semibold"
-          />
-        </div>
+      <div class="pi-df-wrap">
+        <label v-for="field in addressFields" :key="field.key" class="pi-df">
+          <span class="pi-df-label">{{ field.label }}</span>
+          <div class="pi-df-input">
+            <input
+              v-model="editingAddress[field.key]"
+              :placeholder="field.label"
+            />
+          </div>
+        </label>
       </div>
       <template #footer>
         <button
@@ -356,18 +348,16 @@
       :title="editingCompany?.id ? 'Edit company' : 'Add company'"
       :show-back-button="false"
     >
-      <div class="pt-1 pb-2 space-y-3">
-        <div
-          v-for="field in companyFields"
-          :key="field.key"
-          class="h-14 rounded-[16px] border border-[#e8eceb] bg-white flex items-center gap-3 px-4"
-        >
-          <input
-            v-model="editingCompany[field.key]"
-            :placeholder="field.label"
-            class="w-full bg-transparent outline-none text-[15px] leading-[22px] text-[#0e2840] placeholder:text-[#8a95a0] font-semibold"
-          />
-        </div>
+      <div class="pi-df-wrap">
+        <label v-for="field in companyFields" :key="field.key" class="pi-df">
+          <span class="pi-df-label">{{ field.label }}</span>
+          <div class="pi-df-input">
+            <input
+              v-model="editingCompany[field.key]"
+              :placeholder="field.label"
+            />
+          </div>
+        </label>
       </div>
       <template #footer>
         <button
@@ -395,7 +385,7 @@
         <img
           :src="avatarPreview"
           alt="Preview"
-          class="w-24 h-24 rounded-full object-cover border-4 border-[#3dbda3]"
+          class="w-24 h-24 rounded-full object-cover border-4 border-[#00a19a]"
         />
       </div>
       <div class="space-y-3">
@@ -476,18 +466,16 @@
       :title="editingSolicitor?.id ? 'Edit solicitor' : 'Add solicitor'"
       :show-back-button="false"
     >
-      <div class="pt-1 pb-2 space-y-3">
-        <div
-          v-for="field in solicitorFields"
-          :key="field.key"
-          class="h-14 rounded-[16px] border border-[#e8eceb] bg-white flex items-center gap-3 px-4"
-        >
-          <input
-            v-model="editingSolicitor[field.key]"
-            :placeholder="field.label"
-            class="w-full bg-transparent outline-none text-[15px] leading-[22px] text-[#0e2840] placeholder:text-[#8a95a0] font-semibold"
-          />
-        </div>
+      <div class="pi-df-wrap">
+        <label v-for="field in solicitorFields" :key="field.key" class="pi-df">
+          <span class="pi-df-label">{{ field.label }}</span>
+          <div class="pi-df-input">
+            <input
+              v-model="editingSolicitor[field.key]"
+              :placeholder="field.label"
+            />
+          </div>
+        </label>
       </div>
       <template #footer>
         <button
@@ -802,6 +790,8 @@ const goBack = useGoBack('/profile')
   --fx-aqua: #00a19a;
   --fx-blue: #2f9bdf;
   --fx-indigo: #4f4ff2;
+  /* Unified brand color — solid teal, used across CTAs, avatar, toggles, popups */
+  --fx-grad: #00a19a;
   --fx-text: #1f2b3f;
   --fx-muted: #6f8199;
   min-height: 100dvh;
@@ -851,7 +841,7 @@ const goBack = useGoBack('/profile')
 .pi-wc-sub { font-size: 12.5px; color: #c3c8e6; line-height: 1.45; margin-bottom: 14px; }
 .pi-wc-btn {
   width: 100%; height: 44px; border-radius: 12px; border: none; cursor: pointer;
-  background: linear-gradient(120deg, #00a99a 0%, #0c8f74 100%); color: #fff;
+  background: var(--fx-grad); color: #fff;
   font-family: inherit; font-size: 13.5px; font-weight: 800;
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   box-shadow: 0 10px 22px rgba(0, 161, 154, 0.32); transition: transform 0.2s, box-shadow 0.2s;
@@ -941,7 +931,7 @@ const goBack = useGoBack('/profile')
 .pi-verify-sub { font-size: 12.5px; color: #6f8398; line-height: 1.5; max-width: 240px; margin-bottom: 16px; }
 .pi-verify-btn {
   width: 100%; height: 46px; border-radius: 12px; border: none; cursor: pointer;
-  background: linear-gradient(120deg, #00a99a, #0c8f74); color: #fff;
+  background: var(--fx-grad); color: #fff;
   font-family: inherit; font-size: 14px; font-weight: 800;
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26); transition: transform 0.2s, box-shadow 0.2s;
@@ -989,19 +979,19 @@ const goBack = useGoBack('/profile')
 
 .pi-avatar {
   width: 96px; height: 96px; border-radius: 50%;
-  background: linear-gradient(145deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: var(--fx-grad);
   color: #fff; display: inline-flex; align-items: center; justify-content: center;
   font-size: 32px; font-weight: 800; letter-spacing: 1px;
-  box-shadow: 0 10px 22px rgba(48, 98, 214, 0.24);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
   position: relative; border: none; cursor: pointer; font-family: inherit; flex-shrink: 0;
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s;
 }
-.pi-avatar:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(48, 98, 214, 0.3); }
+.pi-avatar:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(0, 161, 154, 0.32); }
 .pi-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .avatar-camera-mini {
   position: absolute; bottom: -1px; right: -1px;
   width: 30px; height: 30px; border-radius: 50%;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  background: var(--fx-grad);
   color: #fff; border: 3px solid #fff;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1030,18 +1020,44 @@ const goBack = useGoBack('/profile')
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pir-toggle.on {
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 100%);
+  background: var(--fx-grad);
 }
 .pir-toggle.on::after {
   transform: translateX(20px);
 }
+
+/* ── Drawer / popup form fields ────────────────────────────────── */
+.pi-df-wrap { padding: 2px 0 4px; display: flex; flex-direction: column; gap: 16px; }
+.pi-df-note { font-size: 14px; line-height: 22px; color: #7f8084; margin-bottom: 2px; }
+.pi-df { display: block; }
+.pi-df-label {
+  display: block; font-size: 12.5px; font-weight: 700; color: #5f7488;
+  letter-spacing: -0.1px; margin-bottom: 7px; padding-left: 2px;
+}
+.pi-df-input {
+  height: 54px; border-radius: 14px; border: 1.5px solid #e6ecf2; background: #f9fbfd;
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+.pi-df-input:focus-within {
+  border-color: #00a19a; background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+}
+.pi-df-ic { width: 18px; height: 18px; color: #9fb0c2; flex-shrink: 0; transition: color 0.18s; }
+.pi-df-input:focus-within .pi-df-ic { color: #00a19a; }
+.pi-df-input input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: inherit; font-size: 15px; font-weight: 600; color: #16314a;
+}
+.pi-df-input input::placeholder { color: #8a95a0; font-weight: 500; }
+.pi-df-hint { margin-top: 7px; font-size: 12.5px; color: #8e8e93; padding-left: 2px; line-height: 1.45; }
 
 /* Drawer CTA */
 .drawer-cta {
   width: 100%;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: var(--fx-grad);
   color: #fff;
   font-size: 16px;
   font-weight: 800;
@@ -1053,7 +1069,7 @@ const goBack = useGoBack('/profile')
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  box-shadow: 0 14px 24px rgba(58, 87, 206, 0.28);
+  box-shadow: 0 14px 24px rgba(0, 161, 154, 0.28);
   transition:
     transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1061,7 +1077,7 @@ const goBack = useGoBack('/profile')
 }
 .drawer-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 30px rgba(58, 87, 206, 0.34);
+  box-shadow: 0 18px 30px rgba(0, 161, 154, 0.36);
   filter: saturate(1.04);
 }
 .drawer-cta:disabled {

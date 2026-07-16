@@ -6,7 +6,7 @@
         alt="Passport Background"
         class="passport-image h-full object-cover rounded-lg"
       />
-      <div class="passport-address">
+      <div class="passport-address" :class="{ 'is-hero': hero }">
         <div class="address-line" :style="line1Style">{{ line1 }}</div>
         <div class="address-line-small" :style="line2Style">{{ line2 }}</div>
       </div>
@@ -42,6 +42,13 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  // `hero` opts into fixed, larger address typography that matches the
+  // landlord passport plate (used on the big sample-passport hero cards).
+  // Left off, the card keeps its length-aware auto-fit for grid thumbnails.
+  hero: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // Auto-fit the address to its own length. Size is expressed in cqi (1% of the
@@ -57,7 +64,11 @@ function fitClamp(text, steps) {
   return `clamp(${step.min}px, ${step.cqi}cqi, ${step.px}px)`
 }
 
-const line1Style = computed(() => ({
+const line1Style = computed(() => {
+  // Hero cards use fixed CSS sizing (see .passport-address.is-hero) so the
+  // address matches the landlord plate — skip the inline auto-fit here.
+  if (props.hero) return {}
+  return {
   // Tuned so anything ~16 chars or longer wraps to two balanced lines (like
   // "100 Dulverton Avenue") instead of cramming edge-to-edge on one line
   // (which looked wrong for "10 Mellowship Road" / "100 Mantilla Drive").
@@ -69,14 +80,18 @@ const line1Style = computed(() => ({
     { max: 25, min: 5.2, cqi: 5.6, px: 9.5 }, // "10 Sutherland Avenue"
     { max: Infinity, min: 4.6, cqi: 4.9, px: 8.5 },
   ]),
-}))
+  }
+})
 
-const line2Style = computed(() => ({
+const line2Style = computed(() => {
+  if (props.hero) return {}
+  return {
   fontSize: fitClamp(props.line2, [
     { max: 8, min: 5.5, cqi: 5, px: 9.5 }, // "CV5 6AJ"
     { max: Infinity, min: 4.6, cqi: 4.3, px: 8.5 },
   ]),
-}))
+  }
+})
 </script>
 
 <style scoped>
@@ -214,6 +229,18 @@ const line2Style = computed(() => ({
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+/* Hero variant — fixed, larger address typography that mirrors the landlord
+   passport plate (14px / 10.5px on a ~150px card). cqi keeps it proportional
+   if the hero card ever resizes; the clamp caps keep it in the sweet spot. */
+.passport-address.is-hero .address-line {
+  font-size: clamp(11px, 9.3cqi, 15px);
+  line-height: 1.1;
+}
+
+.passport-address.is-hero .address-line-small {
+  font-size: clamp(8px, 7cqi, 11px);
 }
 
 /* Browsers without container-query support fall back to a small fixed

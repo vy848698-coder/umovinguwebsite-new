@@ -1431,6 +1431,27 @@ watch(
   background: rgba(20, 16, 46, 0.5);
   backdrop-filter: blur(4px);
 }
+
+/* These overlays are Teleported to <body>, so they render outside the
+   .hs-v6-quiz root where the palette variables are defined. Re-declare the
+   variables here so var(--accent) / var(--text) etc. resolve — otherwise the
+   modal renders blank (transparent button gradient, invisible text). */
+.hs-v6-quiz-modal {
+  --primary: #231d45;
+  --accent: #00a19a;
+  --accent-dark: #008a84;
+  --accent-light: #00b8b0;
+  --accent-pale: #e5f4f2;
+  --accent-paler: #f2faf8;
+  --card: #ffffff;
+  --text: #231d45;
+  --text-secondary: #6b7089;
+  --text-faint: #a8a9ad;
+  --border: #e4e5ed;
+  font-family:
+    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter,
+    system-ui, sans-serif;
+}
 .need-answer-sheet,
 .modal-sheet {
   width: 100%;

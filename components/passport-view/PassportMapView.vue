@@ -889,31 +889,32 @@ const navigateToStep = (stepId) => {
   background: rgba(14, 40, 64, 0.4);
   z-index: 1100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
 }
 .sheet {
   width: 100%;
   max-width: 28rem;
   background: #fff;
-  border-radius: 24px 24px 0 0;
-  padding: 14px 18px 18px;
-  max-height: 85%;
+  border-radius: 20px;
+  padding: 20px 20px 18px;
+  max-height: 88vh;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
-  color: #0e2840;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+  color: #231d45;
+  font-family:
+    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter,
+    system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 .sheet::-webkit-scrollbar {
   display: none;
 }
 .grabber {
-  width: 40px;
-  height: 4px;
-  background: #e5ede9;
-  border-radius: 4px;
-  margin: 0 auto 10px;
+  display: none;
 }
 .sheet-head {
   display: flex;
@@ -942,15 +943,17 @@ const navigateToStep = (stepId) => {
   min-width: 0;
 }
 .sheet-title {
-  font-weight: 800;
-  font-size: 17px;
-  color: #0e2840;
-  letter-spacing: -0.01em;
+  font-weight: 900;
+  font-size: 18px;
+  color: #231d45;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 .sheet-sub {
-  font-size: 11.5px;
-  color: #6b7c8e;
-  margin-top: 2px;
+  font-size: 12.5px;
+  color: #5b6d89;
+  margin-top: 3px;
+  line-height: 1.45;
 }
 .sheet-points {
   margin-top: 4px;
@@ -1003,15 +1006,15 @@ const navigateToStep = (stepId) => {
 }
 .task-list-head .lbl {
   font-size: 10.5px;
-  font-weight: 800;
-  color: #6b7c8e;
-  letter-spacing: 0.6px;
+  font-weight: 900;
+  color: #64748b;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .task-list-head .sort {
   font-size: 11px;
   font-weight: 700;
-  color: #6b7c8e;
+  color: #64748b;
 }
 
 .task-row {
@@ -1068,14 +1071,15 @@ const navigateToStep = (stepId) => {
   min-width: 0;
 }
 .task-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #0e2840;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
 }
 .task-description {
-  font-size: 11.5px;
-  color: #6b7c8e;
-  line-height: 1.45;
+  font-size: 12px;
+  color: #5b6d89;
+  line-height: 1.5;
   margin: 3px 0 0;
 }
 .task-row.done .task-description {
@@ -1087,7 +1091,7 @@ const navigateToStep = (stepId) => {
 }
 .task-meta {
   font-size: 11.5px;
-  color: #6b7c8e;
+  color: #5b6d89;
   margin-top: 3px;
   display: flex;
   align-items: center;
@@ -1128,14 +1132,15 @@ const navigateToStep = (stepId) => {
   color: #94a3b8;
 }
 
-/* Sheet enter/leave animation */
+/* Sheet enter/leave animation — centered fade + scale */
 .sheet-enter-active .sheet,
 .sheet-leave-active .sheet {
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
 }
 .sheet-enter-from .sheet,
 .sheet-leave-to .sheet {
-  transform: translateY(100%);
+  transform: scale(0.94);
+  opacity: 0;
 }
 .sheet-enter-active.sheet-backdrop,
 .sheet-leave-active.sheet-backdrop {

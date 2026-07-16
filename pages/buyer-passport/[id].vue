@@ -391,7 +391,7 @@
                   <div class="buyer-record-head">
                     <div class="buyer-record-icon">
                       <OPIcon
-                        :name="section.imageKey || 'fittingsContents'"
+                        :name="section.imageKey || section.key || 'fittingsContents'"
                         class="w-[34px] h-[34px]"
                       />
                     </div>
@@ -484,40 +484,70 @@
               <p class="bp-side-sub">Key characteristics that define this property.</p>
               <div class="bp-pd-grid">
                 <div class="bp-pd-item">
-                  <div class="bp-pd-label">Property type</div>
-                  <div class="bp-pd-value">{{ data.property.propertyType || '—' }}</div>
-                </div>
-                <div class="bp-pd-item">
-                  <div class="bp-pd-label">Title number</div>
-                  <div class="bp-pd-value">{{ data.property.titleNumber || '—' }}</div>
-                </div>
-                <div class="bp-pd-item">
-                  <div class="bp-pd-label">Area sqft</div>
-                  <div class="bp-pd-value">
-                    {{
-                      data.property.sqft
-                        ? data.property.sqft.toLocaleString() + ' sqft'
-                        : '—'
-                    }}
+                  <span class="bp-pd-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v10h14V10" /></svg>
+                  </span>
+                  <div class="bp-pd-text">
+                    <div class="bp-pd-label">Property type</div>
+                    <div class="bp-pd-value">{{ data.property.propertyType || '—' }}</div>
                   </div>
                 </div>
                 <div class="bp-pd-item">
-                  <div class="bp-pd-label">EPC rating</div>
-                  <div class="bp-pd-value">
-                    <template v-if="data.property.epcRating">
-                      {{ data.property.epcRating }}
-                      <span class="bp-pd-chip">To improve</span>
-                    </template>
-                    <template v-else>—</template>
+                  <span class="bp-pd-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9" /><line x1="4" y1="15" x2="20" y2="15" /><line x1="10" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="14" y2="21" /></svg>
+                  </span>
+                  <div class="bp-pd-text">
+                    <div class="bp-pd-label">Title number</div>
+                    <div class="bp-pd-value">{{ data.property.titleNumber || '—' }}</div>
                   </div>
                 </div>
                 <div class="bp-pd-item">
-                  <div class="bp-pd-label">Tenure</div>
-                  <div class="bp-pd-value">{{ displayTenure }}</div>
+                  <span class="bp-pd-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 21" /><path d="M15 3h6v6" /><path d="M9 21H3v-6" /></svg>
+                  </span>
+                  <div class="bp-pd-text">
+                    <div class="bp-pd-label">Area sqft</div>
+                    <div class="bp-pd-value">
+                      {{
+                        data.property.sqft
+                          ? data.property.sqft.toLocaleString() + ' sqft'
+                          : '—'
+                      }}
+                    </div>
+                  </div>
                 </div>
                 <div class="bp-pd-item">
-                  <div class="bp-pd-label">Year built</div>
-                  <div class="bp-pd-value">{{ data.property.yearBuilt || '—' }}</div>
+                  <span class="bp-pd-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9 13 2" /></svg>
+                  </span>
+                  <div class="bp-pd-text">
+                    <div class="bp-pd-label">EPC rating</div>
+                    <div class="bp-pd-value">
+                      <template v-if="data.property.epcRating">
+                        {{ data.property.epcRating }}
+                        <span class="bp-pd-chip">To improve</span>
+                      </template>
+                      <template v-else>—</template>
+                    </div>
+                  </div>
+                </div>
+                <div class="bp-pd-item">
+                  <span class="bp-pd-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18" /><path d="M6 21V9l6-4 6 4v12" /><path d="M9 21v-6h6v6" /><line x1="12" y1="5" x2="12" y2="3" /></svg>
+                  </span>
+                  <div class="bp-pd-text">
+                    <div class="bp-pd-label">Tenure</div>
+                    <div class="bp-pd-value">{{ displayTenure }}</div>
+                  </div>
+                </div>
+                <div class="bp-pd-item">
+                  <span class="bp-pd-ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" /></svg>
+                  </span>
+                  <div class="bp-pd-text">
+                    <div class="bp-pd-label">Year built</div>
+                    <div class="bp-pd-value">{{ data.property.yearBuilt || '—' }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1878,20 +1908,31 @@ async function deleteNote(noteId: string) {
 }
 .bp-side-title { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 4px; }
 .bp-side-sub { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 16px; line-height: 1.5; }
-.bp-pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bp-pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 14px; }
 .bp-pd-item {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 11px 12px;
-  background: #fbfbfa;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
 }
+.bp-pd-ic {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: rgba(0, 161, 154, 0.1);
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.bp-pd-ic svg { width: 18px; height: 18px; }
+.bp-pd-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .bp-pd-label {
   font-size: 9.5px;
   font-weight: 800;
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  margin-bottom: 5px;
 }
 .bp-pd-value { font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .bp-pd-chip {
