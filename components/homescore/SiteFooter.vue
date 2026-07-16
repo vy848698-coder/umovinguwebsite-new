@@ -7,6 +7,7 @@
           <button class="uf-brand" type="button" @click="navigateTo('/')">
             <img src="/logo-new.png" alt="umovingu" class="uf-brand-logo" />
             <strong>umovingu</strong>
+            <span style="font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#2fd0c6;background:rgba(0,161,154,.16);border:1px solid rgba(47,208,198,.35);border-radius:6px;padding:2px 7px;margin-left:2px;">BETA</span>
           </button>
 
           <span class="uf-chip">Built for UK property journeys</span>

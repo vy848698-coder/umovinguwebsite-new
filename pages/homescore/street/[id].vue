@@ -7,7 +7,7 @@
     <header class="hss-nav">
       <div class="hss-shell hss-nav-inner">
         <button class="hss-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo-new.png" alt="" class="hss-brand-logo" />
+          <img src="/op-icons/logo.png" alt="" class="hss-brand-logo" />
           <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hss-links" aria-label="Primary navigation">

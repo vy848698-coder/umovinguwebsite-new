@@ -2,7 +2,7 @@
   <header class="webtop-nav">
     <div class="webtop-shell webtop-inner">
       <button class="webtop-brand" type="button" @click="navigateTo('/')">
-        <img src="/logo-new.png" alt="" class="webtop-brand-logo" />
+        <img src="/op-icons/logo.png" alt="" class="webtop-brand-logo" />
         <span class="webtop-brand-name">umovingu</span>
         <span class="webtop-brand-beta">BETA</span>
       </button>

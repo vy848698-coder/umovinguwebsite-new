@@ -4,7 +4,7 @@
     <header class="lp-nav">
       <div class="lp-shell lp-nav-inner">
         <button class="lp-brand" type="button" @click="scrollToTop" aria-label="umovingu home">
-          <img src="/logo-new.png" alt="umovingu" class="lp-brand-img" />
+          <img src="/op-icons/logo.png" alt="umovingu" class="lp-brand-img" />
           <span class="lp-brand-name">umovingu</span>
           <span class="lp-brand-beta">BETA</span>
         </button>
@@ -83,7 +83,7 @@
             <article class="lp-passport-card">
               <span class="lp-passport-kicker">Your HomeScore</span>
               <div class="lp-passport-logo">
-                <img src="/logo.png" alt="umu" class="lp-passport-logo-mark" />
+                <img src="/op-icons/logo.png" alt="umu" class="lp-passport-logo-mark" />
               </div>
               <div class="lp-passport-addr">
                 <strong>55, Woodfield Road</strong>
@@ -379,8 +379,9 @@
         <div class="lp-shell lp-footer-grid">
           <div class="lp-footer-intro">
             <div class="lp-footer-brand">
-              <OPIcon name="logo" class="lp-brand-logo" />
+              <img src="/logo-new.png" alt="" class="lp-footer-logo" />
               <strong>umovingu</strong>
+              <span class="lp-footer-beta">BETA</span>
             </div>
             <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
             <div class="lp-footer-chips">
@@ -1144,13 +1145,13 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.55);
 }
 .lp-passport-logo {
+  /* op-icons/logo.png is a transparent navy + teal house mark, so it sits on a
+     white circle — otherwise its teal parts blend into the green card. */
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  /* Simple navy ring. White fill keeps the navy + teal house mark readable —
-     on a translucent circle its teal parts blended into the green card. */
-  /* background: #ffffff; */
-  border: 3px solid #231d45;
+  background: #ffffff;
+  border: 2px solid #231d45;
   display: grid;
   place-items: center;
   margin: 14px 0 18px;
@@ -2172,8 +2173,20 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .lp-footer-brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px; }
-.lp-footer-brand .lp-brand-logo { color: var(--teal-bright); }
+.lp-footer-logo { height: 30px; width: auto; display: block; object-fit: contain; }
 .lp-footer-brand strong { font-size: 18px; font-weight: 800; color: #fff; }
+.lp-footer-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  background: rgba(0, 161, 154, 0.16);
+  border: 1px solid rgba(47, 208, 198, 0.35);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 2px;
+}
 .lp-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
 .lp-footer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .lp-footer-chips span {

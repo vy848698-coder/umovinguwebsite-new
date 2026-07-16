@@ -6,7 +6,7 @@
       <div class="pw-nav-inner">
         <div class="pw-nav-left">
           <button class="pw-brand" type="button" @click="navigateTo('/')" aria-label="umovingu home">
-            <img src="/logo-new.png" alt="umovingu" class="pw-brand-img" />
+            <img src="/op-icons/logo.png" alt="umovingu" class="pw-brand-img" />
             <span class="pw-brand-name">umovingu</span>
             <span class="pw-brand-beta">BETA</span>
           </button>

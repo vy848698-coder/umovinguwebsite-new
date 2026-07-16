@@ -4,7 +4,7 @@
     <header class="marketplace-web-nav">
       <div class="marketplace-web-shell nav-inner">
         <button class="brand" type="button" @click="navigateTo('/')">
-          <img src="/logo-new.png" alt="" class="brand-logo" />
+          <img src="/op-icons/logo.png" alt="" class="brand-logo" />
           <span class="brand-name">umovingu</span>
           <span class="brand-beta">BETA</span>
         </button>

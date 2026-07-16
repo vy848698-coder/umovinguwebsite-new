@@ -17,7 +17,7 @@
       <header class="pps-web-nav">
         <div class="pps-web-nav-inner">
           <button class="pps-nav-brand" type="button" @click="navigateTo('/')">
-            <img src="/logo-new.png" alt="" class="pps-nav-logo" />
+            <img src="/op-icons/logo.png" alt="" class="pps-nav-logo" />
             <span>umovingu</span><span class="pps-nav-beta">BETA</span>
           </button>
           <nav class="pps-nav-links" aria-label="Primary">
@@ -847,6 +847,7 @@
             <div class="pps-footer-brand">
               <img src="/logo-new.png" alt="" class="pps-footer-logo" />
               <strong>umovingu</strong>
+              <span style="font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#2fd0c6;background:rgba(0,161,154,.16);border:1px solid rgba(47,208,198,.35);border-radius:6px;padding:2px 7px;margin-left:2px;">BETA</span>
             </div>
             <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
             <div class="pps-footer-chips">

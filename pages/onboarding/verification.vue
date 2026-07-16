@@ -3,7 +3,7 @@
     <!-- ── Left brand / illustration panel ── -->
     <aside class="otp-aside">
       <button class="otp-brand" type="button" @click="navigateTo('/')">
-        <img src="/logo-new.png" alt="" class="otp-brand-logo" />
+        <img src="/op-icons/logo.png" alt="" class="otp-brand-logo" />
         <span class="otp-brand-name">umovingu</span>
         <span class="otp-brand-beta">Beta</span>
       </button>

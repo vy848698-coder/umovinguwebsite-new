@@ -5,7 +5,7 @@
     <header class="rc-nav">
       <div class="rc-nav-shell rc-nav-inner">
         <button class="rc-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo-new.png" alt="" class="rc-brand-logo" />
+          <img src="/op-icons/logo.png" alt="" class="rc-brand-logo" />
           <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="rc-links" aria-label="Primary navigation">

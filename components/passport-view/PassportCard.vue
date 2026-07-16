@@ -7,8 +7,8 @@
         class="passport-image h-full object-cover rounded-lg"
       />
       <div class="passport-address">
-        <div class="address-line">{{ line1 }}</div>
-        <div class="address-line-small">{{ line2 }}</div>
+        <div class="address-line" :style="line1Style">{{ line1 }}</div>
+        <div class="address-line-small" :style="line2Style">{{ line2 }}</div>
       </div>
     </div>
 
@@ -30,9 +30,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import OPIcon from '../ui/OPIcon.vue'
 
-defineProps({
+const props = defineProps({
   line1: {
     type: String,
     required: true,
@@ -42,6 +43,40 @@ defineProps({
     required: true,
   },
 })
+
+// Auto-fit the address to its own length. Size is expressed in cqi (1% of the
+// card's rendered width) so it still scales from a 58 px grid thumbnail up to
+// the large hero card — but the multiplier AND the px min/max shrink as the
+// text gets longer, so a short "100 Lyons Drive" stays bold while a long
+// "100 Dulverton Avenue" steps down to fit cleanly on two lines instead of
+// overrunning into the umu logo. `min` also drops with length so tiny
+// thumbnails don't force long text bigger than the cover can hold.
+function fitClamp(text, steps) {
+  const len = (text || '').trim().length
+  const step = steps.find((s) => len <= s.max) || steps[steps.length - 1]
+  return `clamp(${step.min}px, ${step.cqi}cqi, ${step.px}px)`
+}
+
+const line1Style = computed(() => ({
+  // Tuned so anything ~16 chars or longer wraps to two balanced lines (like
+  // "100 Dulverton Avenue") instead of cramming edge-to-edge on one line
+  // (which looked wrong for "10 Mellowship Road" / "100 Mantilla Drive").
+  // Short names (≤15 chars, e.g. "100 Lyons Drive") still sit on one line.
+  fontSize: fitClamp(props.line1, [
+    { max: 12, min: 7.2, cqi: 8.4, px: 14.5 }, // "5 Elm Road"
+    { max: 15, min: 6.3, cqi: 7.2, px: 12.5 }, // "100 Lyons Drive" — one line
+    { max: 20, min: 5.9, cqi: 6.4, px: 11 }, // "10 Mellowship Road" — two lines
+    { max: 25, min: 5.2, cqi: 5.6, px: 9.5 }, // "10 Sutherland Avenue"
+    { max: Infinity, min: 4.6, cqi: 4.9, px: 8.5 },
+  ]),
+}))
+
+const line2Style = computed(() => ({
+  fontSize: fitClamp(props.line2, [
+    { max: 8, min: 5.5, cqi: 5, px: 9.5 }, // "CV5 6AJ"
+    { max: Infinity, min: 4.6, cqi: 4.3, px: 8.5 },
+  ]),
+}))
 </script>
 
 <style scoped>
@@ -128,7 +163,7 @@ defineProps({
 
 .passport-address {
   position: absolute;
-  bottom: 9.5%;
+  bottom: 13%;
   left: 50%;
   transform: translateX(-50%);
   width: 84%;
@@ -139,6 +174,10 @@ defineProps({
   flex-direction: column;
   align-items: center;
   gap: 2.5%;
+  /* Match the app's primary typeface so the card label reads consistently */
+  font-family:
+    'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
   /* Soft shadow keeps the label legible on the textured teal cover */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
@@ -148,7 +187,7 @@ defineProps({
    Kept small and clamped to 2 clean lines (whole words only) so the block
    sits neatly in the lower cover and never climbs into the umu logo. */
 .address-line {
-  font-size: clamp(6.5px, 7cqi, 13px);
+  /* font-size is set inline (length-aware, see line1Style) */
   font-weight: 800;
   margin: 0;
   line-height: 1.12;
@@ -166,7 +205,7 @@ defineProps({
 }
 
 .address-line-small {
-  font-size: clamp(5.5px, 5cqi, 9.5px);
+  /* font-size is set inline (length-aware, see line2Style) */
   font-weight: 700;
   line-height: 1.1;
   opacity: 0.95;
