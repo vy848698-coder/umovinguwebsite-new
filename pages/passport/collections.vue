@@ -4,7 +4,7 @@
     <header class="ppn-nav">
       <div class="pp-shell ppn-nav-inner">
         <button class="ppn-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo-new.png" alt="" class="ppn-brand-logo" />
+          <img src="/op-icons/logo.png" alt="" class="ppn-brand-logo" />
           <span class="ppn-brand-name">umovingu</span>
           <span class="ppn-brand-beta">BETA</span>
         </button>

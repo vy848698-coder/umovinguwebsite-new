@@ -5,7 +5,7 @@
     <header class="hsw-nav">
       <div class="hsw-shell hsw-nav-inner">
         <button class="hsw-brand" type="button" @click="navigateTo('/')">
-          <img src="/logo-new.png" alt="" class="hsw-brand-logo" />
+          <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
           <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">

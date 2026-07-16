@@ -5,7 +5,7 @@
     <header class="hs-web-nav">
       <div class="hs-web-shell nav-inner">
         <button class="brand" type="button" @click="navigateTo('/')">
-          <img src="/logo-new.png" alt="umovingu" class="brand-logo" />
+          <img src="/op-icons/logo.png" alt="umovingu" class="brand-logo" />
           <span class="brand-name">umovingu</span>
           <span class="brand-beta">BETA</span>
         </button>

@@ -30,7 +30,7 @@
     </div>
 
     <div class="offline-brand">
-      <img src="/logo-new.png" alt="UmovingU" class="offline-logo" />
+      <img src="/op-icons/logo.png" alt="UmovingU" class="offline-logo" />
       <span>umovingu</span><span class="offline-beta">BETA</span>
     </div>
   </div>

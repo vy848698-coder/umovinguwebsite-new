@@ -4,7 +4,7 @@
     <header class="spn-nav">
       <div class="sp-shell spn-nav-inner">
         <button class="spn-brand" type="button" @click="navigateTo('/')" aria-label="umovingu home">
-          <img src="/logo-new.png" alt="" class="spn-brand-logo" />
+          <img src="/op-icons/logo.png" alt="" class="spn-brand-logo" />
           <span class="spn-brand-name">umovingu</span>
           <span class="spn-brand-beta">BETA</span>
         </button>

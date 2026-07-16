@@ -2,7 +2,7 @@
   <header class="bpnav">
     <div class="bpnav-shell bpnav-inner">
       <button class="bpnav-brand" type="button" @click="navigateTo('/')">
-        <img src="/logo-new.png" alt="" class="bpnav-logo" />
+        <img src="/op-icons/logo.png" alt="" class="bpnav-logo" />
         <span>umovingu</span><span class="bpnav-beta">BETA</span>
       </button>
       <nav class="bpnav-links" aria-label="Primary navigation">
