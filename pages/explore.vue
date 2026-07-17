@@ -62,115 +62,78 @@
     </header>
 
     <main class="ex-shell ex-stage">
-      <!-- ─────────────────────────── HERO ─────────────────────────── -->
-      <section class="ex-hero">
-        <!-- Left column -->
-        <div class="ex-hero-copy">
-          <p class="ex-greeting">Good evening, <span>{{ profile?.firstName || 'Vivek' }}</span> 👋</p>
-          <h1 class="ex-hero-title">
-            Discover smarter.<br />
-            Move with <span class="ex-accent">confidence.</span>
-          </h1>
-          <p class="ex-hero-sub">
-            Search, analyse and act on properties with HomeScore,
-            Property Passport and real market intelligence.
-          </p>
-
-          <form class="ex-search" @submit.prevent="runSearch">
-            <div class="ex-search-field">
-              <PropertySearchInput
-                placeholder="Search by postcode, address or area"
-                variant="light"
-                @select="onSearchSelect"
-                @enter="onSearchEnter"
-              />
-            </div>
-            <div class="ex-search-radius">
-              <select v-model="activeRadius" aria-label="Search radius">
-                <option :value="null">Exact</option>
-                <option :value="0.5">0.5 mi</option>
-                <option :value="1">1 mi</option>
-                <option :value="2">2 mi</option>
-                <option :value="5">5 mi</option>
-                <option :value="10">10 mi</option>
-              </select>
-            </div>
-            <button class="ex-btn solid ex-search-btn" type="submit">Search</button>
-          </form>
-
-          <div class="ex-quick-cards">
-            <button class="ex-quick-card" type="button" @click="navigateTo('/homescore')">
-              <div class="ex-quick-ring">
-                <svg viewBox="0 0 44 44">
-                  <circle class="qr-bg" cx="22" cy="22" r="18" />
-                  <circle
-                    class="qr-meter"
-                    cx="22"
-                    cy="22"
-                    r="18"
-                    :stroke-dasharray="ringCirc"
-                    :stroke-dashoffset="ringOffset"
-                  />
-                </svg>
-                <div class="ex-quick-ring-val"><strong>{{ dashboardHomeScore }}</strong><span>HS</span></div>
-              </div>
-              <div class="ex-quick-body">
-                <strong>HomeScore</strong>
-                <span>Instant signal, clear next action.</span>
-              </div>
-              <span class="ex-quick-arrow" aria-hidden="true">→</span>
-            </button>
-
-            <button class="ex-quick-card" type="button" @click="navigateTo('/passport/collections')">
-              <div class="ex-quick-pp">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4z" />
-                  <path d="M9 4v16M13 9h2" />
-                </svg>
-              </div>
-              <div class="ex-quick-body">
-                <strong>Property Passport</strong>
-                <span>Every property has a verified history.</span>
-              </div>
-              <span class="ex-quick-arrow" aria-hidden="true">→</span>
-            </button>
-          </div>
-
-          <div class="ex-saved-hint">
-            <span class="ex-saved-hint-left">
-              <i class="ex-tick" />{{ savedMatchTotal }} matches for your saved searches
-            </span>
-            <button type="button" class="ex-link" @click="navigateTo('/profile')">View all saved →</button>
-          </div>
+      <!-- ─────────────────── HERO · YOUR PROPERTY HUB ─────────────────── -->
+      <section class="ex-hub">
+        <div class="ex-hub-media">
+          <img
+            :src="heroImgSrc"
+            :alt="spotlight.address"
+            class="ex-hub-img"
+            @error="onHeroImgError"
+          />
+          <button class="ex-hub-photo" type="button" @click="startClaimFlow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+            Change photo
+          </button>
+          <button class="ex-hub-view" type="button" @click="openSpotlight">View property details</button>
         </div>
 
-        <!-- Right column · spotlight property -->
-        <article class="ex-spotlight">
-          <div class="ex-spotlight-media">
-            <PropertyImage
-              :src="spotlight.image"
-              :alt="spotlight.address"
-              :show-caption="false"
-              class="ex-spotlight-img"
-            />
-            <span class="ex-spotlight-badge">BEST MATCH</span>
-            <div class="ex-spotlight-overlay">
-              <strong class="ex-spotlight-price">{{ spotlight.price }}</strong>
-              <p class="ex-spotlight-addr">{{ spotlight.address }}</p>
-              <div class="ex-spotlight-pills">
-                <span>{{ spotlight.type }}</span>
-                <span>{{ spotlight.tenure }}</span>
-              </div>
-              <div class="ex-spotlight-foot">
-                <span class="ex-spotlight-meta">EPC {{ spotlight.epc }} &nbsp;•&nbsp; HomeScore {{ spotlight.homeScore }}</span>
-                <button class="ex-spotlight-btn" type="button" @click="openSpotlight">View property →</button>
-              </div>
+        <div class="ex-hub-body">
+          <p class="ex-hub-eyebrow">Welcome back, {{ profile?.firstName || 'there' }}</p>
+          <h1 class="ex-hub-title">Your Property Hub</h1>
+          <p class="ex-hub-meta">{{ userPostcode || 'CV5 6AJ' }} &middot; {{ roleLabel }} Mode</p>
+          <p class="ex-hub-copy">
+            Run your first HomeScore to unlock insights, then build your Property Passport —
+            everything ready before you list.
+          </p>
+
+          <div class="ex-hub-progress">
+            <div class="ex-hub-progress-head">
+              <span>Passport progress</span>
+              <span>{{ passportPct }}% &middot; {{ passportLabel }}</span>
             </div>
+            <div class="ex-hub-progress-track"><i :style="{ width: Math.max(passportPct, 2) + '%' }" /></div>
           </div>
-        </article>
+
+          <div class="ex-hub-actions">
+            <button class="ex-btn solid" type="button" @click="navigateTo('/homescore')">Run your first HomeScore</button>
+            <button class="ex-btn ghost" type="button" @click="navigateTo('/passport/collections')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4z" /><path d="M9 4v16M13 9h2" />
+              </svg>
+              Continue Passport
+            </button>
+
+            <!-- ─────────────── SEARCH BAR (right of buttons) ─────────────── -->
+            <form class="ex-search ex-search--hub" @submit.prevent="runSearch">
+              <div class="ex-search-field">
+                <PropertySearchInput
+                  placeholder="Search by postcode, address or area"
+                  variant="light"
+                  @select="onSearchSelect"
+                  @enter="onSearchEnter"
+                />
+              </div>
+              <div class="ex-search-radius">
+                <select v-model="activeRadius" aria-label="Search radius">
+                  <option :value="null">Exact</option>
+                  <option :value="0.5">0.5 mi</option>
+                  <option :value="1">1 mi</option>
+                  <option :value="2">2 mi</option>
+                  <option :value="5">5 mi</option>
+                  <option :value="10">10 mi</option>
+                </select>
+              </div>
+              <button class="ex-btn solid ex-search-btn" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
       </section>
 
-      <!-- ───────────────────── KPI OVERVIEW ───────────────────── -->
+      <!-- ───────────────────────── KPI OVERVIEW ───────────────────────── -->
       <section class="ex-kpis" aria-label="Portfolio summary">
         <article class="ex-kpi">
           <span class="ex-kpi-ic">
@@ -208,161 +171,138 @@
         </article>
       </section>
 
-      <!-- ───────────────────── SAVED SEARCHES ───────────────────── -->
-      <section class="ex-block ex-saved">
-        <div class="ex-block-head">
-          <h2>Your saved searches</h2>
-          <button type="button" class="ex-link" @click="navigateTo('/profile')">Edit saved searches</button>
-        </div>
-        <div class="ex-saved-row">
-          <button
-            v-for="(s, i) in savedSearches"
-            :key="`saved-${i}`"
-            type="button"
-            class="ex-saved-chip"
-            @click="runSavedSearch(s)"
-          >
-            <span class="ex-saved-chip-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </span>
-            <span class="ex-saved-chip-body">
-              <strong>{{ s.label }}</strong>
-              <small>{{ s.matches }} matches</small>
-            </span>
-          </button>
-        </div>
-      </section>
+      <!-- ─────────────── ADD ANOTHER PROPERTY ─────────────── -->
+      <button type="button" class="ex-addprop" @click="startClaimFlow">
+        <span class="ex-addprop-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+        <span class="ex-addprop-body">
+          <strong>Add another property</strong>
+          <small>Verify ownership, then choose Rental or Seller Passport</small>
+        </span>
+        <span class="ex-addprop-cta">
+          Add
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+          </svg>
+        </span>
+      </button>
 
-      <!-- ───────────────────── PROPERTIES FEED ───────────────────── -->
+      <!-- ─────────────── FEATURE CARDS · HOMESCORE + PASSPORT ─────────────── -->
       <section class="ex-block">
-        <div class="ex-block-head">
-          <h2>Properties you might like</h2>
-          <button type="button" class="ex-link" @click="navigateTo('/marketplace')">View all properties →</button>
-        </div>
-        <div class="ex-feed">
-          <article
-            v-for="(p, i) in feedProperties"
-            :key="`feed-${i}`"
-            class="ex-prop"
-            @click="openProperty(p)"
-          >
-            <div class="ex-prop-media">
-              <PropertyImage :src="p.image" :alt="p.address" :show-caption="false" class="ex-prop-img" />
-              <button class="ex-prop-fav" type="button" aria-label="Save property" @click.stop="toggleFav(i)">
-                <svg viewBox="0 0 24 24" :fill="p.fav ? '#00a19a' : 'none'" stroke="#00a19a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
-                </svg>
+        <div class="ex-features">
+          <!-- HomeScore -->
+          <article class="ex-feature ex-feature--hs" @click="navigateTo('/homescore')">
+            <div class="ex-feature-media">
+              <img src="/profile new icon/passportHasAStory.png" alt="HomeScore" />
+            </div>
+            <div class="ex-feature-body">
+              <div class="ex-feature-top">
+                <span class="ex-feature-eyebrow">HomeScore</span>
+                <span class="ex-feature-pill hs">Free</span>
+              </div>
+              <h3 class="ex-feature-headline">Every property has a story.</h3>
+              <p class="ex-feature-sub">
+                Bills, value, comparisons and energy rating — scored 0–100 from public records.
+                <b>Done in 60 seconds.</b>
+              </p>
+              <ul class="ex-feature-list">
+                <li><i class="ex-tick" />Energy &amp; running costs</li>
+                <li><i class="ex-tick" />Sold history &amp; estimate</li>
+                <li><i class="ex-tick" />Area comparison</li>
+              </ul>
+              <button class="ex-btn solid ex-feature-cta" type="button" @click.stop="navigateTo('/homescore')">
+                Run a HomeScore →
               </button>
             </div>
-            <div class="ex-prop-body">
-              <strong class="ex-prop-price">{{ p.price }}</strong>
-              <p class="ex-prop-addr">{{ p.address }}</p>
-              <div class="ex-prop-pills">
-                <span>{{ p.type }}</span>
-                <span>{{ p.tenure }}</span>
+          </article>
+
+          <!-- Property Passport -->
+          <article class="ex-feature ex-feature--pp" @click="navigateTo('/passport/sample')">
+            <div class="ex-feature-media ex-feature-media--pp">
+              <img src="/profile new icon/samplePassportImage.png" alt="Property Passport" />
+            </div>
+            <div class="ex-feature-body">
+              <div class="ex-feature-top">
+                <span class="ex-feature-eyebrow pp">Property Passport</span>
+                <span class="ex-feature-pill pp">Solicitor-grade</span>
               </div>
-              <div class="ex-prop-foot">
-                <span class="ex-prop-epc">EPC {{ p.epc }}</span>
-                <span class="ex-prop-bar"><i :style="{ width: p.epc + '%' }" /></span>
-                <span class="ex-prop-hs">HomeScore {{ p.homeScore }}</span>
-                <span class="ex-prop-link">View details →</span>
-              </div>
+              <h3 class="ex-feature-headline">Every property has a history.</h3>
+              <p class="ex-feature-sub">
+                Title, planning, surveys and fittings — verified, organised and ready before any offer.
+              </p>
+              <ul class="ex-feature-list">
+                <li><i class="ex-tick" />Sells up to 12 weeks faster</li>
+                <li><i class="ex-tick" />No title surprises</li>
+                <li><i class="ex-tick" />No survey shocks</li>
+              </ul>
+              <button class="ex-btn navy ex-feature-cta" type="button" @click.stop="navigateTo('/passport/sample')">
+                See a sample Passport →
+              </button>
             </div>
           </article>
         </div>
       </section>
 
-      <!-- ───────────────────── QUICK ACTIONS ───────────────────── -->
-      <section class="ex-block ex-qa-block">
-        <div class="ex-block-head ex-block-head--stack">
-          <h2>Quick actions</h2>
-          <p class="ex-block-sub">Everything you need to get your home ready.</p>
+      <!-- ───────────────── QUICK ACTIONS + ACTIVITY ───────────────── -->
+      <section class="ex-two">
+        <div class="ex-panel">
+          <div class="ex-block-head ex-block-head--stack">
+            <h2>Quick actions</h2>
+            <p class="ex-block-sub">Everything you need to get your home ready.</p>
+          </div>
+          <div class="ex-qa-grid">
+            <button type="button" class="ex-qa" @click="navigateTo('/passport/collections')">
+              <span class="ex-qa-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5" /><path d="m8 9 4-4 4 4" /><path d="M5 19h14" /></svg>
+              </span>
+              <span class="ex-qa-body"><strong>Upload documents</strong><small>Add or manage property docs</small></span>
+              <span class="ex-qa-arrow" aria-hidden="true">→</span>
+            </button>
+            <button type="button" class="ex-qa" @click="navigateTo('/homescore')">
+              <span class="ex-qa-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z" /><path d="M9 3v16" /><path d="M15 5v16" /></svg>
+              </span>
+              <span class="ex-qa-body"><strong>Compare area</strong><small>Explore local insights</small></span>
+              <span class="ex-qa-arrow" aria-hidden="true">→</span>
+            </button>
+            <button type="button" class="ex-qa" @click="navigateTo('/marketplace')">
+              <span class="ex-qa-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M3 12h18" /></svg>
+              </span>
+              <span class="ex-qa-body"><strong>Book a service</strong><small>Find trusted professionals</small></span>
+              <span class="ex-qa-arrow" aria-hidden="true">→</span>
+            </button>
+            <button type="button" class="ex-qa" @click="navigateTo('/marketplace')">
+              <span class="ex-qa-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /><path d="M8 4v5" /></svg>
+              </span>
+              <span class="ex-qa-body"><strong>Marketplace</strong><small>Trusted partner services</small></span>
+              <span class="ex-qa-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
-        <div class="ex-qa-grid">
-          <button type="button" class="ex-qa" @click="navigateTo('/passport/collections')">
-            <span class="ex-qa-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5" /><path d="m8 9 4-4 4 4" /><path d="M5 19h14" /></svg>
-            </span>
-            <span class="ex-qa-body"><strong>Upload documents</strong><small>Add or manage property docs</small></span>
-            <span class="ex-qa-arrow" aria-hidden="true">→</span>
-          </button>
-          <button type="button" class="ex-qa" @click="navigateTo('/homescore')">
-            <span class="ex-qa-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z" /><path d="M9 3v16" /><path d="M15 5v16" /></svg>
-            </span>
-            <span class="ex-qa-body"><strong>Compare area</strong><small>Explore local insights</small></span>
-            <span class="ex-qa-arrow" aria-hidden="true">→</span>
-          </button>
-          <button type="button" class="ex-qa" @click="navigateTo('/marketplace')">
-            <span class="ex-qa-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M3 12h18" /></svg>
-            </span>
-            <span class="ex-qa-body"><strong>Book a service</strong><small>Find trusted professionals</small></span>
-            <span class="ex-qa-arrow" aria-hidden="true">→</span>
-          </button>
-          <button type="button" class="ex-qa" @click="navigateTo('/marketplace')">
-            <span class="ex-qa-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /><path d="M8 4v5" /></svg>
-            </span>
-            <span class="ex-qa-body"><strong>Marketplace</strong><small>Trusted partner services</small></span>
-            <span class="ex-qa-arrow" aria-hidden="true">→</span>
-          </button>
+
+        <div class="ex-panel">
+          <div class="ex-block-head ex-block-head--stack">
+            <h2>Activity</h2>
+            <p class="ex-block-sub">Recent updates on your home.</p>
+          </div>
+          <ul class="ex-activity">
+            <li v-for="(a, i) in activityItems" :key="`act-${i}`" class="ex-activity-item">
+              <span class="ex-activity-ic">
+                <span v-html="a.icon" />
+              </span>
+              <span class="ex-activity-body">
+                <strong>{{ a.title }}</strong>
+                <small>{{ a.sub }}</small>
+              </span>
+              <span class="ex-activity-time">{{ a.time }}</span>
+            </li>
+          </ul>
         </div>
-      </section>
-
-      <!-- ───────────────────── FEATURE PROMOS ───────────────────── -->
-      <section class="ex-promos">
-        <article class="ex-promo ex-promo--dark">
-          <div class="ex-promo-main">
-            <p class="ex-promo-kicker">HOMESCORE</p>
-            <h3>Every property.<br />Instant clarity.</h3>
-            <p class="ex-promo-copy">
-              Our AI-powered HomeScore analyses 100+ data points to give you a
-              clear signal and recommended next action.
-            </p>
-            <button class="ex-btn solid" type="button" @click="navigateTo('/homescore')">Run a HomeScore →</button>
-          </div>
-
-          <div class="ex-promo-aside">
-            <div class="ex-promo-ring">
-              <svg viewBox="0 0 120 120">
-                <circle class="pr-bg" cx="60" cy="60" r="50" />
-                <circle class="pr-meter" cx="60" cy="60" r="50" stroke-dasharray="314" :stroke-dashoffset="promoRingOffset" />
-              </svg>
-              <div class="ex-promo-ring-val"><strong>{{ dashboardHomeScore }}</strong><span>HS</span></div>
-            </div>
-            <ul class="ex-promo-list">
-              <li><i class="ex-tick ex-tick--bright" />Energy &amp; running costs</li>
-              <li><i class="ex-tick ex-tick--bright" />Sold history &amp; estimate</li>
-              <li><i class="ex-tick ex-tick--bright" />Area comparison</li>
-            </ul>
-          </div>
-        </article>
-
-        <article class="ex-promo ex-promo--light">
-          <div class="ex-promo-main">
-            <p class="ex-promo-kicker ex-promo-kicker--teal">PROPERTY PASSPORT</p>
-            <h3>Every property.<br />Verified history.</h3>
-            <p class="ex-promo-copy">
-              Title, planning, surveys, fittings and more — organised, verified
-              and ready before you make an offer.
-            </p>
-            <button class="ex-btn navy" type="button" @click="navigateTo('/passport/sample')">See a sample Passport →</button>
-          </div>
-
-          <div class="ex-promo-aside">
-            <img src="/Exp.png" alt="Property Passport" class="ex-passport-img" />
-            <ul class="ex-promo-list">
-              <li><i class="ex-tick" />Title &amp; ownership</li>
-              <li><i class="ex-tick" />Planning &amp; permits</li>
-              <li><i class="ex-tick" />Surveys &amp; reports</li>
-              <li><i class="ex-tick" />Fittings &amp; contents</li>
-              <li><i class="ex-tick" />Risks &amp; restrictions</li>
-            </ul>
-          </div>
-        </article>
       </section>
 
       <!-- ───────────────────── RECOMMENDED ───────────────────── -->
@@ -404,59 +344,6 @@
             <span class="ex-reco-price">Free</span>
             <small class="ex-reco-sub">Compare trusted advisors</small>
           </button>
-        </div>
-      </section>
-
-      <!-- ───────────────────── MARKET PULSE ───────────────────── -->
-      <section class="ex-block">
-        <div class="ex-block-head">
-          <h2>Market pulse <span class="ex-dot-sep">•</span> {{ pulseArea || 'CV56' }} area</h2>
-          <button type="button" class="ex-link" @click="navigateTo('/homescore')">View full market report →</button>
-        </div>
-        <div class="ex-pulse">
-          <article v-for="(m, i) in marketStats" :key="`pulse-${i}`" class="ex-pulse-card">
-            <div class="ex-pulse-top">
-              <span class="ex-pulse-ic" v-html="m.icon" />
-              <span class="ex-pulse-label">{{ m.label }}</span>
-            </div>
-            <strong class="ex-pulse-val">{{ m.value }}</strong>
-            <span class="ex-pulse-delta" :class="m.deltaDir">{{ m.delta }}</span>
-            <svg v-if="m.spark" class="ex-pulse-spark" viewBox="0 0 120 36" preserveAspectRatio="none">
-              <polyline :points="m.spark" fill="none" stroke="#00a19a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              <circle :cx="m.sparkDot[0]" :cy="m.sparkDot[1]" r="2.6" fill="#00a19a" />
-            </svg>
-            <div v-else class="ex-pulse-people">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.4" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>
-              <svg class="big" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4" /><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7z" /></svg>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.4" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <!-- ───────────────────── TESTIMONIALS ───────────────────── -->
-      <section class="ex-block ex-trust">
-        <div class="ex-block-head">
-          <h2>Trusted by property professionals and buyers</h2>
-        </div>
-        <div class="ex-trust-row">
-          <button class="ex-trust-arrow" type="button" aria-label="Previous" @click="prevTestimonial">‹</button>
-          <div class="ex-trust-cards">
-            <article v-for="(t, i) in visibleTestimonials" :key="`t-${i}`" class="ex-trust-card">
-              <div class="ex-trust-stars">
-                <span v-for="n in 5" :key="n">★</span>
-              </div>
-              <p class="ex-trust-quote">"{{ t.quote }}"</p>
-              <div class="ex-trust-author">
-                <span class="ex-trust-av" :style="{ background: t.color }">{{ t.initials }}</span>
-                <span class="ex-trust-meta">
-                  <strong>{{ t.name }}</strong>
-                  <small>{{ t.role }}</small>
-                </span>
-              </div>
-            </article>
-          </div>
-          <button class="ex-trust-arrow" type="button" aria-label="Next" @click="nextTestimonial">›</button>
         </div>
       </section>
     </main>
@@ -507,7 +394,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import PropertyImage from '~/components/property/PropertyImage.vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 
 definePageMeta({ title: 'Explore - UmovingU', middleware: 'auth' })
@@ -573,48 +459,44 @@ const dashboardHomeScore = computed(() => {
 // KPI overview tiles
 const activePassportCount = computed(() => passports.value.length)
 const availableFeedCount = computed(
-  () => verifiedPassportProperties.value.length || properties.value.length || feedProperties.value.length,
+  () => verifiedPassportProperties.value.length || properties.value.length || 3,
 )
 const estPropertyValue = computed(() => {
   const v = (properties.value[0] as any)?.estimatedPrice ?? (properties.value[0] as any)?.price
   return formatPrice(v) || '£425,000'
 })
 
-// HomeScore ring geometry (small quick-card ring, r=18)
-const ringCirc = 2 * Math.PI * 18
-const ringOffset = computed(() => (ringCirc * (1 - dashboardHomeScore.value / 100)).toFixed(1))
-// Promo ring (r=50, circumference ≈ 314)
-const promoRingOffset = computed(() => (314 * (1 - dashboardHomeScore.value / 100)).toFixed(1))
+// Passport progress (hero)
+const passportPct = computed(() => {
+  const p = passports.value[0] as any
+  const v = p?.progress ?? p?.completion ?? p?.percentComplete ?? 0
+  return Math.max(0, Math.min(100, Math.round(typeof v === 'number' ? v : 0)))
+})
+const passportLabel = computed(() => {
+  if (passportPct.value >= 100) return 'complete'
+  if (passportPct.value > 0) return 'in progress'
+  return 'not started'
+})
 
 function formatPrice(n?: number | null): string {
   if (!n || typeof n !== 'number') return ''
   return '£' + Math.round(n).toLocaleString('en-GB')
 }
 
-// ── Spotlight (best match) ───────────────────────────────────────────
+// ── Hero property (best match / owned) ───────────────────────────────
 const spotlight = computed(() => {
   const p = (properties.value[0] || verifiedPassportProperties.value[0]) as any
   if (p) {
     return {
       id: p.id,
       image: p.imageUrl || p.image || '/images/uk-houses/house-1.jpg',
-      price: formatPrice(p.estimatedPrice ?? p.price) || p.priceDisplay || '£314,000',
       address: `${p.addressLine1 || p.address || '49 Woodfield Road'}, ${p.city || 'Coventry'}, ${p.postcode || userPostcode.value || 'CV5 6AJ'}`,
-      type: p.propertyType || p.type || 'House',
-      tenure: p.tenure || 'Owner-occupied',
-      epc: p.epcScore ?? p.epc ?? 79,
-      homeScore: p.HomeScore ?? p.homeScore ?? 74,
     }
   }
   return {
     id: null,
     image: '/images/uk-houses/house-1.jpg',
-    price: '£314,000',
     address: '49 Woodfield Road, Coventry, CV5 6AJ',
-    type: 'House',
-    tenure: 'Owner-occupied',
-    epc: 79,
-    homeScore: 74,
   }
 })
 
@@ -623,127 +505,27 @@ function openSpotlight() {
   else navigateTo('/marketplace')
 }
 
-// ── Properties feed ──────────────────────────────────────────────────
-const demoFeed = [
-  { image: '/images/uk-houses/house-2.jpg', price: '£289,500', address: '61 Woodfield Road, Coventry, CV5 6AJ', type: 'House', tenure: 'Owner-occupied', epc: 68, homeScore: 72, fav: false },
-  { image: '/images/uk-houses/house-3.jpg', price: '£325,000', address: '17 Green Lane, Coventry, CV5 6AJ', type: 'House', tenure: 'Freehold', epc: 72, homeScore: 76, fav: false },
-  { image: '/images/uk-houses/house-4.jpg', price: '£275,000', address: '23 Meadow Way, Coventry, CV5 6AJ', type: 'House', tenure: 'Owner-occupied', epc: 66, homeScore: 69, fav: false },
-]
-const feedProperties = ref(demoFeed.map((p) => ({ ...p })))
-
-function syncFeed() {
-  const real = properties.value.slice(0, 3)
-  if (!real.length) return
-  feedProperties.value = real.map((p: any, i) => ({
-    id: p.id,
-    image: p.imageUrl || p.image || demoFeed[i % 3].image,
-    price: formatPrice(p.estimatedPrice ?? p.price) || p.priceDisplay || demoFeed[i % 3].price,
-    address: `${p.addressLine1 || p.address || ''}${p.city ? ', ' + p.city : ''}${p.postcode ? ', ' + p.postcode : ''}`.replace(/^, /, '') || demoFeed[i % 3].address,
-    type: p.propertyType || p.type || 'House',
-    tenure: p.tenure || 'Owner-occupied',
-    epc: p.epcScore ?? p.epc ?? demoFeed[i % 3].epc,
-    homeScore: p.HomeScore ?? p.homeScore ?? demoFeed[i % 3].homeScore,
-    fav: false,
-  }))
+// Hero image with a resilient fallback: if the property's own photo is missing
+// or fails to load, drop back to a local house image instead of a blank tile.
+const HERO_FALLBACK = '/images/uk-houses/house-1.jpg'
+const heroImgSrc = ref(HERO_FALLBACK)
+watch(
+  () => spotlight.value.image,
+  (v) => { heroImgSrc.value = v && v.trim() ? v : HERO_FALLBACK },
+  { immediate: true },
+)
+function onHeroImgError() {
+  if (heroImgSrc.value !== HERO_FALLBACK) heroImgSrc.value = HERO_FALLBACK
 }
 
-function toggleFav(i: number) {
-  const item = feedProperties.value[i]
-  if (item) item.fav = !item.fav
-}
+// ── Activity ─────────────────────────────────────────────────────────
+const ICON_HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>'
+const ICON_SCORE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 12l5-5"/></svg>'
 
-function openProperty(p: any) {
-  if (p?.id) navigateTo(`/passportview/${p.id}`)
-  else navigateTo('/marketplace')
-}
-
-// ── Saved searches ───────────────────────────────────────────────────
-const savedSearches = computed(() => {
-  const area = userPostcode.value || 'CV5 6AJ'
-  return [
-    { label: `${area} area`, matches: 5, query: area },
-    { label: '£200k – £350k', matches: 12, query: '' },
-    { label: '3+ bedrooms', matches: 8, query: '' },
-    { label: 'Freehold only', matches: 9, query: '' },
-    { label: 'Near schools', matches: 6, query: '' },
-  ]
-})
-const savedMatchTotal = computed(() => savedSearches.value[0]?.matches ?? 5)
-
-function runSavedSearch(s: { query: string }) {
-  if (s.query) navigateTo(`/marketplace?q=${encodeURIComponent(s.query)}`)
-  else navigateTo('/marketplace')
-}
-
-// ── Market pulse ─────────────────────────────────────────────────────
-interface MarketPulse {
-  area: string | null
-  priceChangeYoY: number | null
-  avgDaysToSell: number | null
-  passportListings: number
-}
-const marketPulse = ref<MarketPulse | null>(null)
-const pulseArea = computed(() => marketPulse.value?.area || (userPostcode.value ? userPostcode.value.split(' ')[0] : ''))
-
-async function fetchMarketPulse() {
-  const pc = userPostcode.value
-  if (!pc) return
-  try {
-    marketPulse.value = await $fetch<MarketPulse>(
-      `${config.public.apiBase}/property/market-pulse?postcode=${encodeURIComponent(pc)}`,
-    )
-  } catch {
-    marketPulse.value = null
-  }
-}
-watch(userPostcode, (pc) => { if (pc) fetchMarketPulse() })
-
-const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
-const ICON_TAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6l8 8 8-8-8-8H5a2 2 0 0 0-2 2z"/><circle cx="8" cy="10" r="1.4"/></svg>'
-const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg>'
-const ICON_STOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>'
-
-const marketStats = computed(() => {
-  const days = marketPulse.value?.avgDaysToSell ?? 179
-  return [
-    {
-      icon: ICON_CLOCK, label: 'Average sale time', value: `${days} days`,
-      delta: '↓ 8 days vs last month', deltaDir: 'down',
-      spark: '0,28 12,24 24,26 36,20 48,22 60,16 72,18 84,12 96,14 108,8 120,6', sparkDot: [120, 6],
-    },
-    {
-      icon: ICON_TAG, label: 'Average price', value: '£253,400',
-      delta: '↑ 3.2% vs last month', deltaDir: 'up',
-      spark: '0,30 12,28 24,24 36,26 48,20 60,22 72,16 84,18 96,12 108,10 120,5', sparkDot: [120, 5],
-    },
-    {
-      icon: ICON_CHECK, label: 'Sales agreed', value: '1 in 3',
-      delta: 'Properties going SSTC', deltaDir: 'flat',
-      spark: '', sparkDot: [0, 0],
-    },
-    {
-      icon: ICON_STOCK, label: 'Stock levels', value: '+12%',
-      delta: 'More properties listed', deltaDir: 'up',
-      spark: '0,26 12,28 24,22 36,24 48,18 60,20 72,22 84,14 96,16 108,10 120,8', sparkDot: [120, 8],
-    },
-  ]
-})
-
-// ── Testimonials ─────────────────────────────────────────────────────
-const testimonials = [
-  { quote: 'HomeScore has transformed how we find and assess deals. It\'s a game changer.', name: 'James T.', role: 'Property Investor', initials: 'JT', color: '#231d45' },
-  { quote: 'Property Passport saves us hours of chasing documents. Everything in one place.', name: 'Sarah L.', role: 'Solicitor', initials: 'SL', color: '#00a19a' },
-  { quote: 'The insights are spot on. We move faster and with total confidence.', name: 'Daniel M.', role: 'Buy-to-Let Investor', initials: 'DM', color: '#2c2456' },
-  { quote: 'A verified history before the offer means no nasty surprises down the line.', name: 'Priya R.', role: 'First-time Buyer', initials: 'PR', color: '#00857f' },
-]
-const testimonialStart = ref(0)
-const visibleTestimonials = computed(() => {
-  const out = []
-  for (let i = 0; i < 3; i++) out.push(testimonials[(testimonialStart.value + i) % testimonials.length])
-  return out
-})
-function nextTestimonial() { testimonialStart.value = (testimonialStart.value + 1) % testimonials.length }
-function prevTestimonial() { testimonialStart.value = (testimonialStart.value - 1 + testimonials.length) % testimonials.length }
+const activityItems = computed(() => [
+  { icon: ICON_HOME, title: 'Property added', sub: userPostcode.value || 'CV5 6AJ', time: '2 days ago' },
+  { icon: ICON_SCORE, title: 'HomeScore pending', sub: 'Run your first score to unlock insights', time: 'now' },
+])
 
 // ── Search ───────────────────────────────────────────────────────────
 function onSearchSelect(property: { id: string }) {
@@ -786,13 +568,8 @@ onMounted(async () => {
     if (typeof window !== 'undefined') localStorage.setItem('umu_role', r)
   }
   if (passportResult.status === 'fulfilled') passports.value = passportResult.value ?? []
-  if (propResult.status === 'fulfilled') {
-    properties.value = propResult.value?.items ?? []
-    syncFeed()
-  }
+  if (propResult.status === 'fulfilled') properties.value = propResult.value?.items ?? []
   if (verifiedResult.status === 'fulfilled') verifiedPassportProperties.value = verifiedResult.value?.items ?? []
-
-  if (userPostcode.value) fetchMarketPulse()
 })
 </script>
 
@@ -825,6 +602,10 @@ onMounted(async () => {
 
 /* ── Buttons ──────────────────────────────────────────────────────── */
 .ex-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 1px solid transparent;
   border-radius: 11px;
   padding: 11px 18px;
@@ -832,20 +613,21 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
   white-space: nowrap;
 }
-.ex-btn.solid {
-  background: var(--teal);
-  color: #fff;
-}
+.ex-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+.ex-btn.solid { background: var(--teal); color: #fff; }
 .ex-btn.solid:hover { background: var(--teal-dark); transform: translateY(-1px); }
-.ex-btn.navy {
-  background: var(--navy);
-  color: #fff;
-}
+.ex-btn.navy { background: var(--navy); color: #fff; }
 .ex-btn.navy:hover { background: var(--navy-2); transform: translateY(-1px); }
-.ex-plus { font-weight: 800; margin-right: 4px; }
+.ex-btn.ghost {
+  background: #fff;
+  color: var(--navy);
+  border-color: var(--line);
+}
+.ex-btn.ghost:hover { border-color: var(--teal); color: var(--teal-dark); transform: translateY(-1px); }
+.ex-plus { font-weight: 800; margin-right: 2px; }
 
 .ex-link {
   border: 0;
@@ -868,7 +650,6 @@ onMounted(async () => {
   position: relative;
   flex-shrink: 0;
 }
-.ex-tick--bright { background: var(--teal-bright); }
 .ex-tick::after {
   content: '';
   position: absolute;
@@ -1019,35 +800,113 @@ onMounted(async () => {
 .ex-menu-enter-from, .ex-menu-leave-to { opacity: 0; transform: translateY(-8px); }
 
 /* ── Stage ────────────────────────────────────────────────────────── */
-.ex-stage { padding: 32px 0 80px; }
+.ex-stage { padding: 28px 0 80px; }
 
-/* ── Hero ─────────────────────────────────────────────────────────── */
-.ex-hero {
+/* ── Hero · Property Hub ──────────────────────────────────────────── */
+.ex-hub {
   display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: 40px;
+  grid-template-columns: 340px 1fr;
+  gap: 20px 32px;
   align-items: stretch;
-  margin-bottom: 36px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 18px 44px rgba(35, 29, 69, 0.06);
+  margin-bottom: 28px;
 }
-.ex-greeting { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: var(--ink-soft); }
-.ex-greeting span { color: var(--teal-dark); font-weight: 700; }
-.ex-hero-title {
-  margin: 0 0 16px;
-  font-size: clamp(32px, 4vw, 46px);
+.ex-hub-media {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 280px;
+}
+.ex-hub-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.ex-hub-photo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.16);
+}
+.ex-hub-photo svg { width: 15px; height: 15px; }
+.ex-hub-photo:hover { background: #fff; }
+.ex-hub-view {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.16);
+}
+.ex-hub-view:hover { background: #fff; color: var(--teal-dark); }
+
+.ex-hub-body { display: flex; flex-direction: column; padding: 6px 6px 6px 0; }
+.ex-hub-eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--teal-dark);
+}
+.ex-hub-title {
+  margin: 0 0 6px;
+  font-size: clamp(30px, 3.4vw, 40px);
   font-weight: 800;
   line-height: 1.05;
-  letter-spacing: -1.4px;
+  letter-spacing: -1.2px;
   color: var(--navy);
 }
-.ex-accent { color: var(--teal); }
-.ex-hero-sub {
-  margin: 0 0 24px;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--ink-soft);
-  max-width: 46ch;
-}
+.ex-hub-meta { margin: 0 0 14px; font-size: 14.5px; font-weight: 600; color: var(--ink-soft); }
+.ex-hub-copy { margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: var(--ink-soft); max-width: 52ch; }
 
+.ex-hub-progress { margin-bottom: 22px; max-width: 480px; }
+.ex-hub-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.ex-hub-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #eceaf0;
+  overflow: hidden;
+}
+.ex-hub-progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal-bright) 100%);
+  transition: width 0.6s ease;
+}
+.ex-hub-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: auto; }
+
+/* ── Search bar ───────────────────────────────────────────────────── */
 .ex-search {
   display: flex;
   align-items: center;
@@ -1056,8 +915,8 @@ onMounted(async () => {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 7px;
-  box-shadow: 0 10px 28px rgba(35, 29, 69, 0.06);
-  margin-bottom: 18px;
+  box-shadow: 0 10px 28px rgba(35, 29, 69, 0.05);
+  margin-bottom: 28px;
 }
 .ex-search-field { flex: 1; min-width: 0; }
 .ex-search-field :deep(.psi-wrap) { width: 100%; }
@@ -1070,10 +929,7 @@ onMounted(async () => {
   box-shadow: none;
 }
 .ex-search-field :deep(.psi-input:focus) { border: 0 !important; background: transparent; }
-.ex-search-radius {
-  position: relative;
-  flex-shrink: 0;
-}
+.ex-search-radius { position: relative; flex-shrink: 0; }
 .ex-search-radius select {
   appearance: none;
   border: 1px solid var(--line);
@@ -1098,455 +954,28 @@ onMounted(async () => {
 }
 .ex-search-btn { flex-shrink: 0; }
 
-.ex-quick-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
+/* Search sitting inline, to the right of the hub action buttons */
+.ex-search--hub {
+  flex: 1 1 300px;
+  min-width: 260px;
+  margin-bottom: 0;
+  box-shadow: none;
+  background: #f8f8f6;
+  border-color: var(--line);
 }
-.ex-quick-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
-  padding: 14px;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.16s ease, transform 0.16s ease;
-}
-.ex-quick-card:hover { border-color: var(--teal); transform: translateY(-2px); }
-.ex-quick-ring { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
-.ex-quick-ring svg { width: 44px; height: 44px; transform: rotate(-90deg); }
-.qr-bg { fill: none; stroke: var(--line); stroke-width: 4; }
-.qr-meter { fill: none; stroke: var(--teal); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
-.ex-quick-ring-val {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-.ex-quick-ring-val strong { font-size: 13px; font-weight: 800; color: var(--navy); }
-.ex-quick-ring-val span { font-size: 7px; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.5px; }
-.ex-quick-pp {
-  width: 44px;
-  height: 44px;
-  border-radius: 11px;
-  flex-shrink: 0;
-  background: rgba(0, 161, 154, 0.1);
-  color: var(--teal-dark);
-  display: grid;
-  place-items: center;
-}
-.ex-quick-pp svg { width: 22px; height: 22px; }
-.ex-quick-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.ex-quick-body strong { font-size: 13.5px; font-weight: 700; color: var(--teal-dark); }
-.ex-quick-body span { font-size: 12px; color: var(--ink-soft); line-height: 1.35; }
-.ex-quick-arrow { color: var(--teal-dark); font-size: 16px; font-weight: 700; flex-shrink: 0; }
-
-.ex-saved-hint {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.ex-saved-hint-left {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-soft);
-}
-
-/* ── Spotlight ────────────────────────────────────────────────────── */
-.ex-spotlight {
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.18);
-  min-height: 420px;
-}
-.ex-spotlight-media {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 420px;
-}
-.ex-spotlight-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.ex-spotlight-img :deep(img) { width: 100%; height: 100%; object-fit: cover; }
-.ex-spotlight-media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(28, 24, 56, 0.86) 0%, rgba(28, 24, 56, 0.25) 42%, rgba(28, 24, 56, 0) 70%);
-}
-.ex-spotlight-badge {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  z-index: 2;
-  background: var(--teal);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  padding: 7px 12px;
-  border-radius: 9px;
-}
-.ex-spotlight-overlay {
-  position: absolute;
+/* The input field is narrow (it shares the row with the radius + Search button),
+   so anchor the autocomplete dropdown to the whole search bar rather than the
+   input alone: it then spans the full search-bar width and drops cleanly beneath
+   it, instead of squashing into the input or sprawling under the buttons. */
+.ex-search--hub { position: relative; }
+.ex-search--hub :deep(.psi-wrap) { position: static; }
+.ex-search--hub :deep(.psi-drop) {
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 2;
-  padding: 26px;
-  color: #fff;
+  width: auto;
+  max-width: none;
+  top: calc(100% + 8px);
 }
-.ex-spotlight-price { display: block; font-size: 34px; font-weight: 800; letter-spacing: -0.8px; }
-.ex-spotlight-addr { margin: 4px 0 12px; font-size: 15px; color: rgba(255, 255, 255, 0.88); }
-.ex-spotlight-pills { display: flex; gap: 8px; margin-bottom: 14px; }
-.ex-spotlight-pills span {
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 8px;
-  padding: 5px 11px;
-}
-.ex-spotlight-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.ex-spotlight-meta { font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.9); }
-.ex-spotlight-btn {
-  border: 0;
-  background: #fff;
-  color: var(--navy);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.ex-spotlight-btn:hover { background: var(--teal); color: #fff; }
-
-/* ── Blocks ───────────────────────────────────────────────────────── */
-.ex-block { margin-bottom: 36px; }
-.ex-block-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.ex-block-head h2 {
-  margin: 0;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--navy);
-}
-.ex-dot-sep { color: var(--teal); }
-
-/* ── Saved searches ───────────────────────────────────────────────── */
-.ex-saved-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-}
-.ex-saved-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  background: #fff;
-  padding: 13px 14px;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.16s ease, transform 0.16s ease;
-}
-.ex-saved-chip:hover { border-color: var(--teal); transform: translateY(-2px); }
-.ex-saved-chip-ic {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: rgba(0, 161, 154, 0.1);
-  color: var(--teal-dark);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.ex-saved-chip-ic svg { width: 15px; height: 15px; }
-.ex-saved-chip-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.ex-saved-chip-body strong { font-size: 13px; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ex-saved-chip-body small { font-size: 11.5px; color: var(--ink-faint); font-weight: 600; }
-
-/* ── Property feed ────────────────────────────────────────────────── */
-.ex-feed {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-}
-.ex-prop {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-.ex-prop:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(35, 29, 69, 0.1); }
-.ex-prop-media { position: relative; height: 188px; }
-.ex-prop-img { width: 100%; height: 100%; }
-.ex-prop-img :deep(img) { width: 100%; height: 100%; object-fit: cover; }
-.ex-prop-fav {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 0;
-  background: rgba(255, 255, 255, 0.92);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-.ex-prop-fav svg { width: 17px; height: 17px; }
-.ex-prop-body { padding: 16px; }
-.ex-prop-price { display: block; font-size: 21px; font-weight: 800; letter-spacing: -0.4px; color: var(--navy); }
-.ex-prop-addr { margin: 3px 0 11px; font-size: 13.5px; color: var(--ink-soft); }
-.ex-prop-pills { display: flex; gap: 7px; margin-bottom: 13px; }
-.ex-prop-pills span {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  background: #f3f2ef;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 4px 9px;
-}
-.ex-prop-foot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-}
-.ex-prop-epc { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
-.ex-prop-bar {
-  flex: 0 0 36px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
-}
-.ex-prop-bar i { display: block; height: 100%; background: var(--teal); border-radius: 999px; }
-.ex-prop-hs { font-size: 11.5px; font-weight: 700; color: var(--navy); white-space: nowrap; }
-.ex-prop-link { margin-left: auto; font-size: 12.5px; font-weight: 700; color: var(--teal-dark); white-space: nowrap; }
-
-/* ── Promos ───────────────────────────────────────────────────────── */
-.ex-promos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 36px;
-}
-.ex-promo {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  border-radius: 20px;
-  padding: 30px;
-  overflow: hidden;
-}
-.ex-promo--dark { background: var(--navy); color: #fff; }
-.ex-promo--light { background: #fff; border: 1px solid var(--line); color: var(--ink); }
-.ex-promo-main { flex: 1 1 0; min-width: 0; }
-.ex-promo-kicker {
-  margin: 0 0 12px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  color: var(--teal-bright);
-}
-.ex-promo-kicker--teal { color: var(--teal-dark); }
-.ex-promo h3 {
-  margin: 0 0 12px;
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -0.6px;
-}
-.ex-promo-copy {
-  margin: 0 0 22px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-.ex-promo--dark .ex-promo-copy { color: rgba(255, 255, 255, 0.72); }
-.ex-promo--light .ex-promo-copy { color: var(--ink-soft); }
-
-/* Right visual column: ring/book + checklist side by side */
-.ex-promo-aside {
-  display: grid;
-  align-items: center;
-  gap: 22px;
-  flex-shrink: 0;
-}
-.ex-promo-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.ex-promo-list li {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 13.5px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.ex-promo--light .ex-promo-list li { color: var(--ink); }
-
-.ex-promo-ring {
-  position: relative;
-  width: 104px;
-  height: 104px;
-  flex-shrink: 0;
-}
-.ex-promo-ring svg { width: 104px; height: 104px; transform: rotate(-90deg); }
-.pr-bg { fill: none; stroke: rgba(255, 255, 255, 0.14); stroke-width: 8; }
-.pr-meter { fill: none; stroke: var(--teal-bright); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.7s ease; }
-.ex-promo-ring-val {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-.ex-promo-ring-val strong { font-size: 28px; font-weight: 800; color: #fff; }
-.ex-promo-ring-val span { font-size: 10px; font-weight: 700; color: rgba(255, 255, 255, 0.6); letter-spacing: 1px; margin-top: 3px; }
-
-.ex-passport-img {
-  width: 132px;
-  height: auto;
-  flex-shrink: 0;
-  display: block;
-  filter: drop-shadow(0 18px 30px rgba(0, 161, 154, 0.28));
-}
-
-/* ── Market pulse ─────────────────────────────────────────────────── */
-.ex-pulse {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-.ex-pulse-card {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  padding: 18px;
-}
-.ex-pulse-top { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
-.ex-pulse-ic {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: rgba(0, 161, 154, 0.1);
-  color: var(--teal-dark);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.ex-pulse-ic :deep(svg) { width: 16px; height: 16px; }
-.ex-pulse-label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
-.ex-pulse-val { display: block; font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--navy); }
-.ex-pulse-delta { display: block; margin: 3px 0 10px; font-size: 11.5px; font-weight: 600; }
-.ex-pulse-delta.up { color: #1f7a66; }
-.ex-pulse-delta.down { color: #1f7a66; }
-.ex-pulse-delta.flat { color: var(--ink-faint); }
-.ex-pulse-spark { width: 100%; height: 36px; display: block; }
-.ex-pulse-people {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 10px;
-  height: 36px;
-  color: var(--ink-faint);
-}
-.ex-pulse-people svg { width: 22px; height: 22px; }
-.ex-pulse-people .big { width: 30px; height: 30px; color: var(--navy); }
-
-/* ── Testimonials ─────────────────────────────────────────────────── */
-.ex-trust-row { display: flex; align-items: stretch; gap: 12px; }
-.ex-trust-cards {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-}
-.ex-trust-card {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-}
-.ex-trust-stars { color: var(--teal); font-size: 14px; letter-spacing: 2px; margin-bottom: 12px; }
-.ex-trust-quote { margin: 0 0 18px; font-size: 14.5px; line-height: 1.6; color: var(--ink); flex: 1; }
-.ex-trust-author { display: flex; align-items: center; gap: 11px; }
-.ex-trust-av {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.ex-trust-meta { display: flex; flex-direction: column; line-height: 1.2; }
-.ex-trust-meta strong { font-size: 14px; font-weight: 700; color: var(--navy); }
-.ex-trust-meta small { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
-.ex-trust-arrow {
-  width: 40px;
-  flex-shrink: 0;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--navy);
-  font-size: 22px;
-  cursor: pointer;
-  align-self: center;
-  height: 40px;
-}
-.ex-trust-arrow:hover { border-color: var(--teal); color: var(--teal-dark); }
-
-.ex-block-head--stack { flex-direction: column; align-items: flex-start; gap: 4px; }
-.ex-block-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
 
 /* ── KPI overview ─────────────────────────────────────────────────── */
 .ex-kpis {
@@ -1584,6 +1013,192 @@ onMounted(async () => {
 .ex-kpi strong { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.8px; color: var(--navy); line-height: 1; }
 .ex-kpi-label { display: block; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
 
+/* ── Add another property ─────────────────────────────────────────── */
+.ex-addprop {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff 0%, #f6faf9 100%);
+  padding: 18px 20px;
+  cursor: pointer;
+  margin-bottom: 36px;
+  font-family: inherit;
+  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+.ex-addprop:hover {
+  border-color: var(--teal);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(35, 29, 69, 0.08);
+}
+.ex-addprop-ic {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--navy);
+  color: var(--teal-bright);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.ex-addprop-ic svg { width: 26px; height: 26px; }
+.ex-addprop-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ex-addprop-body strong { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; color: var(--navy); }
+.ex-addprop-body small { font-size: 13.5px; color: var(--ink-soft); }
+.ex-addprop-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 11px;
+  transition: background 0.16s ease;
+}
+.ex-addprop-cta svg { width: 15px; height: 15px; }
+.ex-addprop:hover .ex-addprop-cta { background: var(--teal-dark); }
+
+/* ── Blocks ───────────────────────────────────────────────────────── */
+.ex-block { margin-bottom: 36px; }
+.ex-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.ex-block-head h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--navy);
+}
+.ex-block-head--stack { flex-direction: column; align-items: flex-start; gap: 4px; }
+.ex-block-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
+
+/* ── Feature cards (story / history) ──────────────────────────────── */
+.ex-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.ex-feature {
+  display: flex;
+  gap: 18px;
+  border: 1.5px solid;
+  border-radius: 20px;
+  padding: 18px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.ex-feature--hs {
+  background: linear-gradient(180deg, #f2faf8 0%, #ffffff 72%);
+  border-color: rgba(0, 161, 154, 0.28);
+}
+.ex-feature--hs:hover {
+  border-color: var(--teal);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(0, 161, 154, 0.16);
+}
+.ex-feature--pp {
+  background: linear-gradient(180deg, rgba(35, 29, 69, 0.04) 0%, #ffffff 72%);
+  border-color: rgba(35, 29, 69, 0.18);
+}
+.ex-feature--pp:hover {
+  border-color: var(--navy);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(35, 29, 69, 0.16);
+}
+.ex-feature-media {
+  flex-shrink: 0;
+  width: 132px;
+  height: 132px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  align-self: center;
+}
+.ex-feature-media img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+.ex-feature-media--pp img { padding: 6px; }
+.ex-feature-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ex-feature-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ex-feature-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--teal-dark);
+}
+.ex-feature-eyebrow.pp { color: var(--navy); }
+.ex-feature-pill {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  color: #fff;
+}
+.ex-feature-pill.hs { background: var(--teal); }
+.ex-feature-pill.pp { background: var(--navy); }
+.ex-feature-headline {
+  margin: 0 0 5px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  color: var(--navy);
+}
+.ex-feature-sub {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.ex-feature-sub b { color: var(--navy); font-weight: 800; }
+.ex-feature-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ex-feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ex-feature-cta { width: 100%; margin-top: auto; }
+
+/* ── Two-column · quick actions + activity ────────────────────────── */
+.ex-two {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+.ex-panel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  padding: 22px;
+}
+
 /* ── Quick actions ────────────────────────────────────────────────── */
 .ex-qa-grid {
   display: grid;
@@ -1619,6 +1234,33 @@ onMounted(async () => {
 .ex-qa-body small { font-size: 13px; color: var(--ink-soft); }
 .ex-qa-arrow { color: var(--ink-faint); font-size: 16px; font-weight: 700; flex-shrink: 0; }
 .ex-qa:hover .ex-qa-arrow { color: var(--teal-dark); }
+
+/* ── Activity ─────────────────────────────────────────────────────── */
+.ex-activity { list-style: none; margin: 0; padding: 0; }
+.ex-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.ex-activity-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.ex-activity-item:first-child { padding-top: 4px; }
+.ex-activity-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: rgba(0, 161, 154, 0.1);
+  color: var(--teal-dark);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.ex-activity-ic :deep(svg) { width: 18px; height: 18px; }
+.ex-activity-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ex-activity-body strong { font-size: 14px; font-weight: 700; color: var(--navy); }
+.ex-activity-body small { font-size: 12.5px; color: var(--ink-soft); }
+.ex-activity-time { font-size: 12px; font-weight: 600; color: var(--ink-faint); white-space: nowrap; flex-shrink: 0; }
 
 /* ── Recommended ──────────────────────────────────────────────────── */
 .ex-reco-grid {
@@ -1696,43 +1338,36 @@ onMounted(async () => {
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 1080px) {
   .ex-nav-links { display: none; }
+  .ex-burger { display: flex; }
+  .ex-profile-meta { display: none; }
 }
 @media (max-width: 980px) {
-  .ex-hero { grid-template-columns: 1fr; }
-  .ex-spotlight { min-height: 360px; }
+  .ex-hub { grid-template-columns: 1fr; }
+  .ex-hub-media { min-height: 220px; }
   .ex-kpis { grid-template-columns: repeat(2, 1fr); }
-  .ex-saved-row { grid-template-columns: repeat(3, 1fr); }
-  .ex-feed { grid-template-columns: repeat(2, 1fr); }
-  .ex-promos { grid-template-columns: 1fr; }
+  .ex-features { grid-template-columns: 1fr; }
+  .ex-two { grid-template-columns: 1fr; }
   .ex-reco-grid { grid-template-columns: repeat(2, 1fr); }
-  .ex-pulse { grid-template-columns: repeat(2, 1fr); }
-  .ex-trust-cards { grid-template-columns: 1fr 1fr; }
-  .ex-trust-cards .ex-trust-card:nth-child(3) { display: none; }
   .ex-footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
-  .ex-profile-meta { display: none; }
-  .ex-burger { display: flex; }
-  .ex-btn.solid span:last-child { display: none; }
+  .ex-nav-inner { gap: 12px; }
+  .ex-profile-chip { display: none; }
+  .ex-nav-actions .ex-btn.solid { display: none; }
   .ex-search { flex-wrap: wrap; }
   .ex-search-field { flex: 1 1 100%; order: -1; }
-  .ex-quick-cards { grid-template-columns: 1fr; }
-  .ex-saved-row { grid-template-columns: 1fr 1fr; }
-  .ex-feed { grid-template-columns: 1fr; }
+  .ex-hub-actions .ex-btn { flex: 1 1 auto; }
+  .ex-search--hub { flex: 1 1 100%; }
   .ex-qa-grid { grid-template-columns: 1fr; }
-  .ex-promo { flex-direction: column; align-items: flex-start; gap: 22px; }
-  .ex-promo-aside { width: 100%; justify-content: flex-start; }
-  .ex-pulse { grid-template-columns: 1fr 1fr; }
-  .ex-trust-cards { grid-template-columns: 1fr; }
-  .ex-trust-cards .ex-trust-card:nth-child(2),
-  .ex-trust-cards .ex-trust-card:nth-child(3) { display: none; }
+  .ex-addprop { flex-wrap: wrap; }
+  .ex-addprop-cta { width: 100%; justify-content: center; }
+  .ex-feature { flex-direction: column; }
+  .ex-feature-media { align-self: flex-start; }
 }
 @media (max-width: 520px) {
   .ex-shell { width: calc(100% - 32px); }
   .ex-kpis { grid-template-columns: 1fr 1fr; }
-  .ex-saved-row { grid-template-columns: 1fr; }
   .ex-reco-grid { grid-template-columns: 1fr; }
-  .ex-pulse { grid-template-columns: 1fr; }
   .ex-footer-grid { grid-template-columns: 1fr; }
 }
 </style>
