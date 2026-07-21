@@ -14,7 +14,7 @@
               you can do right now for this measure.
             </p>
             <div class="ifs-acc">
-              <span class="ifs-acc-ic">🛡️</span>
+              <span class="ifs-acc-ic"><img src="/property-cards/safetyCheck.png" alt="" loading="lazy" /></span>
               <p v-html="trade.acc" />
             </div>
 
@@ -25,7 +25,7 @@
                 type="button"
                 @click="startElig"
               >
-                <span class="ifs-r-ic">🎁</span>
+                <span class="ifs-r-ic"><img src="/property-cards/claim.png" alt="" loading="lazy" /></span>
                 <span class="ifs-r-body">
                   <span class="ifs-r-title">
                     Check if grants could cover this
@@ -37,7 +37,7 @@
               </button>
 
               <button class="ifs-route ifs-route--match" type="button" @click="goForm">
-                <span class="ifs-r-ic">✅</span>
+                <span class="ifs-r-ic"><img src="/property-cards/getMatched.png" alt="" loading="lazy" /></span>
                 <span class="ifs-r-body">
                   <span class="ifs-r-title">
                     Get matched
@@ -54,7 +54,7 @@
                 rel="noopener"
                 class="ifs-route ifs-route--self"
               >
-                <span class="ifs-r-ic">🔎</span>
+                <span class="ifs-r-ic"><img src="/property-cards/searchYourself.png" alt="" loading="lazy" /></span>
                 <span class="ifs-r-body">
                   <span class="ifs-r-title">{{ trade.self.t }}</span>
                   <span class="ifs-r-sub">{{ trade.self.s }}</span>
@@ -708,7 +708,8 @@ watch(() => props.open, (o) => {
   padding: 13px 14px;
   margin-top: 16px;
 }
-.ifs-acc-ic { font-size: 18px }
+.ifs-acc-ic { font-size: 18px; flex-shrink: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center }
+.ifs-acc-ic img { width: 100%; height: 100%; object-fit: contain }
 .ifs-acc p { font-size: 12.5px; color: #4a3f6b; font-weight: 500; line-height: 1.5 }
 .ifs-acc :deep(b) { color: #231d45 }
 
@@ -742,10 +743,12 @@ watch(() => props.open, (o) => {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 22px;
+  overflow: hidden;
 }
-.ifs-route--grant .ifs-r-ic { background: #e4f4ec }
-.ifs-route--match .ifs-r-ic { background: #e6f5f4 }
-.ifs-route--self  .ifs-r-ic { background: #fbf1e1 }
+.ifs-r-ic img { width: 100%; height: 100%; object-fit: contain }
+.ifs-route--grant .ifs-r-ic,
+.ifs-route--match .ifs-r-ic,
+.ifs-route--self  .ifs-r-ic { background: transparent }
 .ifs-r-body { flex: 1; min-width: 0; display: flex; flex-direction: column }
 .ifs-r-title {
   font-size: 15px;

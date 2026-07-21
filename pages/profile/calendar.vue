@@ -16,12 +16,15 @@
           <h1 class="cal-month-title">{{ monthLabel }}</h1>
           <div class="cal-stats">
             <span class="cal-stat">
+              <img class="cal-stat-icon" src="/property-cards/calendar.png" alt="" loading="lazy" />
               <span class="stat-num">{{ countThisWeek }}</span>this week
             </span>
             <span class="cal-stat">
+              <img class="cal-stat-icon" src="/property-cards/eye.png" alt="" loading="lazy" />
               <span class="stat-num teal">{{ countViewings }}</span>viewings
             </span>
             <span class="cal-stat">
+              <img class="cal-stat-icon" src="/property-cards/clock.png" alt="" loading="lazy" />
               <span class="stat-num coral">{{ countDeadlines }}</span>deadlines
             </span>
           </div>
@@ -753,6 +756,12 @@ onMounted(async () => {
   color: #50637a;
   letter-spacing: -0.2px;
 }
+.cal-stat-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .cal-stat .stat-num {
   color: #17314a;
   font-weight: 800;
@@ -1291,7 +1300,7 @@ onMounted(async () => {
 }
 .btn-primary {
   flex: 2;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   border-radius: 12px;

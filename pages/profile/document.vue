@@ -74,7 +74,7 @@
           @click="activeCategory = activeCategory === cat.key ? '' : cat.key"
         >
           <div class="dc-cat-icon">
-            <span v-html="cat.icon" />
+            <img :src="cat.img" :alt="cat.name" class="dc-cat-img" loading="lazy" />
           </div>
           <div class="dc-cat-body">
             <div class="dc-cat-name">{{ cat.name }}</div>
@@ -382,12 +382,12 @@ const categories = computed(() => {
   const counts = { title: 0, energy: 0, legal: 0, surveys: 0, financial: 0, other: 0 }
   for (const d of allDocs.value) counts[docCategory(d)]++
   return [
-    { key: 'title', name: 'Title', tone: 'identity', count: counts.title, icon: '📘' },
-    { key: 'energy', name: 'Energy', tone: 'property', count: counts.energy, icon: '⚡' },
-    { key: 'legal', name: 'Legal', tone: 'identity', count: counts.legal, icon: '⚖️' },
-    { key: 'surveys', name: 'Surveys', tone: 'property', count: counts.surveys, icon: '🏠' },
-    { key: 'financial', name: 'Financial', tone: 'financial', count: counts.financial, icon: '£' },
-    { key: 'other', name: 'Other', tone: 'other', count: counts.other, icon: '📁' },
+    { key: 'title', name: 'Title', tone: 'identity', count: counts.title, img: '/property-cards/title.jpeg' },
+    { key: 'energy', name: 'Energy', tone: 'property', count: counts.energy, img: '/property-cards/energy.jpeg' },
+    { key: 'legal', name: 'Legal', tone: 'identity', count: counts.legal, img: '/property-cards/legal.jpeg' },
+    { key: 'surveys', name: 'Surveys', tone: 'property', count: counts.surveys, img: '/property-cards/surveys.jpeg' },
+    { key: 'financial', name: 'Financial', tone: 'financial', count: counts.financial, img: '/property-cards/financial.jpeg' },
+    { key: 'other', name: 'Other', tone: 'other', count: counts.other, img: '/property-cards/other.jpeg' },
   ]
 })
 
@@ -824,7 +824,9 @@ const goBack = useGoBack('/profile')
   font-size: 22px;
   flex-shrink: 0;
   box-shadow: 0 4px 10px rgba(19, 51, 82, 0.06);
+  overflow: hidden;
 }
+.dc-cat-img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
 .dc-cat-body { flex: 1; min-width: 0; }
 .dc-cat-name {
   font-size: 15px;
@@ -1024,7 +1026,7 @@ const goBack = useGoBack('/profile')
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   display: flex;
@@ -1342,7 +1344,7 @@ const goBack = useGoBack('/profile')
 }
 .btn-primary {
   flex: 2;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   border-radius: 12px;

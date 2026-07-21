@@ -894,6 +894,13 @@
       :existing-passport-id="passportStatus?.passportId"
       @claimed="onPassportUnlocked"
     />
+    <WatchPropertyDrawer
+      :open="watchDrawerOpen"
+      :address-label="property?.addressLine1 || ''"
+      :submitting="watchSubmitting"
+      @close="watchDrawerOpen = false"
+      @submit="onWatchDrawerSubmit"
+    />
     <BaseDrawer
       v-model="showRegisterInterest"
       title="Register Interest"
@@ -936,7 +943,7 @@
           <!-- ── History (Land Registry) ─────────────────────────── -->
           <template v-if="activeSheet === 'history'">
             <div class="pps-ds-header" style="background: #fff3e0">
-              <span class="pps-ds-header-icon">🏠</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/propertyHistory.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Price History</div>
                 <div class="pps-ds-header-meta">
@@ -1278,7 +1285,7 @@
           <!-- ── Street (live energy rank) ─────────────────────────── -->
           <template v-else-if="activeSheet === 'street'">
             <div class="pps-ds-header" style="background: #e8f5e9">
-              <span class="pps-ds-header-icon">🏘️</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/streetData.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Street data</div>
                 <div class="pps-ds-header-meta">
@@ -1389,7 +1396,7 @@
           <!-- ── Schools (Ordnance Survey NGD via /enrichment) ─────── -->
           <template v-else-if="activeSheet === 'schools'">
             <div class="pps-ds-header" style="background: #e3f2fd">
-              <span class="pps-ds-header-icon">🎓</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/schools.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Schools</div>
                 <div class="pps-ds-header-meta">
@@ -1439,7 +1446,7 @@
           <!-- ── Transport (OpenStreetMap via Overpass) ───────────── -->
           <template v-else-if="activeSheet === 'transport'">
             <div class="pps-ds-header" style="background: #f3e5f5">
-              <span class="pps-ds-header-icon">🚂</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/trainstations.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Transport</div>
                 <div class="pps-ds-header-meta">
@@ -1564,7 +1571,7 @@
               "
               class="pps-ds-placeholder"
             >
-              <div class="pps-ds-placeholder-icon">🚂</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/trainstations.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 No transport data on file
               </div>
@@ -1582,7 +1589,7 @@
           <!-- ── Train stations (dedicated sheet) ──────────────────── -->
           <template v-else-if="activeSheet === 'trains'">
             <div class="pps-ds-header" style="background: #f3e5f5">
-              <span class="pps-ds-header-icon">🚂</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/trainstations.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Train stations</div>
                 <div class="pps-ds-header-meta">
@@ -1617,7 +1624,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">🚂</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/trainstations.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 {{ transportLookupFailed
                   ? 'Transport data unavailable from this network'
@@ -1644,7 +1651,7 @@
           <!-- ── Bus stops (dedicated sheet) ──────────────────────── -->
           <template v-else-if="activeSheet === 'buses'">
             <div class="pps-ds-header" style="background: #fff3e0">
-              <span class="pps-ds-header-icon">🚌</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/busStops.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Bus stops</div>
                 <div class="pps-ds-header-meta">
@@ -1676,7 +1683,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">🚌</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/busStops.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 {{ transportLookupFailed
                   ? 'Bus stop data unavailable from this network'
@@ -1703,7 +1710,7 @@
           <!-- ── Airports (dedicated sheet) ───────────────────────── -->
           <template v-else-if="activeSheet === 'airports'">
             <div class="pps-ds-header" style="background: #e1f5fe">
-              <span class="pps-ds-header-icon">✈️</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/airports.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Airports</div>
                 <div class="pps-ds-header-meta">
@@ -1740,7 +1747,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">✈️</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/airports.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 {{ airportsLookupFailed
                   ? 'Airport data unavailable from this network'
@@ -1767,7 +1774,7 @@
           <!-- ── Map (light Leaflet via existing pps-map-iframe) ───── -->
           <template v-else-if="activeSheet === 'map'">
             <div class="pps-ds-header" style="background: #e8f5e9">
-              <span class="pps-ds-header-icon">📍</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/locationAndMap.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Location &amp; Map</div>
                 <div class="pps-ds-header-meta">
@@ -1840,7 +1847,7 @@
           <!-- ── Flood (real EA RoFRS data) ───────────────────────── -->
           <template v-else-if="activeSheet === 'flood'">
             <div class="pps-ds-header" style="background: #fff8e1">
-              <span class="pps-ds-header-icon">💧</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/floodAndRisj.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">
                   Flood &amp; environmental risk
@@ -1851,42 +1858,42 @@
               </div>
             </div>
             <div
-              v-if="property?.floodRisk"
+              v-if="floodRiskLabel"
               class="pps-ds-risk-card"
               :class="{
-                'pps-ds-risk-card--high': /high/i.test(property.floodRisk),
-                'pps-ds-risk-card--medium': /medium/i.test(property.floodRisk),
+                'pps-ds-risk-card--high': /high/i.test(floodRiskLabel),
+                'pps-ds-risk-card--medium': /medium/i.test(floodRiskLabel),
                 'pps-ds-risk-card--low':
-                  /low/i.test(property.floodRisk) &&
-                  !/very/i.test(property.floodRisk),
+                  /low/i.test(floodRiskLabel) &&
+                  !/very/i.test(floodRiskLabel),
                 'pps-ds-risk-card--clear': /very low|unknown/i.test(
-                  property.floodRisk,
+                  floodRiskLabel,
                 ),
               }"
             >
               <div class="pps-ds-risk-label">
-                {{ property.floodRisk }} flood risk
+                {{ floodRiskLabel }} flood risk
               </div>
               <div class="pps-ds-risk-desc">
-                <template v-if="/high/i.test(property.floodRisk)">
+                <template v-if="/high/i.test(floodRiskLabel)">
                   This address sits in an EA-classified high-risk zone (greater
                   than 3.3% chance of flooding in any given year from rivers or
                   sea).
                 </template>
-                <template v-else-if="/medium/i.test(property.floodRisk)">
+                <template v-else-if="/medium/i.test(floodRiskLabel)">
                   Medium risk — between 1% and 3.3% annual probability of river
                   or sea flooding.
                 </template>
-                <template v-else-if="/very low/i.test(property.floodRisk)">
+                <template v-else-if="/very low/i.test(floodRiskLabel)">
                   Very low risk — less than 0.1% annual probability of river or
                   sea flooding.
                 </template>
-                <template v-else-if="/low/i.test(property.floodRisk)">
+                <template v-else-if="/low/i.test(floodRiskLabel)">
                   Low risk — between 0.1% and 1% annual probability of river or
                   sea flooding.
                 </template>
                 <template v-else>
-                  EA risk classification: {{ property.floodRisk }}.
+                  EA risk classification: {{ floodRiskLabel }}.
                 </template>
               </div>
             </div>
@@ -1908,8 +1915,8 @@
                 <span class="pps-ds-k">River &amp; sea</span>
                 <span
                   class="pps-ds-v"
-                  :class="floodBreakdownClass(property?.floodRisk)"
-                  >{{ property?.floodRisk || 'Not assessed' }}</span
+                  :class="floodBreakdownClass(floodRiskLabel)"
+                  >{{ floodRiskLabel || 'Not assessed' }}</span
                 >
               </div>
               <div v-if="nearestWatercourse" class="pps-ds-kv">
@@ -2004,7 +2011,7 @@
           <!-- ── Planning (placeholder) ────────────────────────────── -->
           <template v-else-if="activeSheet === 'planning'">
             <div class="pps-ds-header" style="background: #f5f5f7">
-              <span class="pps-ds-header-icon">📋</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/planning.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Planning history</div>
                 <div class="pps-ds-header-meta">
@@ -2102,7 +2109,7 @@
           <!-- ── Council tax (real band) ───────────────────────────── -->
           <template v-else-if="activeSheet === 'council'">
             <div class="pps-ds-header" style="background: #e8f5e9">
-              <span class="pps-ds-header-icon">🏛️</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/councilTax.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Council tax</div>
                 <div class="pps-ds-header-meta">
@@ -2196,7 +2203,7 @@
           <!-- ── Broadband (Ofcom Connected Nations) ──────────────── -->
           <template v-else-if="activeSheet === 'broadband'">
             <div class="pps-ds-header" style="background: #e3f2fd">
-              <span class="pps-ds-header-icon">📶</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/broadband.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Broadband</div>
                 <div class="pps-ds-header-meta">
@@ -2312,7 +2319,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">📶</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/broadband.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 {{ broadbandPlaceholder.title }}
               </div>
@@ -2534,7 +2541,7 @@
           <!-- ── Listed buildings / heritage sites ────────────────────── -->
           <template v-else-if="activeSheet === 'listed'">
             <div class="pps-ds-header" style="background: #fbefd9">
-              <span class="pps-ds-header-icon">🏛️</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/listedBuildings.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Heritage sites nearby</div>
                 <div class="pps-ds-header-meta">
@@ -2587,7 +2594,7 @@
           <!-- ── Crime / safety (data.police.uk) ────────────────────── -->
           <template v-else-if="activeSheet === 'crime'">
             <div class="pps-ds-header" style="background: #eeedf5">
-              <span class="pps-ds-header-icon">🛡️</span>
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/crime.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
                 <div class="pps-ds-header-title">Crime in this area</div>
                 <div class="pps-ds-header-meta">
@@ -3395,6 +3402,7 @@ import RegisterInterestContent from '~/components/property/RegisterInterestConte
 // issue). ClaimPassportDrawer below is ONLY for the buyer-unlock (£99
 // Stripe) path on a published Passport.
 import ClaimPassportDrawer from '~/components/property/ClaimPassportDrawer.vue'
+import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
 import BaseDrawer from '~/components/ui/BaseDrawer.vue'
 import ImageSlider from '~/components/ui/ImageSlider.vue'
 import Toast from '~/components/ui/Toast.vue'
@@ -5030,8 +5038,44 @@ function onAccessPassport() {
   routeForPassportState()
 }
 
+// Opens the buyer "Watch this property" drawer (notification-preferences flow).
+const watchDrawerOpen = ref(false)
 function onWatchClick() {
-  openSheet('watch')
+  watchDrawerOpen.value = true
+}
+
+// Save the chosen notification preferences to the buyer profile via the existing
+// register-interest endpoint. The toggle map arrives from WatchPropertyDrawer.
+async function onWatchDrawerSubmit(prefs: Record<string, boolean>) {
+  watchSubmitting.value = true
+  try {
+    const token =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    const enabled = Object.entries(prefs)
+      .filter(([, v]) => v)
+      .map(([k]) => k)
+    const res = await fetch(
+      `${config.public.apiBase}/property/${propertyId}/register-interest`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          interestLevel: 'Watching',
+          notes: `Notify me about: ${enabled.join(', ') || 'nothing selected'}`,
+        }),
+      },
+    )
+    if (!res.ok) throw new Error('save-failed')
+    watchDrawerOpen.value = false
+    showToast({ message: "Saved to your buyer profile — we'll keep you posted", iconEmoji: '🔔' })
+  } catch {
+    showToast({ message: "Couldn't save right now — please try again", iconEmoji: '⚠️' })
+  } finally {
+    watchSubmitting.value = false
+  }
 }
 
 // True when the logged-in user owns or collaborates on the passport for this
@@ -8472,7 +8516,7 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
 .pps-sheet-cta {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #f0b460 0%, #d4822a 45%, #7a3a05 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -8480,10 +8524,12 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(122, 58, 5, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 161, 154, 0.3);
   margin-top: 14px;
   margin-bottom: 6px;
+  transition: background 0.15s ease;
 }
+.pps-sheet-cta:hover { background: #008a84; }
 .pps-sheet-cancel {
   width: 100%;
   padding: 12px;
@@ -8498,7 +8544,9 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   margin-top: 12px;
 }
 
-/* Header strip at top of a data-source sheet */
+/* Header strip at top of a data-source sheet.
+   Unified on-brand teal gradient (#00a19a) — overrides the older per-sheet
+   pastel inline backgrounds so every popup header matches. */
 .pps-ds-header {
   display: flex;
   align-items: center;
@@ -8506,10 +8554,25 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 18px;
+  background: linear-gradient(135deg, rgba(0, 161, 154, 0.18) 0%, rgba(0, 161, 154, 0.05) 100%) !important;
 }
 .pps-ds-header-icon {
   font-size: 26px;
   flex-shrink: 0;
+}
+/* Real property-card illustration in place of the emoji */
+.pps-ds-header-icon--img {
+  width: 46px;
+  height: 46px;
+  font-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pps-ds-header-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .pps-ds-header-title {
   font-size: 17px;
@@ -9240,6 +9303,17 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
 .pps-ds-placeholder-icon {
   font-size: 36px;
   margin-bottom: 10px;
+}
+.pps-ds-placeholder-icon--img {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+  display: block;
+}
+.pps-ds-placeholder-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .pps-ds-placeholder-title {
   font-size: 14px;
