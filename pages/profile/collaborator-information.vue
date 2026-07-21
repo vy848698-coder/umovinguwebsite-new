@@ -486,7 +486,7 @@ const goBack = useGoBack('/profile')
 .cl-quick-btn.solid {
   border-color: transparent;
   color: #fff;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   box-shadow: 0 10px 20px rgba(48, 98, 214, 0.24);
 }
 .cl-quick-btn.solid:hover {
@@ -1048,7 +1048,7 @@ const goBack = useGoBack('/profile')
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   display: flex;
@@ -1176,7 +1176,7 @@ const goBack = useGoBack('/profile')
   width: 100%;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   font-size: 16px;
   font-weight: 800;

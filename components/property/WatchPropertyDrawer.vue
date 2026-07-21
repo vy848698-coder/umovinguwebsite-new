@@ -20,7 +20,7 @@
               :key="t.key"
               class="watch-trigger"
             >
-              <div class="watch-trigger-ico">{{ t.icon }}</div>
+              <div class="watch-trigger-ico"><img :src="t.img" :alt="t.title" loading="lazy" /></div>
               <div class="watch-trigger-body">
                 <div class="watch-trigger-title">{{ t.title }}</div>
                 <div class="watch-trigger-sub">{{ t.sub }}</div>
@@ -38,7 +38,7 @@
           </div>
 
           <div class="watch-read-row">
-            <div class="watch-read-icon">💡</div>
+            <div class="watch-read-icon"><img src="/property-cards/buyersWatching.png" alt="" loading="lazy" /></div>
             <div class="watch-read-text">
               <b>You'll be among the first buyers watching</b> this address. The seller
               sees that on their dashboard when they claim it — sometimes that's the
@@ -80,11 +80,11 @@ const emit = defineEmits<{
 }>()
 
 const triggers = [
-  { key: 'claimed', icon: '🏠', title: 'Owner claims this property', sub: 'Most important — your "in" with the seller' },
-  { key: 'progress', icon: '📋', title: 'Passport progress milestones', sub: '25% · 50% · 75% built' },
-  { key: 'published', icon: '🎉', title: 'Passport published', sub: 'Live notification + access (free for verified)' },
-  { key: 'comparables', icon: '📈', title: 'Comparable sales nearby', sub: 'Weekly digest if there\'s new Land Registry data' },
-  { key: 'homescore', icon: '⚡', title: 'HomeScore changes', sub: 'New EPC or upgrade pushes the score up or down' },
+  { key: 'claimed', img: '/property-cards/ownerClaim.png', title: 'Owner claims this property', sub: 'Most important — your "in" with the seller' },
+  { key: 'progress', img: '/property-cards/passportProgress.png', title: 'Passport progress milestones', sub: '25% · 50% · 75% built' },
+  { key: 'published', img: '/property-cards/passportPublished.png', title: 'Passport published', sub: 'Live notification + access (free for verified)' },
+  { key: 'comparables', img: '/property-cards/comparableSales.png', title: 'Comparable sales nearby', sub: 'Weekly digest if there\'s new Land Registry data' },
+  { key: 'homescore', img: '/property-cards/homescoreChanges.png', title: 'HomeScore changes', sub: 'New EPC or upgrade pushes the score up or down' },
 ] as const
 
 const selected = reactive<Record<string, boolean>>({
@@ -109,8 +109,9 @@ function onSubmit() {
   -webkit-backdrop-filter: blur(4px);
   z-index: 1100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   --accent: #00a19a;
@@ -130,13 +131,26 @@ function onSubmit() {
   width: 100%;
   max-width: 28rem;
   background: var(--card);
-  border-radius: 22px 22px 0 0;
-  box-shadow: 0 -8px 30px rgba(35, 29, 69, 0.25);
-  max-height: 90dvh;
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.28);
+  max-height: min(88dvh, 720px);
   overflow-y: auto;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: 6px;
+  /* Slim, on-brand scrollbar instead of the wide OS default. */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
+.watch-sheet::-webkit-scrollbar { width: 8px; }
+.watch-sheet::-webkit-scrollbar-track { background: transparent; }
+.watch-sheet::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background-clip: padding-box;
+}
+.watch-sheet::-webkit-scrollbar-thumb:hover { background: #a8b0bf; background-clip: padding-box; }
 .watch-grip {
+  display: none;
   width: 42px;
   height: 4px;
   background: var(--border);
@@ -181,16 +195,19 @@ function onSubmit() {
   border-top: 1px dashed var(--border-soft);
 }
 .watch-trigger-ico {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: var(--accent-paler);
-  color: var(--accent-dark);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.watch-trigger-ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .watch-trigger-body {
   flex: 1;
@@ -247,8 +264,17 @@ function onSubmit() {
   border-radius: 12px;
 }
 .watch-read-icon {
-  font-size: 18px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.watch-read-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .watch-read-text {
   font-size: 12px;
@@ -308,6 +334,17 @@ function onSubmit() {
   font-size: 13px;
 }
 
+/* On phones, revert to a true bottom sheet (flush to the bottom edge). */
+@media (max-width: 560px) {
+  .watch-overlay { align-items: flex-end; padding: 0; }
+  .watch-sheet {
+    border-radius: 22px 22px 0 0;
+    max-height: 90dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .watch-grip { display: block; }
+}
+
 /* Slide-up transition */
 .watch-modal-enter-active,
 .watch-modal-leave-active {
@@ -323,6 +360,12 @@ function onSubmit() {
 }
 .watch-modal-enter-from .watch-sheet,
 .watch-modal-leave-to .watch-sheet {
-  transform: translateY(100%);
+  transform: translateY(24px) scale(0.98);
+}
+@media (max-width: 560px) {
+  .watch-modal-enter-from .watch-sheet,
+  .watch-modal-leave-to .watch-sheet {
+    transform: translateY(100%);
+  }
 }
 </style>

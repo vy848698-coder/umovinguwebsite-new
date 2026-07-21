@@ -591,7 +591,7 @@ const securityLabel = computed(() => {
 .st-quick-btn.solid {
   border: 1px solid transparent;
   color: #fff;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
 }
 
@@ -1111,7 +1111,7 @@ const securityLabel = computed(() => {
 .st-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
 .st-btn-primary {
   flex: 2;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   color: #fff;
   border: none;
   border-radius: 12px;

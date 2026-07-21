@@ -18,11 +18,7 @@
 
           <div class="hs-online">
             <div class="hs-online-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-                <path d="M21 19a2 2 0 0 1-2 2h-1v-7h3z" />
-                <path d="M3 19a2 2 0 0 0 2 2h1v-7H3z" />
-              </svg>
+              <img src="/property-cards/support.jpeg" alt="" class="hs-online-img" loading="lazy" />
             </div>
             <div class="hs-online-info">
               <div class="hs-online-headline">Support team is online</div>
@@ -62,9 +58,7 @@
         <button class="hs-contact-card violet" type="button" @click="navigateTo('/profile/chat')">
           <div class="hs-contact-main">
             <div class="hs-contact-icon violet">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9 12 2" />
-              </svg>
+              <img src="/property-cards/askAiFirst.jpeg" alt="" class="hs-contact-img" loading="lazy" />
             </div>
             <div class="hs-contact-body">
               <div class="hs-contact-name">Ask AI first</div>
@@ -107,10 +101,7 @@
         <a class="hs-contact-card teal" href="mailto:help@umovingu.com">
           <div class="hs-contact-main">
             <div class="hs-contact-icon teal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <polyline points="22 6 12 13 2 6" />
-              </svg>
+              <img src="/property-cards/email.jpeg" alt="" class="hs-contact-img" loading="lazy" />
             </div>
             <div class="hs-contact-body">
               <div class="hs-contact-name">Email us</div>
@@ -346,7 +337,7 @@ const faqs = [
 .hs-quick-btn.solid {
   border: 1px solid transparent;
   color: #fff;
-  background: linear-gradient(120deg, var(--fx-aqua) 0%, var(--fx-blue) 48%, var(--fx-indigo) 100%);
+  background: #00a19a;
   box-shadow: 0 12px 24px rgba(26, 121, 200, 0.2);
 }
 
@@ -417,13 +408,14 @@ const faqs = [
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(47, 212, 196, 0.14);
+  background: #fff;
   display: grid;
   place-items: center;
   flex-shrink: 0;
   position: relative;
   color: #2fd4c4;
 }
+.hs-online-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
 .hs-online-icon::after {
   content: '';
   position: absolute;
@@ -619,8 +611,9 @@ const faqs = [
   flex-shrink: 0;
 }
 .hs-contact-icon svg { width: 22px; height: 22px; }
-.hs-contact-icon.violet { background: linear-gradient(135deg, #7c72f5, #5875ea); box-shadow: 0 10px 20px rgba(112, 92, 240, 0.3); }
-.hs-contact-icon.teal { background: linear-gradient(135deg, #0fae7e, var(--fx-aqua)); box-shadow: 0 10px 20px rgba(0, 150, 130, 0.3); }
+.hs-contact-img { width: 100%; height: 100%; object-fit: contain; border-radius: 14px; display: block; }
+.hs-contact-icon.violet { background: #fff; box-shadow: 0 10px 20px rgba(112, 92, 240, 0.22); }
+.hs-contact-icon.teal { background: #fff; box-shadow: 0 10px 20px rgba(0, 150, 130, 0.22); }
 .hs-contact-body { display: flex; flex-direction: column; gap: 3px; }
 .hs-contact-name { font-size: 19px; font-weight: 800; color: #17314a; letter-spacing: -0.4px; }
 .hs-contact-meta { font-size: 13.5px; font-weight: 600; color: #627891; }
