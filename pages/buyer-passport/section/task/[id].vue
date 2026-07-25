@@ -41,7 +41,7 @@
               {{ section?.title || '' }}
             </span>
             <div class="qpanel-icon" aria-hidden="true">
-              <OPIcon :name="section?.imageKey || 'ownershipProfile'" class="w-[32px] h-[32px]" />
+              <OPIcon :name="section?.key || section?.imageKey || 'ownershipProfile'" class="w-[32px] h-[32px]" />
             </div>
             <h1 class="qpanel-title">{{ task.title || firstQuestionLabel }}</h1>
             <p class="qpanel-sub">{{ task.description || section?.description || 'Official property record' }}</p>
@@ -914,12 +914,11 @@ function downloadFile(url: string, name: string) {
 .qpanel-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #00a19a; }
 .qpanel-icon {
   width: 62px; height: 62px; border-radius: 18px; margin: 20px 0 18px;
-  background: linear-gradient(150deg, #10b3a3, #0f766e);
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 14px 28px -12px rgba(15, 118, 110, 0.7);
   position: relative; z-index: 1;
 }
-.qpanel-icon :deep(.op-icon) { filter: brightness(0) invert(1); }
 .qpanel-title { font-size: 28px; font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; color: #0a0f2c; margin: 0 0 8px; position: relative; z-index: 1; }
 .qpanel-sub { color: #52646d; font-size: 14.5px; font-weight: 500; line-height: 1.45; margin: 0; position: relative; z-index: 1; }
 .qpanel-divider { height: 1px; background: rgba(15, 42, 72, 0.09); margin: 22px 0; position: relative; z-index: 1; }

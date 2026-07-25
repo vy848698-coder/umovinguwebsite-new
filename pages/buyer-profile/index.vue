@@ -88,8 +88,8 @@
       <!-- LEFT: Why it matters -->
       <div class="mp-col">
         <div class="section-header">
-          <div class="sec-icon">
-            <Icon name="heroicons:briefcase" class="sec-icon-svg" />
+          <div class="sec-icon sec-icon--img">
+            <img src="/buyer-profile-icon/target.png" alt="" class="sec-icon-img" loading="lazy" />
           </div>
           <div>
             <div class="sec-title">WHY IT MATTERS</div>
@@ -97,18 +97,20 @@
           </div>
         </div>
         <div class="mp-benefits">
-          <div v-for="b in benefits" :key="b" class="mp-benefit">
+          <div v-for="b in benefits" :key="b.text" class="mp-benefit">
+            <img :src="b.icon" alt="" class="mp-benefit-ic" loading="lazy" />
             <div class="mp-tick">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m5 12 5 5L20 7" />
               </svg>
             </div>
-            <span>{{ b }}</span>
+            <span>{{ b.text }}</span>
           </div>
         </div>
 
         <!-- Live activity -->
         <div v-if="activityStats.publishedLast7d > 0" class="live-bar">
+          <img src="/buyer-profile-icon/buyers.png" alt="" class="live-bar-ic" loading="lazy" />
           <div class="pulse-dot" />
           <span>
             <strong>{{ activityStats.publishedLast7d.toLocaleString() }}</strong>
@@ -133,8 +135,8 @@
       <!-- RIGHT: What's inside -->
       <div class="mp-col">
         <div class="section-header">
-          <div class="sec-icon">
-            <Icon name="heroicons:squares-2x2" class="sec-icon-svg" />
+          <div class="sec-icon sec-icon--img">
+            <img src="/buyer-profile-icon/clipboard.png" alt="" class="sec-icon-img" loading="lazy" />
           </div>
           <div>
             <div class="sec-title">WHAT'S INSIDE</div>
@@ -143,8 +145,8 @@
         </div>
         <div class="options-block">
           <div v-for="s in sections" :key="s.title" class="opt-card opt-card--compact">
-            <div class="opt-icon">
-              <Icon :name="s.icon" class="opt-icon-svg" />
+            <div class="opt-icon opt-icon--img">
+              <img :src="s.icon" alt="" class="opt-icon-img" loading="lazy" />
             </div>
             <div class="opt-text">
               <div class="opt-title">{{ s.title }}</div>
@@ -182,6 +184,7 @@
     <div class="mp-cta-wrap">
       <button class="cta-btn" @click="goToBuild">
         <span class="cta-btn-inner">
+          <img src="/buyer-profile-icon/target.png" alt="" class="cta-btn-ic" loading="lazy" />
           {{ hasProgress ? 'Continue my Profile' : 'Build my Buyer Profile' }}
           <Icon name="heroicons:arrow-right" class="cta-btn-arrow" />
         </span>
@@ -235,10 +238,10 @@ const heroName = computed(() => {
 })
 
 const benefits = [
-  'Sellers take your offer seriously',
-  'Agents prioritise your viewings',
-  'Solicitors can start faster',
-  'Verified credentials replace endless paperwork',
+  { icon: '/buyer-profile-icon/house.png', text: 'Sellers take your offer seriously' },
+  { icon: '/buyer-profile-icon/agent.png', text: 'Agents prioritise your viewings' },
+  { icon: '/buyer-profile-icon/stopwatch.png', text: 'Solicitors can start faster' },
+  { icon: '/buyer-profile-icon/verifiedDoc.png', text: 'Verified credentials replace endless paperwork' },
 ]
 
 const heroStats = [
@@ -248,11 +251,11 @@ const heroStats = [
 ]
 
 const sections = [
-  { icon: 'heroicons:identification', title: 'Verified Identity', sub: 'OneID / KYC · IDV verified', required: true },
-  { icon: 'heroicons:banknotes', title: 'Proof of Funds', sub: 'Mortgage / Bank statement', required: true },
-  { icon: 'heroicons:link', title: 'Chain Position', sub: 'Free from chain, free to sell', required: true },
-  { icon: 'heroicons:user-group', title: 'Solution & Timeline', sub: 'Move readiness signals', required: false },
-  { icon: 'heroicons:rocket-launch', title: 'Your Story', sub: 'Optional buyer introduction', required: false },
+  { icon: '/buyer-profile-icon/idCard.png', title: 'Verified Identity', sub: 'OneID / KYC · IDV verified', required: true },
+  { icon: '/buyer-profile-icon/bank.png', title: 'Proof of Funds', sub: 'Mortgage / Bank statement', required: true },
+  { icon: '/buyer-profile-icon/chain.png', title: 'Chain Position', sub: 'Free from chain, free to sell', required: true },
+  { icon: '/buyer-profile-icon/scales.png', title: 'Solution & Timeline', sub: 'Move readiness signals', required: false },
+  { icon: '/buyer-profile-icon/notepad.png', title: 'Your Story', sub: 'Optional buyer introduction', required: false },
 ]
 
 const goBack = useGoBack('/explore')
@@ -319,9 +322,9 @@ onMounted(async () => {
 .hsw-links button:hover { color: #231d45; background: rgba(0,0,0,0.05); }
 .hsw-links button.active { color: #00a19a; font-weight: 700; background: rgba(0,161,154,0.08); }
 .hsw-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.hsw-back { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #516070; background: rgba(255,255,255,0.8); border: 1px solid rgba(173,201,231,0.5); border-radius: 10px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
+.hsw-back { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: #fff; background: #00a19a; border: 1px solid #00a19a; border-radius: 12px; padding: 9px 18px; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 161, 154, 0.28); transition: filter 0.16s, transform 0.16s, box-shadow 0.16s; font-family: inherit; }
 .hsw-back svg { width: 15px; height: 15px; flex-shrink: 0; }
-.hsw-back:hover { color: #231d45; border-color: #b9d5ea; }
+.hsw-back:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0, 161, 154, 0.34); }
 .hsw-cta { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: #00857f; border: none; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.18s; font-family: inherit; }
 .hsw-cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
@@ -525,6 +528,9 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 .sec-icon-svg { width: 20px; height: 20px; color: #00a19a; }
+/* 3D PNG header icon — drop the tinted chip, show the artwork */
+.sec-icon--img { background: transparent; }
+.sec-icon-img { width: 34px; height: 34px; object-fit: contain; }
 .sec-title {
   font-size: 11px;
   font-weight: 800;
@@ -553,11 +559,17 @@ onMounted(async () => {
 .mp-benefit {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   font-size: 15px;
   font-weight: 700;
   color: #17314a;
   position: relative;
+}
+.mp-benefit-ic {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 /* vertical connector line between ticks */
 .mp-benefit:not(:last-child)::before {
@@ -620,6 +632,7 @@ onMounted(async () => {
   color: #067a74;
   font-weight: 700;
 }
+.live-bar-ic { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
 .pulse-dot {
   width: 6px;
   height: 6px;
@@ -679,6 +692,9 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 .opt-icon-svg { width: 22px; height: 22px; color: #3a4a5e; }
+/* 3D PNG section-row icon — transparent chip so the artwork floats */
+.opt-icon--img { background: transparent; }
+.opt-icon-img { width: 40px; height: 40px; object-fit: contain; }
 .opt-text { flex: 1; min-width: 0; }
 .opt-title {
   font-size: 15px;
@@ -784,6 +800,7 @@ onMounted(async () => {
   gap: 10px;
 }
 .cta-btn-arrow { width: 18px; height: 18px; }
+.cta-btn-ic { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
 .ghost-link {
   display: flex;
   align-items: center;

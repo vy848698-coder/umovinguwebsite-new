@@ -57,7 +57,9 @@
         <div class="bp-kyc-layout">
           <div class="bp-kyc-left">
             <div class="bp-step-hero">
-              <div class="bp-step-ic bp-ic-teal">🪪</div>
+              <div class="bp-step-ic bp-ic-teal bp-ic-illus">
+                <img src="/build/idCard.png" alt="" loading="lazy" />
+              </div>
               <div class="bp-step-title">Verify your identity</div>
               <div class="bp-step-body">
                 Show sellers we've checked who you are. Takes about 2 minutes — done once only.
@@ -74,7 +76,8 @@
                 :class="{ selected: idDocumentType === opt.value }"
                 @click="idDocumentType = opt.value"
               >
-                <span class="bp-option-emoji">{{ opt.emoji }}</span>
+                <img v-if="opt.icon" :src="opt.icon" alt="" class="bp-option-illus" loading="lazy" />
+                <span v-else class="bp-option-emoji">{{ opt.emoji }}</span>
                 <div class="bp-option-body">
                   <div class="bp-option-title">{{ opt.title }}</div>
                   <div v-if="opt.sub" class="bp-option-sub">{{ opt.sub }}</div>
@@ -86,7 +89,7 @@
 
             <!-- Trust strip (DVS-styled, matches prototype dvs-strip) -->
             <div class="bp-trust">
-              <div class="bp-trust-ic">UK DVS</div>
+              <img src="/build/dvsBank.png" alt="" class="bp-trust-illus" loading="lazy" />
               <div>
                 Powered by <strong>Onfido</strong> · Certified under the UK Digital
                 Verification Services Trust Framework · Bank-grade · Data deleted
@@ -102,13 +105,8 @@
               :class="{ active: kycActive === 'id' && !kycIdDone, done: kycIdDone }"
             >
               <div class="bp-task-row" @click="setKycActive('id')">
-                <div class="bp-task-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2.5" y="5" width="19" height="14" rx="2" />
-                    <circle cx="8" cy="11" r="2.5" />
-                    <line x1="13" y1="9" x2="18" y2="9" />
-                    <line x1="13" y1="13" x2="18" y2="13" />
-                  </svg>
+                <div class="bp-task-ic bp-task-ic--illus">
+                  <img src="/build/idCard.png" alt="" loading="lazy" />
                 </div>
                 <div class="bp-task-body">
                   <div class="bp-task-title">Photo ID</div>
@@ -127,11 +125,8 @@
                   >
                     <template v-if="!kycIdFront">
                       <div class="bp-id-side">Front</div>
-                      <div class="bp-id-iconbig">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                          <circle cx="12" cy="13" r="4" />
-                        </svg>
+                      <div class="bp-id-iconbig bp-id-iconbig--illus">
+                        <img src="/build/cameraFront.png" alt="" loading="lazy" />
                       </div>
                       <div class="bp-id-prompt">Tap to capture front</div>
                     </template>
@@ -154,11 +149,8 @@
                   >
                     <template v-if="!kycIdBack">
                       <div class="bp-id-side">Back</div>
-                      <div class="bp-id-iconbig">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                          <circle cx="12" cy="13" r="4" />
-                        </svg>
+                      <div class="bp-id-iconbig bp-id-iconbig--illus">
+                        <img src="/build/cameraBack.png" alt="" loading="lazy" />
                       </div>
                       <div class="bp-id-prompt">Tap to capture back</div>
                     </template>
@@ -189,11 +181,8 @@
               :class="{ active: kycActive === 'selfie' && !kycSelfieDone, done: kycSelfieDone }"
             >
               <div class="bp-task-row" @click="setKycActive('selfie')">
-                <div class="bp-task-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="9" r="4" />
-                    <path d="M5 21c0-4 3-7 7-7s7 3 7 7" />
-                  </svg>
+                <div class="bp-task-ic bp-task-ic--illus">
+                  <img src="/build/people.png" alt="" loading="lazy" />
                 </div>
                 <div class="bp-task-body">
                   <div class="bp-task-title">Selfie · liveness check</div>
@@ -223,11 +212,8 @@
               :class="{ active: kycActive === 'aml' && !kycAmlDone, done: kycAmlDone }"
             >
               <div class="bp-task-row" @click="setKycActive('aml')">
-                <div class="bp-task-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
-                    <path d="M9 12l2 2 4-4" />
-                  </svg>
+                <div class="bp-task-ic bp-task-ic--illus">
+                  <img src="/build/shield.png" alt="" loading="lazy" />
                 </div>
                 <div class="bp-task-body">
                   <div class="bp-task-title">AML screening</div>
@@ -1415,9 +1401,9 @@ function removeFundsUpload() {
 
 // Option lists
 const idTypeOptions = [
-  { value: 'passport', emoji: '🛂', title: 'UK / EU Passport', sub: 'Fastest match', recommended: true },
-  { value: 'drivingLicence', emoji: '🪪', title: 'UK Driving Licence', sub: 'Photocard, front + back' },
-  { value: 'nationalId', emoji: '🆔', title: 'National ID Card', sub: 'EU national ID' },
+  { value: 'passport', icon: '/build/passport.png', title: 'UK / EU Passport', sub: 'Fastest match', recommended: true },
+  { value: 'drivingLicence', icon: '/build/drivingLicence.png', title: 'UK Driving Licence', sub: 'Photocard, front + back' },
+  { value: 'nationalId', icon: '/build/idBadge.png', title: 'National ID Card', sub: 'EU national ID' },
 ]
 const fundsOptions = [
   { value: 'mortgage', emoji: '💳', title: 'Mortgage in principle', sub: 'Upload your DIP document' },
@@ -2277,6 +2263,17 @@ onBeforeUnmount(() => {
 }
 .bp-id-iconbig svg { width: 14px; height: 14px; }
 .bp-id-iconbig--small { margin: 0; width: 28px; height: 28px; }
+
+/* ── 3D PNG icons (from /public/build) — drop the tinted chip, show art ── */
+.bp-step-ic.bp-ic-illus { padding: 8px; }
+.bp-step-ic.bp-ic-illus img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.bp-option-illus { width: 44px; height: 44px; object-fit: contain; flex-shrink: 0; }
+.bp-trust-illus { width: 46px; height: 46px; object-fit: contain; flex-shrink: 0; }
+.bp-task-ic.bp-task-ic--illus { background: transparent; border: 0; padding: 0; }
+.bp-task-ic.bp-task-ic--illus img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.bp-task.done .bp-task-ic.bp-task-ic--illus { background: transparent; }
+.bp-id-iconbig.bp-id-iconbig--illus { width: 56px; height: 56px; background: transparent; color: inherit; margin: 0 auto 8px; }
+.bp-id-iconbig.bp-id-iconbig--illus img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .bp-id-prompt {
   font-size: 11px;
   font-weight: 700;
@@ -2914,8 +2911,8 @@ onBeforeUnmount(() => {
 .hsw-links button { border: 0; background: transparent; color: #5a5570; cursor: pointer; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 9px; white-space: nowrap; font-family: inherit; transition: background 0.15s, color 0.15s; }
 .hsw-links button:hover { color: #231d45; background: rgba(35, 29, 69, 0.05); }
 .hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #ececf2; background: #fff; color: #231d45; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
-.hsw-back:hover { border-color: #00a19a; transform: translateY(-1px); }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 20px; border-radius: 12px; border: 1px solid #00a19a; background: #00a19a; color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 161, 154, 0.28); transition: filter 0.16s, transform 0.16s, box-shadow 0.16s; }
+.hsw-back:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0, 161, 154, 0.34); }
 @media (max-width: 900px) {
   .hsw-links { display: none; }
   .hsw-shell { width: calc(100% - 32px); }

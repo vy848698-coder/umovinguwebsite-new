@@ -971,8 +971,9 @@ function onPrimary(action: PrimaryAction) {
   -webkit-backdrop-filter: blur(4px);
   z-index: 1100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 24px;
   font-family:
     'SF Pro Display',
     -apple-system,
@@ -999,18 +1000,42 @@ function onPrimary(action: PrimaryAction) {
   width: 100%;
   max-width: 28rem;
   background: var(--card);
-  border-radius: 22px 22px 0 0;
-  box-shadow: 0 -8px 30px rgba(35, 29, 69, 0.25);
-  max-height: 92dvh;
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.28);
+  max-height: min(90dvh, 780px);
   overflow-y: auto;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: 6px;
+  /* Slim, on-brand scrollbar instead of the wide OS default. */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
+.cxd-sheet::-webkit-scrollbar { width: 8px; }
+.cxd-sheet::-webkit-scrollbar-track { background: transparent; }
+.cxd-sheet::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background-clip: padding-box;
+}
+.cxd-sheet::-webkit-scrollbar-thumb:hover { background: #a8b0bf; background-clip: padding-box; }
 .cxd-grip {
+  display: none;
   width: 42px;
   height: 4px;
   background: var(--border);
   border-radius: 100px;
   margin: 10px auto 0;
+}
+
+/* On phones, revert to a true bottom sheet flush with the bottom edge. */
+@media (max-width: 560px) {
+  .cxd-overlay { align-items: flex-end; padding: 0; }
+  .cxd-sheet {
+    border-radius: 22px 22px 0 0;
+    max-height: 92dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .cxd-grip { display: block; }
 }
 
 /* ── cx-* drawer content (ported from prototype) ── */
@@ -1405,7 +1430,13 @@ function onPrimary(action: PrimaryAction) {
 }
 .cxd-enter-from .cxd-sheet,
 .cxd-leave-to .cxd-sheet {
-  transform: translateY(100%);
+  transform: translateY(24px) scale(0.98);
+}
+@media (max-width: 560px) {
+  .cxd-enter-from .cxd-sheet,
+  .cxd-leave-to .cxd-sheet {
+    transform: translateY(100%);
+  }
 }
 
 /* ── Auth-required popup (sits above the drawer) ── */

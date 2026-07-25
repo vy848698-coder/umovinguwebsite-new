@@ -86,7 +86,10 @@
       </div>
       <div class="refined-stats-card">
         <div v-for="s in refinedStats" :key="s.id" class="stat-row gained">
-          <div class="stat-icon" :class="s.tone"><Icon :name="s.icon" /></div>
+          <div class="stat-icon" :class="[s.tone, { 'has-img': s.icon.includes('/') }]">
+            <img v-if="s.icon.includes('/')" :src="s.icon" :alt="s.label" loading="lazy" />
+            <Icon v-else :name="s.icon" />
+          </div>
           <div class="stat-label">{{ s.label }}</div>
           <div class="stat-bar-wrap">
             <div
@@ -106,14 +109,14 @@
           type="button"
           @click="$emit('open-pathway')"
         >
-          <Icon name="i-lucide-target" /> See the EPC's pathway
+          <img class="bottom-cta-ico" src="/homescore-icon/targetPathway.png" alt="" /> See the EPC's pathway
         </button>
         <button
           class="bottom-cta-secondary outlined"
           type="button"
           @click="$emit('open-boost')"
         >
-          <Icon name="i-lucide-zap" /> Boost your score
+          <img class="bottom-cta-ico" src="/homescore-icon/boostBolt.png" alt="" /> Boost your score
         </button>
       </div>
 
@@ -199,7 +202,7 @@ onMounted(() => {
 const refinedStats = [
   {
     id: 'heating',
-    icon: 'i-lucide-flame',
+    icon: '/homescore-icon/flame.png',
     label: 'Heating',
     value: 16,
     max: 20,
@@ -208,7 +211,7 @@ const refinedStats = [
   },
   {
     id: 'structure',
-    icon: 'i-lucide-brick-wall',
+    icon: '/homescore-icon/bricks.png',
     label: 'Structure',
     value: 17,
     max: 25,
@@ -217,7 +220,7 @@ const refinedStats = [
   },
   {
     id: 'efficiency',
-    icon: 'i-lucide-lightbulb',
+    icon: '/homescore-icon/bulb.png',
     label: 'Efficiency',
     value: 6,
     max: 15,
@@ -226,7 +229,7 @@ const refinedStats = [
   },
   {
     id: 'electrics',
-    icon: 'i-lucide-zap',
+    icon: '/homescore-icon/lightning.png',
     label: 'Electrics',
     value: 10,
     max: 20,
@@ -235,7 +238,7 @@ const refinedStats = [
   },
   {
     id: 'plumbing',
-    icon: 'i-lucide-droplet',
+    icon: '/homescore-icon/tap.png',
     label: 'Plumbing',
     value: 13,
     max: 20,
@@ -570,6 +573,21 @@ const refinedStats = [
   flex-shrink: 0;
 }
 .stat-icon :deep(svg) { width: 17px; height: 17px; }
+/* 3D PNG icons: show the artwork itself, no tinted chip behind it */
+.stat-icon.has-img,
+.stat-icon.has-img.high,
+.stat-icon.has-img.mid,
+.stat-icon.has-img.low {
+  width: 30px;
+  height: 30px;
+  border-radius: 0;
+  background: transparent;
+}
+.stat-icon.has-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 /* Tone-tinted icon chips echo the bar colour */
 .stat-icon.high {
   color: var(--accent-dark);
@@ -653,6 +671,7 @@ const refinedStats = [
 }
 .bottom-cta-btn :deep(svg),
 .bottom-cta-secondary :deep(svg) { width: 17px; height: 17px; }
+.bottom-cta-ico { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
 .bottom-cta-secondary {
   width: 100%;
   margin-top: 10px;
