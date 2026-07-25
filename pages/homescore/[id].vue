@@ -2566,14 +2566,14 @@
           </div>
         </template>
 
-        <!-- ── Watch this property (notification triggers) ─────── -->
+        <!-- ── Register your interest (ported from reference clone) ─────── -->
         <div class="bv-watch-card">
-          <div class="bv-watch-eyebrow">👁 Watch this property</div>
-          <div class="bv-watch-title">Be the first to know if anything changes here.</div>
+          <div class="bv-watch-eyebrow">🥇 Register your interest</div>
+          <div class="bv-watch-title">Get in the queue before it goes live.</div>
           <div class="bv-watch-lede">
-            No Passport exists yet. Adding this to your profile turns on
-            notifications for every meaningful change at
-            <b>{{ property?.addressLine1 || 'this property' }}</b>.
+            Registering interest tells the owner a real buyer is waiting — and
+            puts you <b>first in line</b> for a viewing the moment the Passport
+            publishes.
           </div>
           <div class="bv-watch-rows">
             <div v-for="t in bvWatchTriggers" :key="t.title" class="bv-watch-row">
@@ -2589,7 +2589,7 @@
             type="button"
             @click="openWatchDrawer"
           >
-            {{ notifiedOfPublish ? '✓ Watching — edit alerts' : 'Watch this property →' }}
+            {{ notifiedOfPublish ? '✓ Interest registered — edit alerts' : '🥇 Register my interest →' }}
           </button>
         </div>
 
@@ -5434,28 +5434,42 @@ const bvWatchers = computed<number>(
   () => (searchStats.value as any)?.watchers ?? 0,
 )
 
+// Per-recommendation icon (ported from the reference clone so each EPC
+// improvement gets a topic-matched glyph instead of a generic spanner).
+function iconForAskTitle(title: string): string {
+  const t = (title ?? '').toLowerCase()
+  if (/solar pv|photovoltaic/.test(t)) return '⚡'
+  if (/solar (?:water|thermal)/.test(t)) return '☀️'
+  if (/(loft|roof)/.test(t)) return '🏠'
+  if (/(cavity|wall)/.test(t)) return '🧱'
+  if (/floor/.test(t)) return '🪟'
+  if (/(led|light)/.test(t)) return '💡'
+  if (/(boiler|heat pump|heating)/.test(t)) return '🔥'
+  return '✦'
+}
+
 // Questions to ask the owner — built from the property's real EPC
-// recommendations (title, cost range and typical £/yr saving all come
-// straight from the backend). Empty when the EPC has no recommendations on
-// file, in which case the whole section is hidden.
+// recommendations (titles come straight from the backend). Wording matches
+// the reference clone ("Has the owner done: …?"). Empty when the EPC has no
+// recommendations on file, in which case the whole section is hidden.
 const bvQuestions = computed(() => {
   const out: { icon: string; title: string; sub: string }[] = []
   const recs = (property.value as any)?.epcRecommendations
   if (Array.isArray(recs)) {
-    for (const r of recs.slice(0, 3)) {
-      const saving = Number(r?.typicalSaving) || 0
-      const cost = String(r?.costRange ?? '').trim()
-      const bits = [
-        "On this home's EPC as a recommended improvement.",
-        saving > 0 ? `Saves ~£${saving}/yr` : null,
-        cost ? `cost ${cost}` : null,
-      ].filter(Boolean)
+    // Year the current EPC was lodged — used in the fallback prompt so buyers
+    // can ask whether a listed improvement has been done since.
+    const lodged = (property.value as any)?.lodgementDate
+    const epcYear = lodged ? new Date(lodged).getFullYear() : null
+    recs.slice(0, 3).forEach((r: any, i: number) => {
+      const title = String(r?.title ?? `EPC recommendation ${i + 1}`).trim()
       out.push({
-        icon: '🔧',
-        title: `Ask about: ${String(r?.title ?? 'an EPC improvement').trim()}`,
-        sub: bits.join(' · '),
+        icon: iconForAskTitle(title),
+        title: `Has the owner done: ${title}?`,
+        sub:
+          r?.description ||
+          `Listed on the EPC. Ask if it's been done since${epcYear && Number.isFinite(epcYear) ? ` ${epcYear}` : ''}.`,
       })
-    }
+    })
   }
   // Always-relevant safety-document questions (general buyer due diligence,
   // not property-specific figures) — mirrors the deployed report.
@@ -5806,19 +5820,34 @@ const buyerConfidence = computed(() => {
     const v = Number(bd?.[k] ?? 0)
     if (maxes[k] > 0 && v / maxes[k] < 0.6) flags++
   }
+  // Buyer-confidence label wording ported from the reference clone so the
+  // headline matches (e.g. a 69 reads "Above average public record"). The
+  // insulation-flag override also mirrors the clone's cautious framing.
+  const recs = (property.value as any)?.epcRecommendations
+  const insulationFlags = Array.isArray(recs)
+    ? recs.filter((r: any) =>
+        /insulation|cavity|loft|floor|wall/i.test(r?.title || ''),
+      ).length
+    : 0
   let label: string
   let tone: 'good' | 'ok' | 'warn'
-  if (s >= 80) {
-    label = 'Strong — well documented'
-    tone = 'good'
-  } else if (s >= 65) {
-    label = 'Solid — a few things to check'
+  if (!s) {
+    label = 'No EPC on the public register'
+    tone = 'warn'
+  } else if (insulationFlags > 0) {
+    label = `Worth investigating — ${insulationFlags} insulation flag${insulationFlags > 1 ? 's' : ''}`
     tone = 'ok'
-  } else if (s >= 45) {
+  } else if (s >= 80) {
+    label = 'Strong public record — minimal flags'
+    tone = 'good'
+  } else if (s >= 60) {
+    label = 'Above average public record'
+    tone = 'ok'
+  } else if (s >= 40) {
     label = 'Worth investigating'
     tone = 'ok'
   } else {
-    label = 'Proceed with caution'
+    label = 'Investigate before offering'
     tone = 'warn'
   }
   const note =
@@ -5840,27 +5869,17 @@ const buyerConfidence = computed(() => {
   }
 })
 
-// ── Watch this property — notification triggers (reference §6) ─
+// ── Register your interest — triggers ported from the reference clone ─
 const bvWatchTriggers = computed(() => [
   {
-    icon: '🏠',
-    title: 'Owner claims this property',
-    sub: "You'll get pinged the moment they verify ownership.",
-  },
-  {
     icon: '📋',
-    title: 'Passport started or progress milestones hit',
-    sub: "Get a ping at 25% / 50% / 75% so you can register interest before it's published.",
+    title: 'Milestone pings',
+    sub: 'Get pinged at 75%, 90%, and published.',
   },
   {
     icon: '🎉',
-    title: 'Passport published · property goes live',
-    sub: "Buy access for £15 — or free if you're a verified buyer.",
-  },
-  {
-    icon: '🏘️',
-    title: 'Comparable sales nearby',
-    sub: `New Land Registry data on ${property.value?.postcode || 'this postcode'} — keeps your estimated value fresh.`,
+    title: 'Free Passport the moment it publishes',
+    sub: 'Verified buyers get the full sales pack free on publish — worth £15.',
   },
 ])
 

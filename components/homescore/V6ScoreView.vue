@@ -638,7 +638,7 @@
             <div class="fork-opt-chev">›</div>
           </button>
           <button class="fork-opt" type="button" @click="$emit('open-pathway')">
-            <div class="fork-opt-icon">🎯</div>
+            <div class="fork-opt-icon"><img src="/homescore-icon/targetPathway.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">Your pathway</div>
               <div class="fork-opt-sub">Keep climbing your HomeScore.</div>
@@ -646,7 +646,7 @@
             <div class="fork-opt-chev">›</div>
           </button>
           <button class="fork-opt" type="button" @click="$emit('open-boost')">
-            <div class="fork-opt-icon">⚡</div>
+            <div class="fork-opt-icon"><img src="/homescore-icon/boostBolt.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">Boost your score</div>
               <div class="fork-opt-sub">Add docs to grow your Move Ready &amp; Passport.</div>
