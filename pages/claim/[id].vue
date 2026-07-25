@@ -119,7 +119,12 @@
       </div>
 
       <div class="cl-info-pale">
-        <div class="cl-info-ic">✅</div>
+        <div class="cl-sec-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
         <div class="cl-info-body">
           Next we'll verify <strong>your identity</strong> to confirm you're
           the registered owner. Takes about 2 minutes.
@@ -138,7 +143,7 @@
 
     <!-- ════════════════════════════ KYC EXPLAINER ════════════════════════════ -->
     <div v-else-if="step === 'kyc-explainer'" class="cl-screen cl-center-col">
-      <div class="cl-icon-square cl-icon-lg">🪪</div>
+      <div class="cl-icon-square cl-icon-lg"><img src="/build/idCard.png" alt="" /></div>
       <h1 class="cl-h1">Before we build your Passport</h1>
       <p class="cl-body cl-mb-lg">
         We need to confirm who you are and that you own the property. Takes
@@ -149,21 +154,21 @@
         <div class="cl-eyebrow">What's involved</div>
         <div class="cl-row-list">
           <div class="cl-step-row">
-            <div class="cl-step-ic">🪪</div>
+            <div class="cl-step-ic"><img src="/build/idCard.png" alt="" /></div>
             <div>
               <div class="cl-step-t">Photo ID</div>
               <div class="cl-step-s">Passport or driving licence</div>
             </div>
           </div>
           <div class="cl-step-row">
-            <div class="cl-step-ic">🤳</div>
+            <div class="cl-step-ic"><img src="/build/people.png" alt="" /></div>
             <div>
               <div class="cl-step-t">Liveness check</div>
               <div class="cl-step-s">Quick selfie to confirm it's you</div>
             </div>
           </div>
           <div class="cl-step-row">
-            <div class="cl-step-ic">🛡️</div>
+            <div class="cl-step-ic"><img src="/build/shield.png" alt="" /></div>
             <div>
               <div class="cl-step-t">AML screening</div>
               <div class="cl-step-s">Automatic check — takes seconds</div>
@@ -239,7 +244,7 @@
       >
         <img v-if="idFrontUrl" :src="idFrontUrl" class="cl-slot-thumb" />
         <template v-else>
-          <div class="cl-slot-ic">📷</div>
+          <div class="cl-slot-ic"><img src="/build/cameraFront.png" alt="" /></div>
           <div class="cl-slot-text">Tap to photograph front</div>
         </template>
         <div v-if="idFrontUrl" class="cl-slot-check">✓</div>
@@ -253,7 +258,7 @@
       >
         <img v-if="idBackUrl" :src="idBackUrl" class="cl-slot-thumb" />
         <template v-else>
-          <div class="cl-slot-ic cl-slot-ic-muted">📷</div>
+          <div class="cl-slot-ic cl-slot-ic-muted"><img src="/build/cameraBack.png" alt="" /></div>
           <div class="cl-slot-text cl-slot-text-muted">
             Tap to photograph back
           </div>
@@ -273,9 +278,9 @@
       <div class="cl-card">
         <div class="cl-eyebrow cl-mb-xs">Accepted documents</div>
         <div class="cl-pills">
-          <span class="cl-pill">🇬🇧 UK Passport</span>
-          <span class="cl-pill">🪪 Driving Licence</span>
-          <span class="cl-pill">🌍 EU Passport</span>
+          <span class="cl-pill"><img src="/build/passport.png" alt="" /> UK Passport</span>
+          <span class="cl-pill"><img src="/build/drivingLicence.png" alt="" /> Driving Licence</span>
+          <span class="cl-pill"><img src="/build/passport.png" alt="" /> EU Passport</span>
         </div>
       </div>
     </div>
@@ -361,11 +366,7 @@
 
     <!-- ════════════════════════════ KYC VERIFIED (fullscreen) ════════════════════════════ -->
     <div v-else-if="step === 'kyc-verified'" class="cl-screen cl-center-full">
-      <div class="cl-big-check">
-        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </div>
+      <img src="/build/bigCheckHero.png" alt="" class="cl-hero-img" />
       <h1 class="cl-h1 cl-center">Identity verified!</h1>
       <p class="cl-body cl-center cl-mb-lg">
         You've passed AML and identity checks. Now let's confirm your property
@@ -379,7 +380,7 @@
 
       <div class="cl-card-pale cl-text-l cl-w-full">
         <div class="cl-pale-row">
-          <div class="cl-pale-ic">🏛️</div>
+          <div class="cl-pale-ic"><img src="/build/dvsBank.png" alt="" /></div>
           <div>
             <div class="cl-pale-t">Next: Land Registry check</div>
             <div class="cl-pale-s">
@@ -442,7 +443,7 @@
     <!-- ════════════════════════════ LR FOUND ════════════════════════════ -->
     <div v-else-if="step === 'lr-found'" class="cl-screen">
       <div class="cl-lrf-banner">
-        <div class="cl-lrf-banner-ic">✅</div>
+        <div class="cl-lrf-banner-ic"><img src="/build/ownershipCheck.png" alt="" /></div>
         <div>
           <div class="cl-lrf-banner-t">Ownership verified</div>
           <div class="cl-lrf-banner-s">Name matches Land Registry record</div>
@@ -450,26 +451,54 @@
       </div>
 
       <div class="cl-card cl-mb-sm">
-        <div class="cl-eyebrow cl-mb-sm">Land Registry title data</div>
+        <div class="cl-lrf-head">
+          <span class="cl-lrf-head-ic"><img src="/build/lrTitleBank.png" alt="" /></span>
+          <span class="cl-eyebrow" style="margin: 0;">Land Registry title data</span>
+        </div>
         <div class="cl-lrf-rows">
           <div class="cl-lrf-row">
-            <span class="cl-lrf-l">Title number</span>
+            <span class="cl-lrf-rowhead">
+              <span class="cl-lrf-row-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9" /><line x1="4" y1="15" x2="20" y2="15" /><line x1="10" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="14" y2="21" /></svg>
+              </span>
+              <span class="cl-lrf-l">Title number</span>
+            </span>
             <span class="cl-lrf-v">{{ titleDisplay }}</span>
           </div>
           <div class="cl-lrf-row">
-            <span class="cl-lrf-l">Tenure</span>
+            <span class="cl-lrf-rowhead">
+              <span class="cl-lrf-row-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+              </span>
+              <span class="cl-lrf-l">Tenure</span>
+            </span>
             <span class="cl-lrf-v">{{ tenureDisplay }}</span>
           </div>
           <div class="cl-lrf-row">
-            <span class="cl-lrf-l">Proprietor</span>
+            <span class="cl-lrf-rowhead">
+              <span class="cl-lrf-row-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              </span>
+              <span class="cl-lrf-l">Proprietor</span>
+            </span>
             <span class="cl-lrf-v cl-lrf-v-good">✓ {{ proprietorDisplay }}</span>
           </div>
           <div class="cl-lrf-row">
-            <span class="cl-lrf-l">Registered</span>
+            <span class="cl-lrf-rowhead">
+              <span class="cl-lrf-row-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              </span>
+              <span class="cl-lrf-l">Registered</span>
+            </span>
             <span class="cl-lrf-v">{{ registeredDisplay }}</span>
           </div>
           <div class="cl-lrf-row cl-lrf-row-last">
-            <span class="cl-lrf-l">Charges</span>
+            <span class="cl-lrf-rowhead">
+              <span class="cl-lrf-row-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+              </span>
+              <span class="cl-lrf-l">Charges</span>
+            </span>
             <span class="cl-lrf-v">Not available</span>
           </div>
         </div>
@@ -477,7 +506,7 @@
 
       <div class="cl-card-pale cl-text-l cl-mb-sm">
         <div class="cl-pale-row">
-          <div class="cl-big-tick">✓</div>
+          <div class="cl-big-tick"><img src="/build/maxineShield.png" alt="" /></div>
           <div>
             <div class="cl-pale-t">{{ proprietorDisplay }} — confirmed</div>
             <div class="cl-pale-s">
@@ -521,21 +550,21 @@
             <div class="claim-aside-eyebrow">Why this is safe</div>
             <ul class="claim-aside-list">
               <li>
-                <span class="claim-aside-ic">🏛️</span>
+                <span class="claim-aside-ic"><img src="/build/dvsBank.png" alt="" /></span>
                 <div>
                   <div class="claim-aside-t">HM Land Registry</div>
                   <p>Ownership verified against the official register.</p>
                 </div>
               </li>
               <li>
-                <span class="claim-aside-ic">🪪</span>
+                <span class="claim-aside-ic"><img src="/build/idCard.png" alt="" /></span>
                 <div>
                   <div class="claim-aside-t">Identity by Persona</div>
                   <p>Bank-grade ID &amp; liveness checks, used by major UK fintechs.</p>
                 </div>
               </li>
               <li>
-                <span class="claim-aside-ic">🔒</span>
+                <span class="claim-aside-ic"><img src="/build/shield.png" alt="" /></span>
                 <div>
                   <div class="claim-aside-t">Encrypted &amp; private</div>
                   <p>Your documents are encrypted and never sold.</p>
@@ -1748,12 +1777,26 @@ async function issuePassport() {
   gap: 10px;
 }
 .cl-info-ic { font-size: 20px; flex-shrink: 0; }
-.cl-info-body {
-  font-size: 12.5px;
-  color: #475569;
-  line-height: 1.5;
+.cl-sec-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: #e3f5f1;
+  border: 1px solid #c7ebe5;
+  color: #00857f;
+  display: grid;
+  place-items: center;
 }
-.cl-info-body strong { color: #231d45; }
+.cl-sec-ic svg { width: 20px; height: 20px; }
+.cl-info-body {
+  font-size: 13.5px;
+  color: #3f5063;
+  line-height: 1.55;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.cl-info-body strong { color: #16233f; font-weight: 700; }
 
 .cl-link-center {
   text-align: center;
@@ -1934,6 +1977,9 @@ async function issuePassport() {
   font-weight: 600;
   padding: 5px 10px;
   border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .cl-pill-good {
   background: #dcfce7;
@@ -2123,7 +2169,9 @@ async function issuePassport() {
 }
 .cl-lrf-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 12px;
   font-size: 13.5px;
   padding-bottom: 10px;
   border-bottom: 1px solid #eef2f7;
@@ -2133,17 +2181,13 @@ async function issuePassport() {
 .cl-lrf-v { font-weight: 700; color: #231d45; }
 .cl-lrf-v-good { color: #15803d; }
 .cl-big-tick {
-  width: 44px;
-  height: 44px;
-  background: #00a19a;
-  border-radius: 50%;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  color: #fff;
-  font-size: 22px;
-  font-weight: 800;
   flex-shrink: 0;
 }
+.cl-big-tick img { width: 46px; height: 46px; object-fit: contain; }
 
 /* ── Errors ──────────────────────────────────────── */
 .cl-err-banner {
@@ -2305,4 +2349,58 @@ async function issuePassport() {
     width: 100%;
   }
 }
+
+/* ── Build-folder illustrated icons (replace emoji placeholders) ──── */
+.cl-icon-square img { width: 40px; height: 40px; object-fit: contain; }
+.cl-icon-square.cl-icon-lg img { width: 46px; height: 46px; }
+.cl-step-ic img { width: 24px; height: 24px; object-fit: contain; }
+.cl-slot-ic img { width: 44px; height: 44px; object-fit: contain; }
+.cl-slot-ic-muted img { opacity: 0.5; }
+.cl-pill img { width: 15px; height: 15px; object-fit: contain; }
+.cl-pale-ic img { width: 36px; height: 36px; object-fit: contain; }
+.claim-aside-ic img { width: 20px; height: 20px; object-fit: contain; }
+
+/* Identity-verified hero illustration (standalone, with its own sparkles) */
+.cl-hero-img {
+  width: 148px;
+  height: 148px;
+  object-fit: contain;
+  margin-bottom: 18px;
+}
+.cl-lrf-banner-ic img { width: 28px; height: 28px; object-fit: contain; }
+
+/* Land Registry title-data: header bank icon + per-row line icons */
+.cl-lrf-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.cl-lrf-head-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  background: #f1f9f4;
+  display: grid;
+  place-items: center;
+}
+.cl-lrf-head-ic img { width: 18px; height: 18px; object-fit: contain; }
+.cl-lrf-rowhead {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.cl-lrf-row-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #f4f7fb;
+  color: #64748b;
+  display: grid;
+  place-items: center;
+}
+.cl-lrf-row-ic svg { width: 15px; height: 15px; }
 </style>

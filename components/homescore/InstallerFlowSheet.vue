@@ -198,7 +198,11 @@
             <p class="ifs-lede">Where each of your match requests has got to. We're sourcing vetted installers for these measures.</p>
 
             <div v-if="requests.length === 0" class="ifs-empty">
-              <div class="ifs-empty-ic">🧰</div>
+              <div class="ifs-empty-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.83 2.83a1.5 1.5 0 0 1-2.12-2.12L14.7 6.3Z" />
+                </svg>
+              </div>
               <h4>No requests yet</h4>
               <p>Tap <b>Find installers</b> on any measure and we'll start sourcing vetted trades for you.</p>
             </div>
@@ -224,27 +228,51 @@
           <!-- STATE: marketplace early access -->
           <div v-else-if="state === 'market'" class="ifs-state">
             <div class="ifs-ea-hero">
-              <div class="ifs-ea-ic">🛒</div>
+              <div class="ifs-ea-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+              </div>
               <h3>Marketplace — early access</h3>
               <p>We're onboarding vetted local trades right now. Join early access and we'll open your marketplace the moment installers cover {{ postcode || 'your area' }}.</p>
             </div>
             <div class="ifs-promise">
               <div class="ifs-promise-row">
-                <div class="ifs-p-ic">✅</div>
+                <div class="ifs-p-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                </div>
                 <div>
                   <div class="ifs-p-title">UMU-verified suppliers</div>
                   <div class="ifs-p-sub">ID, insurance and accreditation checked before they list.</div>
                 </div>
               </div>
               <div class="ifs-promise-row">
-                <div class="ifs-p-ic">🔒</div>
+                <div class="ifs-p-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
                 <div>
                   <div class="ifs-p-title">Payments in escrow</div>
                   <div class="ifs-p-sub">Held via UProtect, released when work's signed off.</div>
                 </div>
               </div>
               <div class="ifs-promise-row">
-                <div class="ifs-p-ic">🎁</div>
+                <div class="ifs-p-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 12 20 22 4 22 4 12" />
+                    <rect x="2" y="7" width="20" height="5" />
+                    <line x1="12" y1="22" x2="12" y2="7" />
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                  </svg>
+                </div>
                 <div>
                   <div class="ifs-p-title">Grant-ready</div>
                   <div class="ifs-p-sub">TrustMark & ECO4-registered trades for funded work.</div>
@@ -1072,7 +1100,8 @@ watch(() => props.open, (o) => {
   background: currentColor;
 }
 .ifs-empty { text-align: center; padding: 30px 10px }
-.ifs-empty-ic { font-size: 40px }
+.ifs-empty-ic { font-size: 40px; color: #9aa0b0; line-height: 0 }
+.ifs-empty-ic svg { width: 44px; height: 44px }
 .ifs-empty h4 { font-size: 16px; font-weight: 800; margin-top: 12px }
 .ifs-empty p {
   font-size: 13px;
@@ -1092,7 +1121,8 @@ watch(() => props.open, (o) => {
   text-align: center;
   margin-top: 4px;
 }
-.ifs-ea-ic { font-size: 36px }
+.ifs-ea-ic { font-size: 36px; color: #fff; line-height: 0 }
+.ifs-ea-ic svg { width: 40px; height: 40px }
 .ifs-ea-hero h3 { color: #fff; font-size: 21px; margin-top: 12px; font-weight: 800 }
 .ifs-ea-hero p {
   font-size: 13px;
@@ -1107,10 +1137,12 @@ watch(() => props.open, (o) => {
   width: 42px; height: 42px;
   border-radius: 12px;
   background: #e4f4ec;
+  color: #0f766e;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
 }
+.ifs-p-ic svg { width: 22px; height: 22px }
 .ifs-p-title { font-size: 14px; font-weight: 800; color: #231d45 }
 .ifs-p-sub { font-size: 12px; color: #6b6880; font-weight: 500; margin-top: 2px }
 .ifs-ea-q { font-size: 14px; font-weight: 800; color: #231d45; margin-top: 20px }

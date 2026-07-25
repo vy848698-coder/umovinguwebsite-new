@@ -412,7 +412,7 @@
             }"
             @click="navigateToProperty(sp.id)"
           >
-            <div class="pp-street-icon">🏠</div>
+            <div class="pp-street-icon"><img src="/passport-seller-and-buyer-icon/house-person.png" alt="" loading="lazy" /></div>
             <div class="pp-street-body">
               <div class="pp-street-addr">{{ sp.addressLine1 }}</div>
               <div class="pp-street-meta">
@@ -501,14 +501,38 @@
 
       <!-- Buyers tab -->
       <div v-if="activeTab === 'buyers'" class="pp-tab-content">
-        <div class="pp-buyers-intro">
-          <div class="pp-buyers-count">
-            {{ buyersTotal || matchedBuyers.length }} buyers searching in your
-            area
+        <!-- Hero -->
+        <div class="pp-buyers-head">
+          <div class="pp-buyers-head-text">
+            <div class="pp-buyers-eyebrow">
+              <span class="pp-buyers-eyebrow-ic">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.8 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z" /></svg>
+              </span>
+              MATCHED BUYERS
+            </div>
+            <h2 class="pp-buyers-title">Buyers are already waiting for this home.</h2>
+            <p class="pp-buyers-lede">
+              As your Passport fills out, we match it to verified buyers. Reach
+              out privately and gauge interest first — then publish when you're
+              ready to go public.
+            </p>
           </div>
-          <div class="pp-buyers-sub">
-            Tap any buyer to see how well they match your property.
-          </div>
+          <img
+            src="/passport-seller-and-buyer-icon/house-person.png"
+            alt=""
+            class="pp-buyers-illustration"
+            loading="lazy"
+          />
+        </div>
+
+        <!-- Hint -->
+        <div class="pp-buyers-hint">
+          <span class="pp-buyers-hint-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z" />
+            </svg>
+          </span>
+          <span><b>Tap any buyer</b> to see how well they match your property.</span>
         </div>
 
         <div v-if="matchedBuyers.length" class="pp-buyer-list">
@@ -517,59 +541,37 @@
             :key="buyer.name"
             class="pp-buyer-card"
           >
-            <div
-              class="pp-buyer-avatar"
-              :style="{
-                background:
-                  buyer.matchScore >= 75
-                    ? '#dcfce7'
-                    : buyer.matchScore >= 55
-                      ? '#fef3c7'
-                      : '#f1f5f9',
-                color:
-                  buyer.matchScore >= 75
-                    ? '#16a34a'
-                    : buyer.matchScore >= 55
-                      ? '#92400e'
-                      : '#64748b',
-              }"
-            >
-              {{ buyer.name[0] }}
-            </div>
+            <div class="pp-buyer-avatar">{{ buyerInitial(buyer.name) }}</div>
             <div class="pp-buyer-info">
               <div class="pp-buyer-name">{{ buyer.name }}</div>
               <div class="pp-buyer-criteria">
                 {{ buyer.area }} · {{ buyer.budget }} · {{ buyer.timeline }}
               </div>
-              <div class="pp-buyer-tags">
-                <span
-                  v-for="tag in buyer.tags"
-                  :key="tag"
-                  class="pp-buyer-tag"
-                  :class="
-                    tag === 'Strong match'
-                      ? 'match'
-                      : tag === 'Good match'
-                        ? 'partial'
-                        : ''
-                  "
-                  >{{ tag }}</span
-                >
-              </div>
+              <span class="pp-buyer-pill" :class="matchPillClass(buyer.matchScore)">
+                {{ matchLabel(buyer.matchScore) }}
+                <svg v-if="buyer.matchScore >= 55" viewBox="0 0 24 24" fill="currentColor" class="pp-buyer-star">
+                  <path d="M12 2l2.9 6.6 7.1.6-5.4 4.8 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z" />
+                </svg>
+              </span>
             </div>
-            <div
-              class="pp-buyer-score"
-              :style="{
-                color:
-                  buyer.matchScore >= 75
-                    ? '#16a34a'
-                    : buyer.matchScore >= 55
-                      ? '#92400e'
-                      : '#94a3b8',
-              }"
-            >
-              {{ buyer.matchScore }}%
+            <div class="pp-buyer-gauge">
+              <svg viewBox="0 0 80 80">
+                <circle class="pp-mg-track" cx="40" cy="40" r="32" stroke-width="6" fill="none" />
+                <circle
+                  class="pp-mg-fill"
+                  cx="40" cy="40" r="32"
+                  :stroke="matchStrokeColor(buyer.matchScore)"
+                  stroke-width="6" fill="none"
+                  stroke-dasharray="201.06"
+                  :stroke-dashoffset="201.06 - (buyer.matchScore / 100) * 201.06"
+                  stroke-linecap="round" transform="rotate(-90 40 40)"
+                />
+              </svg>
+              <div class="pp-buyer-gauge-num">{{ buyer.matchScore }}<small>%</small></div>
             </div>
+            <svg class="pp-buyer-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </div>
         </div>
         <div v-else class="pp-empty">
@@ -608,7 +610,7 @@
           <div class="vault-legend">
             <div class="vault-legend-t">Private or public?</div>
             <div class="vault-legend-row">
-              <span class="vault-legend-ico private">🔒</span>
+              <span class="vault-legend-ico private"><img src="/passport-seller-and-buyer-icon/padlock.png" alt="" loading="lazy" /></span>
               <div>
                 <b>Private</b> — only you. Kept out of the passport when you
                 publish — for personal documents you're not required to
@@ -616,7 +618,7 @@
               </div>
             </div>
             <div class="vault-legend-row">
-              <span class="vault-legend-ico public">🌐</span>
+              <span class="vault-legend-ico public"><img src="/passport-seller-and-buyer-icon/globe.png" alt="" loading="lazy" /></span>
               <div>
                 <b>Public</b> — published with your passport. Visible to
                 everyone once you publish (it doesn't go to anyone before
@@ -826,8 +828,8 @@ const resumeTaskTitle = ref('')
 const activeTab = ref('sections')
 const viewMode = ref('list')
 const viewOptions = [
-  { label: 'List', value: 'list', icon: 'list' },
-  { label: 'Map', value: 'map', icon: 'map' },
+  { label: 'List', value: 'list', icon: 'listView' },
+  { label: 'Map', value: 'map', icon: 'mapView' },
 ]
 const propertyId = ref(null)
 
@@ -838,6 +840,27 @@ const streetStats = ref(null)
 // Buyer data
 const matchedBuyers = ref([])
 const buyersTotal = ref(0)
+
+// Matched-buyer card helpers (ported from the reference MatchedBuyersDrawer):
+// teal initial avatar, match label + star pill, and the ring gauge stroke.
+function buyerInitial(name) {
+  return (name || '?').trim().charAt(0).toUpperCase()
+}
+function matchLabel(score) {
+  if (score >= 75) return 'Strong match'
+  if (score >= 55) return 'Good match'
+  return 'Possible match'
+}
+function matchPillClass(score) {
+  if (score >= 75) return 'pp-buyer-pill--strong'
+  if (score >= 55) return 'pp-buyer-pill--good'
+  return 'pp-buyer-pill--possible'
+}
+function matchStrokeColor(score) {
+  if (score >= 75) return '#00A19A'
+  if (score >= 55) return '#4CBFB4'
+  return '#7FD0CB'
+}
 
 onMounted(async () => {
   // Quickly probe the passport type so we can hand landlord passports off
@@ -2335,6 +2358,7 @@ function formatStamp(iso) {
   background: #f1f5f9;
   box-shadow: inset 0 0 0 1px rgba(15, 36, 62, 0.05);
 }
+.pp-street-icon img { width: 34px; height: 34px; object-fit: contain; }
 .pp-street-row.is-published .pp-street-icon {
   background: linear-gradient(135deg, #e8f7f2 0%, #d6f0ea 100%);
   box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.18);
@@ -2540,97 +2564,176 @@ function formatStamp(iso) {
 }
 
 /* ── Buyers tab ──────────────────────────────────────── */
-.pp-buyers-intro {
-  background: #f0fdfa;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
+.pp-buyers-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 4px 2px 2px;
 }
-.pp-buyers-count {
+.pp-buyers-head-text { flex: 1; min-width: 0; }
+.pp-buyers-illustration {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.pp-buyers-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #008a84;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pp-buyers-eyebrow-ic {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #e9f6f5;
+  color: #008a84;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pp-buyers-eyebrow-ic svg { width: 15px; height: 15px; }
+.pp-buyers-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+.pp-buyers-lede {
   font-size: 13px;
-  color: #0f172a;
-  font-weight: 600;
-  margin-bottom: 2px;
+  color: #4a5876;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
 }
-.pp-buyers-sub {
-  font-size: 12px;
-  color: #64748b;
+.pp-buyers-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 2px 12px;
+  font-size: 13px;
+  color: #4a5876;
+  font-weight: 500;
 }
+.pp-buyers-hint b { color: #231d45; font-weight: 800; }
+.pp-buyers-hint-ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #e9f6f5;
+  color: #008a84;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pp-buyers-hint-ic svg { width: 18px; height: 18px; }
+
 .pp-buyer-list {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid #e2e8e8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 14px;
 }
 .pp-buyer-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 13px 14px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 14px 14px 14px 16px;
+  background: #fff;
+  border: 1px solid #e7eaee;
+  border-radius: 18px;
+  box-shadow: 0 3px 10px rgba(35, 29, 69, 0.05);
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
 }
-.pp-buyer-card:last-child {
-  border-bottom: none;
-}
-.pp-buyer-card:active {
-  background: #f0fdfa;
-}
+.pp-buyer-card:hover { box-shadow: 0 6px 18px rgba(35, 29, 69, 0.08); }
+.pp-buyer-card:active { transform: scale(0.99); }
 .pp-buyer-avatar {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #00b8b0, #008a84);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
-  font-weight: 700;
   flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(0, 161, 154, 0.28);
 }
-.pp-buyer-info {
-  flex: 1;
-  min-width: 0;
-}
+.pp-buyer-info { flex: 1; min-width: 0; }
 .pp-buyer-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #0f172a;
-}
-.pp-buyer-criteria {
-  font-size: 11.5px;
-  color: #475569;
-  margin-top: 2px;
-  line-height: 1.4;
-}
-.pp-buyer-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-.pp-buyer-tag {
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: #475569;
-}
-.pp-buyer-tag.match {
-  background: #dcfce7;
-  color: #166534;
-}
-.pp-buyer-tag.partial {
-  background: #fef3c7;
-  color: #92400e;
-}
-.pp-buyer-score {
   font-size: 16px;
   font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+}
+.pp-buyer-criteria {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #4a5876;
+  margin-top: 4px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pp-buyer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-top: 8px;
+  background: #e9f6f5;
+  color: #008a84;
+}
+.pp-buyer-pill--possible { background: #f5f7f9; color: #4a5876; }
+.pp-buyer-star { width: 12px; height: 12px; }
+.pp-buyer-pill--possible .pp-buyer-star { color: #9aa3b8; }
+.pp-buyer-gauge {
+  position: relative;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
-  min-width: 38px;
-  text-align: right;
+}
+.pp-buyer-gauge svg { width: 100%; height: 100%; }
+.pp-buyer-gauge .pp-mg-track { stroke: #e9f6f5; }
+.pp-buyer-gauge .pp-mg-fill {
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pp-buyer-gauge-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #008a84;
+  letter-spacing: -0.3px;
+}
+.pp-buyer-gauge-num small { font-size: 8px; font-weight: 800; margin-left: 1px; }
+.pp-buyer-chev {
+  width: 18px;
+  height: 18px;
+  color: #c4cbd6;
+  flex-shrink: 0;
 }
 
 /* ── Pick up where you left off — resume CTA ──────────────────────── */
@@ -3064,9 +3167,10 @@ function formatStamp(iso) {
 .vault-legend-t { font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #a8a9ad; margin-bottom: 8px; }
 .vault-legend-row { display: flex; align-items: flex-start; gap: 9px; font-size: 11px; font-weight: 600; color: #6b7089; line-height: 1.45; }
 .vault-legend-row + .vault-legend-row { margin-top: 7px; }
-.vault-legend-ico { width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; flex-shrink: 0; }
-.vault-legend-ico.private { background: #6b7089; }
-.vault-legend-ico.public { background: #00a19a; }
+.vault-legend-ico { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; flex-shrink: 0; }
+.vault-legend-ico img { width: 26px; height: 26px; object-fit: contain; }
+.vault-legend-ico.private { background: transparent; }
+.vault-legend-ico.public { background: transparent; }
 .vault-legend-row b { color: #231d45; font-weight: 800; }
 .vault-count { padding: 6px 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #6b7089; }
 .vault-row { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 10px; padding: 14px; background: #fff; border: 1px solid #e4e5ed; border-radius: 14px; box-shadow: 0 2px 8px rgba(35, 29, 69, 0.05); }
@@ -3321,8 +3425,7 @@ function formatStamp(iso) {
   color: #6b6885;
   padding: 8px 22px;
 }
-.ppv-role-switch :deep(.btn-icon),
-.view-toggle :deep(.btn-icon) {
+.ppv-role-switch :deep(.btn-icon) {
   display: none;
 }
 .ppv-role-switch :deep(.switch-btn:not(.active)),
@@ -3337,16 +3440,35 @@ function formatStamp(iso) {
   margin: 0;
 }
 .view-toggle :deep(.switch-container) {
-  background: #eeece7;
+  background: #fff;
 }
 .view-toggle :deep(.switch-btn) {
   font-size: 13.5px;
   padding: 7px 18px;
+  gap: 8px;
+  color: #00a19a;
+}
+.view-toggle :deep(.btn-icon) {
+  display: inline-flex;
+  align-items: center;
+}
+.view-toggle :deep(.btn-icon img) {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.view-toggle :deep(.switch-btn:not(.active)) {
+  background: #e6f8f7;
+  color: #00a19a;
 }
 .view-toggle :deep(.switch-btn.active) {
-  background: #fff;
-  color: #231d45;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.14);
+  background: #00a19a;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 161, 154, 0.28);
+}
+/* Active button sits on teal — render its PNG icon white to match. */
+.view-toggle :deep(.switch-btn.active .btn-icon img) {
+  filter: brightness(0) invert(1);
 }
 
 /* ── Dark hero ─────────────────────────────────────────────────────── */

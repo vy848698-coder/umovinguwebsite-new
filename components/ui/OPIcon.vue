@@ -71,6 +71,8 @@ const iconMap: Record<string, string> = {
   addCollaborator: '/op-icons/passportview/addCollaborator.svg',
   list: '/op-icons/passportview/list.svg',
   map: '/op-icons/passportview/map.svg',
+  listView: '/passport-seller-and-buyer-icon/list.png',
+  mapView: '/passport-seller-and-buyer-icon/map.png',
   caretRight: '/op-icons/passportview/caretRight.svg',
   instructions: '/op-icons/passportview/instructions.svg',
   // Illustrated section icons live in "public/passport-seller-and-buyer-icon/".
