@@ -63,7 +63,7 @@
         <section class="sp-hero">
           <!-- passport card -->
           <div class="sp-hero-book">
-            <PassportCard hero line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+            <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
           </div>
 
           <!-- middle info -->
@@ -383,7 +383,7 @@
           <!-- ── Verified hero ─────────────────────────────────────── -->
           <section class="by-hero">
             <div class="by-hero-book">
-              <PassportCard hero line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+              <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
             </div>
             <div class="by-hero-info">
               <span class="by-hero-kicker">

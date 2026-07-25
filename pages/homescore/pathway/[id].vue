@@ -160,8 +160,9 @@
                 <Icon name="i-lucide-flag" /> Priority
               </span>
               <div class="mission-top">
-                <div class="mission-icon">
+                <div class="mission-icon" :class="{ 'has-img': !m.done && m.icon.includes('/') }">
                   <Icon v-if="m.done" name="i-lucide-check" />
+                  <img v-else-if="m.icon.includes('/')" :src="m.icon" :alt="m.title" loading="lazy" />
                   <Icon v-else :name="m.icon" />
                 </div>
                 <div class="mission-info">
@@ -207,7 +208,7 @@
                     type="button"
                     @click="openInstallerSheet(m)"
                   >
-                    <Icon name="i-lucide-wrench" /> {{ m.supplierLabel }}
+                    <img class="mission-btn-ico" src="/homescore-icon/magnifier.png" alt="" /> {{ m.supplierLabel }}
                     <Icon name="i-lucide-arrow-right" class="mission-btn-arrow" />
                   </button>
                 </template>
@@ -552,20 +553,20 @@ const toScore = computed(() => {
 // clone's "+-55".
 const pointsToGain = computed(() => toScore.value - fromScore.value)
 
-// Pick a Lucide icon name for each EPC recommendation type based on title
-// keywords. Line icons matched to the app's outline aesthetic — no emoji.
+// Pick a 3D icon (from /public/homescore-icon) for each EPC recommendation
+// type based on title keywords, matching the deployed mobile-app look.
 function iconForRec(title: string): string {
   const t = (title ?? '').toLowerCase()
-  if (/solar pv|photovoltaic/.test(t)) return 'i-lucide-zap'
-  if (/solar (?:water|thermal)/.test(t)) return 'i-lucide-sun'
-  if (/(loft|roof)/.test(t)) return 'i-lucide-house'
-  if (/(cavity|wall)/.test(t)) return 'i-lucide-brick-wall'
-  if (/floor/.test(t)) return 'i-lucide-layers'
-  if (/(led|light)/.test(t)) return 'i-lucide-lightbulb'
-  if (/(boiler|heat pump|heating)/.test(t)) return 'i-lucide-flame'
-  if (/thermostat|controls/.test(t)) return 'i-lucide-thermometer'
-  if (/hot water|cylinder/.test(t)) return 'i-lucide-droplet'
-  return 'i-lucide-sparkles'
+  if (/solar pv|photovoltaic/.test(t)) return '/homescore-icon/lightning.png'
+  if (/solar (?:water|thermal)/.test(t)) return '/homescore-icon/lightning.png'
+  if (/(loft|roof)/.test(t)) return '/homescore-icon/roof.png'
+  if (/(cavity|wall)/.test(t)) return '/homescore-icon/walls.png'
+  if (/floor/.test(t)) return '/homescore-icon/floor.png'
+  if (/(led|light)/.test(t)) return '/homescore-icon/lightbulb.png'
+  if (/(boiler|heat pump|heating)/.test(t)) return '/homescore-icon/boiler.png'
+  if (/thermostat|controls/.test(t)) return '/homescore-icon/heatingControls.png'
+  if (/hot water|cylinder/.test(t)) return '/homescore-icon/tap.png'
+  return '/homescore-icon/bulb.png'
 }
 
 function supplierLabelForRec(title: string): string {
@@ -1403,6 +1404,18 @@ const passportSummary = computed(() => {
   border-color: transparent;
   box-shadow: 0 8px 18px rgba(0, 161, 154, 0.28);
 }
+/* 3D PNG recommendation icons: show the artwork itself, no tinted chip */
+.mission-icon.has-img,
+.mission-card.priority .mission-icon.has-img {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.mission-icon.has-img img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
 .mission-info {
   flex: 1;
   min-width: 0;
@@ -1486,6 +1499,7 @@ const passportSummary = computed(() => {
   box-shadow: 0 8px 20px rgba(0, 161, 154, 0.22);
 }
 .mission-btn-supplier :deep(svg) { width: 16px; height: 16px; }
+.mission-btn-ico { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
 .mission-btn-supplier .mission-btn-arrow {
   margin-left: -2px;
   transition: transform 0.18s ease;

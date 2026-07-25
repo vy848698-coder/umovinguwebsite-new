@@ -43,7 +43,7 @@
               </span>
               <div class="ov-heading">
                 <div class="ov-icon-tile" aria-hidden="true">
-                  <OPIcon :name="section.imageKey || 'ownershipProfile'" class="w-[34px] h-[34px]" />
+                  <OPIcon :name="section.key || section.imageKey || 'ownershipProfile'" class="w-[34px] h-[34px]" />
                 </div>
                 <div class="ov-heading-text">
                   <h1 class="ov-title">{{ section.title }}</h1>
@@ -211,6 +211,9 @@
               </div>
             </div>
             <div class="ov-task-card" @click="goToTask(task.id)">
+              <div class="ov-task-icon" aria-hidden="true">
+                <OPIcon :name="section.key || section.imageKey || 'ownershipProfile'" class="w-[24px] h-[24px]" />
+              </div>
               <div class="ov-task-main">
                 <h3 class="ov-task-title">
                   {{ task.title || firstVisibleQuestion(task) || 'Questions' }}
@@ -784,11 +787,10 @@ function downloadAllFiles() {
 .ov-heading { display: flex; align-items: center; gap: 16px; margin: 18px 0 22px; }
 .ov-icon-tile {
   width: 62px; height: 62px; border-radius: 18px; flex-shrink: 0;
-  background: linear-gradient(150deg, #10b3a3, #0f766e);
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 12px 26px -10px rgba(15, 118, 110, 0.7);
 }
-.ov-icon-tile :deep(.op-icon) { filter: brightness(0) invert(1); }
 .ov-heading-text { min-width: 0; }
 .ov-title { font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -0.025em; color: #0a0f2c; margin: 0 0 6px; }
 .ov-sub { color: #4b5f6b; font-size: 15px; font-weight: 500; line-height: 1.4; margin: 0; }
@@ -901,6 +903,18 @@ function downloadAllFiles() {
   transition: transform 0.15s, box-shadow 0.18s, border-color 0.18s;
 }
 .ov-task-card:hover { transform: translateY(-2px); border-color: rgba(0, 161, 154, 0.35); box-shadow: 0 16px 34px -22px rgba(15, 118, 110, 0.6); }
+.ov-task-icon {
+  width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+  background: rgba(0, 161, 154, 0.08);
+  border: 1px solid rgba(0, 161, 154, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.ov-task-card:hover .ov-task-icon {
+  transform: scale(1.06) rotate(-3deg);
+  background: rgba(0, 161, 154, 0.14);
+  border-color: rgba(0, 161, 154, 0.32);
+}
 .ov-task-main { flex: 1; min-width: 0; }
 .ov-task-title { font-size: 17px; font-weight: 700; color: #0a1f3d; margin: 0 0 10px; line-height: 1.3; }
 .ov-task-tags { display: flex; flex-wrap: wrap; gap: 6px; }

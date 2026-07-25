@@ -391,7 +391,7 @@
                   <div class="buyer-record-head">
                     <div class="buyer-record-icon">
                       <OPIcon
-                        :name="section.imageKey || section.key || 'fittingsContents'"
+                        :name="section.key || section.imageKey || 'fittingsContents'"
                         class="w-[34px] h-[34px]"
                       />
                     </div>

@@ -46,7 +46,7 @@
           <div class="ppw-head" data-tour="hero">
             <p class="ppw-kicker">Your property journey</p>
             <h1>
-              Passports —<br />welcome back,<br /><span class="ppw-head-name">{{ profile?.firstName || 'there' }}</span>
+              Passports<br />welcome back,<br /><span class="ppw-head-name">{{ profile?.firstName || 'there' }}</span>
             </h1>
             <p class="ppw-lede">
               Every Property Passport you own, in one place. Pick up where you

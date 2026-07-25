@@ -445,7 +445,10 @@
       :class="{ active: activePanel === 'street' }"
       @click="togglePanel('street')"
     >
-      <div class="hsh-eyebrow">🏘 Your street · {{ streetNameTitle }}</div>
+      <div class="hsh-eyebrow">
+        <img src="/homescore-icon/houseSearch.png" alt="" class="hsh-eyebrow-ic" loading="lazy" />
+        Your street · {{ streetNameTitle }}
+      </div>
       <div class="hsh-rankrow">
         <span class="hsh-big">#{{ streetRank ?? 8 }}</span>
         <div class="hsh-rmeta">
@@ -486,7 +489,7 @@
           :class="{ open: expandedStat === s.id }"
           @click="toggleStat(s.id)"
         >
-          <div class="stat-icon">{{ s.icon }}</div>
+          <div class="stat-icon"><img v-if="isImg(s.icon)" :src="s.icon" alt="" loading="lazy" /><template v-else>{{ s.icon }}</template></div>
           <div class="stat-label">{{ s.label }}</div>
           <div class="stat-bar-wrap">
             <div class="stat-bar-fill" :class="s.tone" :style="{ width: s.pct + '%' }" />
@@ -525,7 +528,7 @@
             </div>
           </div>
           <div v-for="(line, i) in s.lines" :key="i" class="stat-cost-line">
-            <div class="stat-cost-bullet">{{ line.icon }}</div>
+            <div class="stat-cost-bullet"><img v-if="isImg(line.icon)" :src="line.icon" alt="" loading="lazy" /><template v-else>{{ line.icon }}</template></div>
             <div class="stat-cost-info">
               <div class="stat-cost-title">{{ line.title }}</div>
               <div class="stat-cost-sub" v-html="line.sub" />
@@ -583,7 +586,7 @@
         <!-- 12 EPC items, each clickable to expand -->
         <template v-for="item in epcItems" :key="item.id">
           <div class="epc-item" @click="toggleEpcItem(item.id)">
-            <div class="epc-item-icon">{{ item.icon }}</div>
+            <div class="epc-item-icon"><img v-if="isImg(item.icon)" :src="item.icon" alt="" loading="lazy" /><template v-else>{{ item.icon }}</template></div>
             <div class="epc-item-body">
               <div class="epc-item-title">{{ item.title }}</div>
               <div class="epc-item-sub" v-html="item.sub" />
@@ -669,7 +672,7 @@
         <div class="fork-eyebrow">What you can do here</div>
         <div class="fork-options">
           <button class="fork-opt primary" type="button" @click="$emit('interested')">
-            <div class="fork-opt-icon">🔍</div>
+            <div class="fork-opt-icon"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">I'm interested in this property</div>
               <div class="fork-opt-sub">Full running costs, risks and questions to ask before you offer.</div>
@@ -687,7 +690,7 @@
         <div class="fork-eyebrow">What's your connection to this property?</div>
         <div class="fork-options">
           <button class="fork-opt primary" type="button" @click="$emit('claim')">
-            <div class="fork-opt-icon">🏠</div>
+            <div class="fork-opt-icon"><img src="/homescore-icon/house.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">I own this property</div>
               <div class="fork-opt-sub">Take the quiz to level up your stats and get your real score.</div>
@@ -695,7 +698,7 @@
             <div class="fork-opt-chev">›</div>
           </button>
           <button class="fork-opt" type="button" @click="$emit('interested')">
-            <div class="fork-opt-icon">🔍</div>
+            <div class="fork-opt-icon"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">I'm interested in this property</div>
               <div class="fork-opt-sub">Full running costs, risks and questions to ask before you offer.</div>
@@ -1408,7 +1411,7 @@ const stats = computed<StatRow[]>(() => {
   return [
     {
       id: 'heating',
-      icon: '🔥',
+      icon: '/homescore-icon/flame.png',
       label: 'Heating',
       value: heatVal,
       max: 20,
@@ -1422,14 +1425,14 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: `mainheat ${effRating(heatEff)}`,
       lines: [
         {
-          icon: '🔥',
+          icon: '/homescore-icon/boiler.png',
           title: e.mainheatDescription || 'Main heating system',
           sub: `Rated <b>${effRating(heatEff)}</b> on the EPC.`,
           amt: effRating(heatEff),
           amtGood: effToScore(heatEff) >= 0.7,
         },
         {
-          icon: '🌡',
+          icon: '/homescore-icon/heatingControls.png',
           title: e.mainheatcontDescription || 'Heating controls',
           sub: `Rated <b>${effRating(heatcEff)}</b> on the EPC.`,
           amt: effRating(heatcEff),
@@ -1442,7 +1445,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'structure',
-      icon: '🧱',
+      icon: '/homescore-icon/bricks.png',
       label: 'Structure',
       value: structVal,
       max: 25,
@@ -1457,7 +1460,7 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: e.builtForm || '',
       lines: [
         {
-          icon: '🧱',
+          icon: '/homescore-icon/walls.png',
           title: e.wallsDescription || 'Walls',
           sub: `Walls rated <b>${effRating(e.wallsEnergyEff)}</b> on the EPC.`,
           amt: fmtSaving(structRecs.find((r) => /wall|cavity/i.test(r?.title ?? ''))) || effRating(e.wallsEnergyEff),
@@ -1465,7 +1468,7 @@ const stats = computed<StatRow[]>(() => {
           amtGood: !structRecs.find((r) => /wall|cavity/i.test(r?.title ?? '')),
         },
         {
-          icon: '🏠',
+          icon: '/homescore-icon/roof.png',
           title: e.roofDescription || 'Roof',
           sub: `Roof rated <b>${effRating(e.roofEnergyEff)}</b> on the EPC.`,
           amt: fmtSaving(structRecs.find((r) => /loft|roof/i.test(r?.title ?? ''))) || effRating(e.roofEnergyEff),
@@ -1473,7 +1476,7 @@ const stats = computed<StatRow[]>(() => {
           amtGood: !structRecs.find((r) => /loft|roof/i.test(r?.title ?? '')),
         },
         {
-          icon: '🪟',
+          icon: '/homescore-icon/floor.png',
           title: e.floorDescription || 'Floor',
           sub: `Floor rated <b>${effRating(e.floorEnergyEff)}</b> on the EPC.`,
           amt: fmtSaving(structRecs.find((r) => /floor/i.test(r?.title ?? ''))) || effRating(e.floorEnergyEff),
@@ -1487,7 +1490,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'efficiency',
-      icon: '💡',
+      icon: '/homescore-icon/bulb.png',
       label: 'Efficiency',
       value: effVal,
       max: 15,
@@ -1501,7 +1504,7 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: 'of fixed outlets',
       lines: [
         {
-          icon: '💡',
+          icon: '/homescore-icon/lightbulb.png',
           title: 'Low energy lighting',
           sub: `<b>${Math.round(ledPct)}%</b> of fixed outlets · rated <b>${effRating(e.lightingEnergyEff)}</b>.`,
           amt: fmtSaving(effRecs[0]) || effRating(e.lightingEnergyEff),
@@ -1509,7 +1512,7 @@ const stats = computed<StatRow[]>(() => {
           amtGood: !effRecs[0],
         },
         {
-          icon: '🪟',
+          icon: '/homescore-icon/windows.png',
           title: e.windowsDescription || 'Windows',
           sub: `Glazing rated <b>${effRating(e.windowsEnergyEff)}</b>.`,
           amt: effRating(e.windowsEnergyEff),
@@ -1522,7 +1525,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'electrics',
-      icon: '⚡',
+      icon: '/homescore-icon/lightning.png',
       label: 'Electrics',
       value: elecVal,
       max: 20,
@@ -1537,7 +1540,7 @@ const stats = computed<StatRow[]>(() => {
       lines: elecRecs.length
         ? [
             {
-              icon: '☀️',
+              icon: '/homescore-icon/lightning.png',
               title: elecRecs[0]?.title || 'Solar PV panels',
               sub: elecRecs[0]?.description || "EPC's final step. Crosses you into Band C.",
               amt: fmtSaving(elecRecs[0]) || '—',
@@ -1546,7 +1549,7 @@ const stats = computed<StatRow[]>(() => {
           ]
         : [
             {
-              icon: '⚡',
+              icon: '/homescore-icon/lightning.png',
               title: 'Standard electrical setup',
               sub: 'No EPC recommendations for electrics.',
               amt: 'OK',
@@ -1559,7 +1562,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'plumbing',
-      icon: '💧',
+      icon: '/homescore-icon/tap.png',
       label: 'Plumbing',
       value: plumbVal,
       max: 20,
@@ -1573,7 +1576,7 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: 'EPC rating',
       lines: [
         {
-          icon: '💧',
+          icon: '/homescore-icon/tap.png',
           title: e.hotwaterDescription || 'Hot water',
           sub: `Hot water rated <b>${effRating(e.hotWaterEnergyEff)}</b> on the EPC.`,
           amt: effRating(e.hotWaterEnergyEff),
@@ -1582,7 +1585,7 @@ const stats = computed<StatRow[]>(() => {
         ...(plumbRecs.length
           ? [
               {
-                icon: '☀️',
+                icon: '/homescore-icon/tap.png',
                 title: plumbRecs[0]?.title || 'Solar water heating',
                 sub: plumbRecs[0]?.description || 'Roof collector pre-heats water from the sun.',
                 amt: fmtSaving(plumbRecs[0]) || '—',
@@ -1659,7 +1662,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const mainHeatRec = findRec(/(boiler|heat pump|main heat)/i)
   items.push({
     id: 'main-heating',
-    icon: '🔥',
+    icon: '/homescore-icon/boiler.png',
     title: 'Main heating',
     sub: e.mainheatDescription || 'Heating system',
     rating: effRating(e.mainheatEnergyEff),
@@ -1680,7 +1683,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const controlsRec = findRec(/(controls|thermostat|programmer)/i)
   items.push({
     id: 'heating-controls',
-    icon: '🌡',
+    icon: '/homescore-icon/heatingControls.png',
     title: 'Heating controls',
     sub: e.mainheatcontDescription || 'Controls',
     rating: effRating(e.mainheatcEnergyEff),
@@ -1701,7 +1704,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const hwRec = findRec(/(hot water|cylinder|solar water|solar thermal)/i)
   items.push({
     id: 'hot-water',
-    icon: '💧',
+    icon: '/homescore-icon/tap.png',
     title: 'Hot water',
     sub: e.hotwaterDescription || 'Hot water system',
     rating: effRating(e.hotWaterEnergyEff),
@@ -1722,7 +1725,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const wallsRec = findRec(/(cavity|wall insulation|external wall)/i)
   items.push({
     id: 'walls',
-    icon: '🧱',
+    icon: '/homescore-icon/walls.png',
     title: 'Walls',
     sub: e.wallsDescription || 'Walls',
     rating: effRating(e.wallsEnergyEff),
@@ -1743,7 +1746,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const roofRec = findRec(/(loft|roof insulation|increase loft)/i)
   items.push({
     id: 'roof',
-    icon: '🏠',
+    icon: '/homescore-icon/roof.png',
     title: 'Roof · loft insulation',
     sub: e.roofDescription || 'Roof',
     rating: effRating(e.roofEnergyEff),
@@ -1764,7 +1767,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const floorRec = findRec(/floor insulation/i)
   items.push({
     id: 'floor',
-    icon: '🪟',
+    icon: '/homescore-icon/floor.png',
     title: 'Floor',
     sub: e.floorDescription || 'Floor',
     rating: effRating(e.floorEnergyEff),
@@ -1785,7 +1788,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const windowsRec = findRec(/(window|glaz)/i)
   items.push({
     id: 'windows',
-    icon: '🪟',
+    icon: '/homescore-icon/windows.png',
     title: 'Windows',
     sub: e.windowsDescription || 'Windows',
     rating: effRating(e.windowsEnergyEff),
@@ -1807,7 +1810,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const lightingRec = findRec(/(led|lighting|light)/i)
   items.push({
     id: 'lighting',
-    icon: '💡',
+    icon: '/homescore-icon/lightbulb.png',
     title: 'Lighting',
     sub: `Low energy in <b>${Math.round(ledPct)}%</b> of fixed outlets`,
     rating: effRating(e.lightingEnergyEff),
@@ -1829,7 +1832,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (swhRec) {
     items.push({
       id: 'solar-water',
-      icon: '☀️',
+      icon: '/homescore-icon/tap.png',
       title: 'Solar water heating',
       sub: 'Not present · recommended on EPC',
       rating: 'Not installed',
@@ -1848,7 +1851,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (pvRec) {
     items.push({
       id: 'solar-pv',
-      icon: '⚡',
+      icon: '/homescore-icon/lightning.png',
       title: 'Solar PV panels',
       sub: 'Not present · recommended on EPC',
       rating: 'Not installed',
@@ -1866,7 +1869,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (e.secondheatDescription && !/none/i.test(e.secondheatDescription)) {
     items.push({
       id: 'secondary-heating',
-      icon: '🔥',
+      icon: '/homescore-icon/flame.png',
       title: 'Secondary heating',
       sub: e.secondheatDescription,
       rating: 'N/A',
@@ -1919,6 +1922,9 @@ function toggleEpcDrawer() {
 function formatNum(n: number): string {
   return new Intl.NumberFormat('en-GB').format(Math.round(n))
 }
+// True when an icon value is an image path (starts with "/") rather than an
+// emoji, so the template can render an <img> for the real homescore icons.
+const isImg = (s: unknown): s is string => typeof s === 'string' && s.startsWith('/')
 const searchesTodayDisplay = computed(() => {
   const n = props.searchesToday ?? 0
   return `${n} ${n === 1 ? 'person' : 'people'}`
@@ -3137,10 +3143,11 @@ const watchersDisplay = computed(() => {
 }
 .stat-icon {
   font-size: 14px;
-  width: 22px;
+  width: 26px;
   text-align: center;
   flex-shrink: 0;
 }
+.stat-icon img { width: 26px; height: 26px; object-fit: contain; display: block; }
 .stat-label {
   width: 70px;
   font-size: 11px;
@@ -3269,7 +3276,9 @@ const watchersDisplay = computed(() => {
   font-size: 12px;
   flex-shrink: 0;
   margin-top: 1px;
+  overflow: hidden;
 }
+.stat-cost-bullet img { width: 20px; height: 20px; object-fit: contain; }
 .stat-cost-info {
   flex: 1;
   min-width: 0;
@@ -3478,11 +3487,12 @@ const watchersDisplay = computed(() => {
 }
 .epc-item-icon {
   font-size: 16px;
-  width: 24px;
+  width: 28px;
   text-align: center;
   flex-shrink: 0;
   padding-top: 1px;
 }
+.epc-item-icon img { width: 28px; height: 28px; object-fit: contain; display: block; }
 .epc-item-body {
   flex: 1;
   min-width: 0;
@@ -3691,7 +3701,9 @@ const watchersDisplay = computed(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
+.fork-opt-icon img { width: 40px; height: 40px; object-fit: contain; }
 .fork-opt.primary .fork-opt-icon {
   background: rgba(255, 255, 255, 0.18);
 }
@@ -4203,6 +4215,15 @@ const watchersDisplay = computed(() => {
   text-transform: uppercase;
   font-weight: 800;
   color: #9DEFDB;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hsh-eyebrow-ic {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .hsh-rankrow {
   display: flex;

@@ -10,10 +10,10 @@
 
         <nav class="ex-nav-links" aria-label="Explore navigation">
           <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
-          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Properties</button>
+          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
+          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
           <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
         </nav>
 
         <div class="ex-nav-actions">
@@ -50,10 +50,10 @@
         <nav v-if="mobileNavOpen" class="ex-mobile-menu" aria-label="Mobile navigation">
           <div class="ex-shell">
             <button type="button" @click="goMobile('/explore')">Explore</button>
-            <button type="button" @click="goMobile('/passport')">Properties</button>
+            <button type="button" @click="goMobile('/homescore')">HomeScore</button>
+            <button type="button" @click="goMobile('/passport')">Passport</button>
             <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
             <button type="button" @click="goMobile('/profile/learn')">Learn</button>
-            <button type="button" @click="goMobile('/homescore')">HomeScore</button>
             <button type="button" @click="goMobile('/profile')">Profile</button>
             <button type="button" class="ex-mobile-claim" @click="goMobileClaim">Add Property</button>
           </div>
@@ -484,8 +484,13 @@ function formatPrice(n?: number | null): string {
 }
 
 // ── Hero property (best match / owned) ───────────────────────────────
+// Prefer the user's own claimed passport so "View property details" opens the
+// real passport (/passportview/:id). Fall back to a recommended/verified
+// property, then to the demo sample.
 const spotlight = computed(() => {
-  const p = (properties.value[0] || verifiedPassportProperties.value[0]) as any
+  const p = (passports.value[0] ||
+    properties.value[0] ||
+    verifiedPassportProperties.value[0]) as any
   if (p) {
     return {
       id: p.id,
@@ -502,7 +507,7 @@ const spotlight = computed(() => {
 
 function openSpotlight() {
   if (spotlight.value.id) navigateTo(`/passportview/${spotlight.value.id}`)
-  else navigateTo('/marketplace')
+  else navigateTo('/passport/sample')
 }
 
 // Hero image with a resilient fallback: if the property's own photo is missing
