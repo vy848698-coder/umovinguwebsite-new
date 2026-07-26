@@ -269,7 +269,7 @@ const sendMessage = async () => {
 .hsw-links button { border: 0; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 9px; white-space: nowrap; font-family: inherit; transition: background 0.15s, color 0.15s; }
 .hsw-links button:hover { color: var(--navy); background: rgba(35, 29, 69, 0.05); }
 .hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 11px; border: 1px solid #dbe5ef; background: #fff; color: #0f2440; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
 .hsw-back:hover { border-color: var(--teal); transform: translateY(-1px); }
 .hsw-back svg { width: 15px; height: 15px; }
 
