@@ -78,6 +78,18 @@ const selectOption = (value) => emit('update:modelValue', value)
   display: flex;
   align-items: center;
 }
+
+/* Active segment sits on teal. The icons are teal artwork with white detail,
+   so a flat white silhouette loses the shape — give them a white plate and
+   keep the artwork's own colours instead. */
+.switch-btn.active .btn-icon {
+  background: #fff;
+  border-radius: 50%;
+  padding: 3px;
+}
+.switch-btn.active .btn-icon img {
+  filter: none;
+}
 </style>
 
 

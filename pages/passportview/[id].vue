@@ -106,7 +106,7 @@
               :disabled="publishLoading"
               @click="togglePublish"
             >
-              <OPIcon name="share" class="w-[15px] h-[15px]" />
+              <OPIcon name="publishPassport" class="pp-hero-btn-ic" />
               {{
                 publishLoading
                   ? '…'
@@ -119,7 +119,7 @@
               class="pp-hero-btn pp-hero-btn--ghost"
               @click="setTab('buyers')"
             >
-              <OPIcon name="matchToBuyers" class="w-[15px] h-[15px]" />
+              <OPIcon name="matchToBuyers" class="pp-hero-btn-ic" />
               Match to buyers
               <span v-if="matchedBuyers.length" class="pp-hero-btn-badge">{{
                 matchedBuyers.length
@@ -197,63 +197,21 @@
           :class="['pp-subtab', activeTab === 'sections' ? 'active' : '']"
           @click="setTab('sections')"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.4"
-            stroke-linecap="round"
-          >
-            <line x1="8" y1="6" x2="21" y2="6" />
-            <line x1="8" y1="12" x2="21" y2="12" />
-            <line x1="8" y1="18" x2="21" y2="18" />
-            <line x1="3" y1="6" x2="3.01" y2="6" />
-            <line x1="3" y1="12" x2="3.01" y2="12" />
-            <line x1="3" y1="18" x2="3.01" y2="18" />
-          </svg>
+          <OPIcon name="tabSections" class="pp-subtab-ic" />
           Sections
         </button>
         <button
           :class="['pp-subtab', activeTab === 'street' ? 'active' : '']"
           @click="setTab('street')"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polygon points="1 6 9 2 15 6 23 2 23 18 15 22 9 18 1 22 1 6" />
-            <line x1="9" y1="2" x2="9" y2="18" />
-            <line x1="15" y1="6" x2="15" y2="22" />
-          </svg>
+          <OPIcon name="tabStreet" class="pp-subtab-ic" />
           Street
         </button>
         <button
           :class="['pp-subtab', activeTab === 'buyers' ? 'active' : '']"
           @click="setTab('buyers')"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
+          <OPIcon name="tabBuyers" class="pp-subtab-ic" />
           Buyers
           <span v-if="matchedBuyers.length" class="pp-subtab-badge">{{
             matchedBuyers.length
@@ -263,20 +221,7 @@
           :class="['pp-subtab', activeTab === 'vault' ? 'active' : '']"
           @click="setTab('vault')"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <path d="M3 10h18" />
-            <circle cx="12" cy="15" r="1.5" />
-          </svg>
+          <OPIcon name="tabVault" class="pp-subtab-ic" />
           Vault
           <span v-if="vaultStoredCount" class="pp-subtab-badge">{{ vaultStoredCount }}</span>
         </button>
@@ -284,19 +229,7 @@
           :class="['pp-subtab', activeTab === 'timeline' ? 'active' : '']"
           @click="setTab('timeline')"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
+          <OPIcon name="tabTimeline" class="pp-subtab-ic" />
           Timeline
           <span v-if="timelineCount" class="pp-subtab-badge">{{ timelineCount }}</span>
         </button>
@@ -315,7 +248,9 @@
           class="pp-resume-cta"
           @click="goToResume"
         >
-          <span class="pp-resume-ic">↪</span>
+          <span class="pp-resume-ic"
+            ><OPIcon name="resumeLeftOff" class="pp-resume-ic-img"
+          /></span>
           <span class="pp-resume-text">
             <span class="pp-resume-title">Pick up where you left off</span>
             <span class="pp-resume-sub">{{ resumeSubtitle }}</span>
@@ -2769,6 +2704,11 @@ function formatStamp(iso) {
   font-weight: 800;
   flex-shrink: 0;
 }
+.pp-resume-ic-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
 .pp-resume-text {
   flex: 1;
   min-width: 0;
@@ -3148,6 +3088,20 @@ function formatStamp(iso) {
   color: #fff;
   box-shadow: 0 2px 8px rgba(0, 161, 154, 0.28);
 }
+/* Illustrated tab icons. They're teal-on-white artwork, so on the active
+   (teal) chip they get a white plate to keep the shape readable. */
+.pp-subtab-ic {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.pp-subtab.active .pp-subtab-ic {
+  background: #fff;
+  border-radius: 50%;
+  padding: 2px;
+  box-sizing: border-box;
+}
 .pp-subtab-badge {
   background: #fff;
   color: #00a19a;
@@ -3466,9 +3420,11 @@ function formatStamp(iso) {
   color: #fff;
   box-shadow: 0 1px 4px rgba(0, 161, 154, 0.28);
 }
-/* Active button sits on teal — render its PNG icon white to match. */
+/* Active button sits on teal. Inverting the PNG to a flat white silhouette
+   erased the list glyph's detail, so the icon keeps its own colours and sits
+   on the white plate the switch adds. */
 .view-toggle :deep(.switch-btn.active .btn-icon img) {
-  filter: brightness(0) invert(1);
+  filter: none;
 }
 
 /* ── Dark hero ─────────────────────────────────────────────────────── */
@@ -3610,6 +3566,12 @@ function formatStamp(iso) {
 }
 .pp-hero-btn--ghost:hover {
   background: rgba(255, 255, 255, 0.13);
+}
+.pp-hero-btn-ic {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .pp-hero-btn-badge {
   background: #00d4c3;

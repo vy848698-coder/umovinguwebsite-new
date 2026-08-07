@@ -85,19 +85,9 @@
         >
           <!-- Leading icon -->
           <div
-            class="psi-drop-ic"
-            style="
-              width: 32px;
-              height: 32px;
-              background: #f1f9f4;
-              border-radius: 9px;
-              display: grid;
-              place-items: center;
-              flex-shrink: 0;
-              font-size: 14px;
-            "
+            class="psi-drop-ic psi-drop-ic--house"
           >
-            🏠
+            <img src="/homescore-icon/house.png" alt="" class="psi-drop-ic-img" />
           </div>
           <!-- Body column: title + sub + badges -->
           <div class="psi-drop-body">
@@ -557,6 +547,18 @@ defineExpose({ clearQuery })
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+.psi-drop-ic--house {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f1f9f4;
+}
+.psi-drop-ic-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
 }
 .psi-drop-ic--pc {
   width: 32px;

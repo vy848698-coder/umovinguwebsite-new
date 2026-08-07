@@ -443,7 +443,7 @@
     <div
       class="hs-street-hero anim-3"
       :class="{ active: activePanel === 'street' }"
-      @click="togglePanel('street')"
+      @click="openStreetMap()"
     >
       <div class="hsh-eyebrow">
         <img src="/homescore-icon/houseSearch.png" alt="" class="hsh-eyebrow-ic" loading="lazy" />
@@ -470,7 +470,7 @@
         </div>
       </div>
       <span class="hsh-projchip">↑ You could be 2nd · save £{{ formatNum(potentialSaving) }}/yr</span>
-      <button class="hsh-cta" type="button" @click.stop="togglePanel('street')">
+      <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
         Explore your street map
         <span class="hsh-cta-ar">→</span>
       </button>
@@ -1031,6 +1031,15 @@ const epcColor = computed(() => {
 const activePanel = ref<'bills' | 'co2' | 'street' | null>(null)
 function togglePanel(p: 'bills' | 'co2' | 'street') {
   activePanel.value = activePanel.value === p ? null : p
+}
+
+// "Explore your street map" — the street panel opens in the left column and
+// is much taller than the right one, which left a blank gutter next to it.
+// Opening the full EPC breakdown at the same time fills that space.
+function openStreetMap() {
+  const opening = activePanel.value !== 'street'
+  activePanel.value = opening ? 'street' : null
+  if (opening) epcDrawerOpen.value = true
 }
 
 // ── CO₂ panel maths ──────────────────────────────────────────────
