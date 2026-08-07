@@ -199,9 +199,7 @@
 
             <div v-if="requests.length === 0" class="ifs-empty">
               <div class="ifs-empty-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.83 2.83a1.5 1.5 0 0 1-2.12-2.12L14.7 6.3Z" />
-                </svg>
+                <img src="/homescore-icon/wrench.png" alt="" loading="lazy" />
               </div>
               <h4>No requests yet</h4>
               <p>Tap <b>Find installers</b> on any measure and we'll start sourcing vetted trades for you.</p>
@@ -241,10 +239,7 @@
             <div class="ifs-promise">
               <div class="ifs-promise-row">
                 <div class="ifs-p-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" />
-                    <path d="m9 12 2 2 4-4" />
-                  </svg>
+                  <img src="/homescore-icon/shield.png" alt="" loading="lazy" />
                 </div>
                 <div>
                   <div class="ifs-p-title">UMU-verified suppliers</div>
@@ -253,10 +248,7 @@
               </div>
               <div class="ifs-promise-row">
                 <div class="ifs-p-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
+                  <img src="/homescore-icon/trustPadlock.png" alt="" loading="lazy" />
                 </div>
                 <div>
                   <div class="ifs-p-title">Payments in escrow</div>
@@ -265,13 +257,7 @@
               </div>
               <div class="ifs-promise-row">
                 <div class="ifs-p-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 12 20 22 4 22 4 12" />
-                    <rect x="2" y="7" width="20" height="5" />
-                    <line x1="12" y1="22" x2="12" y2="7" />
-                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-                  </svg>
+                  <img src="/homescore-icon/gift.png" alt="" loading="lazy" />
                 </div>
                 <div>
                   <div class="ifs-p-title">Grant-ready</div>
@@ -1102,6 +1088,7 @@ watch(() => props.open, (o) => {
 .ifs-empty { text-align: center; padding: 30px 10px }
 .ifs-empty-ic { font-size: 40px; color: #9aa0b0; line-height: 0 }
 .ifs-empty-ic svg { width: 44px; height: 44px }
+.ifs-empty-ic img { width: 64px; height: 64px; object-fit: contain; display: inline-block }
 .ifs-empty h4 { font-size: 16px; font-weight: 800; margin-top: 12px }
 .ifs-empty p {
   font-size: 13px;
@@ -1143,6 +1130,7 @@ watch(() => props.open, (o) => {
   flex-shrink: 0;
 }
 .ifs-p-ic svg { width: 22px; height: 22px }
+.ifs-p-ic img { width: 28px; height: 28px; object-fit: contain; display: block }
 .ifs-p-title { font-size: 14px; font-weight: 800; color: #231d45 }
 .ifs-p-sub { font-size: 12px; color: #6b6880; font-weight: 500; margin-top: 2px }
 .ifs-ea-q { font-size: 14px; font-weight: 800; color: #231d45; margin-top: 20px }
