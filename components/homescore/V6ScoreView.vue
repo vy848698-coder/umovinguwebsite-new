@@ -411,30 +411,54 @@
     </div><!-- /hs-col--left -->
 
     <div class="hs-col hs-col--right">
-    <!-- ── Quick stats strip (3 clickable cards) ───────────────────── -->
-    <div class="score-strip-hint">Tap any row to explore</div>
+    <!-- ── Quick stats strip (2 clickable cards) ───────────────────── -->
+    <div class="score-strip-h">Estimated running costs &amp; impact</div>
     <div class="score-strip-card anim-3" data-tour="overpay">
       <div
         class="score-strip-item clickable"
         :class="{ active: activePanel === 'bills' }"
         @click="togglePanel('bills')"
       >
-        <div class="score-strip-eyebrow">Est. bills</div>
-        <div class="score-strip-num">
-          £{{ formatNum(annualCost) }}<span class="strip-unit">/yr</span>
+        <div class="score-strip-txt">
+          <div class="score-strip-eyebrow">Est. running cost</div>
+          <div class="score-strip-num">
+            £{{ formatNum(annualCost) }}<span class="strip-unit">/year</span>
+          </div>
+          <template v-if="potentialSaving > 0">
+            <div class="score-strip-sub">Potential saving</div>
+            <div class="score-strip-save">
+              £{{ formatNum(potentialSaving) }}<span class="strip-unit">/year</span>
+            </div>
+          </template>
         </div>
-        <div class="score-strip-sub">Save up to £{{ formatNum(potentialSaving) }}/yr</div>
+        <img
+          class="score-strip-ic"
+          src="/homescore-icon/wallet.png"
+          alt=""
+          loading="lazy"
+        />
       </div>
       <div
         class="score-strip-item clickable"
         :class="{ active: activePanel === 'co2' }"
         @click="togglePanel('co2')"
       >
-        <div class="score-strip-eyebrow">CO₂</div>
-        <div class="score-strip-num warn">
-          {{ co2NowDisplay.toFixed(1) }}<span class="strip-unit">t/yr</span>
+        <div class="score-strip-txt">
+          <div class="score-strip-eyebrow">CO₂ emissions</div>
+          <div class="score-strip-num">
+            {{ co2NowDisplay.toFixed(1) }}<span class="strip-unit">t/year</span>
+          </div>
+          <div class="score-strip-sub">UK average</div>
+          <div class="score-strip-save score-strip-save--muted">
+            6.0<span class="strip-unit">t/year</span>
+          </div>
         </div>
-        <div class="score-strip-sub">UK avg 6.0t</div>
+        <img
+          class="score-strip-ic"
+          src="/homescore-icon/environmental.png"
+          alt=""
+          loading="lazy"
+        />
       </div>
     </div>
 
@@ -447,39 +471,50 @@
     >
       <div class="hsh-eyebrow">
         <img src="/homescore-icon/houseSearch.png" alt="" class="hsh-eyebrow-ic" loading="lazy" />
-        Your street · {{ streetNameTitle }}
+        How does this home compare?
       </div>
-      <div class="hsh-rankrow">
-        <span class="hsh-big">#{{ streetRank ?? 8 }}</span>
-        <div class="hsh-rmeta">
-          <b>of {{ streetTotal || 43 }} homes</b>
-          <p>£190 cheaper than the street average</p>
+
+      <!-- Rank on the left, the mini street strip on the right. -->
+      <div class="hsh-main">
+        <div class="hsh-rankrow">
+          <span class="hsh-big">#{{ streetRank ?? 8 }}</span>
+          <span class="hsh-rmeta">of {{ streetTotal || 43 }} homes</span>
+        </div>
+        <div class="hsh-preview" aria-hidden="true">
+          <div
+            v-for="(p, i) in streetHeroPins"
+            :key="i"
+            class="hsh-ph"
+            :class="{ you: p.isYou }"
+          >
+            <span class="hsh-cd" :style="{ background: p.dot }" />
+          </div>
         </div>
       </div>
-      <div class="hsh-preview" aria-hidden="true">
-        <div class="hsh-road" />
-        <div
-          v-for="(p, i) in streetHeroPins"
-          :key="i"
-          class="hsh-ph"
-          :class="{ you: p.isYou }"
-          :style="{ left: p.left + '%', top: p.isYou ? '1px' : '5px' }"
-        >
-          <span v-if="p.isYou" class="hsh-pin">📍</span>
-          <span class="hsh-cd" :style="{ background: p.dot }" />
-        </div>
+
+      <p class="hsh-line">
+        This home is estimated to cost <b>£190 less</b> per year to run than
+        the street average.
+      </p>
+
+      <div class="hsh-foot">
+        <span class="hsh-projchip">
+          <span>
+            ↑ With the suggested improvements, it could rank <b>#2</b> and save
+            around <b>£{{ formatNum(potentialSaving) }}/year</b>
+          </span>
+        </span>
+        <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
+          Explore your street
+          <span class="hsh-cta-ar">→</span>
+        </button>
       </div>
-      <span class="hsh-projchip">↑ You could be 2nd · save £{{ formatNum(potentialSaving) }}/yr</span>
-      <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
-        Explore your street map
-        <span class="hsh-cta-ar">→</span>
-      </button>
     </div>
 
 
     <!-- ── STAT BREAKDOWN (5 rows · expandable) ─────────────────────── -->
     <div class="section-h-row">
-      <div class="section-h">How your {{ displayScore }} splits · EPC stats</div>
+      <div class="section-h">What's behind your score?</div>
       <div class="section-h-sub">Points breakdown</div>
     </div>
     <div class="stat-card anim-4" data-tour="breakdown">
@@ -1420,8 +1455,8 @@ const stats = computed<StatRow[]>(() => {
   return [
     {
       id: 'heating',
-      icon: '/homescore-icon/flame.png',
-      label: 'Heating',
+      icon: '/homescore-icon/house.png',
+      label: 'Heating & insulation',
       value: heatVal,
       max: 20,
       pct: Math.round(heatScore * 100),
@@ -1455,7 +1490,7 @@ const stats = computed<StatRow[]>(() => {
     {
       id: 'structure',
       icon: '/homescore-icon/bricks.png',
-      label: 'Structure',
+      label: 'Building fabric',
       value: structVal,
       max: 25,
       pct: Math.round(structScore * 100),
@@ -1500,7 +1535,7 @@ const stats = computed<StatRow[]>(() => {
     {
       id: 'efficiency',
       icon: '/homescore-icon/bulb.png',
-      label: 'Efficiency',
+      label: 'Energy efficiency',
       value: effVal,
       max: 15,
       pct: Math.round(effScore * 100),
@@ -1535,7 +1570,7 @@ const stats = computed<StatRow[]>(() => {
     {
       id: 'electrics',
       icon: '/homescore-icon/lightning.png',
-      label: 'Electrics',
+      label: 'Electrical systems',
       value: elecVal,
       max: 20,
       pct: Math.round(elecScore * 100),
@@ -1572,7 +1607,7 @@ const stats = computed<StatRow[]>(() => {
     {
       id: 'plumbing',
       icon: '/homescore-icon/tap.png',
-      label: 'Plumbing',
+      label: 'Water & plumbing',
       value: plumbVal,
       max: 20,
       pct: Math.round(plumbScore * 100),
@@ -2475,45 +2510,61 @@ const watchersDisplay = computed(() => {
 }
 
 /* ── Quick stats strip ────────────────────────────────────────── */
-.score-strip-hint {
-  margin: 12px 20px 4px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-faint);
-  letter-spacing: 0.3px;
+/* Section header above the two stat tiles. */
+.score-strip-h {
+  margin: 14px 20px 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
 }
 .score-strip-card {
   display: flex;
-  gap: 8px;
-  margin: 12px 20px 0;
+  gap: 10px;
+  margin: 0 20px;
   padding: 12px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--shadow-card);
 }
+/* Tile: text column on the left, illustrated icon on the right. */
 .score-strip-item {
   flex: 1;
-  padding: 10px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 12px;
   background: var(--bg);
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  text-align: center;
+  border-radius: 14px;
+  text-align: left;
+}
+.score-strip-txt {
+  flex: 1;
+  min-width: 0;
+}
+.score-strip-ic {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .score-strip-eyebrow {
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 800;
   color: var(--text-faint);
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 .score-strip-num {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
   line-height: 1.1;
 }
 .score-strip-num.warn {
@@ -2528,10 +2579,23 @@ const watchersDisplay = computed(() => {
   color: var(--text-secondary);
 }
 .score-strip-sub {
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: var(--text-secondary);
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 7px;
+}
+/* Second figure under the headline number — the saving (teal) or the
+   benchmark it's compared against (muted). */
+.score-strip-save {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+  margin-top: 1px;
+}
+.score-strip-save--muted {
+  color: var(--text-secondary);
 }
 .score-strip-item.clickable {
   cursor: pointer;
@@ -3158,8 +3222,11 @@ const watchersDisplay = computed(() => {
 }
 .stat-icon img { width: 26px; height: 26px; object-fit: contain; display: block; }
 .stat-label {
-  width: 70px;
-  font-size: 11px;
+  /* Wide enough for the two-word labels to wrap to two tidy lines rather
+     than breaking mid-word. */
+  width: 96px;
+  font-size: 11.5px;
+  line-height: 1.3;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
@@ -4234,11 +4301,19 @@ const watchersDisplay = computed(() => {
   object-fit: contain;
   flex-shrink: 0;
 }
+/* Rank block and the mini street strip share one row. */
+.hsh-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 10px;
+}
 .hsh-rankrow {
   display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  margin-top: 8px;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
 }
 .hsh-big {
   font-size: 40px;
@@ -4246,40 +4321,34 @@ const watchersDisplay = computed(() => {
   letter-spacing: -2px;
   line-height: 0.9;
 }
-.hsh-rmeta b {
+.hsh-rmeta {
   font-size: 13px;
   font-weight: 700;
-}
-.hsh-rmeta p {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 1px;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
 }
 
+/* Sentence between the rank row and the footer. */
+.hsh-line {
+  margin-top: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
+}
+.hsh-line b {
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Mini street strip — plain row of house glyphs, no road. */
 .hsh-preview {
-  position: relative;
-  margin: 14px 0 3px;
-  height: 54px;
-}
-.hsh-road {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 27px;
-  height: 11px;
-  background: #15102E;
-  border-radius: 3px;
-}
-.hsh-road::after {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 0;
-  right: 0;
-  border-top: 2px dashed rgba(232, 163, 58, 0.55);
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
 }
 .hsh-ph {
-  position: absolute;
+  position: relative;
   width: 22px;
   height: 20px;
   border-radius: 4px 4px 2px 2px;
@@ -4305,18 +4374,11 @@ const watchersDisplay = computed(() => {
   border-radius: 50%;
 }
 .hsh-ph.you {
-  width: 28px;
-  height: 26px;
+  width: 26px;
+  height: 24px;
   background: #9DEFDB;
   box-shadow: 0 0 0 4px rgba(25, 199, 166, 0.3);
   animation: hshPulse 2.2s ease-out infinite;
-}
-.hsh-ph.you .hsh-pin {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
 }
 @keyframes hshPulse {
   0%   { box-shadow: 0 0 0 0 rgba(25, 199, 166, 0.4); }
@@ -4324,17 +4386,29 @@ const watchersDisplay = computed(() => {
   100% { box-shadow: 0 0 0 0 rgba(25, 199, 166, 0); }
 }
 
+/* Footer: projection panel beside the CTA. */
+.hsh-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 13px;
+}
 .hsh-projchip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 7px;
-  font-size: 11.5px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #d8fff5;
+  background: rgba(25, 199, 166, 0.16);
+  border: 1px solid rgba(157, 239, 219, 0.35);
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+.hsh-projchip b {
+  color: #fff;
   font-weight: 800;
-  color: #0c1f1a;
-  background: linear-gradient(135deg, #9DEFDB, #19C7A6);
-  padding: 6px 12px;
-  border-radius: 99px;
 }
 
 .hsh-cta {
@@ -4342,7 +4416,6 @@ const watchersDisplay = computed(() => {
   overflow: hidden;
   display: flex;
   width: 100%;
-  margin-top: 13px;
   padding: 13px;
   border: none;
   border-radius: 12px;
