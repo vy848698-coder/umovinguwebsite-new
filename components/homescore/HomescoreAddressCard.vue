@@ -1,12 +1,17 @@
 <template>
-  <!-- Ported from prisma/homescore-card.html — amber hero with EPC and
-       HomeScore tiles + the social-proof rows ("checked today" + watching
-       / live interest). Used on V6ScoreView and V6QuizView so the same
-       card surfaces on the HomeScore detail and the owner quiz.
-
-       The prototype's "See the pathway →" / "Take the quiz →" pills are
-       intentionally omitted per design feedback. -->
+  <!-- Compact navy hero: pin + address, EPC chip line, and the illustrated
+       house anchored on the right. The HomeScore tile the amber version
+       carried was dropped — the gauge directly below this card already
+       shows the score. Used on V6ScoreView for both the EPC-present and
+       no-EPC states. -->
   <div class="hsc-card">
+    <img
+      class="hsc-house"
+      src="/homescore-icon/homeScoreCard.png"
+      alt=""
+      loading="lazy"
+    />
+
     <div class="hsc-head">
       <span class="hsc-ring" />
       <div>
@@ -15,54 +20,20 @@
       </div>
     </div>
 
-    <div class="hsc-divider" />
-
-    <div class="hsc-tiles">
-      <!-- EPC tile -->
-      <div class="hsc-tile">
-        <span class="hsc-tlabel">EPC rating</span>
-        <div class="hsc-tile-val">
-          <span
-            class="hsc-epc-badge"
-            :class="{ 'hsc-epc-badge--none': isNoEpc }"
-            :style="!isNoEpc ? { background: epcColor(epcRating) } : {}"
-          >{{ isNoEpc ? 'None' : (epcRating || '—') }}</span>
-        </div>
-        <div v-if="!isNoEpc" class="hsc-bar">
-          <i :style="{ width: epcBarPct + '%' }" />
-        </div>
-        <div v-else class="hsc-bar hsc-bar--empty" />
-        <div class="hsc-hook">{{ epcHook }}</div>
-      </div>
-
-      <!-- HomeScore tile -->
-      <div class="hsc-tile">
-        <span class="hsc-tlabel">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="rgba(255,255,255,.92)"
-            aria-hidden="true"
-          >
-            <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" />
-          </svg>
-          HomeScore
-        </span>
-        <div class="hsc-tile-val">
-          <span v-if="isNoEpc" class="hsc-hs-num hsc-hs-num--unknown">
-            <b>?</b><span>/100</span>
-          </span>
-          <span v-else class="hsc-hs-num">
-            <b>{{ Math.round(homeScore || 0) }}</b><span>/100</span>
-          </span>
-        </div>
-        <div v-if="!isNoEpc" class="hsc-bar">
-          <i :style="{ width: homeScoreBarPct + '%' }" />
-        </div>
-        <div v-else class="hsc-bar hsc-bar--empty" />
-        <div class="hsc-hook">{{ homeScoreHook }}</div>
-      </div>
+    <!-- EPC chip line — badge, band, then the plain-English hook. -->
+    <div class="hsc-epc-row">
+      <span
+        class="hsc-epc-badge"
+        :class="{ 'hsc-epc-badge--none': isNoEpc }"
+        :style="!isNoEpc ? { background: epcColor(epcRating) } : {}"
+      >{{ isNoEpc ? 'None' : (epcRating || '—') }}</span>
+      <span class="hsc-epc-txt">
+        <template v-if="!isNoEpc">
+          EPC rating {{ epcRating }}
+          <span class="hsc-epc-sep">|</span>
+        </template>
+        {{ epcHook }}
+      </span>
     </div>
 
     <!-- Social proof: searches today -->
@@ -178,21 +149,6 @@ const metaLine = computed(() => {
   return parts.join(' · ')
 })
 
-// EPC bar fill — A=92%, B=82%, C=72%, D=62%, E=47%, F=32%, G=15%. Mirrors
-// the visual weight from the prototype (C at ~62% width) so the bar feels
-// proportional to the certificate band rather than a literal SAP score.
-function epcBarFill(rating?: string | null): number {
-  switch ((rating || '').toUpperCase()) {
-    case 'A': return 95
-    case 'B': return 82
-    case 'C': return 72
-    case 'D': return 62
-    case 'E': return 47
-    case 'F': return 32
-    case 'G': return 18
-    default: return 50
-  }
-}
 function epcColor(rating?: string | null): string {
   switch ((rating || '').toUpperCase()) {
     case 'A': return '#1F7A34'
@@ -205,23 +161,16 @@ function epcColor(rating?: string | null): string {
     default:  return '#7DA82C'
   }
 }
-const epcBarPct = computed(() => epcBarFill(props.epcRating))
-const homeScoreBarPct = computed(() =>
-  Math.max(0, Math.min(100, Math.round(props.homeScore || 0))),
-)
-
-// No-EPC state — when the property has no certificate on file, we
-// swap the two tiles' inner content out (grey None badge + ?/100)
-// and hide the animated bars. Visual container stays identical so
-// this card sits in the same amber card language as the EPC-present
-// version. Both flags must be null/zero because a real value in
-// either would mean we DO have a HomeScore to display.
+// No-EPC state — when the property has no certificate on file the badge
+// reads "None" and the hook says so, rather than implying a band. Both
+// flags must be null/zero because a real value in either would mean we
+// DO have a HomeScore to display.
 const isNoEpc = computed(
   () => !props.epcRating && (props.homeScore == null || props.homeScore === 0),
 )
 
-// Hook copy — small line under each bar, mirrors the prototype's
-// "Lower running costs" / "Above average". Adapts to the actual data.
+// Hook copy — the plain-English half of the EPC chip line. Adapts to
+// the actual band.
 const epcHook = computed(() => {
   if (isNoEpc.value) return 'No EPC on record'
   const r = (props.epcRating || '').toUpperCase()
@@ -231,15 +180,6 @@ const epcHook = computed(() => {
   if (r) return 'High running costs'
   return 'Energy rating'
 })
-const homeScoreHook = computed(() => {
-  if (isNoEpc.value) return 'Answer 20 questions'
-  const s = props.homeScore || 0
-  if (s >= 80) return 'Top of the street'
-  if (s >= 60) return 'Above average'
-  if (s >= 40) return 'Around average'
-  return 'Below average'
-})
-
 const searchesTodayDisplay = computed(() => {
   const n = props.searchesToday ?? 0
   return `${n} ${n === 1 ? 'person' : 'people'}`
@@ -251,26 +191,62 @@ const watchersDisplay = computed(() => {
 </script>
 
 <style scoped>
-/* Sized to match the rest of the page's card rhythm (the app frame is
-   ~28rem max), so the amber hero doesn't tower over neighbouring cards.
-   Visual structure stays 1:1 with prisma/homescore-card.html. */
+/* Navy hero with the illustrated house anchored right. Text keeps clear
+   of the artwork via the padding-right on the card's content. */
 .hsc-card {
+  position: relative;
   width: auto;
   max-width: 100%;
-  background: #c46a14;
+  background:
+    radial-gradient(circle at 88% 40%, rgba(0, 200, 185, 0.22), transparent 55%),
+    linear-gradient(135deg, #2b2450, #221c41);
   border-radius: 16px;
   padding: 16px 18px;
   color: #fff;
-  box-shadow: 0 10px 26px rgba(150, 84, 16, 0.16);
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(23, 18, 48, 0.22);
   font-family:
     'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
+}
+.hsc-house {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .hsc-head {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  /* Room for the house illustration. */
+  padding-right: 96px;
+}
+
+/* EPC chip line — badge + "EPC rating C | Lower running costs". */
+.hsc-epc-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 8px 11px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 0.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+}
+.hsc-epc-txt {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.3;
+}
+.hsc-epc-sep {
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 3px;
 }
 .hsc-ring {
   width: 12px;
@@ -293,35 +269,6 @@ const watchersDisplay = computed(() => {
   margin-top: 3px;
 }
 
-.hsc-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.25);
-  margin: 14px 0;
-}
-
-/* Tiles */
-.hsc-tiles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.hsc-tile {
-  background: rgba(255, 255, 255, 0.1);
-  border: 0.5px solid rgba(255, 255, 255, 0.25);
-  border-radius: 12px;
-  padding: 12px;
-  text-align: left;
-  color: #fff;
-}
-.hsc-tlabel {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.88);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  letter-spacing: 0.2px;
-}
 .hsc-epc-badge {
   background: #4d7c1f;
   color: #fff;
@@ -344,79 +291,6 @@ const watchersDisplay = computed(() => {
   font-weight: 700;
   border-radius: 8px;
 }
-.hsc-hs-num--unknown b {
-  opacity: 0.85;
-}
-.hsc-bar--empty {
-  background: rgba(255, 255, 255, 0.14);
-}
-.hsc-hs-num {
-  font-size: 12px;
-  font-weight: 600;
-}
-.hsc-hs-num b {
-  font-size: 18px;
-  font-weight: 700;
-}
-.hsc-hs-num span {
-  color: rgba(255, 255, 255, 0.7);
-}
-.hsc-tile-val {
-  margin-top: 8px;
-  display: flex;
-  align-items: baseline;
-  min-height: 24px;
-}
-.hsc-bar {
-  height: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 99px;
-  overflow: hidden;
-  margin: 9px 0 7px;
-}
-.hsc-bar i {
-  display: block;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 99px;
-  transform-origin: left;
-  animation: hscBarGrow 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  position: relative;
-  overflow: hidden;
-}
-.hsc-bar i::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 45%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(196, 106, 20, 0.55),
-    transparent
-  );
-  animation: hscShimmer 2.6s ease-in-out 1.1s infinite;
-}
-@keyframes hscBarGrow {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-@keyframes hscShimmer {
-  0% { transform: translateX(-130%); }
-  55%, 100% { transform: translateX(330%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hsc-bar i { animation: none; }
-  .hsc-bar i::after { animation: none; opacity: 0; }
-}
-.hsc-hook {
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.92);
-  line-height: 1.35;
-}
-
 /* Viewer rows (checked / watching / live interest) */
 .hsc-viewers {
   display: flex;
@@ -436,7 +310,7 @@ const watchersDisplay = computed(() => {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid #c46a14;
+  border: 2px solid #262046;
   display: flex;
   align-items: center;
   justify-content: center;

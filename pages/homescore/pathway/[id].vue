@@ -47,81 +47,124 @@
     </header>
 
     <div class="hs-v6-pathway">
-      <!-- Page heading -->
-      <div class="pw-pagehead anim-1">
-        <div class="pw-pagehead-eyebrow">
-          <Icon name="i-lucide-route" /> Your pathway
-        </div>
-        <h1 class="pw-pagehead-title">Level {{ fromLevel }} → Level {{ toLevel }}</h1>
-        <div class="pw-pagehead-sub">
-          <Icon name="i-lucide-map-pin" /> {{ addressLine }}
-        </div>
-      </div>
-
-      <!-- Pathway hero -->
-      <section class="pathway-hero anim-1">
-        <div class="pathway-hero-lead">
-          <div class="pathway-eyebrow">
-            <Icon name="i-lucide-route" /> EPC-recommended route
-          </div>
-          <div class="pathway-route">
-            <div class="pathway-level-from">
-              <div class="pathway-level-letter from">{{ fromLevel }}</div>
-              <div class="pathway-level-sub">Now · {{ fromScore }}</div>
+      <!-- Hero shell: headline + illustration on the left, the teal
+           improvement card inset on the right. -->
+      <div class="pw-hero-shell anim-1">
+        <div class="pw-hero-left">
+          <div class="pw-pagehead">
+            <div class="pw-pagehead-eyebrow">
+              Your HomeScore: <b>{{ fromScore }}</b>
             </div>
-            <div class="pathway-track">
-              <span class="pathway-track-dot" />
-              <span class="pathway-track-dot" />
-              <div class="pathway-track-node">
-                <Icon name="i-lucide-arrow-right" />
+            <h1 class="pw-pagehead-title">
+              Here's how your home could improve further.
+            </h1>
+            <div class="pw-pagehead-sub">
+              <Icon name="i-lucide-map-pin" /> {{ addressLine }}
+            </div>
+          </div>
+          <img
+            class="pw-pagehead-art"
+            src="/homescore-icon/homeScoreCard.png"
+            alt=""
+            loading="lazy"
+          />
+        </div>
+
+      <!-- Improvement pathway — current vs potential HomeScore -->
+      <section class="pw-improve">
+        <div class="pw-improve-eyebrow">
+          <span class="pw-improve-eyebrow-ic">
+            <img src="/homescore-icon/targetPathway.png" alt="" loading="lazy" />
+          </span>
+          Your improvement pathway
+        </div>
+
+        <div class="pw-improve-body">
+          <div class="pw-improve-scores">
+            <div class="pw-ring-block">
+              <span class="pw-ring">
+                <svg viewBox="0 0 72 72" aria-hidden="true">
+                  <circle class="pw-ring-track" cx="36" cy="36" r="30" />
+                  <circle
+                    class="pw-ring-fill"
+                    cx="36"
+                    cy="36"
+                    r="30"
+                    stroke-dasharray="188.5"
+                    :stroke-dashoffset="188.5 - (188.5 * ringPct(fromScore)) / 100"
+                  />
+                </svg>
+                <span class="pw-ring-val">
+                  <b>{{ fromScore }}</b><i>/100</i>
+                </span>
+              </span>
+              <span class="pw-ring-label">Current<br />HomeScore</span>
+            </div>
+
+            <span class="pw-improve-arrow" aria-hidden="true">→</span>
+
+            <div class="pw-ring-block">
+              <span class="pw-ring">
+                <svg viewBox="0 0 72 72" aria-hidden="true">
+                  <circle class="pw-ring-track" cx="36" cy="36" r="30" />
+                  <circle
+                    class="pw-ring-fill"
+                    cx="36"
+                    cy="36"
+                    r="30"
+                    stroke-dasharray="188.5"
+                    :stroke-dashoffset="188.5 - (188.5 * ringPct(toScore)) / 100"
+                  />
+                </svg>
+                <span class="pw-ring-val">
+                  <b>{{ toScore }}</b><i>/100</i>
+                </span>
+              </span>
+              <span class="pw-ring-label">Potential<br />HomeScore</span>
+            </div>
+          </div>
+
+          <div class="pw-improve-gains">
+            <div v-if="totalSavings" class="pw-gain">
+              <img src="/homescore-icon/wallet.png" alt="" loading="lazy" />
+              <div>
+                <span>Save up to</span>
+                <b>£{{ totalSavings }}/year</b>
               </div>
-              <span class="pathway-track-dot" />
-              <span class="pathway-track-dot" />
             </div>
-            <div class="pathway-level-to">
-              <div class="pathway-level-letter to">{{ toLevel }}</div>
-              <div class="pathway-level-sub accent">Potential · {{ toScore }}</div>
+            <div v-if="co2Cut" class="pw-gain">
+              <img src="/homescore-icon/environmental.png" alt="" loading="lazy" />
+              <div>
+                <span>Lower</span>
+                <b>carbon impact</b>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="pathway-stats-col">
-          <div class="pathway-stat">
-            <div class="pathway-stat-ic"><Icon name="i-lucide-line-chart" /></div>
-            <div class="pathway-stat-text">
-              <div class="pathway-stat-num">+{{ pointsToGain }}</div>
-              <div class="pathway-stat-label">Points to gain</div>
-            </div>
-          </div>
-          <div class="pathway-stat">
-            <div class="pathway-stat-ic"><Icon name="i-lucide-wallet" /></div>
-            <div class="pathway-stat-text">
-              <div class="pathway-stat-num">£{{ totalSavings }}<span class="pathway-stat-unit">/yr</span></div>
-              <div class="pathway-stat-label">/yr saved</div>
-            </div>
-          </div>
-          <!-- Always rendered — mirrors the deployed app, which shows the
-               CO₂ stat (0t for a no-improvements property) as the third box
-               so the hero keeps its three-stat layout. -->
-          <div class="pathway-stat">
-            <div class="pathway-stat-ic"><Icon name="i-lucide-leaf" /></div>
-            <div class="pathway-stat-text">
-              <div class="pathway-stat-num">{{ co2Cut }}t</div>
-              <div class="pathway-stat-label">CO₂ cut /yr</div>
-            </div>
-          </div>
+        <div class="pw-improve-note">
+          Based on the improvements recommended in your EPC. Costs and savings
+          are estimates.
         </div>
       </section>
+      </div>
 
-      <!-- Grant banner -->
+      <!-- Grants listed on the EPC -->
       <div class="grant-banner anim-2">
-        <div class="grant-banner-ic"><Icon name="i-lucide-gift" /></div>
+        <div class="grant-banner-ic">
+          <img src="/homescore-icon/gift.png" alt="" loading="lazy" />
+        </div>
         <div class="grant-banner-body">
-          <div class="grant-banner-title">Grants listed on your EPC</div>
+          <div class="grant-banner-title">
+            You may be able to get help with the cost
+          </div>
           <div class="grant-banner-sub">
-            The EPC lists <b>Warm Homes Local Grant</b>, <b>Boiler Upgrade Scheme</b>, and
-            <b>Energy Company Obligation (ECO)</b>. Eligibility depends on income and area — your
-            installer will check.
+            You could be eligible for: <b>Warm Homes Local Grant</b>,
+            <b>Boiler Upgrade Scheme</b>, and
+            <b>Energy Company Obligation (ECO)</b>.
+          </div>
+          <div class="grant-banner-fine">
+            Eligibility depends on income, property type and area.
           </div>
         </div>
       </div>
@@ -215,6 +258,7 @@
               </div>
             </div>
           </div>
+
         </div><!-- /pw-main -->
 
         <div class="pw-side">
@@ -229,69 +273,25 @@
             </div>
           </div>
 
-          <!-- Beyond the pathway teaser — twin progress rings (v6-2) -->
-          <div class="moveready-teaser anim-4" @click="goToBoost">
-            <div class="moveready-teaser-head">
-              <div class="moveready-teaser-eyebrow">
-                <Icon name="i-lucide-sparkles" /> Beyond the pathway
-              </div>
-              <div class="moveready-teaser-title">See your MoveReady &amp; Passport scores</div>
+          <!-- Passport nudge — what sits beyond the EPC pathway. -->
+          <div class="pw-beyond anim-4">
+            <img
+              class="pw-beyond-ic"
+              src="/homescore-icon/boostBolt.png"
+              alt=""
+              loading="lazy"
+            />
+            <div class="pw-beyond-body">
+              <div class="pw-beyond-title">Beyond the pathway</div>
+              <p class="pw-beyond-sub">
+                Build your Property Passport to record improvements, boost your
+                HomeScore and unlock more benefits.
+              </p>
             </div>
-            <div class="moveready-teaser-row">
-              <div class="moveready-mini">
-                <div class="moveready-mini-ring">
-                  <svg viewBox="0 0 60 60" aria-hidden="true">
-                    <circle cx="30" cy="30" r="24" stroke="#E4E5ED" stroke-width="6" fill="none" />
-                    <circle
-                      cx="30" cy="30" r="24"
-                      stroke="url(#mrGrad)" stroke-width="6" fill="none"
-                      stroke-dasharray="150.8"
-                      :stroke-dashoffset="150.8 - (mrPct / 100) * 150.8"
-                      stroke-linecap="round"
-                      transform="rotate(-90 30 30)"
-                    />
-                    <defs>
-                      <linearGradient id="mrGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#7C6FB0" />
-                        <stop offset="100%" stop-color="#5B3795" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div class="moveready-mini-num">{{ mrPct }}</div>
-                </div>
-                <div class="moveready-mini-label">MoveReady</div>
-              </div>
-              <div class="moveready-mini">
-                <div class="moveready-mini-ring">
-                  <svg viewBox="0 0 60 60" aria-hidden="true">
-                    <circle cx="30" cy="30" r="24" stroke="#E4E5ED" stroke-width="6" fill="none" />
-                    <circle
-                      cx="30" cy="30" r="24"
-                      stroke="url(#ppGrad)" stroke-width="6" fill="none"
-                      stroke-dasharray="150.8"
-                      :stroke-dashoffset="150.8 - (ppPct / 100) * 150.8"
-                      stroke-linecap="round"
-                      transform="rotate(-90 30 30)"
-                    />
-                    <defs>
-                      <linearGradient id="ppGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#00B8B0" />
-                        <stop offset="100%" stop-color="#008A84" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div class="moveready-mini-num accent">{{ ppPct }}%</div>
-                </div>
-                <div class="moveready-mini-label">Passport</div>
-              </div>
-              <div class="moveready-teaser-body">
-                <div class="moveready-teaser-line">
-                  <b>{{ passportDone }} of {{ passportTotal }}</b> Passport sections complete
-                </div>
-                <div class="moveready-teaser-line2">{{ passportSummary }}</div>
-              </div>
-              <Icon name="i-lucide-chevron-right" class="moveready-teaser-arrow" />
-            </div>
+            <button class="pw-beyond-btn" type="button" @click="goToPassport">
+              Build my Property Passport
+              <Icon name="i-lucide-arrow-right" />
+            </button>
           </div>
 
           <!-- Bottom CTAs
@@ -553,6 +553,11 @@ const toScore = computed(() => {
 // clone's "+-55".
 const pointsToGain = computed(() => toScore.value - fromScore.value)
 
+// Ring fill for the current / potential HomeScore dials.
+function ringPct(score: number): number {
+  return Math.max(0, Math.min(100, Math.round(score || 0)))
+}
+
 // Pick a 3D icon (from /public/homescore-icon) for each EPC recommendation
 // type based on title keywords, matching the deployed mobile-app look.
 function iconForRec(title: string): string {
@@ -745,10 +750,10 @@ const co2Cut = computed(() => {
   return (now - pot).toFixed(1)
 })
 
-function goToBoost() {
-  // Pathway is a standalone route; redirect back into the homescore flow
-  // and let it switch to the boost screen.
-  router.push(`/homescore/${propertyId.value}?screen=boost`)
+// "Build my Property Passport" — the passport dashboard, which explains
+// what can be added and routes on into the claim flow.
+function goToPassport() {
+  router.push(`/homescore/passport/${propertyId.value}`)
 }
 
 // Back button — restore the homescore screen the user was on before they
@@ -766,37 +771,6 @@ function onBack() {
   router.replace(`/homescore/${propertyId.value}?screen=${encodeURIComponent(from)}`)
 }
 
-// ── "Beyond the pathway" teaser values ─────────────────────────
-// MoveReady % and Passport % aren't backed by a live endpoint yet, so we
-// derive defensible placeholders from the property's passport state.
-// Once the boost flow has counted uploaded docs server-side, swap these
-// for real `/property/:id/move-ready` and `/property/:id/passport/summary`
-// reads.
-const mrPct = computed(() => {
-  const p: any = property.value
-  if (!p) return 0
-  // Seed from whether a passport exists + has been published.
-  if (p.passportPublished) return 65
-  if (p.hasPassport) return 35
-  return 12
-})
-const ppPct = computed(() => {
-  const p: any = property.value
-  if (!p) return 0
-  if (p.passportPublished) return 70
-  if (p.hasPassport) return 40
-  return 30
-})
-const passportTotal = 19 // total passport section templates
-const passportDone = computed(() => {
-  // Rough estimate from Passport %: 19 sections × (ppPct / 100)
-  return Math.round((passportTotal * ppPct.value) / 100)
-})
-const passportSummary = computed(() => {
-  const remaining = passportTotal - passportDone.value
-  if (remaining <= 0) return 'All sections complete'
-  return `${remaining} section${remaining === 1 ? '' : 's'} to go · tap to boost`
-})
 </script>
 
 <style scoped>
@@ -1011,248 +985,366 @@ const passportSummary = computed(() => {
 .anim-4 { animation: hs-v6-fadeUp 0.5s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 /* ── Page heading ───────────────────────────────────────────────────── */
-.pw-pagehead {
-  text-align: center;
-  margin-bottom: 22px;
+/* White shell holding the headline column and the teal card. */
+.pw-hero-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding: 20px 22px;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 6px 20px rgba(35, 29, 69, 0.06);
+}
+@media (min-width: 900px) {
+  .pw-hero-shell {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 26px;
+    align-items: center;
+  }
+}
+.pw-hero-left {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 4px 4px 0;
+  min-width: 0;
+}
+/* Soft mint blob behind the illustration. */
+.pw-hero-left::before {
+  content: '';
+  position: absolute;
+  left: -4%;
+  bottom: 2%;
+  width: 62%;
+  padding-bottom: 62%;
+  border-radius: 50%;
+  background: rgba(0, 161, 154, 0.07);
+  pointer-events: none;
+}
+.pw-hero-left > * { position: relative; z-index: 1; }
+.pw-pagehead-art {
+  width: 100%;
+  max-width: 218px;
+  margin-top: 14px;
+  align-self: center;
+  object-fit: contain;
 }
 .pw-pagehead-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  color: var(--accent-dark);
-  background: var(--accent-paler);
-  border: 1px solid var(--accent-pale);
-  border-radius: 999px;
-  padding: 6px 14px;
-}
-.pw-pagehead-eyebrow :deep(svg) { width: 13px; height: 13px; }
-.pw-pagehead-title {
-  margin: 14px 0 4px;
-  font-size: 34px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text);
-  line-height: 1.1;
+}
+.pw-pagehead-eyebrow b {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+.pw-pagehead-title {
+  margin: 8px 0 9px;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  color: var(--text);
+  line-height: 1.15;
+  max-width: 16ch;
 }
 .pw-pagehead-sub {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 14.5px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--text-secondary);
 }
 .pw-pagehead-sub :deep(svg) {
-  width: 15px;
-  height: 15px;
-  color: var(--accent-dark);
+  width: 14px;
+  height: 14px;
+  color: var(--text-faint);
+}
+@media (max-width: 700px) {
+  .pw-hero-shell { padding: 18px; border-radius: 22px; }
+  .pw-pagehead-title { font-size: 26px; }
+  .pw-pagehead-art { max-width: 240px; align-self: center; }
 }
 
-/* ── Pathway hero ───────────────────────────────────────────────────── */
-.pathway-hero {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 28px;
-  padding: 34px 36px;
-  background:
-    radial-gradient(130% 150% at 100% 0%, rgba(0, 161, 154, 0.5), transparent 58%),
-    linear-gradient(135deg, #2a2350 0%, #1a1540 100%);
-  border-radius: 26px;
+/* ── Improvement pathway card ─────────────────────────────── */
+.pw-improve {
+  /* Sized to its content and centred against the taller left column —
+     stretching it to full height left a dead band under the dials. */
+  align-self: center;
+  padding: 20px 22px;
+  border-radius: 18px;
   color: #fff;
-  box-shadow: 0 20px 46px rgba(26, 21, 64, 0.3);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(0, 212, 195, 0.35), transparent 60%),
+    linear-gradient(135deg, #009a92 0%, #067a72 100%);
+  box-shadow: 0 10px 26px rgba(0, 122, 114, 0.18);
 }
-@media (min-width: 820px) {
-  .pathway-hero {
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
-    align-items: center;
-    gap: 40px;
-  }
-}
-.pathway-hero-lead {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  justify-content: center;
-}
-.pathway-eyebrow {
+.pw-improve-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 800;
-  color: #4fe0d3;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-}
-.pathway-eyebrow :deep(svg) { width: 15px; height: 15px; }
-.pathway-route {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.pathway-level-from,
-.pathway-level-to {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-.pathway-level-letter {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: 800;
-}
-.pathway-level-letter.from {
-  background: rgba(255, 255, 255, 0.09);
-  color: #fff;
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-}
-.pathway-level-letter.to {
-  background: linear-gradient(135deg, #00b8b0, #008a84);
-  color: #fff;
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.42);
-}
-.pathway-level-sub {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-}
-.pathway-level-sub.accent { color: #4fe0d3; }
-
-/* Dotted connector track with a circular arrow node in the centre. */
-.pathway-track {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  min-width: 0;
-}
-.pathway-track-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
-  flex-shrink: 0;
-}
-.pathway-track-node {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.06);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.pathway-track-node :deep(svg) { width: 16px; height: 16px; color: #fff; }
-
-.pathway-stats-col {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.pathway-stat {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 15px 18px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  backdrop-filter: blur(2px);
-}
-.pathway-stat-ic {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(0, 184, 176, 0.2);
-  border: 1px solid rgba(0, 184, 176, 0.32);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.pathway-stat-ic :deep(svg) { width: 19px; height: 19px; color: #4fe0d3; }
-.pathway-stat-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.pathway-stat-num {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.6px;
-  line-height: 1;
-}
-.pathway-stat-unit {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0;
-  margin-left: 1px;
-}
-.pathway-stat-label {
+  gap: 9px;
   font-size: 9.5px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 0.8px;
+  letter-spacing: 1.3px;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.95);
+}
+.pw-improve-eyebrow-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pw-improve-eyebrow-ic img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+}
+/* Two even columns so the dials and the gains each own half the card —
+   a flex row let the gains drift to the far edge with dead space between. */
+.pw-improve-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+}
+@media (min-width: 700px) {
+  .pw-improve-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+/* Current → potential dials */
+.pw-improve-scores {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-width: 0;
+}
+.pw-ring-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.pw-ring {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+}
+.pw-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.pw-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 6;
+}
+.pw-ring-fill {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.pw-ring-val {
+  font-weight: 800;
+  line-height: 1;
+}
+.pw-ring-val b { font-size: 21px; font-weight: 800; }
+.pw-ring-val i {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+}
+.pw-ring-label {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}
+.pw-improve-arrow {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 22px;
+}
+
+/* Gains column, split off by a hairline on wider screens */
+.pw-improve-gains {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+@media (min-width: 700px) {
+  .pw-improve-gains {
+    padding: 0 0 0 24px;
+    border-top: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+  }
+}
+.pw-gain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Hairline between the two gain rows. */
+.pw-gain + .pw-gain {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+.pw-gain img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex: none;
+}
+.pw-gain span {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+.pw-gain b {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+.pw-improve-note {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ── Grant banner ───────────────────────────────────────────────────── */
 .grant-banner {
   margin-top: 18px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, var(--purple-pale), #fbf9ff);
-  border: 1px solid var(--purple-border);
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #2f2760, #241e4a);
   border-radius: 20px;
-  box-shadow: var(--shadow-sm);
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(29, 24, 66, 0.28);
 }
 .grant-banner-ic {
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
-  background: #fff;
-  border: 1px solid var(--purple-border);
-  color: var(--purple);
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
-.grant-banner-ic :deep(svg) { width: 22px; height: 22px; }
+.grant-banner-ic img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
 .grant-banner-title {
   font-size: 14.5px;
   font-weight: 800;
-  color: var(--text);
+  color: #fff;
   margin-bottom: 4px;
   letter-spacing: -0.2px;
 }
 .grant-banner-sub {
   font-size: 12.5px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.82);
   line-height: 1.6;
 }
 .grant-banner-sub :deep(b) {
-  color: var(--purple);
+  color: #ffd48a;
   font-weight: 700;
+}
+.grant-banner-fine {
+  margin-top: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Beyond the pathway — passport nudge ────────────────────────────── */
+/* Lives in the ~330px sidebar, so it stacks rather than sitting in a row. */
+.pw-beyond {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.pw-beyond-ic {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex: none;
+}
+.pw-beyond-body { min-width: 0; }
+.pw-beyond-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.pw-beyond-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 46ch;
+}
+.pw-beyond-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: none;
+  width: 100%;
+  padding: 12px 18px;
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent-dark);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.pw-beyond-btn :deep(svg) { width: 15px; height: 15px; flex: none; }
+.pw-beyond-btn:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
 /* ── Layout grid ────────────────────────────────────────────────────── */
@@ -1637,109 +1729,6 @@ const passportSummary = computed(() => {
   line-height: 1.5;
 }
 
-/* ── Beyond the pathway teaser ──────────────────────────────────────── */
-.moveready-teaser {
-  padding: 20px;
-  background: linear-gradient(135deg, var(--purple-pale) 0%, #fff 100%);
-  border: 1px solid var(--purple-border);
-  border-radius: 20px;
-  cursor: pointer;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.moveready-teaser:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 38px rgba(91, 55, 149, 0.16);
-}
-.moveready-teaser-head {
-  margin-bottom: 16px;
-}
-.moveready-teaser-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--purple);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-}
-.moveready-teaser-eyebrow :deep(svg) { width: 13px; height: 13px; }
-.moveready-teaser-title {
-  font-size: 15.5px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.3px;
-  margin-top: 5px;
-  line-height: 1.3;
-}
-.moveready-teaser-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.moveready-mini {
-  text-align: center;
-  flex-shrink: 0;
-}
-.moveready-mini-ring {
-  position: relative;
-  width: 58px;
-  height: 58px;
-}
-.moveready-mini-ring svg {
-  width: 100%;
-  height: 100%;
-}
-.moveready-mini-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--purple);
-  letter-spacing: -0.3px;
-}
-.moveready-mini-num.accent {
-  color: var(--accent-dark);
-}
-.moveready-mini-label {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--text-secondary);
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  margin-top: 6px;
-}
-.moveready-teaser-body {
-  flex: 1;
-  min-width: 0;
-}
-.moveready-teaser-line {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.4;
-}
-.moveready-teaser-line :deep(b) {
-  color: var(--purple);
-  font-weight: 800;
-}
-.moveready-teaser-line2 {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-.moveready-teaser-arrow {
-  width: 20px;
-  height: 20px;
-  color: var(--purple);
-  flex-shrink: 0;
-}
-
 /* ── Sidebar CTAs ───────────────────────────────────────────────────── */
 .bottom-cta {
   display: flex;
@@ -1952,10 +1941,11 @@ const passportSummary = computed(() => {
 /* ── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   .hs-v6-pathway { width: calc(100% - 32px); padding: 22px 0 56px; }
-  .pw-pagehead-title { font-size: 26px; }
-  .pathway-hero { padding: 26px 20px; border-radius: 20px; }
-  .pathway-route { gap: 14px; }
-  .pathway-level-letter { width: 56px; height: 56px; font-size: 26px; }
+  .pw-pagehead-title { font-size: 24px; }
+  .pw-pagehead-art { width: 104px; height: 104px; }
+  .pw-improve { padding: 20px 18px; border-radius: 18px; }
+  .pw-improve-scores { gap: 12px; min-width: 0; }
+  .pw-ring { width: 74px; height: 74px; }
   .mission-card { padding: 18px; }
   .pw-nav-inner { width: calc(100% - 32px); }
 }
