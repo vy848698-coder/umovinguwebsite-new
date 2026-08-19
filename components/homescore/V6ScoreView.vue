@@ -152,7 +152,7 @@
     <!-- ── BILLS PANEL ─────────────────────────────────────────────── -->
     <div v-if="activePanel === 'bills'" class="score-strip-panel open">
       <div class="ssp-head">
-        <div class="ssp-head-icon">💷</div>
+        <img class="ssp-head-icon" src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />
         <div class="ssp-head-info">
           <div class="ssp-head-title">Annual running costs · £{{ formatNum(annualCost) }}/yr</div>
           <div class="ssp-head-sub">EPC figure · heating, hot water &amp; lighting only</div>
@@ -161,19 +161,19 @@
       </div>
       <div class="ssp-divider">Where it goes</div>
       <div class="ssp-bar-row">
-        <div class="ssp-bar-icon">🔥</div>
+        <img class="ssp-bar-icon" src="/homescore-icon/flame.png" alt="" loading="lazy" />
         <div class="ssp-bar-label">Heating</div>
         <div class="ssp-bar-track"><div class="ssp-bar-fill gas" :style="{ width: billsSplitDisplay.heating + '%' }" /></div>
         <div class="ssp-bar-amt">£{{ formatNum(annualCost * billsSplitDisplay.heating / 100) }}<div class="ssp-bar-amt-pct">{{ billsSplitDisplay.heating }}%</div></div>
       </div>
       <div class="ssp-bar-row">
-        <div class="ssp-bar-icon">💧</div>
+        <img class="ssp-bar-icon" src="/homescore-icon/waterDroplet.png" alt="" loading="lazy" />
         <div class="ssp-bar-label">Hot water</div>
         <div class="ssp-bar-track"><div class="ssp-bar-fill hw" :style="{ width: billsSplitDisplay.hotWater + '%' }" /></div>
         <div class="ssp-bar-amt">£{{ formatNum(annualCost * billsSplitDisplay.hotWater / 100) }}<div class="ssp-bar-amt-pct">{{ billsSplitDisplay.hotWater }}%</div></div>
       </div>
       <div class="ssp-bar-row">
-        <div class="ssp-bar-icon">💡</div>
+        <img class="ssp-bar-icon" src="/homescore-icon/lightbulb.png" alt="" loading="lazy" />
         <div class="ssp-bar-label">Lighting</div>
         <div class="ssp-bar-track"><div class="ssp-bar-fill elec" :style="{ width: billsSplitDisplay.lighting + '%' }" /></div>
         <div class="ssp-bar-amt">£{{ formatNum(annualCost * billsSplitDisplay.lighting / 100) }}<div class="ssp-bar-amt-pct">{{ billsSplitDisplay.lighting }}%</div></div>
@@ -197,7 +197,7 @@
     <!-- ── CO₂ PANEL ───────────────────────────────────────────────── -->
     <div v-if="activePanel === 'co2'" class="score-strip-panel open">
       <div class="ssp-head">
-        <div class="ssp-head-icon">🌍</div>
+        <img class="ssp-head-icon" src="/homescore-icon/globe.png" alt="" loading="lazy" />
         <div class="ssp-head-info">
           <div class="ssp-head-title">CO₂ emissions · {{ co2NowDisplay.toFixed(1) }}t/yr</div>
           <div class="ssp-head-sub">UK average 6.0t · could drop to {{ co2Potential.toFixed(1) }}t after all 6 EPC steps</div>
@@ -206,19 +206,19 @@
       </div>
       <div class="ssp-divider">Now vs potential</div>
       <div class="ssp-bar-row">
-        <div class="ssp-bar-icon">🏠</div>
+        <img class="ssp-bar-icon" src="/homescore-icon/house.png" alt="" loading="lazy" />
         <div class="ssp-bar-label">Your home</div>
         <div class="ssp-bar-track"><div class="ssp-bar-fill co2-heat" :style="{ width: co2NowPct + '%' }" /></div>
         <div class="ssp-bar-amt">{{ co2NowDisplay.toFixed(1) }}t<div class="ssp-bar-amt-pct">now</div></div>
       </div>
       <div class="ssp-bar-row">
-        <div class="ssp-bar-icon">📊</div>
+        <img class="ssp-bar-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
         <div class="ssp-bar-label">UK avg</div>
         <div class="ssp-bar-track"><div class="ssp-bar-fill co2-elec" :style="{ width: '75%' }" /></div>
         <div class="ssp-bar-amt">6.0t<div class="ssp-bar-amt-pct">benchmark</div></div>
       </div>
       <div class="ssp-bar-row">
-        <div class="ssp-bar-icon">🎯</div>
+        <img class="ssp-bar-icon" src="/homescore-icon/target.png" alt="" loading="lazy" />
         <div class="ssp-bar-label">Potential</div>
         <div class="ssp-bar-track"><div class="ssp-bar-fill co2-hw" :style="{ width: co2PotentialPct + '%' }" /></div>
         <div class="ssp-bar-amt">{{ co2Potential.toFixed(1) }}t<div class="ssp-bar-amt-pct">after</div></div>
@@ -228,7 +228,7 @@
         <div class="ssp-total-num">–{{ (co2NowDisplay - co2Potential).toFixed(1) }}t CO₂/yr</div>
       </div>
       <div class="ssp-equiv">
-        <div class="ssp-equiv-icon">🚗</div>
+        <Icon name="i-lucide-car" class="ssp-equiv-icon" />
         <div>{{ (co2NowDisplay - co2Potential).toFixed(1) }} tonnes CO₂ ≈ <b>driving 12,000 miles in a petrol car</b>.</div>
       </div>
       <div class="ssp-foot" @click="$emit('open-pathway')">
@@ -242,7 +242,7 @@
     <!-- ── STREET PANEL ────────────────────────────────────────────── -->
     <div v-if="activePanel === 'street'" class="score-strip-panel open">
       <div class="ssp-head">
-        <div class="ssp-head-icon">🏘</div>
+        <img class="ssp-head-icon" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
         <div class="ssp-head-info">
           <div class="ssp-head-title">Your street, ranked by energy cost</div>
           <div class="ssp-head-sub">
@@ -387,7 +387,7 @@
 
       <!-- Pathway projection -->
       <div class="ssp-street-projection" @click="$emit('open-pathway')">
-        <div class="ssp-street-projection-icon">📈</div>
+        <img class="ssp-street-projection-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
         <div class="ssp-street-projection-body">
           <div class="ssp-street-projection-label">If you complete the EPC pathway</div>
           <div class="ssp-street-projection-num">
@@ -635,7 +635,7 @@
               <div class="epc-flag-text" v-html="item.flagText" />
             </div>
             <div v-if="item.fix" class="epc-fix">
-              <div class="epc-fix-label">{{ item.fix.label }}</div>
+              <div class="epc-fix-label"><Icon name="i-lucide-sparkles" />{{ item.fix.label }}</div>
               <div class="epc-fix-text" v-html="item.fix.text" />
               <a class="epc-fix-action" @click.stop="$emit('open-pathway')">See suppliers →</a>
             </div>
@@ -665,7 +665,7 @@
         <div class="fork-eyebrow">Pick up where you left off</div>
         <div class="fork-options">
           <button class="fork-opt primary" type="button" @click="$emit('open-dashboard')">
-            <div class="fork-opt-icon">📊</div>
+            <div class="fork-opt-icon"><img src="/homescore-icon/growthChart.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">Go to your dashboard</div>
               <div class="fork-opt-sub">Your home base — Passport, docs &amp; everything in one place.</div>
@@ -755,7 +755,7 @@
       <div v-if="claimModalOpen" class="claim-overlay" @click.self="claimModalOpen = false">
         <div class="claim-sheet" @click.stop>
           <div class="claim-grip" />
-          <div class="claim-icon">🪪</div>
+          <img class="claim-icon" src="/homescore-icon/idCard.png" alt="" loading="lazy" />
           <div class="claim-title">Claim this property</div>
           <div class="claim-sub">
             You'll verify you own <b>{{ addrLineFull }}</b> and unlock your
@@ -797,7 +797,7 @@
             </button>
           </div>
           <div class="claim-privacy">
-            <span>🔒</span>
+            <img class="hs-lock-ic" src="/homescore-icon/padlock.png" alt="" loading="lazy" />
             <span>Free · no card needed · we'll never sell your data.</span>
           </div>
         </div>
@@ -1717,7 +1717,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Heating rated <b>${effRating(e.mainheatEnergyEff)}</b>. No upgrade on this EPC.`,
     fix: mainHeatRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${mainHeatRec.description || mainHeatRec.title}. ${mainHeatRec.typicalSaving ? `Saves <b>£${mainHeatRec.typicalSaving}/yr</b>.` : ''} ${mainHeatRec.costRange ? `Cost <b>${mainHeatRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1738,7 +1738,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Heating controls rated <b>${effRating(e.mainheatcEnergyEff)}</b>.`,
     fix: controlsRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${controlsRec.title}. ${controlsRec.typicalSaving ? `Saves <b>£${controlsRec.typicalSaving}/yr</b>.` : ''} ${controlsRec.costRange ? `Cost <b>${controlsRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1759,7 +1759,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Hot water rated <b>${effRating(e.hotWaterEnergyEff)}</b>.`,
     fix: hwRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${hwRec.description || hwRec.title}. ${hwRec.typicalSaving ? `Saves <b>£${hwRec.typicalSaving}/yr</b>.` : ''} ${hwRec.costRange ? `Cost <b>${hwRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1780,7 +1780,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Walls rated <b>${effRating(e.wallsEnergyEff)}</b>.`,
     fix: wallsRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${wallsRec.description || wallsRec.title}. ${wallsRec.typicalSaving ? `Saves <b>£${wallsRec.typicalSaving}/yr</b>.` : ''} ${wallsRec.costRange ? `Cost <b>${wallsRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1801,7 +1801,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Roof rated <b>${effRating(e.roofEnergyEff)}</b>.`,
     fix: roofRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${roofRec.description || roofRec.title}. ${roofRec.typicalSaving ? `Saves <b>£${roofRec.typicalSaving}/yr</b>.` : ''} ${roofRec.costRange ? `Cost <b>${roofRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1822,7 +1822,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Floor rated <b>${effRating(e.floorEnergyEff)}</b>.`,
     fix: floorRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${floorRec.description || floorRec.title}. ${floorRec.typicalSaving ? `Saves <b>£${floorRec.typicalSaving}/yr</b>.` : ''} ${floorRec.costRange ? `Cost <b>${floorRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1843,7 +1843,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Windows rated <b>${effRating(e.windowsEnergyEff)}</b>.`,
     fix: windowsRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${windowsRec.description || windowsRec.title}. ${windowsRec.typicalSaving ? `Saves <b>£${windowsRec.typicalSaving}/yr</b>.` : ''} ${windowsRec.costRange ? `Cost <b>${windowsRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1865,7 +1865,7 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Lighting rated <b>${effRating(e.lightingEnergyEff)}</b>.`,
     fix: lightingRec
       ? {
-          label: '✨ EPC recommendation',
+          label: 'EPC recommendation',
           text: `${lightingRec.title}. ${lightingRec.typicalSaving ? `Saves <b>£${lightingRec.typicalSaving}/yr</b>.` : ''} ${lightingRec.costRange ? `Cost <b>${lightingRec.costRange}</b>.` : ''}`,
         }
       : undefined,
@@ -1884,7 +1884,7 @@ const epcItems = computed<EpcItem[]>(() => {
       flagOk: false,
       flagText: 'Listed as a recommended improvement on the EPC.',
       fix: {
-        label: '✨ EPC recommendation',
+        label: 'EPC recommendation',
         text: `${swhRec.description || swhRec.title}. ${swhRec.typicalSaving ? `Saves <b>£${swhRec.typicalSaving}/yr</b>.` : ''} ${swhRec.costRange ? `Cost <b>${swhRec.costRange}</b>.` : ''}`,
       },
     })
@@ -1903,7 +1903,7 @@ const epcItems = computed<EpcItem[]>(() => {
       flagOk: false,
       flagText: 'Listed as a recommended improvement — generates electricity from sunlight.',
       fix: {
-        label: '✨ EPC recommendation',
+        label: 'EPC recommendation',
         text: `${pvRec.description || pvRec.title}. ${pvRec.typicalSaving ? `Saves <b>£${pvRec.typicalSaving}/yr</b>.` : ''} ${pvRec.costRange ? `Cost <b>${pvRec.costRange}</b>.` : ''}`,
       },
     })
@@ -1927,7 +1927,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (e.mechanicalVentilation) {
     items.push({
       id: 'ventilation',
-      icon: '💨',
+      icon: '/homescore-icon/windows.png',
       title: 'Ventilation',
       sub: e.mechanicalVentilation,
       rating: 'N/A',
@@ -2665,14 +2665,13 @@ const watchersDisplay = computed(() => {
   border-bottom: 1px solid var(--border-soft);
 }
 .ssp-head-icon {
+  box-sizing: border-box;
   width: 34px;
   height: 34px;
+  padding: 5px;
   border-radius: 10px;
   background: var(--accent-paler);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ssp-head-info { flex: 1; }
@@ -2726,9 +2725,9 @@ const watchersDisplay = computed(() => {
   font-size: 11.5px;
 }
 .ssp-bar-icon {
-  font-size: 14px;
   width: 20px;
-  text-align: center;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ssp-bar-label {
@@ -2826,7 +2825,14 @@ const watchersDisplay = computed(() => {
   color: #7a5500;
 }
 .ssp-equiv-icon {
-  font-size: 16px;
+  font-size: 18px;
+  color: var(--accent, #00a19a);
+  flex-shrink: 0;
+}
+.hs-lock-ic {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ssp-foot {
@@ -4136,10 +4142,11 @@ const watchersDisplay = computed(() => {
   margin: 0 auto 14px;
 }
 .claim-icon {
-  font-size: 40px;
-  line-height: 1;
-  text-align: center;
-  margin-bottom: 8px;
+  display: block;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  margin: 0 auto 8px;
 }
 .claim-title {
   font-size: 19px;

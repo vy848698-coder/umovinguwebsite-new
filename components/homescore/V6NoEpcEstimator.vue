@@ -47,7 +47,11 @@
       </div>
 
       <div class="qbox">
-        <div class="section-chip">{{ QS[idx].s }}</div>
+        <div class="section-chip">
+          <img :src="sectionIcon(QS[idx].s)" alt="" loading="lazy" />{{
+            QS[idx].s
+          }}
+        </div>
         <div class="q-title">{{ QS[idx].t }}</div>
         <div v-if="QS[idx].sub" class="q-sub">{{ QS[idx].sub }}</div>
         <div v-else style="height:12px" />
@@ -267,16 +271,27 @@ interface Question {
   w: number           // weight
   opts: Opt[]
 }
+// Illustrated icon per question section (public/homescore-icon).
+const SECTION_ICONS: Record<string, string> = {
+  'Property basics': '/homescore-icon/house.png',
+  'Walls, roof & floor': '/homescore-icon/bricks.png',
+  Windows: '/homescore-icon/windows.png',
+  'Heating & hot water': '/homescore-icon/flame.png',
+  'Energy & extras': '/homescore-icon/lightning.png',
+}
+function sectionIcon(s: string): string {
+  return SECTION_ICONS[s] ?? '/homescore-icon/homeScoreCard.png'
+}
 const U = "Not sure — use typical for this home's age"
 const QS: Question[] = [
-  { s: '🏠 Property basics', t: 'What type of property is it?', cat: 'structure', w: 1, opts: [
+  { s: 'Property basics', t: 'What type of property is it?', cat: 'structure', w: 1, opts: [
     ['Detached house', '🏡', 0.5],
     ['Semi-detached', '🏘️', 0.6],
     ['Mid-terrace', '🏚️', 0.75],
     ['Bungalow', '🛖', 0.45],
     ['Flat / maisonette', '🏢', 0.85],
   ] },
-  { s: '🏠 Property basics', t: 'Roughly when was it built?', sub: "The age band sets the assumptions for anything you're unsure about.", cat: 'structure', w: 3, opts: [
+  { s: 'Property basics', t: 'Roughly when was it built?', sub: "The age band sets the assumptions for anything you're unsure about.", cat: 'structure', w: 3, opts: [
     ['Before 1900', '🕰️', 0.15],
     ['1900–1929', '', 0.2],
     ['1930–1949', '', 0.3],
@@ -286,33 +301,33 @@ const QS: Question[] = [
     ['1996–2011', '', 0.8],
     ['2012 or later', '✨', 0.95],
   ] },
-  { s: '🏠 Property basics', t: 'How big is it, roughly?', cat: 'efficiency', w: 3, opts: [
+  { s: 'Property basics', t: 'How big is it, roughly?', cat: 'efficiency', w: 3, opts: [
     ['Under 70m² · 1–2 bed', '', 0.8],
     ['70–100m² · 2–3 bed', '', 0.65],
     ['100–150m² · 3–4 bed', '', 0.5],
     ['Over 150m² · 4+ bed', '', 0.35],
     [U, '🤷', 0.55, 1],
   ] },
-  { s: '🏠 Property basics', t: 'Any extensions?', cat: 'structure', w: 1, opts: [
+  { s: 'Property basics', t: 'Any extensions?', cat: 'structure', w: 1, opts: [
     ['No extensions', '', 0.7],
     ['Yes — built after 2000', '', 0.8],
     ['Yes — older extension', '', 0.5],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: '🧱 Walls, roof & floor', t: 'What are the external walls?', sub: 'Tip: bricks in an alternating long/short pattern usually means solid walls.', cat: 'structure', w: 5, opts: [
+  { s: 'Walls, roof & floor', t: 'What are the external walls?', sub: 'Tip: bricks in an alternating long/short pattern usually means solid walls.', cat: 'structure', w: 5, opts: [
     ['Cavity (two layers with a gap)', '🧱', 0.7],
     ['Solid brick', '🧱', 0.25],
     ['Stone', '🪨', 0.2],
     ['Timber frame', '🪵', 0.65],
     [U, '🤷', 0.45, 1],
   ] },
-  { s: '🧱 Walls, roof & floor', t: 'Have the walls been insulated?', cat: 'structure', w: 4, opts: [
+  { s: 'Walls, roof & floor', t: 'Have the walls been insulated?', cat: 'structure', w: 4, opts: [
     ['Yes — cavity or solid-wall insulation', '✅', 0.9],
     ['No', '❌', 0.3],
     ['No cavity to fill (solid walls)', '', 0.2],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '🧱 Walls, roof & floor', t: 'How much loft insulation is there?', cat: 'structure', w: 5, opts: [
+  { s: 'Walls, roof & floor', t: 'How much loft insulation is there?', cat: 'structure', w: 5, opts: [
     ['270mm+ (over ankle deep)', '🧤', 0.95],
     ['100–250mm', '', 0.65],
     ['A thin layer (under 100mm)', '', 0.35],
@@ -320,33 +335,33 @@ const QS: Question[] = [
     ['No loft (flat roof / top-floor flat)', '', 0.5],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '🧱 Walls, roof & floor', t: 'Is there a loft conversion?', cat: 'structure', w: 1, opts: [
+  { s: 'Walls, roof & floor', t: 'Is there a loft conversion?', cat: 'structure', w: 1, opts: [
     ['No conversion', '', 0.7],
     ['Yes — insulated when converted', '✅', 0.8],
     ['Yes — not insulated', '❌', 0.3],
     [U, '🤷', 0.55, 1],
   ] },
-  { s: '🧱 Walls, roof & floor', t: "What's under the ground floor?", cat: 'structure', w: 2, opts: [
+  { s: 'Walls, roof & floor', t: "What's under the ground floor?", cat: 'structure', w: 2, opts: [
     ['Solid concrete, insulated', '', 0.9],
     ['Solid concrete, uninsulated', '', 0.55],
     ['Suspended timber, insulated', '', 0.8],
     ['Suspended timber, uninsulated', '', 0.35],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '🪟 Windows', t: 'What glazing does it have?', cat: 'structure', w: 2, opts: [
+  { s: 'Windows', t: 'What glazing does it have?', cat: 'structure', w: 2, opts: [
     ['Triple glazing', '❄️', 0.95],
     ['Double glazing throughout', '', 0.8],
     ['Mostly double, some single', '', 0.6],
     ['Mostly single glazed', '🥶', 0.2],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: '🪟 Windows', t: 'How old are the windows?', cat: 'structure', w: 1, opts: [
+  { s: 'Windows', t: 'How old are the windows?', cat: 'structure', w: 1, opts: [
     ['Fitted 2002 or later', '', 0.85],
     ['Before 2002', '', 0.5],
     ['A mix', '', 0.65],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: '🔥 Heating & hot water', t: "What's the main heating system?", cat: 'heating', w: 7, opts: [
+  { s: 'Heating & hot water', t: "What's the main heating system?", cat: 'heating', w: 7, opts: [
     ['Gas boiler + radiators', '🔥', 0.75],
     ['Heat pump', '💚', 0.95],
     ['Oil boiler', '🛢️', 0.5],
@@ -354,7 +369,7 @@ const QS: Question[] = [
     ['Plug-in electric heaters', '⚡', 0.15],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '🔥 Heating & hot water', t: 'How old is the boiler?', cat: 'heating', w: 6, opts: [
+  { s: 'Heating & hot water', t: 'How old is the boiler?', cat: 'heating', w: 6, opts: [
     ['Under 5 years', '✨', 0.95],
     ['5–15 years', '', 0.7],
     ['Over 15 years', '', 0.35],
@@ -362,7 +377,7 @@ const QS: Question[] = [
     ['No boiler', '', 0.5],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '🔥 Heating & hot water', t: 'What heating controls are there?', cat: 'heating', w: 3, opts: [
+  { s: 'Heating & hot water', t: 'What heating controls are there?', cat: 'heating', w: 3, opts: [
     ['Smart thermostat + radiator valves', '📱', 0.95],
     ['Programmer + thermostat + TRVs', '', 0.8],
     ['Programmer + thermostat', '', 0.6],
@@ -370,7 +385,7 @@ const QS: Question[] = [
     ['None', '❌', 0.1],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '🔥 Heating & hot water', t: 'How is hot water heated?', cat: 'plumbing', w: 20, opts: [
+  { s: 'Heating & hot water', t: 'How is hot water heated?', cat: 'plumbing', w: 20, opts: [
     ['Combi boiler — no cylinder', '🚿', 0.85],
     ['Cylinder with factory foam insulation', '', 0.7],
     ['Cylinder with a loose jacket', '', 0.55],
@@ -378,33 +393,33 @@ const QS: Question[] = [
     ['Electric immersion only', '⚡', 0.35],
     [U, '🤷', 0.55, 1],
   ] },
-  { s: '🔥 Heating & hot water', t: 'Any secondary heating?', cat: 'heating', w: 2, opts: [
+  { s: 'Heating & hot water', t: 'Any secondary heating?', cat: 'heating', w: 2, opts: [
     ['None', '', 0.8],
     ['Wood-burning stove', '🪵', 0.6],
     ['Open fireplace in use', '🔥', 0.3],
     ['Portable electric heaters', '', 0.4],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: '🔥 Heating & hot water', t: 'Is the property on mains gas?', cat: 'heating', w: 2, opts: [
+  { s: 'Heating & hot water', t: 'Is the property on mains gas?', cat: 'heating', w: 2, opts: [
     ['Yes', '', 0.85],
     ['No', '', 0.35],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: '⚡ Energy & extras', t: 'How much lighting is LED?', cat: 'efficiency', w: 6, opts: [
+  { s: 'Energy & extras', t: 'How much lighting is LED?', cat: 'efficiency', w: 6, opts: [
     ['All of it', '💡', 0.95],
     ['Most of it', '', 0.75],
     ['Some', '', 0.5],
     ['Hardly any', '', 0.2],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '⚡ Energy & extras', t: 'Any renewables?', cat: 'electrics', w: 20, opts: [
+  { s: 'Energy & extras', t: 'Any renewables?', cat: 'electrics', w: 20, opts: [
     ['Solar panels + battery', '🔋', 0.95],
     ['Solar panels (PV)', '☀️', 0.85],
     ['Solar hot water', '', 0.7],
     ['None', '', 0.5],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: '⚡ Energy & extras', t: 'Smart meter & draught-proofing?', cat: 'efficiency', w: 6, opts: [
+  { s: 'Energy & extras', t: 'Smart meter & draught-proofing?', cat: 'efficiency', w: 6, opts: [
     ['Both', '✅', 0.9],
     ['Smart meter only', '', 0.7],
     ['Draught-proofed only', '', 0.65],
@@ -744,12 +759,20 @@ const splitRows = computed(() =>
   box-shadow: var(--shadow-card);
 }
 .section-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 11px;
   letter-spacing: 0.13em;
   font-weight: 700;
   color: var(--accent-dark);
   text-transform: uppercase;
   margin-bottom: 10px;
+}
+.section-chip img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 .q-title {
   font-size: 22px;

@@ -176,7 +176,7 @@
 
       <!-- Upload bill CTA -->
       <div class="rc-upload">
-        <div class="rc-upload-emoji">📄</div>
+        <img class="rc-upload-emoji" src="/homescore-icon/utilityBills.png" alt="" loading="lazy" />
         <div class="rc-upload-body">
           <div class="rc-upload-title">Are these numbers accurate?</div>
           <div class="rc-upload-sub">
@@ -419,8 +419,8 @@
       <section class="rc-block">
       <!-- ═══ ENERGY DETAIL ═══ -->
       <div class="costs-section-h">
-        <div class="costs-section-h-icon costs-section-h-icon--teal-tint">
-          📋
+        <div class="costs-section-h-icon costs-section-h-icon--img">
+          <img src="/homescore-icon/clipboardChecklist.png" alt="" loading="lazy" />
         </div>
         <div class="costs-section-h-text">
           <div class="costs-section-h-title">Energy detail</div>
@@ -618,8 +618,8 @@
       <section class="rc-block">
       <!-- ═══ ENVIRONMENTAL IMPACT ═══ -->
       <div class="costs-section-h">
-        <div class="costs-section-h-icon costs-section-h-icon--teal-tint">
-          🌍
+        <div class="costs-section-h-icon costs-section-h-icon--img">
+          <img src="/homescore-icon/globe.png" alt="" loading="lazy" />
         </div>
         <div class="costs-section-h-text">
           <div class="costs-section-h-title">Environmental impact</div>
@@ -1864,8 +1864,20 @@ function onUpload() {
   gap: 14px;
 }
 .rc-upload-emoji {
-  font-size: 28px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
   flex-shrink: 0;
+}
+/* Illustrated variant of the section chip — artwork carries its own colour. */
+.costs-section-h-icon--img {
+  background: #eafaf6;
+  box-shadow: none;
+}
+.costs-section-h-icon--img img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 .rc-upload-body {
   flex: 1;

@@ -123,7 +123,7 @@
 
           <!-- ── Renters note ─────────────────────────────────────── -->
           <div class="renters-note">
-            <div class="renters-icon">🏠</div>
+            <img class="renters-icon" src="/homescore-icon/house.png" alt="" loading="lazy" />
             <div class="renters-text">
               <b>Renting?</b> You can still check your street and challenge your
               supplier. You don't need to own the property — just know your address.
@@ -1284,8 +1284,10 @@ const tour = useHomescoreTour({
   animation: fadeSlideUp 0.45s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .renters-icon {
-  font-size: 18px;
-  line-height: 1;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .renters-text {
   flex: 1;

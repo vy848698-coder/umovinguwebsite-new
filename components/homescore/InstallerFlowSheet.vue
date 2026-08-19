@@ -111,19 +111,19 @@
           <!-- STATE: eligibility result -->
           <div v-else-if="state === 'result'" class="ifs-state">
             <div v-if="grants.length" class="ifs-result-hero">
-              <div class="ifs-rh-ic">🎉</div>
+              <img class="ifs-rh-ic" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
               <h3>You may qualify for funding</h3>
               <p>Based on your answers, these schemes could cover part or all of this measure. Your installer confirms eligibility at survey.</p>
             </div>
             <div v-else class="ifs-result-hero ifs-result-hero--none">
-              <div class="ifs-rh-ic">🔍</div>
+              <img class="ifs-rh-ic" src="/homescore-icon/magnifier.png" alt="" loading="lazy" />
               <h3>No means-tested grants flagged</h3>
               <p>You may not qualify for the income-based schemes, but installers can still check local offers — and paying direct is always an option. We'll match either way.</p>
             </div>
 
             <div v-if="grants.length" class="ifs-grant-list">
               <div v-for="g in grants" :key="g.name" class="ifs-grant-item">
-                <div class="ifs-gi-ic">{{ g.ic }}</div>
+                <img class="ifs-gi-ic" :src="g.ic" alt="" loading="lazy" />
                 <div class="ifs-gi-body">
                   <div class="ifs-gi-name">{{ g.name }}</div>
                   <div class="ifs-gi-desc">{{ g.desc }}</div>
@@ -184,7 +184,7 @@
                 <b>{{ trade.measure.toLowerCase() }}</b> at <b>{{ address }}</b>{{ grantLine }}.
               </p>
               <div class="ifs-passport">
-                <span class="ifs-passport-ic">📗</span>
+                <img class="ifs-passport-ic" src="/homescore-icon/homeScoreCard.png" alt="" loading="lazy" />
                 <p>Every match request helps us bring installers to <b>{{ postcode || 'your area' }}</b> faster.</p>
               </div>
               <button class="ifs-primary" @click="afterConfirm">See your requests</button>
@@ -207,7 +207,7 @@
             <div v-else class="ifs-track">
               <div v-for="(r, i) in requests" :key="i" class="ifs-track-item">
                 <div class="ifs-track-top">
-                  <div class="ifs-t-ic">🔧</div>
+                  <img class="ifs-t-ic" src="/homescore-icon/wrench.png" alt="" loading="lazy" />
                   <div>
                     <div class="ifs-t-name">{{ r.measure }}</div>
                     <div class="ifs-t-date">{{ r.date }}</div>
@@ -217,7 +217,7 @@
                   <span class="ifs-pill ifs-pill--sourcing">
                     <span class="ifs-dot" />Sourcing installers
                   </span>
-                  <span v-if="r.grant" class="ifs-pill ifs-pill--grant">🎁 {{ r.grant }}</span>
+                  <span v-if="r.grant" class="ifs-pill ifs-pill--grant"><img src="/homescore-icon/gift.png" alt="" loading="lazy" />{{ r.grant }}</span>
                 </div>
               </div>
             </div>
@@ -297,7 +297,7 @@
                 type="button"
                 @click="toggleInterest(c.value)"
               >
-                {{ c.label }}
+                <img class="ifs-chip-ic" :src="c.icon" alt="" loading="lazy" />{{ c.label }}
               </button>
             </div>
 
@@ -328,7 +328,7 @@
                 <span v-if="interests.length">We'll prioritise <b>{{ interests.join(', ').toLowerCase() }}</b> for your area.</span>
               </p>
               <div class="ifs-passport">
-                <span class="ifs-passport-ic">📈</span>
+                <img class="ifs-passport-ic" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
                 <p>Your interest helps us decide <b>which trades to onboard first</b> — the more demand in {{ postcode || 'your area' }}, the sooner it opens.</p>
               </div>
               <button class="ifs-primary" @click="close">Back to pathway</button>
@@ -465,11 +465,11 @@ const trade = computed(() => {
 })
 
 const interestChoices = [
-  { value: 'Insulation', label: '🧱 Insulation' },
-  { value: 'Solar & battery', label: '⚡ Solar & battery' },
-  { value: 'Heat pumps', label: '♨️ Heat pumps' },
-  { value: 'Windows & doors', label: '🪟 Windows & doors' },
-  { value: 'General trades', label: '🔧 General trades' },
+  { value: 'Insulation', label: 'Insulation', icon: '/homescore-icon/bricks.png' },
+  { value: 'Solar & battery', label: 'Solar & battery', icon: '/homescore-icon/lightning.png' },
+  { value: 'Heat pumps', label: 'Heat pumps', icon: '/homescore-icon/boiler.png' },
+  { value: 'Windows & doors', label: 'Windows & doors', icon: '/homescore-icon/windows.png' },
+  { value: 'General trades', label: 'General trades', icon: '/homescore-icon/wrench.png' },
 ]
 
 // --- eligibility engine (illustrative) ---
@@ -482,10 +482,10 @@ function computeGrants() {
   const eligibleTenure = tenure === 'own' || tenure === 'private'
   const g: typeof grants.value = []
   if (eligibleTenure && lowNeed) {
-    g.push({ ic: '🏠', name: 'Warm Homes: Local Grant', desc: 'Up to £15k for insulation & heating in low-EPC homes.', tag: 'Likely' })
-    g.push({ ic: '⚡', name: 'ECO4', desc: 'Supplier-funded upgrades for eligible households.', tag: 'Likely' })
+    g.push({ ic: '/homescore-icon/house.png', name: 'Warm Homes: Local Grant', desc: 'Up to £15k for insulation & heating in low-EPC homes.', tag: 'Likely' })
+    g.push({ ic: '/homescore-icon/lightning.png', name: 'ECO4', desc: 'Supplier-funded upgrades for eligible households.', tag: 'Likely' })
   } else if (eligibleTenure && income === 'high' && benefits === 'no') {
-    g.push({ ic: '🏠', name: 'Great British Insulation Scheme', desc: 'Not fully means-tested — Council Tax band & EPC based.', tag: 'Possible' })
+    g.push({ ic: '/homescore-icon/bricks.png', name: 'Great British Insulation Scheme', desc: 'Not fully means-tested — Council Tax band & EPC based.', tag: 'Possible' })
   }
   grants.value = g
   lastGrantContext = g.length ? g.map((x) => x.name).join(', ') : null
@@ -864,7 +864,7 @@ watch(() => props.open, (o) => {
   margin-top: 6px;
 }
 .ifs-result-hero--none { background: linear-gradient(135deg, #6b6880, #4a4760) }
-.ifs-rh-ic { font-size: 30px }
+.ifs-rh-ic { width: 44px; height: 44px; object-fit: contain }
 .ifs-result-hero h3 { color: #fff; font-size: 20px; margin-top: 10px; font-weight: 800 }
 .ifs-result-hero p {
   font-size: 13px;
@@ -884,11 +884,12 @@ watch(() => props.open, (o) => {
   padding: 13px 14px;
 }
 .ifs-gi-ic {
+  box-sizing: border-box;
   width: 38px; height: 38px;
+  padding: 6px;
   border-radius: 11px;
   background: #e4f4ec;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ifs-gi-body { flex: 1; min-width: 0 }
@@ -1041,7 +1042,9 @@ watch(() => props.open, (o) => {
   padding: 14px;
   margin-top: 20px;
 }
-.ifs-passport-ic { font-size: 17px }
+.ifs-passport-ic { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0 }
+.ifs-chip-ic { width: 16px; height: 16px; object-fit: contain; margin-right: 6px; vertical-align: -3px }
+.ifs-pill--grant img { width: 14px; height: 14px; object-fit: contain; margin-right: 4px; vertical-align: -2px }
 .ifs-passport p {
   margin: 0;
   font-size: 12.5px;
@@ -1060,11 +1063,12 @@ watch(() => props.open, (o) => {
 }
 .ifs-track-top { display: flex; gap: 12px; align-items: flex-start }
 .ifs-t-ic {
+  box-sizing: border-box;
   width: 42px; height: 42px;
+  padding: 7px;
   border-radius: 12px;
   background: #e6f5f4;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ifs-t-name { font-size: 14.5px; font-weight: 800; color: #231d45 }

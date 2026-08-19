@@ -179,7 +179,12 @@
         type="button"
         @click="$emit('see-running-costs')"
       >
-        <span class="rd-cta-emoji">📊</span>
+        <img
+          class="rd-cta-emoji"
+          src="/homescore-icon/utilityBills.png"
+          alt=""
+          loading="lazy"
+        />
         <span class="rd-cta-text">
           <span class="rd-cta-label">See full running costs</span>
           <span class="rd-cta-sub"
@@ -206,7 +211,12 @@
         type="button"
         @click="$emit('see-street')"
       >
-        <span class="rd-cta-emoji">🏘️</span>
+        <img
+          class="rd-cta-emoji"
+          src="/homescore-icon/houseSearch.png"
+          alt=""
+          loading="lazy"
+        />
         <span class="rd-cta-text">
           <span class="rd-cta-label">See your street comparison</span>
           <span class="rd-cta-sub"
@@ -286,7 +296,10 @@
 
       <!-- Environmental impact -->
       <div class="rd-env">
-        <div class="rd-env-eyebrow">🌍 Environmental impact</div>
+        <div class="rd-env-eyebrow">
+          <img src="/homescore-icon/environmental.png" alt="" loading="lazy" />Environmental
+          impact
+        </div>
         <div class="rd-env-row">
           <div>
             <div class="rd-env-num">{{ co2Now.toFixed(1) }}t</div>
@@ -342,7 +355,12 @@
         :aria-expanded="epcOpen ? 'true' : 'false'"
         @click="epcOpen = !epcOpen"
       >
-        <span class="rd-epcfull-ic">⚡</span>
+        <img
+          class="rd-epcfull-ic"
+          src="/homescore-icon/lightning.png"
+          alt=""
+          loading="lazy"
+        />
         <span class="rd-epcfull-head-text">
           <span class="rd-epcfull-title">Full EPC breakdown</span>
           <span class="rd-epcfull-sub">
@@ -384,7 +402,12 @@
         <!-- Line items -->
         <div class="rd-epcfull-lines">
           <div v-for="l in epcLines" :key="l.label" class="rd-epcfull-line">
-            <span class="rd-epcfull-line-ic">{{ l.icon }}</span>
+            <img
+              class="rd-epcfull-line-ic"
+              :src="l.icon"
+              alt=""
+              loading="lazy"
+            />
             <span class="rd-epcfull-line-body">
               <span class="rd-epcfull-line-label">{{ l.label }}</span>
               <span class="rd-epcfull-line-sub">{{ l.sub }}</span>
@@ -399,7 +422,10 @@
 
     <!-- ── Your street (rank + inline map) ────────────────────── -->
     <div class="rd-street-card" data-tour="street">
-      <div class="rd-street-eyebrow">🏘️ Your street · {{ streetName }}</div>
+      <div class="rd-street-eyebrow">
+        <img src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />Your
+        street · {{ streetName }}
+      </div>
       <div class="rd-street-rankrow">
         <div class="rd-street-rank">#{{ streetRank }}</div>
         <div class="rd-street-rank-text">
@@ -485,7 +511,12 @@
           type="button"
           @click="$emit('claim')"
         >
-          <span class="rd-intent-icon">🏠</span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/house.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">I own this property</span>
             <span class="rd-intent-sub"
@@ -501,7 +532,12 @@
           type="button"
           @click="$emit('owner-dashboard')"
         >
-          <span class="rd-intent-icon">📄</span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/homeScoreCard.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">Go to my dashboard</span>
             <span class="rd-intent-sub">
@@ -523,7 +559,12 @@
           type="button"
           @click="$emit('refine-score')"
         >
-          <span class="rd-intent-icon">📝</span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/clipboardChecklist.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">Refine my HomeScore</span>
             <span class="rd-intent-sub">
@@ -539,7 +580,12 @@
           type="button"
           @click="$emit('interested')"
         >
-          <span class="rd-intent-icon">🔍</span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/magnifier.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">I'm interested in this property</span>
             <span class="rd-intent-sub">
@@ -717,14 +763,14 @@ function effColor(label: string): string {
 }
 
 const EPC_LINE_META: { key: string; label: string; sub: string; icon: string }[] = [
-  { key: 'mainheatEnergyEff', label: 'Main heating', sub: 'Heating system', icon: '🔥' },
-  { key: 'mainheatcEnergyEff', label: 'Heating controls', sub: 'Controls', icon: '🎛️' },
-  { key: 'hotWaterEnergyEff', label: 'Hot water', sub: 'Hot water system', icon: '💧' },
-  { key: 'wallsEnergyEff', label: 'Walls', sub: 'Walls', icon: '🧱' },
-  { key: 'roofEnergyEff', label: 'Roof · loft insulation', sub: 'Roof', icon: '🏠' },
-  { key: 'floorEnergyEff', label: 'Floor', sub: 'Floor', icon: '🟫' },
-  { key: 'windowsEnergyEff', label: 'Windows', sub: 'Windows', icon: '🪟' },
-  { key: 'lightingEnergyEff', label: 'Lighting', sub: 'Lighting', icon: '💡' },
+  { key: 'mainheatEnergyEff', label: 'Main heating', sub: 'Heating system', icon: '/homescore-icon/boiler.png' },
+  { key: 'mainheatcEnergyEff', label: 'Heating controls', sub: 'Controls', icon: '/homescore-icon/heatingControls.png' },
+  { key: 'hotWaterEnergyEff', label: 'Hot water', sub: 'Hot water system', icon: '/homescore-icon/tap.png' },
+  { key: 'wallsEnergyEff', label: 'Walls', sub: 'Walls', icon: '/homescore-icon/walls.png' },
+  { key: 'roofEnergyEff', label: 'Roof · loft insulation', sub: 'Roof', icon: '/homescore-icon/roof.png' },
+  { key: 'floorEnergyEff', label: 'Floor', sub: 'Floor', icon: '/homescore-icon/floor.png' },
+  { key: 'windowsEnergyEff', label: 'Windows', sub: 'Windows', icon: '/homescore-icon/windows.png' },
+  { key: 'lightingEnergyEff', label: 'Lighting', sub: 'Lighting', icon: '/homescore-icon/lightbulb.png' },
 ]
 const epcLines = computed(() =>
   EPC_LINE_META.map((m) => {
@@ -1443,8 +1489,9 @@ function formatNum(n: number): string {
   transform: scale(0.99);
 }
 .rd-cta-emoji {
-  font-size: 18px;
-  line-height: 1;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .rd-cta-text {
@@ -1769,13 +1816,13 @@ function formatNum(n: number): string {
   text-align: left;
 }
 .rd-epcfull-ic {
+  box-sizing: border-box;
   width: 34px;
   height: 34px;
+  padding: 5px;
   border-radius: 10px;
-  display: grid;
-  place-items: center;
   background: #eafaf6;
-  font-size: 16px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .rd-epcfull-head-text {
@@ -1866,9 +1913,9 @@ function formatNum(n: number): string {
   border-bottom: none;
 }
 .rd-epcfull-line-ic {
-  width: 26px;
-  text-align: center;
-  font-size: 15px;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .rd-epcfull-line-body {
@@ -1908,7 +1955,17 @@ function formatNum(n: number): string {
   box-shadow: 0 10px 26px rgba(35, 29, 69, 0.24);
   animation: rd-fadeSlideUp 0.45s 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.rd-street-eyebrow img,
+.rd-env-eyebrow img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .rd-street-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2240,6 +2297,9 @@ function formatNum(n: number): string {
   padding: 13px 14px;
 }
 .rd-env-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 9px;
   font-weight: 800;
   color: #007e78;
@@ -2422,16 +2482,14 @@ function formatNum(n: number): string {
 }
 /* Icon now sits in a rounded 36x36 tile, prototype-exact. */
 .rd-intent-icon {
+  box-sizing: border-box;
   width: 36px;
   height: 36px;
+  padding: 5px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
   flex-shrink: 0;
-  font-size: 18px;
-  line-height: 1;
 }
 .rd-intent-opt.outline .rd-intent-icon {
   background: #f2faf8;

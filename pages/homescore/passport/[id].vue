@@ -18,6 +18,8 @@
         </div>
       </div>
 
+      <div class="pb-cols">
+        <div class="pb-main">
       <!-- ── Hero: the two scores + what moves them ───────────────── -->
       <section class="pb-hero anim-1">
         <div class="pb-hero-top">
@@ -159,6 +161,9 @@
         Professional bookings link to your Passport once claimed.
       </p>
 
+        </div><!-- /pb-main -->
+
+        <aside class="pb-side">
       <!-- ── Claim / open CTA ─────────────────────────────
            Same card either way — only the copy and the destination change,
            so an already-claimed property never reads "claim to get started". -->
@@ -226,6 +231,8 @@
         Your data is secure. Your Passport is private and only shared when you
         choose.
       </p>
+        </aside>
+      </div><!-- /pb-cols -->
     </div>
 
     <SiteFooter />
@@ -406,9 +413,40 @@ function onBack() {
 }
 .pb-page {
   flex: 1 0 auto;
-  width: min(1080px, calc(100% - 48px));
+  width: min(1240px, calc(100% - 48px));
   margin: 0 auto;
   padding: 28px 0 64px;
+}
+
+/* Left column scrolls, right column sticks alongside it. */
+.pb-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+@media (min-width: 1000px) {
+  .pb-cols {
+    grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.85fr);
+    gap: 26px;
+  }
+  .pb-side {
+    position: sticky;
+    /* Clears the sticky site nav. */
+    top: 92px;
+  }
+  /* Too short to hold the panel — let it scroll with the page instead of
+     giving the column its own scrollbar. */
+  @media (max-height: 820px) {
+    .pb-side { position: static; }
+  }
+}
+.pb-main { min-width: 0; }
+.pb-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 
 .pb-nav-back {
@@ -668,8 +706,10 @@ function onBack() {
 }
 .pb-section-h :deep(svg) { width: 15px; height: 15px; color: #00a19a; }
 .pb-section-h span {
-  font-weight: 800;
+  font-weight: 700;
   color: #9c98ad;
+  letter-spacing: 0.2px;
+  text-transform: none;
 }
 /* Mint info strip under each locked section. */
 .pb-note {
@@ -690,45 +730,43 @@ function onBack() {
 /* ── Document tiles ────────────────────────────────────────────────── */
 .pb-doc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 14px;
 }
 .pb-doc-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 22px 18px 18px;
+  position: relative;
+  padding: 18px;
   background: #fff;
   border: 1px solid #e9e7f0;
   border-radius: 16px;
   box-shadow: 0 4px 14px rgba(35, 29, 69, 0.05);
 }
-.pb-doc-card.locked { background: #fbfbfd; }
-.pb-doc-ic { width: 56px; height: 56px; object-fit: contain; }
+.pb-doc-card.locked { background: #fff; }
+.pb-doc-ic { width: 46px; height: 46px; object-fit: contain; }
 .pb-doc-title {
   margin-top: 14px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
 }
 .pb-doc-sub {
   margin-top: 5px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 500;
   color: #6b6880;
   line-height: 1.5;
 }
-/* Locked badge sits under the copy, centred, like the reference. */
 .pb-doc-lock {
-  margin-top: 14px;
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #5b3795;
+  background: #f1eefa;
   display: grid;
   place-items: center;
 }
-.pb-doc-lock :deep(svg) { width: 15px; height: 15px; color: #fff; }
+.pb-doc-lock :deep(svg) { width: 14px; height: 14px; color: #5b3795; }
 
 /* ── Professional evidence ──────────────────────────── */
 .pb-pro-card {
@@ -772,8 +810,7 @@ function onBack() {
 
 /* ── Claim card ──────────────────────────────────── */
 .pb-claim {
-  margin-top: 26px;
-  padding: 30px;
+  padding: 26px 24px;
   text-align: center;
   background: #fff;
   border: 1px solid #e6e2f3;
@@ -808,14 +845,14 @@ function onBack() {
 }
 .pb-claim-title {
   margin: 16px 0 10px;
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.4px;
 }
 .pb-claim-lede {
   margin: 0 auto;
-  max-width: 60ch;
-  font-size: 13.5px;
+  max-width: 42ch;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.6;
   color: #6b6880;
@@ -823,9 +860,8 @@ function onBack() {
 /* Tick list — left aligned inside the centred card. */
 .pb-claim-points {
   list-style: none;
-  margin: 24px auto;
+  margin: 22px 0;
   padding: 0;
-  max-width: 460px;
   text-align: left;
 }
 .pb-claim-points li {
@@ -862,11 +898,10 @@ function onBack() {
 .pb-claim-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: min(560px, 100%);
-  margin: 0 auto;
-  padding: 15px 20px;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
   border: none;
   border-radius: 14px;
   background: #5b3795;
@@ -881,7 +916,7 @@ function onBack() {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
 }
 .pb-claim-btn-main :deep(svg) { width: 16px; height: 16px; }
@@ -908,17 +943,22 @@ function onBack() {
 }
 
 /* Privacy reassurance under the claim card. */
+/* Sits as its own card under the claim panel in the sidebar. */
 .pb-privacy {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #eceaf4;
+  border-radius: 14px;
   font-size: 12px;
   font-weight: 500;
-  color: #9c98ad;
+  line-height: 1.5;
+  color: #8b8799;
 }
-.pb-privacy :deep(svg) { width: 14px; height: 14px; color: #00a19a; flex: none; }
+.pb-privacy :deep(svg) { width: 15px; height: 15px; margin-top: 1px; color: #00a19a; flex: none; }
 
 /* ── Entry animations ──────────────────────────────────────────────── */
 .anim-1, .anim-2, .anim-3, .anim-4 {
