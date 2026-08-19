@@ -294,7 +294,7 @@
           <div class="modal-sheet" @click.stop>
             <div class="modal-grip" />
             <div class="modal-head">
-              <div class="modal-eyebrow">⚡ Shortcut</div>
+              <div class="modal-eyebrow"><img src="/homescore-icon/boostBolt.png" alt="" loading="lazy" />Shortcut</div>
               <div class="modal-title">Upload a bill — skip the quiz</div>
               <div class="modal-sub">
                 Your last gas or electricity bill tells us your real running
@@ -310,7 +310,7 @@
                 class="drop-zone-input"
                 @change="onFileSelected"
               />
-              <div class="drop-zone-icon">{{ selectedFile ? '✓' : '📄' }}</div>
+              <img class="drop-zone-icon" :src="selectedFile ? '/homescore-icon/clipboardChecklist.png' : '/homescore-icon/utilityBills.png'" alt="" loading="lazy" />
               <div class="drop-zone-title">
                 {{ selectedFile ? selectedFile.name : 'Drop your bill here' }}
               </div>
@@ -328,7 +328,7 @@
             </label>
 
             <div class="modal-read-row">
-              <div class="modal-read-icon">🔎</div>
+              <img class="modal-read-icon" src="/homescore-icon/magnifier.png" alt="" loading="lazy" />
               <div class="modal-read-text">
                 We'll read your <b>kWh</b>, <b>tariff</b> and <b>supplier</b> —
                 that's all. The bill itself isn't stored after extraction.
@@ -366,7 +366,7 @@
             </div>
 
             <div class="modal-privacy">
-              <span class="modal-privacy-icon">🔒</span>
+              <img class="modal-privacy-icon" src="/homescore-icon/padlock.png" alt="" loading="lazy" />
               <span>
                 Powered by Ofgem tariff data. We never sell your data and bills
                 are deleted after extraction.
@@ -1496,7 +1496,8 @@ watch(
 .need-answer-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
 
 .modal-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 16px; }
-.modal-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-dark); }
+.modal-eyebrow { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-dark); }
+.modal-eyebrow img { width: 18px; height: 18px; object-fit: contain; }
 .modal-title { margin-top: 6px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
 .modal-sub { margin-top: 8px; font-size: 14px; line-height: 1.55; color: var(--text-secondary); }
 .drop-zone {
@@ -1512,13 +1513,14 @@ watch(
 }
 .drop-zone:hover, .drop-zone.has-file { border-color: var(--accent); background: var(--accent-paler); }
 .drop-zone-input { display: none; }
-.drop-zone-icon { font-size: 30px; }
+.drop-zone-icon { display: block; width: 42px; height: 42px; object-fit: contain; margin: 0 auto; }
 .drop-zone-title { margin-top: 8px; font-size: 15px; font-weight: 700; color: var(--text); }
 .drop-zone-sub { margin-top: 4px; font-size: 13px; color: var(--text-secondary); }
 .drop-zone-tap { color: var(--accent-dark); font-weight: 700; }
 .drop-zone-formats { margin-top: 8px; font-size: 11.5px; color: var(--text-faint); }
 .modal-read-row { display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #f4f5f9; font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); }
-.modal-read-icon { flex-shrink: 0; }
+.modal-read-icon { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
+.modal-privacy-icon { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
 .modal-suppliers { margin-top: 16px; }
 .modal-suppliers-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); }
 .modal-supplier-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
