@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="pps-page">
     <!-- Loading -->
     <div v-if="pageLoading" class="pps-loading-state">
@@ -102,7 +102,8 @@
                 >{{ exploreTiles.length }} live data sources</span
               >
               <span v-if="floodBadgeLabel" class="pps-herocard-pill"
-                >💧 {{ floodBadgeLabel }}</span
+                ><svg class="pps-herocard-pill-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.4 6 10.4A6 6 0 0 1 6 13.4C6 9.4 12 3 12 3Z" /></svg>
+                {{ floodBadgeLabel }}</span
               >
             </div>
 
@@ -538,9 +539,9 @@
           @click="onProgressCtaClick"
         >
           <template v-if="isPassportOwnerOrCollab">
-            📋 Continue building your Passport →
+            <svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="4" rx="1.4"/><path d="M9 6H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3M8.5 12h7M8.5 16h5"/></svg> Continue building your Passport →
           </template>
-          <template v-else>🔔 Get notified when published →</template>
+          <template v-else><svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9ZM10.5 20a2 2 0 0 0 3 0"/></svg> Get notified when published →</template>
         </button>
         <div class="pps-passport-cta-sub">
           <template v-if="isPassportOwnerOrCollab">
@@ -706,11 +707,8 @@
             </div>
           </div>
           <div v-if="property.tenure" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="7.5" cy="15.5" r="4.5" />
-                <path d="m10.7 12.3 8.8-8.8M15 7l3 3M18 4l2 2" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/legal.jpeg" alt="Tenure" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">Tenure</div>
@@ -718,11 +716,8 @@
             </div>
           </div>
           <div v-if="property.yearBuilt" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="5" width="18" height="16" rx="2" />
-                <path d="M8 3v4M16 3v4M3 10h18" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/calendar.png" alt="Year built" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">Year built</div>
@@ -733,11 +728,8 @@
             v-if="property.sqft || property.floorAreaSqm"
             class="pps-detail-tile"
           >
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2" />
-                <path d="M4 9h5V4" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/areaSqft.png" alt="Floor area" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">Floor area</div>
@@ -774,11 +766,8 @@
           </div>
           <!-- Title number tile (restored) -->
           <div v-if="property.titleNumber" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z" />
-                <path d="M14 3v5h5" />
-              </svg>
+            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
+              <img src="/property-cards/title.jpeg" alt="Title number" loading="lazy" />
             </span>
             <div class="pps-detail-tile-body">
               <div class="pps-detail-label">Title number</div>
@@ -937,8 +926,31 @@
         class="pps-sheet-overlay"
         @click.self="closeSheet"
       >
-        <div class="pps-sheet" :class="{ 'pps-sheet--tall': isTallSheet }">
+        <div
+          ref="sheetEl"
+          class="pps-sheet"
+          :class="{ 'pps-sheet--tall': isTallSheet }"
+          role="dialog"
+          aria-modal="true"
+          tabindex="-1"
+        >
           <div class="pps-sheet-handle" />
+
+          <!-- Always-reachable close. Sticky (not absolute) so it stays put
+               while a long sheet scrolls — several sheets are tall enough
+               that the "Close" button at the bottom was off-screen. -->
+          <div class="pps-sheet-closebar">
+            <button
+              type="button"
+              class="pps-sheet-x"
+              aria-label="Close"
+              @click="closeSheet"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
           <!-- ── History (Land Registry) ─────────────────────────── -->
           <template v-if="activeSheet === 'history'">
@@ -1413,7 +1425,7 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >🎓 {{ s.name
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 10 5-10 5L2 8l10-5Z"/><path d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5"/></svg> {{ s.name
                     }}<span
                       v-if="s.phase && s.phase !== 'School'"
                       class="pps-ds-phase-pill"
@@ -1430,7 +1442,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">🎓</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/schools.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 No schools data on file
               </div>
@@ -1470,7 +1482,7 @@
                   color: #1a1535;
                 "
               >
-                🚂 {{ enrichmentTrains[0].distanceKm.toFixed(1) }} km station
+                <svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="3"/><path d="M4 11h16M8 20l-2 2M16 20l2 2M7 19h10"/><circle cx="8.5" cy="13.5" r=".6" fill="currentColor"/><circle cx="15.5" cy="13.5" r=".6" fill="currentColor"/></svg> {{ enrichmentTrains[0].distanceKm.toFixed(1) }} km station
               </div>
               <div
                 v-if="enrichmentBuses[0]"
@@ -1483,7 +1495,7 @@
                   color: #1a1535;
                 "
               >
-                🚌 {{ enrichmentBuses[0].distanceKm.toFixed(2) }} km bus
+                <svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="3"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".6" fill="currentColor"/><circle cx="16.5" cy="14" r=".6" fill="currentColor"/></svg> {{ enrichmentBuses[0].distanceKm.toFixed(2) }} km bus
               </div>
               <div
                 v-if="enrichmentAirports[0]"
@@ -1496,7 +1508,7 @@
                   color: #1a1535;
                 "
               >
-                ✈️ {{ enrichmentAirports[0].distanceKm.toFixed(0) }} km airport
+                <svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.8 16 14l4-4a2.1 2.1 0 1 0-3-3l-4 4-5.8-1.8a1 1 0 0 0-1 1.7l4.6 3-2.3 2.3-2.2-.6a1 1 0 0 0-1 1.6l2.1 2.1a1 1 0 0 0 1.6-.2l.6-2.2 2.3-2.3 3 4.6a1 1 0 0 0 1.7-1Z"/></svg> {{ enrichmentAirports[0].distanceKm.toFixed(0) }} km airport
               </div>
             </div>
 
@@ -1508,7 +1520,7 @@
                   :key="t.name + t.distanceKm"
                   class="pps-ds-kv"
                 >
-                  <span class="pps-ds-k">🚂 {{ t.name }}</span>
+                  <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="3"/><path d="M4 11h16M8 20l-2 2M16 20l2 2M7 19h10"/><circle cx="8.5" cy="13.5" r=".6" fill="currentColor"/><circle cx="15.5" cy="13.5" r=".6" fill="currentColor"/></svg> {{ t.name }}</span>
                   <span class="pps-ds-v"
                     >{{ t.distanceKm.toFixed(1) }} km<template
                       v-if="t.operator"
@@ -1531,7 +1543,7 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >🚌 {{ b.name || 'Bus Stop'
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="3"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".6" fill="currentColor"/><circle cx="16.5" cy="14" r=".6" fill="currentColor"/></svg> {{ b.name || 'Bus Stop'
                     }}<template v-if="b.ref"> ({{ b.ref }})</template></span
                   >
                   <span class="pps-ds-v">{{ b.distanceKm.toFixed(2) }} km</span>
@@ -1550,7 +1562,7 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >✈️ {{ a.name
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.8 16 14l4-4a2.1 2.1 0 1 0-3-3l-4 4-5.8-1.8a1 1 0 0 0-1 1.7l4.6 3-2.3 2.3-2.2-.6a1 1 0 0 0-1 1.6l2.1 2.1a1 1 0 0 0 1.6-.2l.6-2.2 2.3-2.3 3 4.6a1 1 0 0 0 1.7-1Z"/></svg> {{ a.name
                     }}<template v-if="a.iata"> ({{ a.iata }})</template
                     ><span
                       v-if="a.isMajor"
@@ -1608,7 +1620,7 @@
                   :key="t.name + t.distanceKm"
                   class="pps-ds-kv"
                 >
-                  <span class="pps-ds-k">🚂 {{ t.name }}</span>
+                  <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="3"/><path d="M4 11h16M8 20l-2 2M16 20l2 2M7 19h10"/><circle cx="8.5" cy="13.5" r=".6" fill="currentColor"/><circle cx="15.5" cy="13.5" r=".6" fill="currentColor"/></svg> {{ t.name }}</span>
                   <span class="pps-ds-v"
                     >{{ t.distanceKm.toFixed(1) }} km<template
                       v-if="t.operator"
@@ -1671,7 +1683,7 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >🚌 {{ b.name || 'Bus Stop'
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="3"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".6" fill="currentColor"/><circle cx="16.5" cy="14" r=".6" fill="currentColor"/></svg> {{ b.name || 'Bus Stop'
                     }}<template v-if="b.ref"> ({{ b.ref }})</template></span
                   >
                   <span class="pps-ds-v">{{ b.distanceKm.toFixed(2) }} km</span>
@@ -1730,7 +1742,7 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >✈️ {{ a.name
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.8 16 14l4-4a2.1 2.1 0 1 0-3-3l-4 4-5.8-1.8a1 1 0 0 0-1 1.7l4.6 3-2.3 2.3-2.2-.6a1 1 0 0 0-1 1.6l2.1 2.1a1 1 0 0 0 1.6-.2l.6-2.2 2.3-2.3 3 4.6a1 1 0 0 0 1.7-1Z"/></svg> {{ a.name
                     }}<template v-if="a.iata"> ({{ a.iata }})</template
                     ><span
                       v-if="a.isMajor"
@@ -1792,7 +1804,7 @@
               loading="lazy"
             />
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">📍</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/locationAndMap.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">Map unavailable</div>
               <div class="pps-ds-placeholder-sub">
                 No coordinates on file for this property.
@@ -1807,7 +1819,7 @@
                   :key="p.name + p.distanceKm"
                   class="pps-ds-kv"
                 >
-                  <span class="pps-ds-k">🌳 {{ p.name }}</span>
+                  <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 6.5 11h3L5 17h14l-4.5-6h3L12 3ZM12 17v4"/></svg> {{ p.name }}</span>
                   <span class="pps-ds-v">{{ p.distanceKm.toFixed(2) }} km</span>
                 </div>
               </div>
@@ -1828,7 +1840,10 @@
                     :key="a.name + a.distanceKm"
                     class="pps-ds-kv"
                   >
-                    <span class="pps-ds-k">{{ a.icon }} {{ a.name }}</span>
+                    <span class="pps-ds-k"
+                      ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" v-html="amenityIcon(a.category)" />
+                      {{ a.name }}</span
+                    >
                     <span class="pps-ds-v"
                       >{{ Number(a.distanceKm).toFixed(2) }} km ·
                       {{ a.category }}</span
@@ -1898,7 +1913,7 @@
               </div>
             </div>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">💧</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/floodAndRisj.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">No flood risk on file</div>
               <div class="pps-ds-placeholder-sub">
                 We couldn't retrieve an EA flood-risk classification for this
@@ -1924,7 +1939,7 @@
                 <span class="pps-ds-v">{{ nearestWatercourse }}</span>
               </div>
               <div v-for="z in floodZonesList" :key="z.name" class="pps-ds-kv">
-                <span class="pps-ds-k">📍 {{ z.name }}</span>
+                <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> {{ z.name }}</span>
                 <span
                   class="pps-ds-v"
                   :class="floodBreakdownClass(z.severity)"
@@ -1962,7 +1977,7 @@
                 rel="noopener"
                 class="pps-ds-kv pps-ds-kv--link"
               >
-                <span class="pps-ds-k">☢️ Radon risk</span>
+                <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 10V3M12 14l-6 3.5M12 14l6 3.5"/><circle cx="12" cy="12" r="9"/></svg> Radon risk</span>
                 <span class="pps-ds-v pps-ds-v--muted">UKHSA lookup →</span>
               </a>
               <a
@@ -1971,7 +1986,7 @@
                 rel="noopener"
                 class="pps-ds-kv pps-ds-kv--link"
               >
-                <span class="pps-ds-k">🏚️ Subsidence / clay shrink-swell</span>
+                <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-6 7 6v12"/><path d="m11 21 1.5-5-2.5-1 2-4"/></svg> Subsidence / clay shrink-swell</span>
                 <span class="pps-ds-v pps-ds-v--muted">BGS lookup →</span>
               </a>
               <a
@@ -1980,7 +1995,7 @@
                 rel="noopener"
                 class="pps-ds-kv pps-ds-kv--link"
               >
-                <span class="pps-ds-k">🌬️ Air quality (NO₂ / PM2.5)</span>
+                <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h11a3 3 0 1 0-3-3M3 12h14a3 3 0 1 1-3 3M4 16h9a2.5 2.5 0 1 1-2.5 2.5"/></svg> Air quality (NO₂ / PM2.5)</span>
                 <span class="pps-ds-v pps-ds-v--muted">DEFRA UK-AIR →</span>
               </a>
               <a
@@ -1989,7 +2004,7 @@
                 rel="noopener"
                 class="pps-ds-kv pps-ds-kv--link"
               >
-                <span class="pps-ds-k">🪨 Ground stability</span>
+                <span class="pps-ds-k"><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18M6 17l3-5 3 3 2.5-4L21 17"/><path d="M3 20h18"/></svg> Ground stability</span>
                 <span class="pps-ds-v pps-ds-v--muted">BGS GeoSure →</span>
               </a>
             </div>
@@ -2032,7 +2047,8 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >{{ constraintIcon(c.category) }} {{ c.type }}</span
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" v-html="constraintIcon(c.category)" />
+                    {{ c.type }}</span
                   >
                   <span class="pps-ds-v">{{ c.name }}</span>
                 </div>
@@ -2078,7 +2094,7 @@
               "
               class="pps-ds-placeholder"
             >
-              <div class="pps-ds-placeholder-icon">📋</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/planning.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 No constraints or applications on file
               </div>
@@ -2103,6 +2119,13 @@
             <div class="pps-ds-attribution">
               Source: planning.data.gov.uk · MHCLG
             </div>
+            <button class="pps-sheet-cancel" @click="closeSheet">Close</button>
+          </template>
+
+          <!-- ── Local Land Charges (HM Land Registry) ─────────────── -->
+          <template v-else-if="activeSheet === 'llc'">
+            <!-- LlcChargesCard renders its own header; don't duplicate. -->
+            <LlcChargesCard v-if="propertyId" :property-id="propertyId" />
             <button class="pps-sheet-cancel" @click="closeSheet">Close</button>
           </template>
 
@@ -2363,26 +2386,13 @@
 
           <!-- ── Stamp Duty Calculator (live) ──────────────────────── -->
           <template v-else-if="activeSheet === 'stamp-duty'">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-                padding: 4px 0 16px;
-              "
-            >
-              <div
-                style="
-                  font-size: 17px;
-                  font-weight: 900;
-                  color: #231d45;
-                  letter-spacing: -0.3px;
-                "
-              >
-                Stamp Duty Calculator
-              </div>
-              <div style="font-size: 12px; color: #9c98ad; font-weight: 600">
-                England &amp; NI · 2026
+            <!-- Standard data-source header (was a bespoke inline-styled row
+                 with no icon — the only sheet on the page missing one). -->
+            <div class="pps-ds-header" style="background: #fce4ec">
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/stampDuty.jpeg" alt="" loading="lazy" /></span>
+              <div class="pps-ds-header-text">
+                <div class="pps-ds-header-title">Stamp Duty Calculator</div>
+                <div class="pps-ds-header-meta">England &amp; NI · 2026 rates</div>
               </div>
             </div>
             <div
@@ -2470,21 +2480,21 @@
                 :class="{ 'pps-sd-type-btn--active': sdType === 'standard' }"
                 @click="sdType = 'standard'"
               >
-                🏠 Standard
+                <svg class="pps-sd-type-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3zM9 21v-6h6v6"/></svg> Standard
               </button>
               <button
                 class="pps-sd-type-btn"
                 :class="{ 'pps-sd-type-btn--active': sdType === 'first' }"
                 @click="sdType = 'first'"
               >
-                🌱 First-time
+                <svg class="pps-sd-type-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8M12 13c0-3.3-2.7-6-6-6 0 3.3 2.7 6 6 6ZM12 13c0-3.9 3.1-7 7-7 0 3.9-3.1 7-7 7Z"/></svg> First-time
               </button>
               <button
                 class="pps-sd-type-btn"
                 :class="{ 'pps-sd-type-btn--active': sdType === 'additional' }"
                 @click="sdType = 'additional'"
               >
-                🏘️ Additional
+                <svg class="pps-sd-type-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21V11l6-4.5V21M2 21h20M14 21V9l6 4v8M4 21v-6h4"/></svg> Additional
               </button>
             </div>
             <div
@@ -2563,7 +2573,7 @@
                   class="pps-ds-kv"
                 >
                   <span class="pps-ds-k"
-                    >🏛️ {{ b.name || 'Unnamed site'
+                    ><svg class="pps-ds-rowic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M19 21V10M12 3 3 8h18l-9-5ZM9 21v-7M15 21v-7"/></svg> {{ b.name || 'Unnamed site'
                     }}<template v-if="b.location">
                       · {{ b.location }}</template
                     ></span
@@ -2577,7 +2587,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">🏛️</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/listedBuildings.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">
                 No heritage sites nearby
               </div>
@@ -2631,7 +2641,7 @@
               </div>
             </template>
             <div v-else class="pps-ds-placeholder">
-              <div class="pps-ds-placeholder-icon">🛡️</div>
+              <div class="pps-ds-placeholder-icon pps-ds-placeholder-icon--img"><img src="/property-cards/crime.jpeg" alt="" loading="lazy" /></div>
               <div class="pps-ds-placeholder-title">Crime data unavailable</div>
               <div class="pps-ds-placeholder-sub">
                 Couldn't load data.police.uk stats for this location.
@@ -2645,7 +2655,9 @@
 
           <!-- ── Watch this (Register interest) ────────────────────── -->
           <template v-else-if="activeSheet === 'watch'">
-            <div class="pps-sheet-icon">🔔</div>
+            <div class="pps-sheet-icon pps-sheet-icon--img">
+              <img src="/property-cards/watchThis.jpeg" alt="" loading="lazy" />
+            </div>
             <div class="pps-sheet-title">Watch this property</div>
             <div class="pps-sheet-sub">
               Save it to your list. We'll alert you if it comes to market, when
@@ -2728,7 +2740,9 @@
 
           <!-- ── Make Contact (Owner / Neighbour) ──────────────────── -->
           <template v-else-if="activeSheet === 'owner'">
-            <div class="pps-sheet-icon">💬</div>
+            <div class="pps-sheet-icon pps-sheet-icon--img">
+              <img src="/property-cards/askAQuestion.jpeg" alt="" loading="lazy" />
+            </div>
             <div class="pps-sheet-title">Make contact</div>
             <div class="pps-sheet-sub">
               Drop a note to the owner — whether you're a neighbour with a
@@ -2793,7 +2807,7 @@
             </div>
 
             <div class="pps-privacy-note">
-              <span style="font-size: 15px">🔒</span>
+              <svg class="pps-privacy-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
               Your details go only to the verified owner. We never share with
               third parties or agents without your consent.
             </div>
@@ -2857,7 +2871,7 @@
                   :key="f.title"
                   class="pps-psi-row"
                 >
-                  <div class="pps-psi-icon">📄</div>
+                  <div class="pps-psi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/></svg></div>
                   <div class="pps-psi-text">
                     <div class="pps-psi-name">{{ f.title }}</div>
                     <div class="pps-psi-meta">{{ f.sub }}</div>
@@ -2911,7 +2925,7 @@
                   :key="f.title"
                   class="pps-psi-row"
                 >
-                  <div class="pps-psi-icon">{{ f.verified ? '✅' : '⏳' }}</div>
+                  <div class="pps-psi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" v-html="f.verified ? PSI_CHECK : PSI_CLOCK" /></div>
                   <div class="pps-psi-text">
                     <div class="pps-psi-name">{{ f.title }}</div>
                     <div class="pps-psi-meta">{{ f.sub }}</div>
@@ -2924,7 +2938,7 @@
                 style="background: #00a19a"
                 @click="onProgressCtaClick"
               >
-                📋 Continue building your Passport →
+                <svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="4" rx="1.4"/><path d="M9 6H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3M8.5 12h7M8.5 16h5"/></svg> Continue building your Passport →
               </button>
               <button
                 v-else
@@ -2932,7 +2946,7 @@
                 style="background: #00a19a"
                 @click="onWatchClick"
               >
-                🔔 Get notified when published →
+                <svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9ZM10.5 20a2 2 0 0 0 3 0"/></svg> Get notified when published →
               </button>
             </template>
 
@@ -2956,7 +2970,7 @@
                   :key="f.title"
                   class="pps-psi-row"
                 >
-                  <div class="pps-psi-icon">📄</div>
+                  <div class="pps-psi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/></svg></div>
                   <div class="pps-psi-text">
                     <div class="pps-psi-name">{{ f.title }}</div>
                     <div class="pps-psi-meta">{{ f.sub }}</div>
@@ -3012,7 +3026,7 @@
                 permanently.
               </div>
               <div class="pps-explain-callout-foot">
-                🏡 The biggest financial investment anyone makes — and it's done
+                <svg class="pps-callout-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M12 17.5s-2.6-1.7-2.6-3.3a1.5 1.5 0 0 1 2.6-1 1.5 1.5 0 0 1 2.6 1c0 1.6-2.6 3.3-2.6 3.3Z"/></svg> The biggest financial investment anyone makes — and it's done
                 almost completely blind
               </div>
             </div>
@@ -3127,7 +3141,7 @@
                 the hard work is already done.
               </div>
               <div class="pps-explain-callout-foot">
-                🔔 Get notified the moment it publishes — be first in the door
+                <svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9ZM10.5 20a2 2 0 0 0 3 0"/></svg> Get notified the moment it publishes — be first in the door
               </div>
             </div>
 
@@ -3167,10 +3181,9 @@
                 class="pps-explain-checklist-item"
               >
                 <div
-                  class="pps-explain-checklist-icon"
-                  :style="{ background: item.bg }"
+                  class="pps-explain-checklist-icon pps-explain-checklist-icon--img"
                 >
-                  {{ item.icon }}
+                  <img :src="item.img" alt="" loading="lazy" />
                 </div>
                 <div class="pps-explain-checklist-text">
                   <div class="pps-explain-checklist-title">
@@ -3263,12 +3276,7 @@
             <div class="pps-explain-section-label">What's inside</div>
             <div class="pps-explain-checklist">
               <div class="pps-explain-checklist-item">
-                <div
-                  class="pps-explain-checklist-icon"
-                  style="background: #fff3e0"
-                >
-                  📋
-                </div>
+                <div class="pps-explain-checklist-icon pps-explain-checklist-icon--img"><img src="/property-cards/surveys.jpeg" alt="" loading="lazy" /></div>
                 <div class="pps-explain-checklist-text">
                   <div class="pps-explain-checklist-title">
                     TA6, TA7 &amp; TA10 forms
@@ -3280,12 +3288,7 @@
                 <div class="pps-explain-checklist-tick">✓</div>
               </div>
               <div class="pps-explain-checklist-item">
-                <div
-                  class="pps-explain-checklist-icon"
-                  style="background: #e6f7f6"
-                >
-                  🏛️
-                </div>
+                <div class="pps-explain-checklist-icon pps-explain-checklist-icon--img"><img src="/property-cards/title.jpeg" alt="" loading="lazy" /></div>
                 <div class="pps-explain-checklist-text">
                   <div class="pps-explain-checklist-title">
                     Land Registry Title &amp; Plan
@@ -3297,12 +3300,7 @@
                 <div class="pps-explain-checklist-tick">✓</div>
               </div>
               <div class="pps-explain-checklist-item">
-                <div
-                  class="pps-explain-checklist-icon"
-                  style="background: #e6f7f6"
-                >
-                  🔧
-                </div>
+                <div class="pps-explain-checklist-icon pps-explain-checklist-icon--img"><img src="/property-cards/energy.jpeg" alt="" loading="lazy" /></div>
                 <div class="pps-explain-checklist-text">
                   <div class="pps-explain-checklist-title">
                     Gas, Electrical &amp; EPC
@@ -3314,12 +3312,7 @@
                 <div class="pps-explain-checklist-tick">✓</div>
               </div>
               <div class="pps-explain-checklist-item">
-                <div
-                  class="pps-explain-checklist-icon"
-                  style="background: #f3e5f5"
-                >
-                  📅
-                </div>
+                <div class="pps-explain-checklist-icon pps-explain-checklist-icon--img"><img src="/property-cards/planning.jpeg" alt="" loading="lazy" /></div>
                 <div class="pps-explain-checklist-text">
                   <div class="pps-explain-checklist-title">
                     Planning History
@@ -3375,7 +3368,7 @@
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
-            <div class="unpub-icon">🪪</div>
+            <div class="unpub-icon unpub-icon--img"><img src="/property-cards/passportProgress.png" alt="" loading="lazy" /></div>
             <div class="unpub-eyebrow">
               <span style="color: #00a19a">●</span> Property Passport — In
               Progress
@@ -3386,7 +3379,7 @@
               full record is published.
             </p>
             <button class="unpub-cta" @click="openRegisterInterest">
-              🔔 Notify me when it's published
+              <svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9ZM10.5 20a2 2 0 0 0 3 0"/></svg> Notify me when it's published
             </button>
           </div>
         </div>
@@ -3407,6 +3400,7 @@ import BaseDrawer from '~/components/ui/BaseDrawer.vue'
 import ImageSlider from '~/components/ui/ImageSlider.vue'
 import Toast from '~/components/ui/Toast.vue'
 import ShareContent from '~/components/property/ShareContent.vue'
+import LlcChargesCard from '~/components/property/LlcChargesCard.vue'
 import { useAppToast } from '~/composables/useCustomToast'
 import { usePropertySearch } from '~/composables/usePropertySearch'
 import { usePassportClaim } from '~/composables/usePassportClaim'
@@ -3814,11 +3808,16 @@ const planningApplications = computed(() => {
     return db - da
   })
 })
+// SVG path bodies (rendered through v-html into a shared .pps-ds-rowic svg)
+// rather than emoji, so constraint rows match the rest of the sheet.
 function constraintIcon(category: string) {
-  if (category === 'heritage') return '🏛️'
-  if (category === 'environment') return '🌳'
-  if (category === 'development') return '🏗️'
-  return '📋'
+  if (category === 'heritage')
+    return '<path d="M3 21h18M5 21V10M19 21V10M12 3 3 8h18l-9-5ZM9 21v-7M15 21v-7"/>'
+  if (category === 'environment')
+    return '<path d="M12 3 6.5 11h3L5 17h14l-4.5-6h3L12 3ZM12 17v4"/>'
+  if (category === 'development')
+    return '<path d="M4 21h16M6 21V9l7-4v16M13 9h5v12M9 12h1M9 15h1M16 13h.5M16 17h.5"/>'
+  return '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/>'
 }
 
 // Risk breakdown helpers (real EA data)
@@ -4570,23 +4569,24 @@ const passportProgressPct = computed<number>(() => {
   return Math.round((passportProgressVerified.value / total) * 100)
 })
 const passportVerifiedItems = computed(() => {
-  const iconMap: Record<string, { icon: string; bg: string }> = {
-    'EPC Certificate': { icon: '⚡', bg: '#e6f7f6' },
-    'Land Registry Title': { icon: '🏛️', bg: '#e6f7f6' },
-    'Title Plan': { icon: '🗺️', bg: '#e6f7f6' },
-    'TA6 — Property Information': { icon: '📋', bg: '#fff3e0' },
-    'TA10 — Fittings & Contents': { icon: '🔧', bg: '#fff3e0' },
-    'Gas Safety Record': { icon: '🔥', bg: '#ffe0e0' },
-    'Electrical Certificate (EICR)': { icon: '⚡', bg: '#e6f7f6' },
-    'TA7 — Leasehold Information': { icon: '📜', bg: '#f3e5f5' },
+  // Illustrated artwork per document type (the same set the passport pages
+  // use, copied into /property-cards so this page stays self-contained).
+  const iconMap: Record<string, string> = {
+    'EPC Certificate': 'epcRating.png',
+    'Land Registry Title': 'titleNumber.png',
+    'Title Plan': 'titleDeedsAndPlan.png',
+    'TA6 — Property Information': 'transactionInformation.png',
+    'TA10 — Fittings & Contents': 'fixturesAndFittings.png',
+    'Gas Safety Record': 'gasSafetyCertificate.png',
+    'Electrical Certificate (EICR)': 'electricalSafety.png',
+    'TA7 — Leasehold Information': 'tenure.png',
   }
   return passportFeatures.value
     .filter((f) => f.verified)
     .map((f) => ({
       title: f.title,
       sub: f.sub,
-      icon: iconMap[f.title]?.icon ?? '📄',
-      bg: iconMap[f.title]?.bg ?? '#f9f9fb',
+      img: `/property-cards/${iconMap[f.title] ?? 'legal.jpeg'}`,
     }))
 })
 
@@ -4756,6 +4756,18 @@ const exploreTiles = computed(() => {
           : 'Applications on file',
     })
   }
+  // Local Land Charges — indicative HMLR check. The tile value + sub are
+  // static because the real outcome (charges vs not-migrated vs clean) is only
+  // known once the sheet has fetched; "HM Land Registry" tells the user the
+  // provenance before they tap.
+  tiles.push({
+    key: 'llc',
+    icon: '',
+    iconBg: '#F3EFFB',
+    title: 'Land charges',
+    value: 'Check LLC',
+    sub: 'HM Land Registry',
+  })
   // Council tax — prefer EPC-sourced band when DB column empty
   {
     const band =
@@ -4924,6 +4936,7 @@ const TILE_IMAGE: Record<string, string> = {
   map: '/property-cards/locationAndMap.jpeg',
   flood: '/property-cards/floodAndRisj.jpeg',
   planning: '/property-cards/planning.jpeg',
+  llc: '/property-cards/landCharges.jpeg',
   council: '/property-cards/councilTax.jpeg',
   broadband: '/property-cards/broadband.jpeg',
   'stamp-duty': '/property-cards/stampDuty.jpeg',
@@ -5117,6 +5130,7 @@ type SheetKey =
   | 'map'
   | 'flood'
   | 'planning'
+  | 'llc'
   | 'council'
   | 'broadband'
   | 'stamp-duty'
@@ -5129,6 +5143,7 @@ type SheetKey =
   | 'explain-progress'
   | 'explain-published'
 const activeSheet = ref<SheetKey | null>(null)
+const sheetEl = ref<HTMLElement | null>(null)
 
 function openSheet(k: SheetKey) {
   activeSheet.value = k
@@ -5136,6 +5151,49 @@ function openSheet(k: SheetKey) {
 function closeSheet() {
   activeSheet.value = null
 }
+
+// Passport-item row glyphs — verified vs still-pending. Kept as SVG path
+// bodies (fed through v-html) so they inherit the row's colour instead of
+// baking in an emoji's own palette.
+const PSI_CHECK =
+  '<circle cx="12" cy="12" r="9"/><path d="m8.5 12.2 2.4 2.4 4.6-4.8"/>'
+const PSI_CLOCK = '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.2 2"/>'
+
+// ── Sheet chrome: scroll lock + Escape ─────────────────────────────────────
+// Without this the page behind an open sheet kept scrolling under the
+// wheel/touch (and the sheet appeared to "stick" to a background that had
+// moved on). Lock <body> for as long as a sheet is up, compensating for the
+// scrollbar so the layout doesn't jump sideways when it disappears.
+// Mirrors BaseDrawer.lockScroll so the two never disagree about the
+// "unlocked" value; the scrollbar-gap padding is the one addition, and it
+// keeps the page from jolting sideways as the scrollbar is removed.
+function lockBodyScroll(lock: boolean) {
+  if (!import.meta.client || !document.body) return
+  const container = document.querySelector('.mobile-container') as HTMLElement | null
+  if (container) container.style.overflow = lock ? 'hidden' : ''
+  const gap = lock ? window.innerWidth - document.documentElement.clientWidth : 0
+  document.body.style.overflow = lock ? 'hidden' : ''
+  document.body.style.paddingRight = gap > 0 ? `${gap}px` : ''
+}
+
+watch(activeSheet, (s) => {
+  lockBodyScroll(!!s)
+  // Move focus into the dialog so Escape/tab land somewhere sensible and
+  // screen readers announce the sheet instead of staying on the page behind.
+  if (s) void nextTick(() => sheetEl.value?.focus?.())
+})
+
+function onSheetKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && activeSheet.value) {
+    e.stopPropagation()
+    closeSheet()
+  }
+}
+onMounted(() => window.addEventListener('keydown', onSheetKeydown))
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onSheetKeydown)
+  lockBodyScroll(false)
+})
 
 function onExploreTileClick(key: string) {
   // Every explore tile now opens its matching bottom sheet (prototype parity).
@@ -5150,6 +5208,7 @@ function onExploreTileClick(key: string) {
     map: 'map',
     flood: 'flood',
     planning: 'planning',
+    llc: 'llc',
     council: 'council',
     broadband: 'broadband',
     'stamp-duty': 'stamp-duty',
@@ -5448,6 +5507,7 @@ const TALL_SHEETS = new Set<SheetKey>([
   'map',
   'flood',
   'planning',
+  'llc',
   'stamp-duty',
   'passport',
   'explain-unclaimed',
@@ -5684,6 +5744,32 @@ const enrichmentParks = computed<any[]>(
 const enrichmentAmenities = computed<any[]>(
   () => enrichment.value?.nearby?.amenities ?? [],
 )
+// Amenity rows are keyed off the category the enrichment API sends. The API
+// also ships an emoji per row; we draw our own glyph instead so the list
+// matches the rest of the page and doesn't depend on platform emoji fonts.
+// Anything we don't recognise falls back to a map pin rather than being
+// dropped or guessed at.
+function amenityIcon(category: string): string {
+  const c = (category ?? '').toLowerCase()
+  if (/superm|grocer|shop|retail|conven/.test(c))
+    return '<path d="M4 8h16l-1.2 11.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 8ZM8.5 8V6a3.5 3.5 0 0 1 7 0v2"/>'
+  if (/pharm|health|doctor|gp|hospital|clinic|dentist/.test(c))
+    return '<path d="M12 7v10M7 12h10"/><rect x="3" y="3" width="18" height="18" rx="4"/>'
+  if (/pub|bar|restaur|cafe|coffee|food|takeaway/.test(c))
+    return '<path d="M6 3h9l-.8 6.2A4.2 4.2 0 0 1 6 9.2V3ZM15 4h1.8a2.7 2.7 0 0 1 0 5.4H15M10.5 13.4V21M7 21h7"/>'
+  if (/gym|leisure|sport|fitness|pool/.test(c))
+    return '<path d="M4 9v6M20 9v6M7 6v12M17 6v12M7 12h10"/>'
+  if (/school|nursery|college|educat/.test(c))
+    return '<path d="m12 3 10 5-10 5L2 8l10-5Z"/><path d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5"/>'
+  if (/park|green|garden|recreation/.test(c))
+    return '<path d="M12 3 6.5 11h3L5 17h14l-4.5-6h3L12 3ZM12 17v4"/>'
+  if (/bank|atm|post|financ/.test(c))
+    return '<path d="M3 21h18M4 10h16M5 10V8l7-4 7 4v2M6 10v11M10 10v11M14 10v11M18 10v11"/>'
+  if (/petrol|fuel|charg|garage/.test(c))
+    return '<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h13M7 8h4M16 8l3 2.5V17a2 2 0 0 1-4 0v-3"/>'
+  return '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'
+}
+
 // Group amenities by category, then pick the nearest 1-2 of each for the list
 const amenitiesByCategory = computed<Record<string, any[]>>(() => {
   const groups: Record<string, any[]> = {}
@@ -5838,10 +5924,24 @@ async function initMap() {
   })
   L.marker([lat, lng], { icon: markerIcon }).addTo(map)
 
-  function makeDivIcon(color: string, emoji: string) {
+  // Map-pin glyphs. `path` is an SVG path body drawn in white on the pin's
+  // colour disc — emoji rendered at three different sizes across platforms
+  // and clipped inside the 30px circle on Windows.
+  const POI_GLYPH: Record<string, string> = {
+    school:
+      '<path d="m12 3 10 5-10 5L2 8l10-5Z"/><path d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5"/>',
+    train:
+      '<rect x="4" y="3" width="16" height="13" rx="3"/><path d="M4 11h16M8 20l-2 2M16 20l2 2M7 19h10"/>',
+    bus: '<rect x="3" y="4" width="18" height="13" rx="3"/><path d="M3 11h18M7 17v2M17 17v2"/>',
+    park: '<path d="M12 3 6.5 11h3L5 17h14l-4.5-6h3L12 3ZM12 17v4"/>',
+    airport:
+      '<path d="M17.8 19.8 16 14l4-4a2.1 2.1 0 1 0-3-3l-4 4-5.8-1.8a1 1 0 0 0-1 1.7l4.6 3-2.3 2.3-2.2-.6a1 1 0 0 0-1 1.6l2.1 2.1a1 1 0 0 0 1.6-.2l.6-2.2 2.3-2.3 3 4.6a1 1 0 0 0 1.7-1Z"/>',
+  }
+  function makeDivIcon(color: string, glyph: string) {
+    const path = POI_GLYPH[glyph] ?? POI_GLYPH.park
     return L.divIcon({
       className: '',
-      html: `<div style="width:30px;height:30px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.3);font-size:15px;">${emoji}</div>`,
+      html: `<div style="width:30px;height:30px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.3);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg></div>`,
       iconSize: [30, 30],
       iconAnchor: [15, 15],
     })
@@ -5869,31 +5969,31 @@ async function initMap() {
     const n = enrichment.value?.nearby ?? {}
     for (const s of n.schools ?? []) {
       if (s.lat && s.lon)
-        L.marker([s.lat, s.lon], { icon: makeDivIcon('#3b82f6', '🎓') })
+        L.marker([s.lat, s.lon], { icon: makeDivIcon('#3b82f6', 'school') })
           .bindPopup(s.name)
           .addTo(map)
     }
     for (const t of n.trains ?? []) {
       if (t.lat && t.lon)
-        L.marker([t.lat, t.lon], { icon: makeDivIcon('#8b5cf6', '🚆') })
+        L.marker([t.lat, t.lon], { icon: makeDivIcon('#8b5cf6', 'train') })
           .bindPopup(t.name)
           .addTo(map)
     }
     for (const b of n.busStops ?? []) {
       if (b.lat && b.lon)
-        L.marker([b.lat, b.lon], { icon: makeDivIcon('#f59e0b', '🚌') })
+        L.marker([b.lat, b.lon], { icon: makeDivIcon('#f59e0b', 'bus') })
           .bindPopup(b.name)
           .addTo(map)
     }
     for (const p of n.parks ?? []) {
       if (p.lat && p.lon)
-        L.marker([p.lat, p.lon], { icon: makeDivIcon('#00a19a', '🌳') })
+        L.marker([p.lat, p.lon], { icon: makeDivIcon('#00a19a', 'park') })
           .bindPopup(p.name)
           .addTo(map)
     }
     for (const a of n.airports ?? []) {
       if (a.lat && a.lon)
-        L.marker([a.lat, a.lon], { icon: makeDivIcon('#ec4899', '✈️') })
+        L.marker([a.lat, a.lon], { icon: makeDivIcon('#ec4899', 'airport') })
           .bindPopup(a.name)
           .addTo(map)
     }
@@ -8406,6 +8506,9 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   justify-content: center;
   padding: 24px;
   overflow-y: auto;
+  /* Stop wheel/touch momentum from chaining through to the page behind the
+     sheet — that scroll-through is what made open sheets feel "stuck". */
+  overscroll-behavior: contain;
   animation: pps-overlay-fade 0.22s ease both;
 }
 @keyframes pps-overlay-fade {
@@ -8424,6 +8527,8 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   padding: 16px 20px 24px;
   max-height: min(88vh, 760px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  outline: none;
   box-shadow: 0 24px 60px rgba(15, 12, 38, 0.32);
   animation: pps-sheet-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   /* Slim, inset scrollbar so it doesn't collide with the rounded corners */
@@ -8493,10 +8598,136 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
     display: block;
   }
 }
+/* Sticky close affordance — zero-height so it floats over the sheet body and
+   follows the scroll instead of disappearing off the top of a long sheet. */
+.pps-sheet-closebar {
+  position: sticky;
+  /* Matches the sheet's own top padding so the button doesn't jump when it
+     goes from static to stuck. */
+  top: 12px;
+  z-index: 6;
+  height: 0;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.pps-sheet-x {
+  pointer-events: auto;
+  width: 32px;
+  height: 32px;
+  margin: -4px -4px 0 0;
+  border: 1px solid #ecebf3;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(6px);
+  color: #4a4665;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(35, 29, 69, 0.12);
+  transition: background 0.14s, color 0.14s;
+}
+.pps-sheet-x:hover {
+  background: #fff;
+  color: #231d45;
+}
+.pps-sheet-x svg {
+  width: 15px;
+  height: 15px;
+}
+/* ── Sheet glyph sizing ────────────────────────────────────────────────
+   The data-source sheets used emoji as row/label icons; these classes size
+   the inline SVGs that replaced them so they sit on the text baseline. */
+.pps-ds-rowic {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  vertical-align: -3px;
+  margin-right: 5px;
+  color: #00857f;
+}
+.pps-herocard-pill-ic {
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin-right: 3px;
+}
+.pps-sd-type-ic {
+  width: 15px;
+  height: 15px;
+  vertical-align: -3px;
+  margin-right: 5px;
+}
+/* Flex child of .pps-privacy-note — that rule supplies the gap, so this only
+   needs to hold its size and sit on the first line of copy. */
+.pps-privacy-ic {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.pps-cta-ic {
+  width: 17px;
+  height: 17px;
+  vertical-align: -4px;
+  margin-right: 7px;
+}
+.pps-callout-ic {
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
+  margin-right: 6px;
+}
+.pps-psi-icon svg {
+  width: 17px;
+  height: 17px;
+  color: #00857f;
+}
+/* Illustrated artwork inside the 30px tinted squares of the explain sheets —
+   drop the tint so the artwork's own plinth isn't fighting a coloured box.
+   Doubled class selectors: the base rules are declared further down the sheet,
+   so equal specificity would let them win on width/height. */
+.pps-explain-checklist-icon.pps-explain-checklist-icon--img {
+  background: transparent;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-size: 0;
+}
+.pps-explain-checklist-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.unpub-icon.unpub-icon--img {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 12px;
+  font-size: 0;
+}
+.unpub-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .pps-sheet-icon {
   font-size: 36px;
   text-align: center;
   margin: 4px 0 8px;
+}
+/* Illustrated artwork in place of the emoji sheet glyph. */
+.pps-sheet-icon--img {
+  width: 64px;
+  height: 64px;
+  margin: 4px auto 10px;
+  font-size: 0;
+}
+.pps-sheet-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .pps-sheet-title {
   font-size: 17px;
@@ -8552,7 +8783,8 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   align-items: center;
   gap: 14px;
   border-radius: 14px;
-  padding: 14px 16px;
+  /* Extra right padding keeps the title clear of the floating close button. */
+  padding: 14px 46px 14px 16px;
   margin-bottom: 18px;
   background: linear-gradient(135deg, rgba(0, 161, 154, 0.18) 0%, rgba(0, 161, 154, 0.05) 100%) !important;
 }
