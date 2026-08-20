@@ -138,26 +138,26 @@
         <div class="sp-tabs">
           <div class="sp-tab-group">
             <button type="button" class="sp-tab active">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+              <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/sections.png" alt="" loading="lazy" />
               Sections
             </button>
             <button type="button" class="sp-tab">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
+              <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/street.png" alt="" loading="lazy" />
               Street
             </button>
             <button type="button" class="sp-tab">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /></svg>
+              <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/buyer.png" alt="" loading="lazy" />
               Buyers
               <span class="sp-tab-badge">3</span>
             </button>
           </div>
           <div class="sp-tab-group">
             <button type="button" class="sp-tab active">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+              <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/list.png" alt="" loading="lazy" />
               List
             </button>
             <button type="button" class="sp-tab">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
+              <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/map.png" alt="" loading="lazy" />
               Map
             </button>
           </div>
@@ -178,11 +178,11 @@
             </div>
             <div class="sp-card-pills">
               <span class="sp-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05 12.25 20.2a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.67 3.67 0 1 1 5.18 5.18l-9.2 9.2a1.83 1.83 0 1 1-2.59-2.6l8.49-8.48" /></svg>
                 {{ s.docs }} docs
               </span>
               <span class="sp-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.3" /><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none" /></svg>
                 {{ s.questions }} questions
               </span>
             </div>
@@ -291,17 +291,17 @@
           <div class="sp-tabs lp-tabs">
             <div class="sp-tab-group">
               <button type="button" class="sp-tab sp-tab--navy active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+                <img class="sp-tab-ic" src="/homescore-icon/shield.png" alt="" loading="lazy" />
                 Compliance
                 <span class="sp-tab-badge">12</span>
               </button>
               <button type="button" class="sp-tab">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 10h18" /><circle cx="12" cy="15" r="1.6" /></svg>
+                <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/vault.png" alt="" loading="lazy" />
                 Vault
                 <span class="sp-tab-badge">11</span>
               </button>
               <button type="button" class="sp-tab">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-6h6v6" /></svg>
+                <img class="sp-tab-ic" src="/passport-seller-and-buyer-icon/tenancyAgreement.png" alt="" loading="lazy" />
                 Tenancy
               </button>
             </div>
@@ -371,9 +371,12 @@
         <template v-else>
           <!-- ── Unlocked banner ───────────────────────────────────── -->
           <div class="by-unlock">
-            <span class="by-unlock-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0" /></svg>
-            </span>
+            <img
+              class="by-unlock-ic"
+              src="/passport-seller-and-buyer-icon/padlock.png"
+              alt=""
+              loading="lazy"
+            />
             <span class="by-unlock-copy">
               <strong>You unlocked this passport</strong>
               <small>Read-only access · expires in 30 days · paid £49</small>
@@ -464,6 +467,7 @@
               :class="`by-dl--${dl.tone}`"
             >
               <div class="by-dl-copy">
+                <img class="by-dl-ic" :src="dl.icon" alt="" loading="lazy" />
                 <h4>{{ dl.title }}</h4>
                 <p>{{ dl.sub }}</p>
               </div>
@@ -587,7 +591,14 @@ const roles = [
   { key: 'landlord', label: 'Landlord', action: 'Share with Tenants' },
   { key: 'buyer', label: 'Buyer', action: 'Unlock full report' },
 ]
+const route = useRoute()
+const router = useRouter()
 const role = ref('seller')
+
+// Deep-link support: /passport/sample?sample=landlord mirrors the app's
+// /?sample=<role> links, so those URLs open on the right perspective.
+const requestedRole = String(route.query.sample ?? route.query.role ?? '')
+if (roles.some((r) => r.key === requestedRole)) role.value = requestedRole
 const activeRole = computed(
   () => roles.find((r) => r.key === role.value) || roles[0],
 )
@@ -670,7 +681,9 @@ onMounted(() => {
 })
 
 // Re-run both when the perspective changes (a fresh hero + card set render).
-watch(role, async () => {
+// Also mirror the choice into the URL so the view stays shareable.
+watch(role, async (r) => {
+  router.replace({ query: { ...route.query, sample: r } }).catch(() => {})
   runHeroAnim()
   await nextTick()
   setupReveal()
@@ -737,8 +750,8 @@ const landlordGroups = [
         pct: 68,
         tone: 'amber',
         foot: 'Action by 30 May',
-        iconClass: 'sp-card-ic--amber sp-card-ic--emoji',
-        icon: '🔥',
+        iconClass: 'sp-card-ic--img',
+        icon: '<img src="/passport-seller-and-buyer-icon/gasSafetyCertificate.png" alt="" />',
       },
       {
         title: 'Electrical Safety (EICR)',
@@ -747,8 +760,8 @@ const landlordGroups = [
         status: { label: 'Satisfactory', tone: 'ok' },
         pct: 100,
         tone: 'teal',
-        iconClass: 'sp-card-ic--green sp-card-ic--emoji',
-        icon: '⚡',
+        iconClass: 'sp-card-ic--img',
+        icon: '<img src="/passport-seller-and-buyer-icon/electricalSafety.png" alt="" />',
       },
     ],
   },
@@ -762,8 +775,8 @@ const landlordGroups = [
         status: { label: 'Active', tone: 'ok' },
         pct: 100,
         tone: 'teal',
-        iconClass: 'sp-card-ic--cream sp-card-ic--emoji',
-        icon: '📄',
+        iconClass: 'sp-card-ic--img',
+        icon: '<img src="/passport-seller-and-buyer-icon/tenancyAgreement.png" alt="" />',
       },
     ],
   },
@@ -777,8 +790,8 @@ const landlordGroups = [
         status: { label: 'Active', tone: 'ok' },
         pct: 100,
         tone: 'teal',
-        iconClass: 'sp-card-ic--red sp-card-ic--emoji',
-        icon: '🛡️',
+        iconClass: 'sp-card-ic--img',
+        icon: '<img src="/passport-seller-and-buyer-icon/landlordInsurance.png" alt="" />',
       },
     ],
   },
@@ -789,32 +802,32 @@ const buyerDetails = [
   {
     label: 'Property type',
     value: 'House',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>',
+    icon: '<img src="/passport-seller-and-buyer-icon/propertyType.png" alt="" />',
   },
   {
     label: 'Title number',
     value: 'WM854712',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+    icon: '<img src="/passport-seller-and-buyer-icon/titleNumber.png" alt="" />',
   },
   {
     label: 'Area sqft',
     value: '1,406 sqft',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 21"/><path d="M15 3h6v6"/><path d="M9 21H3v-6"/></svg>',
+    icon: '<img src="/passport-seller-and-buyer-icon/areaSqft.png" alt="" />',
   },
   {
     label: 'EPC rating',
     value: 'C',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9 13 2"/></svg>',
+    icon: '<img src="/passport-seller-and-buyer-icon/epcRating.png" alt="" />',
   },
   {
     label: 'Tenure',
     value: 'Freehold',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M6 21V9l6-4 6 4v12"/><path d="M9 21v-6h6v6"/><line x1="12" y1="5" x2="12" y2="3"/></svg>',
+    icon: '<img src="/passport-seller-and-buyer-icon/tenure.png" alt="" />',
   },
   {
     label: 'Year built',
     value: '1968',
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>',
+    icon: '<img src="/passport-seller-and-buyer-icon/yearBuilt.png" alt="" />',
   },
 ]
 
@@ -824,18 +837,21 @@ const buyerDownloads = [
     sub: 'All questions & answers — share with solicitors',
     cta: 'Download PDF',
     tone: 'teal',
+    icon: '/passport-seller-and-buyer-icon/clipboard.png',
   },
   {
     title: 'TA6 Property Information Form',
     sub: 'Law Society 6th edition — pre-filled with passport data',
     cta: 'Download TA6',
     tone: 'purple',
+    icon: '/passport-seller-and-buyer-icon/transactionInformation.png',
   },
   {
     title: 'TA10 Fixtures & Fittings Form',
     sub: "What stays, what goes — pre-filled from seller's passport",
     cta: 'Download TA10',
     tone: 'blue',
+    icon: '/passport-seller-and-buyer-icon/fixturesAndFittings.png',
   },
 ]
 
@@ -1444,6 +1460,12 @@ const buyerRecords = [
 .sp-tab svg {
   width: 16px;
   height: 16px;
+}
+.sp-tab-ic {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .sp-tab:hover {
@@ -2095,6 +2117,11 @@ const buyerRecords = [
   flex-shrink: 0;
 }
 
+.by-unlock-ic {
+  box-sizing: border-box;
+  padding: 8px;
+  object-fit: contain;
+}
 .by-unlock-ic svg {
   width: 22px;
   height: 22px;
@@ -2341,6 +2368,13 @@ const buyerRecords = [
   width: 19px;
   height: 19px;
 }
+/* Illustrated variant — the artwork brings its own colour, so it fills the
+   tile rather than sitting on the teal tint. */
+.by-detail-ic :deep(img) {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
 
 .by-detail-text {
   display: flex;
@@ -2396,6 +2430,13 @@ const buyerRecords = [
   border-color: rgba(45, 108, 223, 0.18);
 }
 
+.by-dl-ic {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
 .by-dl-copy h4 {
   margin: 0;
   font-size: 16px;

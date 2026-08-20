@@ -26,7 +26,9 @@
           <div class="pdf-header-name">{{ displayName }}</div>
           <div class="pdf-header-ref">Ref: {{ publicRef }}</div>
           <div class="pdf-header-pills">
-            <span class="pdf-h-pill">🪪 ID Verified</span>
+            <span class="pdf-h-pill"
+          ><img src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" />ID Verified</span
+        >
             <span v-if="fundsShort" class="pdf-h-pill">{{ fundsShort }} Funds</span>
             <span class="pdf-h-pill">{{ chainShort }}</span>
             <span v-if="tier === 'PREMIUM'" class="pdf-h-pill">★ Platinum</span>
@@ -425,6 +427,7 @@ function downloadPdf() {
   display: flex; flex-wrap: wrap; gap: 5px;
   margin-top: 10px;
 }
+.pdf-h-pill img { width: 12px; height: 12px; object-fit: contain; margin-right: 4px; vertical-align: -2px; }
 .pdf-h-pill {
   font-size: 9px; font-weight: 700;
   border: 1px solid rgba(255, 255, 255, 0.3);
