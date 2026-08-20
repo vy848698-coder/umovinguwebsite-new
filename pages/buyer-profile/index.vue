@@ -125,8 +125,16 @@
             <Icon name="heroicons:sparkles-solid" class="mp-nudge-ic-svg" />
           </div>
           <div class="mp-nudge-body">
-            <div class="mp-nudge-title">Complete your profile.</div>
-            <div class="mp-nudge-sub">Increase trust. Get better offers.</div>
+            <div class="mp-nudge-title">
+              {{ isPublished ? 'Your profile is live.' : 'Complete your profile.' }}
+            </div>
+            <div class="mp-nudge-sub">
+              {{
+                isPublished
+                  ? 'Open it to share, download or update.'
+                  : 'Increase trust. Get better offers.'
+              }}
+            </div>
           </div>
           <Icon name="heroicons:chevron-right" class="mp-nudge-arrow" />
         </button>
@@ -185,7 +193,13 @@
       <button class="cta-btn" @click="goToBuild">
         <span class="cta-btn-inner">
           <img src="/buyer-profile-icon/target.png" alt="" class="cta-btn-ic" loading="lazy" />
-          {{ hasProgress ? 'Continue my Profile' : 'Build my Buyer Profile' }}
+          {{
+            isPublished
+              ? 'View my Buyer Profile'
+              : hasProgress
+                ? 'Continue my Profile'
+                : 'Build my Buyer Profile'
+          }}
           <Icon name="heroicons:arrow-right" class="cta-btn-arrow" />
         </span>
       </button>
@@ -216,6 +230,10 @@ const { fetchProfile, profile } = useProfile()
 const existing = ref<any>(null)
 const loading = ref(true)
 const activityStats = ref({ publishedLast7d: 0, totalPublished: 0 })
+
+// A published profile has somewhere better to go than the build wizard —
+// the app routes those users straight to /buyer-profile/view.
+const isPublished = computed(() => !!existing.value?.published)
 
 const hasProgress = computed(() => {
   const p = existing.value
@@ -261,7 +279,8 @@ const sections = [
 const goBack = useGoBack('/explore')
 
 function goToBuild() {
-  router.push('/buyer-profile/build')
+  // Published profiles open the profile itself; everyone else builds.
+  router.push(isPublished.value ? '/buyer-profile/view' : '/buyer-profile/build')
 }
 
 onMounted(async () => {

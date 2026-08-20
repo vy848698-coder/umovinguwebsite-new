@@ -2,7 +2,7 @@
   <div class="ag-page">
     <!-- Celebration hero -->
     <div class="ag-hero">
-      <div class="ag-emoji">🔓</div>
+      <img class="ag-emoji" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
       <h2 class="ag-title">Access granted</h2>
       <p class="ag-sub">
         <template v-if="request">
@@ -32,7 +32,9 @@
         :key="row.scope"
         class="doc-row"
       >
-        <div class="doc-icon">{{ row.icon }}</div>
+        <div class="doc-icon">
+          <img class="doc-icon-img" :src="row.icon" alt="" loading="lazy" />
+        </div>
         <div class="doc-body">
           <div class="doc-title">{{ row.title }}</div>
           <div class="doc-meta">{{ row.meta }}</div>
@@ -94,32 +96,32 @@ const sharedRows = computed(() => {
   if (!request.value?.grant) return []
   const map: Record<string, { icon: string; title: string; meta: string }> = {
     identity: {
-      icon: '🪪',
+      icon: '/buyer-profile-icon/idCard.png',
       title: 'Identity',
       meta: 'DVS-certified · Onfido / Persona',
     },
     proof_of_deposit: {
-      icon: '🏦',
+      icon: '/buyer-profile-icon/bank.png',
       title: 'Proof of deposit',
       meta: 'Bank verified · Armalytix',
     },
     source_of_funds: {
-      icon: '🛡️',
+      icon: '/homescore-icon/shield.png',
       title: 'Source of funds',
       meta: 'AML clear · Armalytix',
     },
     affordability: {
-      icon: '📊',
+      icon: '/homescore-icon/growthChart.png',
       title: 'Affordability',
       meta: 'Score + stress test · Armalytix',
     },
     credit_file: {
-      icon: '📋',
+      icon: '/buyer-profile-icon/clipboard.png',
       title: 'Credit file',
       meta: 'Experian · soft search',
     },
     purchase_profile: {
-      icon: '🔗',
+      icon: '/buyer-profile-icon/chainLink.png',
       title: 'Purchase profile',
       meta: 'Chain, timeline, property type',
     },
@@ -178,7 +180,8 @@ function goShare() { router.push('/buyer-profile/share') }
   padding: 40px 0 0; text-align: center;
 }
 .ag-emoji {
-  font-size: 56px; line-height: 1; margin-bottom: 14px;
+  width: 64px; height: 64px; object-fit: contain;
+  margin-bottom: 14px;
   display: inline-block;
   animation: ag-pop 0.5s ease-out 0.05s both;
 }
@@ -270,8 +273,9 @@ function goShare() { router.push('/buyer-profile/share') }
   width: 32px; height: 32px; border-radius: 10px;
   background: #f2faf8;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; flex-shrink: 0;
+  flex-shrink: 0;
 }
+.doc-icon-img { width: 20px; height: 20px; object-fit: contain; }
 .doc-body { flex: 1; min-width: 0; }
 .doc-title {
   font-size: 13.5px; font-weight: 800; color: #231d45;

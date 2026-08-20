@@ -49,9 +49,11 @@
           </div>
           <div class="notif-pills">
             <div class="notif-pill notif-pill--teal">
-              ⏱ {{ expiresLabel }}
+              <Icon name="i-lucide-clock" />{{ expiresLabel }}
             </div>
-            <div class="notif-pill notif-pill--navy">🔒 Read-only access</div>
+            <div class="notif-pill notif-pill--navy">
+              <Icon name="i-lucide-lock" />Read-only access
+            </div>
             <div class="notif-pill notif-pill--teal">30 day max</div>
           </div>
         </div>
@@ -63,7 +65,7 @@
         class="ar-status-banner"
         :class="`ar-status-banner--${request.status.toLowerCase()}`"
       >
-        <span class="ar-status-emoji">{{ statusBannerEmoji }}</span>
+        <Icon class="ar-status-emoji" :name="statusBannerEmoji" />
         {{ statusBannerText }}
       </div>
 
@@ -214,10 +216,10 @@ const statusBadgeLabel = computed(() => {
 })
 const statusBannerEmoji = computed(() => {
   switch (request.value?.status) {
-    case 'APPROVED': return '🔓'
-    case 'DECLINED': return '🚫'
-    case 'EXPIRED': return '⏱'
-    default: return 'ℹ️'
+    case 'APPROVED': return 'i-lucide-lock-open'
+    case 'DECLINED': return 'i-lucide-ban'
+    case 'EXPIRED': return 'i-lucide-clock'
+    default: return 'i-lucide-info'
   }
 })
 const statusBannerText = computed(() => {
@@ -398,6 +400,7 @@ function goView() { router.push('/buyer-profile/view') }
   flex-wrap: wrap;
 }
 .notif-pill {
+  display: inline-flex; align-items: center; gap: 5px;
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 10px; font-weight: 700;

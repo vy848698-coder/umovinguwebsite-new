@@ -77,7 +77,13 @@
                 @click="idDocumentType = opt.value"
               >
                 <img v-if="opt.icon" :src="opt.icon" alt="" class="bp-option-illus" loading="lazy" />
-                <span v-else class="bp-option-emoji">{{ opt.emoji }}</span>
+                <img
+                  v-else
+                  class="bp-option-emoji"
+                  :src="opt.emoji"
+                  alt=""
+                  loading="lazy"
+                />
                 <div class="bp-option-body">
                   <div class="bp-option-title">{{ opt.title }}</div>
                   <div v-if="opt.sub" class="bp-option-sub">{{ opt.sub }}</div>
@@ -169,8 +175,14 @@
                 </div>
                 <div class="bp-id-pills">
                   <span class="bp-id-pill">🇬🇧 UK Passport</span>
-                  <span class="bp-id-pill">🪪 Driving Licence</span>
-                  <span class="bp-id-pill">🌍 EU Passport</span>
+                  <span class="bp-id-pill"
+                ><img src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" />Driving
+                Licence</span
+              >
+                  <span class="bp-id-pill"
+                ><img src="/homescore-icon/globe.png" alt="" loading="lazy" />EU
+                Passport</span
+              >
                 </div>
               </div>
             </div>
@@ -197,7 +209,7 @@
                 class="bp-task-extras"
               >
                 <div class="bp-selfie-box" @click.stop="runLiveness">
-                  <div class="bp-selfie-iconbig">🤳</div>
+                  <img class="bp-selfie-iconbig" src="/homescore-icon/camera.png" alt="" loading="lazy" />
                   <div class="bp-selfie-prompt">Tap to start face scan</div>
                   <div class="bp-selfie-meta">
                     Look at the camera and follow the on-screen prompts
@@ -359,7 +371,7 @@
           <div v-if="livenessRunning" class="bp-liveness">
             <div class="bp-liveness-circle">
               <div class="bp-liveness-ring" />
-              <div class="bp-liveness-face">🤳</div>
+              <img class="bp-liveness-face" src="/homescore-icon/camera.png" alt="" loading="lazy" />
             </div>
             <div class="bp-liveness-h1">{{ livenessTitle }}</div>
             <div class="bp-liveness-sub">Hold still — we'll capture automatically.</div>
@@ -373,7 +385,7 @@
         <!-- Header: title + helper + dynamic CTA -->
         <div class="bp-tier-header">
           <div class="bp-tier-head-left">
-            <div class="bp-step-ic bp-ic-purple">⭐</div>
+            <img class="bp-step-ic bp-ic-purple" src="/passport-seller-and-buyer-icon/trophy.png" alt="" loading="lazy" />
             <div>
               <div class="bp-step-title">Choose your tier</div>
               <div class="bp-step-body">
@@ -479,7 +491,12 @@
                 >
                 <div class="bp-funds-row">
                   <div class="bp-funds-ic">
-                    <span style="font-size: 20px">{{ opt.emoji }}</span>
+                    <img
+                      class="bp-option-emoji"
+                      :src="opt.emoji"
+                      alt=""
+                      loading="lazy"
+                    />
                   </div>
                   <div class="bp-funds-body">
                     <div class="bp-funds-title">{{ opt.title }}</div>
@@ -684,7 +701,7 @@
         <div class="bp-chain-layout">
           <div class="bp-chain-left">
             <div class="bp-step-hero">
-              <div class="bp-step-ic">🔗</div>
+              <img class="bp-step-ic" src="/buyer-profile-icon/chainLink.png" alt="" loading="lazy" />
               <div class="bp-step-title">Your chain position</div>
               <div class="bp-step-body">
                 Chain-free buyers are preferred by 78% of sellers.
@@ -693,7 +710,7 @@
 
             <!-- Amber context card -->
             <div class="bp-amber-card">
-              <div class="bp-amber-ic">💡</div>
+              <img class="bp-amber-ic" src="/homescore-icon/lightbulb.png" alt="" loading="lazy" />
               <div>
                 <div class="bp-amber-title">Chain-free buyers</div>
                 <div class="bp-amber-body">
@@ -747,7 +764,7 @@
 
             <!-- Tip -->
             <div class="bp-tip">
-              💡 Having a solicitor instructed tells sellers you're serious and
+              <Icon name="i-lucide-lightbulb" /> Having a solicitor instructed tells sellers you're serious and
               legally ready to proceed.
             </div>
           </div>
@@ -788,7 +805,7 @@
               class="bp-sol-card"
               @click="solicitorStatus = null"
             >
-              <div class="bp-sol-ic">🏛️</div>
+              <img class="bp-sol-ic" src="/buyer-profile-icon/scales.png" alt="" loading="lazy" />
               <div class="bp-sol-body">
                 <div class="bp-sol-name">Solicitor instructed</div>
                 <div class="bp-sol-sub">Ready to proceed — tap to change</div>
@@ -865,7 +882,7 @@
               :disabled="aiDrafting"
               @click="onAiDraft"
             >
-              <span class="bp-ai-pill">✨ AI</span>
+              <span class="bp-ai-pill"><Icon name="i-lucide-sparkles" />AI</span>
               <span class="bp-ai-text">
                 {{
                   aiDrafting
@@ -891,14 +908,14 @@
       <div v-if="step === 6" class="bp-step bp-complete">
         <!-- Celebration hero -->
         <div class="bp-complete-hero">
-          <div class="bp-complete-emoji">🎉</div>
+          <img class="bp-complete-emoji" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
           <h2 class="bp-complete-title">You're a Trusted Buyer!</h2>
           <p class="bp-complete-sub">Your passport is live.</p>
         </div>
 
         <!-- XP row -->
         <div class="bp-xp-row">
-          <div class="bp-xp-icon">⭐</div>
+          <img class="bp-xp-icon" src="/passport-seller-and-buyer-icon/trophy.png" alt="" loading="lazy" />
           <div class="bp-xp-body">
             <div class="bp-xp-title">Passport badge earned</div>
             <div class="bp-xp-sub">
@@ -923,7 +940,10 @@
               {{ completeDisplayName }}
             </div>
             <div class="bp-complete-pills">
-              <span class="bp-complete-pill">🪪 ID Verified</span>
+              <span class="bp-complete-pill"
+              ><img src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" />ID
+              Verified</span
+            >
               <span v-if="completeFundsLabel" class="bp-complete-pill">
                 {{ completeFundsLabel }}
               </span>
@@ -954,7 +974,9 @@
         <!-- Buttons -->
         <div class="bp-complete-actions">
           <button class="bp-next" @click="goToView">⤴ Share with agent now</button>
-          <button class="bp-cta-outline" @click="goToView">📄 Download as PDF</button>
+          <button class="bp-cta-outline" @click="goToView">
+              <img src="/buyer-profile-icon/pdf.png" alt="" loading="lazy" />Download as PDF
+            </button>
           <button class="bp-skip-ghost" @click="goToView">View my full Profile →</button>
         </div>
       </div>
@@ -1406,9 +1428,9 @@ const idTypeOptions = [
   { value: 'nationalId', icon: '/build/idBadge.png', title: 'National ID Card', sub: 'EU national ID' },
 ]
 const fundsOptions = [
-  { value: 'mortgage', emoji: '💳', title: 'Mortgage in principle', sub: 'Upload your DIP document' },
-  { value: 'cash', emoji: '💷', title: 'Cash buyer', sub: 'Bank statement showing available funds' },
-  { value: 'help', emoji: '🏛️', title: 'Help to Buy / Shared ownership', sub: 'Government scheme with mortgage' },
+  { value: 'mortgage', emoji: '/buyer-profile-icon/mortgageHouse.png', title: 'Mortgage in principle', sub: 'Upload your DIP document' },
+  { value: 'cash', emoji: '/buyer-profile-icon/moneyBag.png', title: 'Cash buyer', sub: 'Bank statement showing available funds' },
+  { value: 'help', emoji: '/buyer-profile-icon/scales.png', title: 'Help to Buy / Shared ownership', sub: 'Government scheme with mortgage' },
 ]
 const chainOptions = [
   {
@@ -3980,4 +4002,24 @@ onBeforeUnmount(() => {
     padding: 18px 14px 24px;
   }
 }
+/* ── Illustrated icon sizing (emoji → PNG swap) ─────────────── */
+.bp-id-pill img,
+.bp-complete-pill img {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+.bp-selfie-iconbig { box-sizing: border-box; padding: 12px; object-fit: contain; }
+.bp-liveness-face { box-sizing: border-box; padding: 22px; object-fit: contain; }
+.bp-step-ic { box-sizing: border-box; padding: 12px; object-fit: contain; }
+.bp-amber-ic { box-sizing: border-box; padding: 5px; object-fit: contain; }
+.bp-sol-ic { box-sizing: border-box; padding: 6px; object-fit: contain; }
+.bp-xp-icon { box-sizing: border-box; padding: 6px; object-fit: contain; }
+.bp-complete-emoji { width: 68px; height: 68px; object-fit: contain; }
+.bp-option-emoji { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+.bp-cta-outline img { width: 18px; height: 18px; object-fit: contain; vertical-align: -4px; margin-right: 7px; }
+.bp-ai-pill { display: inline-flex; align-items: center; gap: 4px; }
+.bp-tip { display: flex; align-items: flex-start; gap: 7px; }
 </style>

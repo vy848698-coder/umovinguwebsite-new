@@ -45,7 +45,7 @@
     <!-- Loading / empty -->
     <div v-if="loading" class="bp-loading">Loading your Profile…</div>
     <div v-else-if="!passport" class="bp-empty">
-      <div class="bp-empty-ic">📘</div>
+      <img class="bp-empty-ic" src="/buyer-profile-icon/notepad.png" alt="" loading="lazy" />
       <div class="bp-empty-title">No Profile yet</div>
       <div class="bp-empty-sub">
         Build your Buyer Profile to share with sellers and agents.
@@ -140,9 +140,26 @@
             </div>
           </div>
 
+          <!-- Permanence banner — the app's "carries forward" promise -->
+          <div class="persist-banner">
+            <img
+              class="persist-icon"
+              src="/buyer-profile-icon/chain.png"
+              alt=""
+              loading="lazy"
+            />
+            <div>
+              <div class="persist-title">Your profile carries forward</div>
+              <div class="persist-sub">
+                When you buy your next home, your verified identity and
+                documents come with you — no need to reverify.
+              </div>
+            </div>
+          </div>
+
           <!-- Reward banner -->
           <div class="reward-banner">
-            <div class="reward-icon">🎁</div>
+            <img class="reward-icon" src="/homescore-icon/gift.png" alt="" loading="lazy" />
             <div>
               <div class="reward-title">Your profile creation reward</div>
               <div class="reward-sub">
@@ -206,7 +223,7 @@
       <div class="tile-grid">
         <div class="tile">
           <div class="tile-head">
-            <div class="tile-icon"><Icon name="heroicons:identification" class="tile-icon-svg" /></div>
+            <div class="tile-icon"><img class="tile-icon-img" src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" /></div>
             <div class="tile-title">Identity</div>
           </div>
           <div class="tile-value">Verified</div>
@@ -215,7 +232,7 @@
         <div class="tile" :class="{ amber: !passport.fundsType }" @click="goEdit">
           <div class="tile-head">
             <div class="tile-icon" :class="{ 'amber-bg': !passport.fundsType }">
-              <Icon name="heroicons:banknotes" class="tile-icon-svg" :class="{ 'icon-amber': !passport.fundsType }" />
+              <img class="tile-icon-img" src="/buyer-profile-icon/moneyBag.png" alt="" loading="lazy" />
             </div>
             <div class="tile-title">Funds</div>
           </div>
@@ -228,7 +245,7 @@
         </div>
         <div class="tile">
           <div class="tile-head">
-            <div class="tile-icon"><Icon name="heroicons:link" class="tile-icon-svg" /></div>
+            <div class="tile-icon"><img class="tile-icon-img" src="/buyer-profile-icon/chainLink.png" alt="" loading="lazy" /></div>
             <div class="tile-title">Chain</div>
           </div>
           <div class="tile-value">{{ chainShortLabel }}</div>
@@ -237,7 +254,7 @@
         <div class="tile" :class="{ amber: !hasMortgageAip }" @click="goEdit">
           <div class="tile-head">
             <div class="tile-icon" :class="{ 'amber-bg': !hasMortgageAip }">
-              <Icon :name="hasMortgageAip ? 'heroicons:building-library' : 'heroicons:exclamation-triangle'" class="tile-icon-svg" :class="{ 'icon-amber': !hasMortgageAip }" />
+              <img class="tile-icon-img" src="/buyer-profile-icon/mortgageHouse.png" alt="" loading="lazy" />
             </div>
             <div class="tile-title">Mortgage</div>
           </div>
@@ -260,7 +277,7 @@
       </div>
       <div class="teal-card bp-docs-card">
         <div class="doc-row">
-          <div class="doc-icon"><Icon name="heroicons:identification" class="doc-icon-svg" /></div>
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Identity Verification</div>
             <div class="doc-meta">OneID / KYC Process · Last verified: {{ lastVerifiedLabel }}</div>
@@ -271,7 +288,7 @@
           </div>
         </div>
         <div class="doc-row">
-          <div class="doc-icon"><Icon name="heroicons:banknotes" class="doc-icon-svg" /></div>
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/moneyBag.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Proof of Funds</div>
             <div class="doc-meta">{{ passport.fundsType ? fundsMetaText : 'Banking or financial proof documents' }}</div>
@@ -283,7 +300,7 @@
           </div>
         </div>
         <div class="doc-row" @click="goEdit()">
-          <div class="doc-icon"><Icon name="heroicons:document-text" class="doc-icon-svg" /></div>
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/mortgageHouse.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Mortgage in Principle</div>
             <div class="doc-meta">
@@ -300,7 +317,7 @@
           </div>
         </div>
         <div class="doc-row" @click="goEdit()">
-          <div class="doc-icon"><Icon name="heroicons:link" class="doc-icon-svg" /></div>
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/chainLink.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Chain Position</div>
             <div class="doc-meta">Existing sale information · Verify to move</div>
@@ -311,7 +328,7 @@
           </div>
         </div>
         <div v-if="passport.solicitorStatus === 'yes'" class="doc-row">
-          <div class="doc-icon"><Icon name="heroicons:building-library" class="doc-icon-svg" /></div>
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/bank.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Solicitor</div>
             <div class="doc-meta">Solicitor instructed</div>
@@ -341,7 +358,7 @@
         </div>
         <div class="bp-share-grid">
           <button class="share-card" @click="goShare">
-            <div class="share-card-icon"><Icon name="heroicons:arrow-up-tray" class="share-icon-svg" /></div>
+            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/upload.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
               <div class="share-card-title">Share</div>
               <div class="share-card-sub">Send to agents or professionals</div>
@@ -349,7 +366,7 @@
             <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
           <button class="share-card" @click="goPdf">
-            <div class="share-card-icon"><Icon name="heroicons:document-arrow-down" class="share-icon-svg" /></div>
+            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/pdf.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
               <div class="share-card-title">Download PDF</div>
               <div class="share-card-sub">Get a linked profile document</div>
@@ -357,15 +374,23 @@
             <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
           <button class="share-card" @click="goSign">
-            <div class="share-card-icon"><Icon name="heroicons:link" class="share-icon-svg" /></div>
+            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/signature.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
-              <div class="share-card-title">Re-link profile</div>
-              <div class="share-card-sub">Expand to OneID, Equifax &amp; more</div>
+              <div class="share-card-title">
+                {{ passport.signedAt ? 'Re-sign profile' : 'Add digital signature' }}
+              </div>
+              <div class="share-card-sub">
+                {{
+                  passport.signedAt
+                    ? `Signed ${formatSignedAt(passport.signedAt)}`
+                    : 'Embed your signature in the PDF'
+                }}
+              </div>
             </div>
             <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
           <button class="share-card" @click="goEdit">
-            <div class="share-card-icon"><Icon name="heroicons:pencil-square" class="share-icon-svg" /></div>
+            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/editBox.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
               <div class="share-card-title">Edit Profile</div>
               <div class="share-card-sub">Update your information</div>
@@ -820,7 +845,19 @@ function goEdit() { router.push('/buyer-profile/build') }
   padding: 16px;
   display: flex; align-items: flex-start; gap: 12px;
 }
-.reward-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.reward-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+
+/* ── Permanence banner ── */
+.persist-banner {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f2faf8;
+  border: 1px solid #d7efea;
+}
+.persist-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+.persist-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
+.persist-sub { font-size: 11.5px; color: #6b6783; line-height: 1.5; }
 .reward-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
 .reward-sub { font-size: 11.5px; color: #6b6783; line-height: 1.5; }
 
@@ -887,6 +924,10 @@ function goEdit() { router.push('/buyer-profile/build') }
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+/* Illustrated icons sit inside the tinted chips at a fixed size. */
+.tile-icon-img { width: 26px; height: 26px; object-fit: contain; }
+.doc-icon-img { width: 24px; height: 24px; object-fit: contain; }
+.share-icon-img { width: 28px; height: 28px; object-fit: contain; }
 .tile-icon.amber-bg { background: #fbeed4; }
 .tile-icon-svg { width: 22px; height: 22px; color: #00a19a; }
 .tile-icon-svg.icon-amber { color: #d99a2b; }
