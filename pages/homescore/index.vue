@@ -148,6 +148,13 @@
               home should actually cost — and flags when something doesn't add up.
             </p>
           </div>
+          <img
+            class="hs-real-story-art"
+            src="/homescore-icon/wallet.png"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+          />
         </article>
 
         <aside class="hs-activity-card">
@@ -898,6 +905,20 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   padding-top: 14px;
 }
 
+.hs-real-story-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hs-real-story-art {
+  flex-shrink: 0;
+  align-self: center;
+  width: 116px;
+  height: auto;
+  margin-left: 6px;
+  filter: drop-shadow(0 12px 20px rgba(31, 61, 98, 0.14));
+}
+
 .hs-real-story-eyebrow {
   font-size: 11px;
   font-weight: 900;
@@ -1474,11 +1495,18 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 
   .hs-real-story {
+    flex-wrap: wrap;
     padding: 24px 22px 24px 26px;
   }
 
   .hs-real-story-quote {
     font-size: 19px;
+  }
+
+  .hs-real-story-art {
+    width: 86px;
+    margin: 4px 0 0 auto;
+    align-self: flex-end;
   }
 
   .hs-how {
