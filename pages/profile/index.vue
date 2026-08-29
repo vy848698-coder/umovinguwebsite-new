@@ -427,6 +427,14 @@ const profileItems = [
     image: '/profile%20new%20icon/savedProperties.jpeg',
     route: '/profile/saved-properties',
   },
+  {
+    title: 'Rewards',
+    description:
+      "Points you've earned completing your Passport, and how you've used them.",
+    icon: 'rewards',
+    image: '/profile%20new%20icon/rewards.png',
+    route: '/profile/rewards',
+  },
   // Billing & Payment History — hidden for now; route still exists at
   // /profile/subscription-plan if we re-introduce it later.
   // {
@@ -511,6 +519,10 @@ const logout = async () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
       localStorage.removeItem('redirectAfterLogin')
+      // Account-scoped cache — left behind, the next person to sign in on
+      // this browser inherits the previous user's buying/selling role until
+      // /profile/preferences happens to load and overwrite it.
+      localStorage.removeItem('umu_role')
     }
     showLogoutModal.value = false
     isLoggingOut.value = false
@@ -535,6 +547,10 @@ const deleteAccount = async () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
       localStorage.removeItem('redirectAfterLogin')
+      // Account-scoped cache — left behind, the next person to sign in on
+      // this browser inherits the previous user's buying/selling role until
+      // /profile/preferences happens to load and overwrite it.
+      localStorage.removeItem('umu_role')
       sessionStorage.clear()
     }
     showDeleteModal.value = false

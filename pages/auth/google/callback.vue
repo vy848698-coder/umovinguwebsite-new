@@ -36,11 +36,13 @@ onMounted(async () => {
     const redirectPath = next
       ? decodeURIComponent(next)
       : localStorage.getItem('redirectAfterLogin')
+    // replace: true — the callback URL carries a one-shot token and re-running
+    // it fails, so it must never be a back-button destination.
     if (redirectPath) {
       localStorage.removeItem('redirectAfterLogin')
-      await navigateTo(redirectPath)
+      await navigateTo(redirectPath, { replace: true })
     } else {
-      await navigateTo('/explore')
+      await navigateTo('/explore', { replace: true })
     }
   } catch (e) {
     console.error('Google callback error', e)

@@ -104,16 +104,10 @@
               class="pp-hero-btn pp-hero-btn--primary"
               :class="{ 'is-loading': publishLoading }"
               :disabled="publishLoading"
-              @click="togglePublish"
+              @click="onPublishClick"
             >
               <OPIcon name="publishPassport" class="pp-hero-btn-ic" />
-              {{
-                publishLoading
-                  ? '…'
-                  : isPublished
-                    ? 'Unpublish'
-                    : 'Publish Passport'
-              }}
+              {{ publishButtonLabel }}
             </button>
             <button
               class="pp-hero-btn pp-hero-btn--ghost"
@@ -162,6 +156,41 @@
           </div>
         </div>
       </div>
+
+      <!-- ── Publish-readiness band ──────────────────────────────────
+           Deliberately separate from the completion ring in the hero:
+           that ring tracks the whole passport, this tracks only the
+           disclosures a buyer pays to unlock, so it can reach 100% well
+           before the passport itself is fully filled in. ── -->
+      <button
+        v-if="readiness && !readiness.canPublish"
+        type="button"
+        class="pp-ready"
+        @click="openReadinessChecklist"
+      >
+        <span class="pp-ready-ic"><Icon name="i-lucide-rocket" /></span>
+        <span class="pp-ready-body">
+          <span class="pp-ready-head">
+            <span class="pp-ready-label">Ready to publish</span>
+            <span class="pp-ready-pct">{{ readiness.readinessPct }}%</span>
+          </span>
+          <span class="pp-ready-bar">
+            <span
+              class="pp-ready-fill"
+              :style="{ width: readiness.readinessPct + '%' }"
+            />
+          </span>
+          <span class="pp-ready-note">
+            {{ readiness.missingBlockers.length }}
+            required
+            {{ readiness.missingBlockers.length === 1 ? 'question' : 'questions' }}
+            left before you can publish — click to see them
+          </span>
+        </span>
+        <span class="pp-ready-chev">
+          <Icon name="i-lucide-chevron-right" />
+        </span>
+      </button>
 
       <!-- ── Collaborators row ── -->
       <div class="pp-collab-row" @click="openCollaboratorModal">
@@ -290,16 +319,18 @@
               </button>
             </div>
             <div class="step-info">
-              <h3 class="step-title">{{ step.title }}</h3>
+              <h3 class="step-title">{{ toSmartTitleCase(step.title) }}</h3>
               <p class="step-points">
                 {{ getStepPoints(step) }} points earned so far
               </p>
               <div class="step-counts">
                 <span class="step-count-pill step-count-docs">
+                  <Icon name="i-lucide-paperclip" />
                   {{ getStepDocs(step).done }}/{{ getStepDocs(step).total }}
                   docs
                 </span>
                 <span class="step-count-pill step-count-q">
+                  <Icon name="i-lucide-circle-help" />
                   {{ getStepQuestions(step).done }}/{{
                     getStepQuestions(step).total
                   }}
@@ -311,7 +342,8 @@
                 class="step-expiry"
                 @click.stop="navigateToStep(step.id)"
               >
-                ⚠ {{ getStepExpiringDoc(step).label }}
+                <Icon name="i-lucide-triangle-alert" />
+                {{ getStepExpiringDoc(step).label }}
               </div>
               <div class="step-progress">
                 <div class="progress-bar small">
@@ -423,7 +455,7 @@
             </div>
           </div>
           <div class="pp-street-tip">
-            <span class="pp-street-tip-ic">💡</span>
+            <span class="pp-street-tip-ic"><Icon name="i-lucide-lightbulb" /></span>
             <span
               ><strong>You're ahead of your street.</strong> Sellers with a
               passport typically accept offers
@@ -475,6 +507,11 @@
             v-for="buyer in matchedBuyers"
             :key="buyer.name"
             class="pp-buyer-card"
+            role="button"
+            tabindex="0"
+            @click="onBuyerSelect(buyer)"
+            @keydown.enter="onBuyerSelect(buyer)"
+            @keydown.space.prevent="onBuyerSelect(buyer)"
           >
             <div class="pp-buyer-avatar">{{ buyerInitial(buyer.name) }}</div>
             <div class="pp-buyer-info">
@@ -510,7 +547,7 @@
           </div>
         </div>
         <div v-else class="pp-empty">
-          <div style="font-size: 32px; margin-bottom: 8px">👥</div>
+          <div class="pp-empty-ic"><Icon name="i-lucide-users" /></div>
           <p>
             {{
               propertyId
@@ -525,13 +562,13 @@
       <!-- Vault tab — verified documents + per-section visibility -->
       <div v-if="activeTab === 'vault'" class="pp-tab-content">
         <div v-if="vaultLoading" class="pp-empty">
-          <div style="font-size: 28px; margin-bottom: 8px">🗄️</div>
+          <div class="pp-empty-ic"><Icon name="i-lucide-archive" /></div>
           <p>Loading your vault…</p>
         </div>
 
         <template v-else-if="vaultSections.length === 0">
           <div class="pp-empty">
-            <div style="font-size: 32px; margin-bottom: 8px">🗄️</div>
+            <div class="pp-empty-ic"><Icon name="i-lucide-archive" /></div>
             <p>Your vault is empty</p>
             <p style="font-size: 11.5px; margin-top: 6px; color: #94a3b8">
               As you complete sections, the verified documents are stored here —
@@ -588,12 +625,12 @@
                 class="vis-opt private"
                 :class="{ on: s.visibility === 'PRIVATE' }"
                 @click="setVisibility(s, 'PRIVATE')"
-              >🔒 Private</span>
+              ><Icon name="i-lucide-lock" /> Private</span>
               <span
                 class="vis-opt public"
                 :class="{ on: s.visibility !== 'PRIVATE' }"
                 @click="setVisibility(s, 'PUBLIC')"
-              >🌐 Public</span>
+              ><Icon name="i-lucide-globe" /> Public</span>
             </div>
           </div>
         </template>
@@ -612,7 +649,7 @@
         </div>
 
         <div v-if="timelineLoading" class="pp-empty">
-          <div style="font-size: 28px; margin-bottom: 8px">🔗</div>
+          <div class="pp-empty-ic"><Icon name="i-lucide-link" /></div>
           <p>Loading timeline…</p>
         </div>
 
@@ -648,7 +685,7 @@
               </div>
               <div class="tl-who">{{ e.actor }}</div>
               <div class="tl-stamp">
-                <span class="tl-stamp-lock">🔒</span>
+                <span class="tl-stamp-lock"><Icon name="i-lucide-lock" /></span>
                 <span class="tl-stamp-txt">{{ e.hash }}</span>
                 <span class="tl-stamp-verif">block-stamped</span>
               </div>
@@ -678,6 +715,40 @@
       @select="switchPassport"
     />
 
+    <Toast
+      v-if="toastState.isVisible"
+      :message="toastState.message"
+      :icon-emoji="toastState.iconEmoji"
+      @close="hideToast"
+    />
+
+    <!-- Buyer detail → buyer action. Two-step by design: the detail drawer
+         only emits `action`, we close it and open the action drawer for the
+         chosen kind, so one sheet is on screen at a time. -->
+    <BuyerDetailDrawer
+      :buyer="selectedBuyer"
+      @close="selectedBuyer = null"
+      @action="onBuyerAction"
+    />
+    <BuyerActionDrawer
+      :kind="buyerActionKind"
+      :buyer="buyerActionTarget"
+      :property-id="propertyId"
+      :passport-id="route.params.id"
+      @close="buyerActionKind = null"
+      @done="onBuyerActionDone"
+    />
+
+    <!-- Publish confirmation + readiness checklist -->
+    <PublishPassportDrawer
+      :open="publishDrawerOpen"
+      :submitting="publishLoading"
+      :readiness="readiness"
+      @close="publishDrawerOpen = false"
+      @publish="onPublishConfirm"
+      @go-to-question="onGoToChecklistItem"
+    />
+
     <!-- Guided tour — auto-runs once, replays from the "?" in the nav -->
     <OnboardingTour
       ref="passportTourRef"
@@ -698,6 +769,12 @@ import SegmentedSwitch from '@/components/core/SegmentedSwitch.vue'
 import AddCollaboratorModal from '@/components/modals/AddCollaboratorModal.vue'
 import YourPropertiesModal from '@/components/modals/YourPropertiesModal.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
+import PublishPassportDrawer from '~/components/passport/PublishPassportDrawer.vue'
+import BuyerDetailDrawer from '~/components/passport/BuyerDetailDrawer.vue'
+import BuyerActionDrawer from '~/components/passport/BuyerActionDrawer.vue'
+import Toast from '~/components/ui/Toast.vue'
+import { useAppToast } from '~/composables/useCustomToast'
+import { toSmartTitleCase } from '~/utils/titleCase'
 
 // Guided tour — auto-runs once per browser, replays from the "?" button.
 const passportTourRef = ref(null)
@@ -751,6 +828,11 @@ const passportAddress = ref({ line1: '', line2: '' })
 const passportTown = ref('')
 const isPublished = ref(false)
 const publishLoading = ref(false)
+// Publish-readiness — null until first loaded, so the drawer never flashes
+// its "not ready" gate before we actually know. Separate from
+// overallProgress: this tracks only the disclosures required before a buyer
+// can be charged for this passport.
+const readiness = ref(null)
 const propertyHomeScore = ref(null)
 
 // Resume state — populated by GET /passport/:id/resume on mount and after
@@ -818,6 +900,10 @@ onMounted(async () => {
 
   loadPassport(route.params.id)
   await loadCollaborators()
+  // Load readiness up front — the "Ready to publish" bar and the Publish
+  // button's label both key off it, so waiting for a click would mean the
+  // seller sees a plain "Publish Passport" they can't actually use yet.
+  fetchReadiness()
   try {
     const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -915,6 +1001,46 @@ async function fetchBuyerData(pid) {
   } catch {}
 }
 
+const { toastState, showToast, hideToast } = useAppToast()
+
+// ── Buyer detail + actions (invite / share / message) ──────────────────
+const selectedBuyer = ref(null)
+const buyerActionKind = ref(null)
+const buyerActionTarget = ref(null)
+
+function onBuyerSelect(buyer) {
+  selectedBuyer.value = buyer
+}
+
+function onBuyerAction(kind) {
+  if (!selectedBuyer.value?.userId) {
+    console.warn(
+      '[buyer-action] Selected buyer has no userId — cannot invite/share/message. ' +
+        'Backend /property/:id/matched-buyers must return { userId }.',
+    )
+    return
+  }
+  buyerActionTarget.value = { ...selectedBuyer.value }
+  buyerActionKind.value = kind
+  // Close the detail drawer so only one sheet is on screen at a time.
+  selectedBuyer.value = null
+}
+
+function onBuyerActionDone(kind, _result) {
+  buyerActionKind.value = null
+  buyerActionTarget.value = null
+  showToast({
+    message:
+      kind === 'invite'
+        ? 'Invite sent — the buyer will be notified.'
+        : kind === 'share'
+          ? 'Passport shared — the buyer can preview and unlock it.'
+          : 'Message sent — carry on in your inbox.',
+    iconEmoji: '✓',
+    duration: 3000,
+  })
+}
+
 function setTab(tab) {
   activeTab.value = tab
   if (
@@ -956,6 +1082,85 @@ function epcColor(rating) {
   return map[rating?.toUpperCase()] ?? '#8e8e93'
 }
 
+// ── Publish confirmation drawer + readiness gate ───────────────────────
+const publishDrawerOpen = ref(false)
+
+async function fetchReadiness() {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) return
+  try {
+    readiness.value = await $fetch(
+      `${config.public.apiBase}/passport/${route.params.id}/readiness`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+  } catch (e) {
+    console.error('Failed to load publish readiness', e)
+  }
+}
+
+function onGoToChecklistItem(item) {
+  publishDrawerOpen.value = false
+  // System-fact checks (title number / EPC) aren't tied to a section the
+  // seller answers directly — the EPC one has an upload fallback in
+  // Environmental, so send them there; title number has nothing to action.
+  if (!item?.taskId || !item?.sectionId) {
+    if (item?.question?.toLowerCase().includes('epc')) {
+      const envStep = steps.value.find((s) => s.key === 'environmental')
+      if (envStep) navigateToStep(envStep.id)
+    }
+    return
+  }
+  // Deep-links straight to the exact question (not just its section) —
+  // steps/tasks/[id].vue reads ?questionId= and jumps to it directly.
+  router.push({
+    path: `/passportview/steps/tasks/${item.taskId}`,
+    query: {
+      stepId: item.sectionId,
+      propertyId: route.params.id,
+      ...(item.questionId ? { questionId: item.questionId } : {}),
+    },
+  })
+}
+
+function onPublishClick() {
+  // Unpublishing stays a one-click action; publishing shows the explainer
+  // (or the outstanding-disclosures checklist) first.
+  if (isPublished.value) {
+    togglePublish()
+  } else {
+    publishDrawerOpen.value = true
+    fetchReadiness()
+  }
+}
+
+// The readiness bar itself is clickable — lets a seller see exactly what's
+// outstanding without first going through the Publish button.
+function openReadinessChecklist() {
+  publishDrawerOpen.value = true
+  fetchReadiness()
+}
+
+// Reflects readiness state right on the button so a seller isn't surprised
+// by the drawer — the plain "Publish Passport" label only shows once we know
+// they're ready (or haven't checked yet, to avoid a loading flash).
+const publishButtonLabel = computed(() => {
+  if (publishLoading.value) return '…'
+  if (isPublished.value) return 'Unpublish'
+  if (readiness.value && !readiness.value.canPublish) {
+    return `Publish — ${readiness.value.readinessPct}% ready`
+  }
+  return 'Publish Passport'
+})
+
+async function onPublishConfirm() {
+  await togglePublish()
+  publishDrawerOpen.value = false
+  // Refresh the timeline so the freshly-logged "Published" entry shows up.
+  if (activeTab.value === 'timeline') fetchTimeline()
+  else timelineEvents.value = [] // force re-fetch next time
+}
+
 async function togglePublish() {
   if (publishLoading.value) return
   const token =
@@ -969,8 +1174,16 @@ async function togglePublish() {
       { method: 'PUT', headers: { Authorization: `Bearer ${token}` } },
     )
     isPublished.value = !isPublished.value
+    fetchReadiness()
   } catch (e) {
     console.error('Failed to toggle publish state', e)
+    // The backend gates publish on readiness — a 403 for that carries the
+    // full result, so surface the checklist instead of failing silently.
+    const gate = e?.data?.readiness
+    if (gate) {
+      readiness.value = gate
+      publishDrawerOpen.value = true
+    }
   } finally {
     publishLoading.value = false
   }
@@ -1214,30 +1427,6 @@ async function setVisibility(section, visibility) {
     console.error('Failed to set visibility', e)
     section.visibility = prev
   }
-}
-
-function sectionIcon(key, _imageKey) {
-  const map = {
-    ownership_profile: '📖',
-    boundaries: '🏡',
-    disputes_complaints: '📋',
-    notices_proposals: '📨',
-    alterations: '📐',
-    guarantees_warranties: '🛡️',
-    insurance: '☂️',
-    environmental: '🌍',
-    rights: '🔑',
-    parking: '🚗',
-    other_charges: '💷',
-    occupiers: '👥',
-    services: '🔌',
-    energy_epc: '🌿',
-    transaction_info: '📑',
-    fixtures_fittings: '🛋️',
-    leasehold_info: '🏢',
-    title_deeds: '📜',
-  }
-  return map[key] || '📄'
 }
 
 // ── Timeline ───────────────────────────────────────────────────
@@ -3686,6 +3875,98 @@ function formatStamp(iso) {
 .pp-hero-issued--draft .pp-hero-issued-dot {
   background: #b6b1d6;
   box-shadow: 0 0 0 3px rgba(182, 177, 214, 0.16);
+}
+
+/* ── Publish-readiness band — amber on purpose, so it never reads as a
+      second copy of the teal completion ring in the hero above it. ─── */
+.pp-ready {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffaf1 0%, #fff7e8 100%);
+  border: 1px solid #fbe4bd;
+  box-shadow: 0 8px 22px rgba(180, 83, 9, 0.06);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.pp-ready:hover {
+  border-color: #f5cf94;
+  box-shadow: 0 10px 26px rgba(180, 83, 9, 0.11);
+}
+.pp-ready-ic {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: #b45309;
+  background: #fff1d9;
+  border: 1px solid #fbe4bd;
+}
+.pp-ready-body {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+.pp-ready-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.pp-ready-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #92400e;
+}
+.pp-ready-pct {
+  font-size: 15px;
+  font-weight: 800;
+  color: #b45309;
+}
+.pp-ready-bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: #fdead0;
+  overflow: hidden;
+}
+.pp-ready-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  transition: width 0.4s ease;
+}
+.pp-ready-note {
+  display: block;
+  margin-top: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #92400e;
+}
+.pp-ready-chev {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: #c98a3c;
+}
+
+.pp-empty-ic {
+  font-size: 30px;
+  line-height: 1;
+  margin-bottom: 10px;
+  color: #b6b1d6;
 }
 
 /* ── Collaborators row ─────────────────────────────────────────────── */

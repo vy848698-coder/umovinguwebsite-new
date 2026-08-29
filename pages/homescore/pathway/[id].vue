@@ -411,6 +411,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import InstallerFlowSheet from '~/components/homescore/InstallerFlowSheet.vue'
+import { refreshEpcIfMissing } from '~/utils/epcSelfHeal'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 // Landing-style navbar state.
@@ -441,7 +442,15 @@ onMounted(async () => {
     const res = await fetch(
       `${config.public.apiBase}/property/${propertyId.value}`,
     )
-    if (res.ok) property.value = await res.json()
+    // The whole page is built from this property's EPC recommendations, so a
+    // partially-failed enrichment would leave it permanently empty. Re-pull.
+    if (res.ok) {
+      property.value = await refreshEpcIfMissing(
+        config.public.apiBase as string,
+        propertyId.value,
+        await res.json(),
+      )
+    }
   } catch {
     /* keep null — page falls back to a friendly empty state */
   }

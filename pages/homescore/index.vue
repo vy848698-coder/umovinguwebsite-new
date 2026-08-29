@@ -160,12 +160,13 @@
         <aside class="hs-activity-card">
           <div class="hs-activity-head">
             <span class="hs-live-pulse" />
-            <strong>147</strong>
+            <strong v-if="lastHourLoading" class="hs-activity-skel" />
+            <strong v-else>{{ lastHourCount }}</strong>
           </div>
-          <p class="hs-activity-label">HomeScores run in the last hour</p>
-          <div class="hs-activity-chart" aria-hidden="true">
-            <span v-for="(h, i) in chartBars" :key="i" :style="{ height: h + '%' }" />
-          </div>
+          <p class="hs-activity-label">
+            {{ lastHourCount === 1 ? 'HomeScore' : 'HomeScores' }} run in the last hour
+          </p>
+          <p class="hs-activity-note">Live count, straight from the HomeScore engine.</p>
         </aside>
       </section>
 
@@ -230,7 +231,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import ScoreRing from '~/components/homescore/ScoreRing.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
@@ -240,8 +241,26 @@ const router = useRouter()
 const mobileNavOpen = ref(false)
 
 const heroMeta = ['Free', 'Instant', 'No account needed']
-const chartBars = [38, 52, 30, 60, 44, 72, 50, 66, 40, 84, 58, 96]
 const stepTones = ['teal', 'purple', 'amber']
+
+// ── Real "N HomeScores run in the last hour" count ──────────────────
+// Public endpoint (no auth) — same source the deployed app reads. The
+// number used to be hardcoded at 147 alongside a decorative bar chart
+// that looked like real activity data; both were invented.
+const config = useRuntimeConfig()
+const lastHourCount = ref(0)
+const lastHourLoading = ref(true)
+
+onMounted(async () => {
+  try {
+    const res: any = await $fetch(`${config.public.apiBase}/property/activity/last-hour`)
+    lastHourCount.value = res?.count ?? 0
+  } catch {
+    /* stays at 0 on failure */
+  } finally {
+    lastHourLoading.value = false
+  }
+})
 
 function onResultSelect(property: any) {
   // HomeScore detail is the page's main purpose — go there directly.
@@ -976,20 +995,21 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   line-height: 1.4;
 }
 
-.hs-activity-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 22px;
-  height: 96px;
+.hs-activity-skel {
+  display: inline-block;
+  width: 58px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(0, 161, 154, 0.14);
 }
 
-.hs-activity-chart span {
-  flex: 1;
-  border-radius: 4px 4px 2px 2px;
-  background: linear-gradient(180deg, #00b6ad, rgba(0, 161, 154, 0.25));
-  min-height: 6px;
+.hs-activity-note {
+  margin: auto 0 0;
+  padding-top: 22px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8b8799;
+  line-height: 1.5;
 }
 
 .hs-live-pulse {

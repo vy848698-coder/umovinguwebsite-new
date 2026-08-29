@@ -143,7 +143,7 @@
                 </div>
               </div>
               <div class="sheet-meta">
-                <div class="sheet-title">{{ drawerStep.title }}</div>
+                <div class="sheet-title">{{ toSmartTitleCase(drawerStep.title) }}</div>
                 <div class="sheet-sub">
                   {{ drawerStep.subtitle || drawerStep.description || '' }}
                 </div>
@@ -186,7 +186,7 @@
                 </template>
               </div>
               <div class="task-info">
-                <div class="task-title">{{ task.title }}</div>
+                <div class="task-title">{{ toSmartTitleCase(task.title) }}</div>
                 <p
                   v-if="task.description"
                   class="task-description"
@@ -224,6 +224,7 @@
 </template>
 
 <script setup>
+import { toSmartTitleCase } from '~/utils/titleCase'
 import { computed, ref, watch } from 'vue'
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import OPIcon from '~/components/ui/OPIcon.vue'

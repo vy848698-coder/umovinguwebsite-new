@@ -3349,6 +3349,7 @@
 import { ref, computed, onMounted, watch, nextTick, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHomeScore } from '~/composables/useHomeScore'
+import { refreshEpcIfMissing } from '~/utils/epcSelfHeal'
 import { usePassportClaim } from '~/composables/usePassportClaim'
 import { usePropertyActions } from '~/composables/usePropertyActions'
 import { useAppToast } from '~/composables/useCustomToast'
@@ -6479,7 +6480,14 @@ onMounted(async () => {
   try {
     const res = await fetch(`${config.public.apiBase}/property/${propertyId}`)
     if (res.ok) {
-      property.value = await res.json()
+      // A partially-failed enrichment leaves `epcRecommendations` empty and
+      // nothing re-triggers the pull — Boost / pathway / quiz would then show
+      // no improvements at all. Re-pull before anything reads them.
+      property.value = await refreshEpcIfMissing(
+        config.public.apiBase as string,
+        propertyId,
+        await res.json(),
+      )
       prefill(property.value)
       // Seed passport state from public endpoint (used for guests).
       const p: any = property.value

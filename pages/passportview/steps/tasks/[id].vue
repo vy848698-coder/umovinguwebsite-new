@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!showThankYou" class="tk-root">
+  <div v-if="!showSectionComplete" class="tk-root">
 
     <!-- ── Web nav ──────────────────────────────────────────────────── -->
     <header class="hsw-nav">
@@ -75,24 +75,6 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
             Play Video
           </button>
-        </div>
-
-        <div class="side-points">
-          <div class="pts-head">
-            <span class="pts-lock">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-            </span>
-            <strong class="pts-value">{{ currentQuestion?.points || 0 }} pts</strong>
-            <span class="pts-locked">Locked</span>
-          </div>
-          <strong class="pts-title">Next: Available for completing this question.</strong>
-          <p class="pts-desc">
-            A total of {{ currentQuestion?.points || 0 }} points are available in this
-            section. Complete tasks to unlock rewards and move to the next section.
-          </p>
         </div>
 
         <!-- Property photos upload — only for "What we love about our home?" task -->
@@ -195,6 +177,17 @@
             <span>{{ remainingQuestions }} remaining</span>
           </div>
 
+          <QuestionPointsCard
+            ref="pointsCardEl"
+            :balance="runningBalance"
+            :question-points="currentQuestion?.points || 0"
+            :question-number="currentQuestionIndex + 1"
+            :total-questions="totalQuestions"
+            :saved="justSaved"
+            :saved-points="lastSavedPoints"
+            :balance-before="balanceBeforeSave"
+          />
+
           <div class="question-section">
             <div v-if="currentQuestion" class="question-content">
               <div
@@ -285,11 +278,12 @@
 
   </div>
 
-  <div v-if="showThankYou">
-    <ThankYouModal
-      v-model="showThankYou"
-      :points="earnedPoints"
-      :step-name="currentStep?.title || 'this'"
+  <div v-if="showSectionComplete">
+    <SectionCompleteCelebration
+      v-model="showSectionComplete"
+      :section-bonus-points="sectionBonusPoints"
+      :total-points-before="totalPointsBefore"
+      :total-points-after="totalPointsAfter"
       @continue="handleContinue"
     />
   </div>
@@ -310,7 +304,8 @@
 
 <script setup>
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
-import ThankYouModal from '~/components/passport-view/ThankYouModal.vue'
+import QuestionPointsCard from '~/components/passport-view/QuestionPointsCard.vue'
+import SectionCompleteCelebration from '~/components/passport-view/SectionCompleteCelebration.vue'
 import RadioQuestion from '~/components/passport-view/questions/RadioQuestion.vue'
 import TextUploadQuestion from '~/components/passport-view/questions/TextUploadQuestion.vue'
 import CheckboxQuestion from '~/components/passport-view/questions/CheckboxQuestion.vue'
@@ -342,15 +337,77 @@ const {
   loadPassport,
   loadQuestions,
   loadSectionQuestions,
+  goToQuestion,
   saveAnswer: apiSaveAnswer,
   completeTask,
   moveToNextQuestion,
   moveToPreviousQuestion,
 } = usePassportRuntime()
 
-const showThankYou = ref(false)
-const earnedPoints = ref(0)
+const { checkForCelebrations, waitForCelebrations } = usePassportAchievement()
+
+const showSectionComplete = ref(false)
+const sectionBonusPoints = ref(0)
+const totalPointsBefore = ref(0)
+const totalPointsAfter = ref(0)
 const isSaving = ref(false)
+
+// Running points balance shown on the per-question points card, plus the
+// transient "Answer Saved" state it flashes into after each save. Live
+// from page load, updated optimistically on every answer.
+const runningBalance = ref(0)
+const justSaved = ref(false)
+const lastSavedPoints = ref(0)
+const balanceBeforeSave = ref(0)
+const pointsCardEl = ref(null)
+let justSavedTimeout = null
+
+// The points card sits above the question, which on long forms (multipart,
+// repeatable items) can be well below the fold — without this, saving while
+// scrolled down silently advances and the "Saved" animation plays entirely
+// off-screen.
+function scrollToPointsCard() {
+  const el = pointsCardEl.value?.$el
+  if (!el || typeof el.scrollIntoView !== 'function') return
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+function recordPointsEarned(pointsAwarded) {
+  // 0 means the backend's idempotency guard fired (question already
+  // answered before) — nothing new was earned, so don't flash "Saved".
+  if (!pointsAwarded) return
+  balanceBeforeSave.value = runningBalance.value
+  runningBalance.value += pointsAwarded
+  lastSavedPoints.value = pointsAwarded
+  justSaved.value = true
+  scrollToPointsCard()
+  if (justSavedTimeout) clearTimeout(justSavedTimeout)
+  // Long enough to read the SAVED! state and watch the balance count-up
+  // (1600ms, see QuestionPointsCard's startCountUp) finish with a beat to
+  // spare, rather than reverting to the next question mid-animation.
+  justSavedTimeout = setTimeout(() => {
+    justSaved.value = false
+  }, 3200)
+}
+
+async function loadRunningBalance() {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) return
+  try {
+    const cfg = useRuntimeConfig()
+    const res = await $fetch(`${cfg.public.apiBase}/rewards/balance`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    runningBalance.value = res?.balance ?? 0
+  } catch {
+    /* card just starts at 0 — non-critical */
+  }
+}
+
+onBeforeUnmount(() => {
+  if (justSavedTimeout) clearTimeout(justSavedTimeout)
+})
 const additionalInfoAnswer = ref(null)
 
 const showHelp = ref(false)
@@ -458,8 +515,17 @@ onMounted(async () => {
   // Load all questions from the entire section, starting at the clicked task
   await loadSectionQuestions(stepId, taskId)
 
+  // Deep-linked from the publish-readiness checklist ("N required questions
+  // left") — jump straight to that exact question instead of wherever
+  // loadSectionQuestions would otherwise land (first unanswered in this task).
+  if (route.query.questionId) {
+    goToQuestion(String(route.query.questionId))
+  }
+
   // Load property images for the home story task
   await loadPropertyImages()
+
+  await loadRunningBalance()
 
   // Track this task as the user's last visited so the "Pick up where you
   // left off" CTA on the passport view routes them straight back here.
@@ -531,11 +597,91 @@ watch(
   { immediate: true },
 )
 
-const calculateEarnedPoints = () => {
-  if (!currentStep.value) return 0
-  return currentStep.value.tasks
-    .filter((t) => t.completed)
-    .reduce((sum, t) => sum + (t.pointsReward || 0), 0)
+// Fires POST /tasks/:taskId/complete the moment every question belonging to
+// a task has been answered (checked against currentQuestions, which
+// apiSaveAnswer mutates in place before this runs). This endpoint was
+// previously never called at all — completeTask was imported but unused —
+// which meant the backend's section-completion bonus could never fire,
+// since that logic lives entirely inside completeTask(). Returns the API
+// response (sectionCompleted / sectionBonusPoints / balanceAfterBonus) or
+// null if this save didn't finish a task.
+async function maybeCompleteTask(questionId) {
+  const q = currentQuestions.value.find((q) => q.id === questionId)
+  const completedTaskId = q?._taskId
+  if (!completedTaskId) return null
+  const taskQuestions = currentQuestions.value.filter(
+    (q) => q._taskId === completedTaskId,
+  )
+  if (!taskQuestions.every((q) => q.completed)) return null
+  try {
+    const result = await completeTask(completedTaskId)
+    // The backend mints any newly-earned stamps fire-and-forget right after
+    // marking the task complete, so they may not have landed yet when this
+    // response comes back.
+    if (result?.sectionCompleted) {
+      // Stamp takes priority over section-complete — block here until any
+      // newly-earned stamp's celebration has played AND been acknowledged,
+      // so it never ends up appearing after section-complete (otherwise a
+      // race: whichever screen is ready first wins, usually section-complete
+      // since it doesn't wait on the backend's fire-and-forget evaluation).
+      await waitForCelebrations()
+    } else {
+      // Non-section-completing save: don't block navigation to the next
+      // question, but still check soon — without this a freshly-minted stamp
+      // would sit invisible until the app next backgrounds/foregrounds or
+      // reloads (checkForCelebrations' only other caller, in app.vue).
+      setTimeout(() => checkForCelebrations(), 800)
+    }
+    return result
+  } catch (err) {
+    console.error('Error completing task:', err)
+    return null
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function showSectionCompleteWithRealPoints(taskResult) {
+  sectionBonusPoints.value = taskResult?.sectionBonusPoints ?? 0
+  const after = taskResult?.balanceAfterBonus ?? runningBalance.value
+  totalPointsAfter.value = after
+  totalPointsBefore.value = Math.max(0, after - sectionBonusPoints.value)
+  runningBalance.value = after
+  // Let the last question's "SAVED!" card animation actually play before the
+  // full-screen section-complete takeover replaces this page — otherwise the
+  // celebration for the LAST question would never be seen.
+  await sleep(1400)
+  showSectionComplete.value = true
+}
+
+// Shared "what happens after a save resolves" — used by every save path
+// (plain submit, RADIO/NOTE/multipart auto-save) once it has its
+// pointsAwarded. Keeps task/section completion bookkeeping consistent
+// regardless of which path triggered the save.
+async function finishAfterSave(questionId) {
+  const taskResult = await maybeCompleteTask(questionId)
+  if (taskResult?.sectionCompleted) {
+    await showSectionCompleteWithRealPoints(taskResult)
+    return
+  }
+  const allCompleted = currentQuestions.value.every((q) => q.completed)
+  if (allCompleted) {
+    // Defensive fallback — every question answered but the backend didn't
+    // report sectionCompleted (e.g. completeTask failed); still let the user
+    // continue rather than getting stuck on this page.
+    router.push(
+      `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
+    )
+    return
+  }
+  const hasMoreQuestions = moveToNextQuestion()
+  if (!hasMoreQuestions) {
+    router.push(
+      `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
+    )
+  }
 }
 
 const totalQuestions = computed(() => currentQuestions.value.length || 0)
@@ -860,29 +1006,23 @@ const updateAnswer = async (answer) => {
 
   // Check if this is a NOTE question being completed
   if (currentQuestion.value.type?.toLowerCase() === 'note' && answer === true) {
+    const currentId = currentQuestion.value.id
+    // Section completion is driven by TASK status, not question order, so a
+    // NOTE landing on the task that happens to finish the section has to wait
+    // for the real outcome before deciding where to go — guessing from a
+    // pre-save question-count snapshot would navigate away early and drop the
+    // celebration.
     isSaving.value = true
     try {
-      // Save the note as completed
-      await apiSaveAnswer(currentQuestion.value.id, answer)
-
-      // Check if this was the last incomplete question (before advancing)
-      const currentId = currentQuestion.value.id
-      const allCompleted = currentQuestions.value.every(
-        (q) => q.completed || q.id === currentId,
-      )
-
-      if (allCompleted) {
-        // All questions in section done — show thank-you
-        earnedPoints.value = calculateEarnedPoints()
-        showThankYou.value = true
+      const { pointsAwarded } = await apiSaveAnswer(currentId, answer)
+      recordPointsEarned(pointsAwarded)
+      const taskResult = await maybeCompleteTask(currentId)
+      if (taskResult?.sectionCompleted) {
+        await showSectionCompleteWithRealPoints(taskResult)
       } else {
-        // More questions remain — move to next
-        const hasMoreQuestions = moveToNextQuestion()
-        if (!hasMoreQuestions) {
-          router.push(
-            `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-          )
-        }
+        router.push(
+          `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
+        )
       }
     } catch (error) {
       console.error('Error completing NOTE question:', error)
@@ -896,24 +1036,12 @@ const updateAnswer = async (answer) => {
   if (currentQuestion.value.type?.toLowerCase() === 'radio') {
     isSaving.value = true
     try {
-      await apiSaveAnswer(currentQuestion.value.id, answer)
-
-      const currentId = currentQuestion.value.id
-      const allCompleted = currentQuestions.value.every(
-        (q) => q.completed || q.id === currentId,
+      const { pointsAwarded } = await apiSaveAnswer(
+        currentQuestion.value.id,
+        answer,
       )
-
-      if (allCompleted) {
-        earnedPoints.value = calculateEarnedPoints()
-        showThankYou.value = true
-      } else {
-        const hasMoreQuestions = moveToNextQuestion()
-        if (!hasMoreQuestions) {
-          router.push(
-            `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-          )
-        }
-      }
+      recordPointsEarned(pointsAwarded)
+      await finishAfterSave(currentQuestion.value.id)
     } catch (error) {
       console.error('Error auto-saving RADIO answer:', error)
     } finally {
@@ -951,26 +1079,12 @@ const updateAnswer = async (answer) => {
     if (triggerPartAnswer === value) {
       isSaving.value = true
       try {
-        await apiSaveAnswer(currentQuestion.value.id, answer)
-
-        const currentId = currentQuestion.value.id
-        const allCompleted = currentQuestions.value.every(
-          (q) => q.completed || q.id === currentId,
+        const { pointsAwarded } = await apiSaveAnswer(
+          currentQuestion.value.id,
+          answer,
         )
-
-        if (allCompleted) {
-          // All questions in section done — show thank-you
-          earnedPoints.value = calculateEarnedPoints()
-          showThankYou.value = true
-        } else {
-          // More questions remain — move to next
-          const hasMoreQuestions = moveToNextQuestion()
-          if (!hasMoreQuestions) {
-            router.push(
-              `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-            )
-          }
-        }
+        recordPointsEarned(pointsAwarded)
+        await finishAfterSave(currentQuestion.value.id)
       } catch (error) {
         console.error('Error auto-saving answer:', error)
       } finally {
@@ -1003,27 +1117,12 @@ const saveAnswer = async () => {
     }
 
     // Save answer to backend
-    await apiSaveAnswer(currentQuestion.value.id, answerValue)
-
-    // Check if this was the last incomplete question (before advancing)
-    const currentId = currentQuestion.value.id
-    const allCompleted = currentQuestions.value.every(
-      (q) => q.completed || q.id === currentId,
+    const { pointsAwarded } = await apiSaveAnswer(
+      currentQuestion.value.id,
+      answerValue,
     )
-
-    if (allCompleted) {
-      // All questions in section done — show thank-you
-      earnedPoints.value = calculateEarnedPoints()
-      showThankYou.value = true
-    } else {
-      // More questions remain — move to next
-      const hasMoreQuestions = moveToNextQuestion()
-      if (!hasMoreQuestions) {
-        router.push(
-          `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-        )
-      }
-    }
+    recordPointsEarned(pointsAwarded)
+    await finishAfterSave(currentQuestion.value.id)
   } catch (error) {
     console.error('Error saving answer:', error)
   } finally {
@@ -1337,64 +1436,6 @@ const handleContinue = () => {
 }
 .side-btn.teal:hover {
   background: #00b3ab;
-}
-
-.side-points {
-  border-radius: 18px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.pts-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.pts-lock {
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  border-radius: 11px;
-  background: rgba(0, 161, 154, 0.16);
-  border: 1px solid rgba(47, 208, 198, 0.28);
-  color: #7fe6dd;
-  display: grid;
-  place-items: center;
-}
-.pts-lock svg {
-  width: 17px;
-  height: 17px;
-}
-.pts-value {
-  flex: 1;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-.pts-locked {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7fe6dd;
-  border: 1px solid rgba(47, 208, 198, 0.3);
-  border-radius: 999px;
-  padding: 4px 9px;
-}
-.pts-title {
-  display: block;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.35;
-  margin-bottom: 7px;
-}
-.pts-desc {
-  margin: 0;
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Right content ─────────────────────────────────────────────────── */

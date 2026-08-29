@@ -161,7 +161,7 @@ const iconMap: Record<string, string> = {
   matchPercentage: '/op-icons/explore/matchPercentage.svg',
   searchSuggestions: '/op-icons/explore/searchSuggestions.svg',
   currentLocation: '/op-icons/explore/currentLocation.svg',
-  drawOnMaps: '/op-icons/explore/drawOnMap.svg',
+  drawOnMaps: '/op-icons/explore/drawOnMaps.svg',
   passportAvailable: '/op-icons/explore/passportAvailable.svg',
   chevronRight: '/op-icons/explore/chevronRight.svg',
   searchResults: '/op-icons/explore/searchResults.svg',
