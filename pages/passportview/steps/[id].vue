@@ -143,7 +143,12 @@
               </div>
 
               <div class="task-info">
-                <h3 class="task-title">{{ task.title }}</h3>
+                <h3 class="task-title">
+                  {{ toSmartTitleCase(task.title) }}
+                  <span v-if="task.hasPublishRequired" class="task-required-badge">
+                    Required to publish
+                  </span>
+                </h3>
                 <p v-if="task.description" class="task-description">{{ task.description }}</p>
 
                 <div class="task-progress-row">
@@ -172,6 +177,21 @@
         </section>
 
         <aside class="stw-aside">
+          <!-- Points balance, level and streak for this seller — a
+               point-in-time read of GET /rewards/progress, plus the
+               "finish this section for a bonus" nudge. -->
+          <SectionProgressCard
+            :balance="progressBalance"
+            :section-title="currentStep?.title || ''"
+            :completed-count="completedTaskCount"
+            :total-count="totalTaskCount"
+            :section-complete="completedTaskCount >= totalTaskCount && totalTaskCount > 0"
+            :section-bonus-points="sectionBonusPoints"
+            :level="progressLevel"
+            :streak="progressStreak"
+            @finish-section="goToNextTask"
+          />
+
           <!-- Expert guidance -->
           <section class="expert-card">
             <span class="expert-badge"><span class="dot"></span> Under review</span>
@@ -249,9 +269,11 @@
 <script setup>
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import OPIcon from '~/components/ui/OPIcon.vue'
+import SectionProgressCard from '@/components/passport-view/SectionProgressCard.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import { toSmartTitleCase } from '~/utils/titleCase'
 
 const route = useRoute()
 const router = useRouter()
@@ -268,10 +290,48 @@ const backToPassportUrl = computed(() => {
   return `/passportview/${route.query.propertyId}`
 })
 
+// Balance / level / streak for the SectionProgressCard — fetched once on
+// mount rather than kept continuously live: it's a point-in-time display,
+// not something this page needs to poll.
+const progressBalance = ref(0)
+const progressLevel = ref({
+  level: 1,
+  name: 'Property Novice',
+  progressPercent: 0,
+  next: null,
+})
+const progressStreak = ref({ current: 0, longest: 0 })
+// The section-completion bonus is minted by the backend inside
+// POST /tasks/:id/complete. This is only the pre-announcement on the nudge —
+// the section-complete screen shows the REAL figure the API returns
+// (sectionBonusPoints / balanceAfterBonus). 30 is the value the reference
+// build ships; if /rewards/progress ever reports its own, that wins.
+const SECTION_BONUS_FALLBACK = 30
+const sectionBonusPoints = ref(SECTION_BONUS_FALLBACK)
+
+async function loadProgress() {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) return
+  try {
+    const cfg = useRuntimeConfig()
+    const res = await $fetch(`${cfg.public.apiBase}/rewards/progress`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    progressBalance.value = res?.balance ?? 0
+    progressLevel.value = res?.level ?? progressLevel.value
+    progressStreak.value = res?.streak ?? progressStreak.value
+    sectionBonusPoints.value = res?.sectionBonusPoints ?? SECTION_BONUS_FALLBACK
+  } catch {
+    /* card just falls back to its defaults — non-critical */
+  }
+}
+
 onMounted(async () => {
   if (route.query.propertyId) {
     await loadPassport(route.query.propertyId)
   }
+  await loadProgress()
 })
 
 watchEffect(() => {
@@ -372,6 +432,15 @@ const navigateToTask = (taskId) => {
   router.push(
     `/passportview/steps/tasks/${taskId}?stepId=${stepId}&propertyId=${route.query.propertyId}`,
   )
+}
+
+// Target for the SectionProgressCard's "Finish this section" nudge — the
+// first task still carrying unanswered questions, so the seller lands on
+// actual work rather than back at the top of a section they've part-done.
+const goToNextTask = () => {
+  const tasks = currentStep.value?.tasks ?? []
+  const next = tasks.find((t) => !t.completed) ?? tasks[0]
+  if (next) navigateToTask(next.id)
 }
 
 const goToNextSection = () => {
@@ -950,7 +1019,23 @@ const handleViewProfile = () => {
 .task-card:hover::before {
   background: #00a19a;
 }
-.task-card:hover .task-title {
+.task-card:hover .task-required-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #b45309;
+  background: #fff3dc;
+  border: 1px solid #fbe4bd;
+  border-radius: 999px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.task-title {
   color: #00857f;
 }
 .task-card:active {

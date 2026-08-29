@@ -54,11 +54,13 @@ onMounted(async () => {
     const result: any = await appleLogin(idToken, firstName, lastName)
     localStorage.setItem('token', result.token)
     const redirect = localStorage.getItem('redirectAfterLogin')
+    // replace: true — the callback URL carries a one-shot token and re-running
+    // it fails, so it must never be a back-button destination.
     if (redirect) {
       localStorage.removeItem('redirectAfterLogin')
-      await navigateTo(redirect)
+      await navigateTo(redirect, { replace: true })
     } else {
-      await navigateTo('/explore')
+      await navigateTo('/explore', { replace: true })
     }
   } catch (e) {
     console.error('Apple callback error', e)
