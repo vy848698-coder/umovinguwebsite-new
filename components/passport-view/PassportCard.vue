@@ -2,7 +2,7 @@
   <div class="passport-card">
     <div class="passport-container">
       <img
-        src="/op-icons/passportview/umu-passport.png"
+        :src="passportImage"
         alt="Passport Background"
         class="passport-image h-full object-cover rounded-lg"
       />
@@ -49,7 +49,27 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Passport type drives which cover art shows. Each type has its own
+  // labelled book so a buyer's passport is distinguishable from a seller's
+  // at a glance rather than every role sharing one generic cover. Existing
+  // callers that pass no type keep the seller book, which is what the
+  // single shared cover used to be.
+  type: {
+    type: String,
+    default: 'SELLER',
+  },
 })
+
+const PASSPORT_COVERS = {
+  BUYER: '/dashboard/passportBuyer.png',
+  SELLER: '/dashboard/passportSeller.png',
+  LANDLORD: '/dashboard/passportLandlord.png',
+  TENANT: '/dashboard/passportTenant.png',
+}
+
+const passportImage = computed(
+  () => PASSPORT_COVERS[String(props.type || '').toUpperCase()] || PASSPORT_COVERS.SELLER,
+)
 
 // Auto-fit the address to its own length. Size is expressed in cqi (1% of the
 // card's rendered width) so it still scales from a 58 px grid thumbnail up to

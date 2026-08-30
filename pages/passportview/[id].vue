@@ -62,6 +62,7 @@
           <PassportCard
             :line1="passportAddress.line1"
             :line2="passportAddress.line2"
+            :type="passportType"
           />
         </div>
 
@@ -826,6 +827,10 @@ const showPropertiesModal = ref(false)
 
 const passportAddress = ref({ line1: '', line2: '' })
 const passportTown = ref('')
+// Drives which cover art the hero book shows. This page is the seller view,
+// but /profile/passports can hand it a LANDLORD record for a 'both' user, so
+// the real type is carried through rather than assumed.
+const passportType = ref('SELLER')
 const isPublished = ref(false)
 const publishLoading = ref(false)
 // Publish-readiness — null until first loaded, so the drawer never flashes
@@ -919,6 +924,7 @@ onMounted(async () => {
     }
     passportTown.value = passport.town ?? passport.city ?? ''
     isPublished.value = passport.status === 'PUBLISHED'
+    passportType.value = passport.type || 'SELLER'
     propertyId.value = passport.propertyId ?? null
     // Pre-fetch street + buyer data in background
     if (passport.propertyId) {

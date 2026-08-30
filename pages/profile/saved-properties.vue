@@ -113,7 +113,7 @@
       <!-- 2-up grid / list -->
       <div v-else class="sp-grid" :class="`view-${viewMode}`">
         <article
-          v-for="item in sortedProperties"
+          v-for="(item, i) in sortedProperties"
           :key="item.id"
           class="sp-tile"
           @click="navigateTo(`/property/${item.id}`)"
@@ -122,6 +122,8 @@
             <PropertyImage
               :src="item.imageUrl"
               :alt="item.addressLine1"
+              :seed="item.propertyId || item.id"
+              :variant-index="i"
               :show-caption="false"
               class="sp-photo-img-wrap"
             />

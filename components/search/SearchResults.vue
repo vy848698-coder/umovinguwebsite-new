@@ -118,7 +118,7 @@
         >
           <!-- Property Image -->
           <div class="relative overflow-hidden bg-gray-200 h-40">
-            <PropertyImage :src="result.image" :alt="result.address" />
+            <PropertyImage :src="result.image" :alt="result.address" :seed="result.id" :variant-index="index" />
             <!-- Save Button -->
             <button
               class="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition"

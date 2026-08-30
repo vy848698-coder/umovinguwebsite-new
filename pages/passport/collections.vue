@@ -159,6 +159,7 @@
                   <PassportCard
                     :line1="resumeCard.addressLine1"
                     :line2="resumeCard.postcode"
+                    :type="resumeCard.type"
                   />
                 </div>
                 <div class="coll-resume-content">
@@ -346,6 +347,7 @@
                         <PassportCard
                           :line1="item.passport.addressLine1"
                           :line2="item.passport.postcode"
+                          :type="item.passport.type"
                         />
                       </div>
                       <div v-if="collection.items.length === 0" class="prop-book-layer">
@@ -392,6 +394,7 @@
                       <PassportCard
                         :line1="passport.addressLine1"
                         :line2="passport.postcode"
+                        :type="passport.type"
                       />
                     </div>
                     <div class="prop-card-info">
@@ -726,6 +729,9 @@ const resumeCard = computed(() => {
     id: p.id,
     addressLine1: p.addressLine1,
     postcode: p.postcode,
+    // Carried through so the resume book shows this passport's own cover
+    // art (seller / landlord / buyer) rather than defaulting to seller.
+    type: p.type,
     sectionsToGo: Math.max(0, total - done),
     pct: passportPct(p),
     lastEdit: relativeTime(p?.lastVisitedAt || p?.updatedAt),

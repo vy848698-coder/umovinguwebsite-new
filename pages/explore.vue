@@ -1,402 +1,486 @@
 <template>
-  <div class="ex">
-    <!-- ─────────────────────────── NAVBAR ─────────────────────────── -->
-    <header class="ex-nav">
-      <div class="ex-shell ex-nav-inner">
-        <button class="ex-brand" type="button" @click="navigateTo('/')">
-          <img src="/op-icons/logo.png" alt="" class="ex-brand-img" />
-          <span class="ex-brand-name">umovingu</span><span class="ex-brand-beta">BETA</span>
-        </button>
+  <div class="dsh">
+    <!-- Navbar actions. Both are signed-in essentials this dashboard has no
+         other route to: notifications had no entry point anywhere in the app
+         despite the backend serving them, and the profile was only reachable
+         from the mobile menu. Neither duplicates anything already on the
+         page (Add a property lives in the page head). -->
+    <WebTopNav>
+      <template #actions>
+        <NotificationBell />
 
-        <nav class="ex-nav-links" aria-label="Explore navigation">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
-          <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
-          <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
-          <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
-        </nav>
+        <NuxtLink to="/profile" class="dsh-nav-profile" aria-label="Your profile">
+          <UserAvatar
+            :src="profile?.avatarUrl"
+            :first-name="profile?.firstName"
+            :last-name="profile?.lastName"
+            :size="30"
+          />
+          <span class="dsh-nav-profile-text">
+            <strong>{{ profile?.firstName || 'Profile' }}</strong>
+            <small>{{ roleLabel }}</small>
+          </span>
+        </NuxtLink>
+      </template>
+    </WebTopNav>
 
-        <div class="ex-nav-actions">
-          <button class="ex-icon-btn" type="button" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .53-.21 1.04-.59 1.41L4 17h5" />
-              <path d="M10 17a2 2 0 0 0 4 0" />
-            </svg>
-          </button>
-          <button class="ex-profile-chip" :class="{ active: navIsActive('/profile') }" type="button" @click="navigateTo('/profile')">
-            <span class="ex-profile-avatar">{{ avatarInitials }}</span>
-            <span class="ex-profile-meta">
-              <strong>{{ profile?.firstName || 'Vivek' }}</strong>
-              <small>{{ roleLabel }} Mode</small>
+    <main class="dsh-shell">
+      <!-- ── Greeting + search ───────────────────────────────────────── -->
+      <section class="dsh-head">
+        <div class="dsh-head-text">
+          <p class="dsh-greeting">{{ greeting }}</p>
+          <h1 class="dsh-title">{{ headline }}</h1>
+          <p class="dsh-lede">{{ lede }}</p>
+        </div>
+
+        <div class="dsh-head-side">
+          <span class="dsh-role-chip">
+            <img :src="roleArt" alt="" class="dsh-role-art" loading="lazy" />
+            <span>
+              <small>Signed in as</small>
+              <strong>{{ roleLabel }}</strong>
             </span>
+          </span>
+          <button class="dsh-add" type="button" @click="startClaimFlow">
+            <img src="/dashboard/addProperty.png" alt="" class="dsh-add-ic" loading="lazy" />
+            Add a property
           </button>
-          <button class="ex-btn solid" type="button" @click="startClaimFlow">
-            <span class="ex-plus">+</span>
-            <span>Add Property</span>
-          </button>
-          <button
-            class="ex-burger"
-            type="button"
-            aria-label="Toggle navigation menu"
-            :aria-expanded="mobileNavOpen ? 'true' : 'false'"
-            @click="mobileNavOpen = !mobileNavOpen"
-          >
-            <span :class="{ open: mobileNavOpen }" />
-          </button>
+        </div>
+      </section>
+
+      <div class="dsh-search">
+        <div class="dsh-search-field">
+          <PropertySearchInput
+            placeholder="Search by postcode, address or area"
+            variant="light"
+            @select="onSearchSelect"
+            @enter="onSearchEnter"
+          />
+        </div>
+        <button class="dsh-search-btn" type="button" @click="runSearch">
+          <Icon name="i-lucide-search" />
+          Search
+        </button>
+      </div>
+
+      <!-- ── Loading skeleton until the role is known, so the page never
+              flashes the wrong role's content ─────────────────────────── -->
+      <div v-if="!roleResolved" class="dsh-boot">
+        <div class="dsh-boot-card" />
+        <div class="dsh-boot-rows">
+          <div class="dsh-boot-row" />
+          <div class="dsh-boot-row" />
+          <div class="dsh-boot-row" />
         </div>
       </div>
 
-      <transition name="ex-menu">
-        <nav v-if="mobileNavOpen" class="ex-mobile-menu" aria-label="Mobile navigation">
-          <div class="ex-shell">
-            <button type="button" @click="goMobile('/explore')">Explore</button>
-            <button type="button" @click="goMobile('/homescore')">HomeScore</button>
-            <button type="button" @click="goMobile('/passport')">Passport</button>
-            <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
-            <button type="button" @click="goMobile('/profile/learn')">Learn</button>
-            <button type="button" @click="goMobile('/profile')">Profile</button>
-            <button type="button" class="ex-mobile-claim" @click="goMobileClaim">Add Property</button>
-          </div>
-        </nav>
-      </transition>
-    </header>
-
-    <main class="ex-shell ex-stage">
-      <!-- ─────────────────── HERO · YOUR PROPERTY HUB ─────────────────── -->
-      <section class="ex-hub">
-        <div class="ex-hub-media">
-          <img
-            :src="heroImgSrc"
-            :alt="spotlight.address"
-            class="ex-hub-img"
-            @error="onHeroImgError"
-          />
-          <button class="ex-hub-photo" type="button" @click="startClaimFlow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-            Change photo
-          </button>
-          <button class="ex-hub-view" type="button" @click="openSpotlight">View property details</button>
-        </div>
-
-        <div class="ex-hub-body">
-          <p class="ex-hub-eyebrow">Welcome back, {{ profile?.firstName || 'there' }}</p>
-          <h1 class="ex-hub-title">Your Property Hub</h1>
-          <p class="ex-hub-meta">{{ userPostcode || 'CV5 6AJ' }} &middot; {{ roleLabel }} Mode</p>
-          <p class="ex-hub-copy">
-            Run your first HomeScore to unlock insights, then build your Property Passport —
-            everything ready before you list.
-          </p>
-
-          <div class="ex-hub-progress">
-            <div class="ex-hub-progress-head">
-              <span>Passport progress</span>
-              <span>{{ passportPct }}% &middot; {{ passportLabel }}</span>
-            </div>
-            <div class="ex-hub-progress-track"><i :style="{ width: Math.max(passportPct, 2) + '%' }" /></div>
-          </div>
-
-          <div class="ex-hub-actions">
-            <button class="ex-btn solid" type="button" @click="navigateTo('/homescore')">Run your first HomeScore</button>
-            <button class="ex-btn ghost" type="button" @click="navigateTo('/passport/collections')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4z" /><path d="M9 4v16M13 9h2" />
-              </svg>
-              Continue Passport
-            </button>
-
-            <!-- ─────────────── SEARCH BAR (right of buttons) ─────────────── -->
-            <form class="ex-search ex-search--hub" @submit.prevent="runSearch">
-              <div class="ex-search-field">
-                <PropertySearchInput
-                  placeholder="Search by postcode, address or area"
-                  variant="light"
-                  @select="onSearchSelect"
-                  @enter="onSearchEnter"
-                />
+      <template v-else>
+        <div class="dsh-grid">
+          <!-- ═══ Main column ═══════════════════════════════════════ -->
+          <div class="dsh-main">
+            <!-- ── Active passport ── -->
+            <section class="dsh-section">
+              <div class="dsh-sec-head">
+                <img src="/dashboard/sectionPassport.png" alt="" class="dsh-sec-ic" loading="lazy" />
+                <div>
+                  <p class="dsh-eyebrow">Your active passport</p>
+                  <h2 class="dsh-sec-title">{{ passportSectionTitle }}</h2>
+                </div>
               </div>
-              <div class="ex-search-radius">
-                <select v-model="activeRadius" aria-label="Search radius">
-                  <option :value="null">Exact</option>
-                  <option :value="0.5">0.5 mi</option>
-                  <option :value="1">1 mi</option>
-                  <option :value="2">2 mi</option>
-                  <option :value="5">5 mi</option>
-                  <option :value="10">10 mi</option>
-                </select>
-              </div>
-              <button class="ex-btn solid ex-search-btn" type="submit">Search</button>
-            </form>
-          </div>
-        </div>
-      </section>
 
-      <!-- ───────────────────────── KPI OVERVIEW ───────────────────────── -->
-      <section class="ex-kpis" aria-label="Portfolio summary">
-        <article class="ex-kpi">
-          <span class="ex-kpi-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4z" /><path d="M9 4v16M13 9h2" />
-            </svg>
-          </span>
-          <strong>{{ activePassportCount }}</strong>
-          <span class="ex-kpi-label">Active Passports</span>
-        </article>
-        <article class="ex-kpi">
-          <span class="ex-kpi-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v9h14v-9" /><path d="M9 19v-5h6v5" />
-            </svg>
-          </span>
-          <strong>{{ availableFeedCount }}</strong>
-          <span class="ex-kpi-label">Properties in feed</span>
-        </article>
-        <article class="ex-kpi">
-          <span class="ex-kpi-ic ex-kpi-ic--ring">
-            <span class="ex-kpi-ring-val">{{ dashboardHomeScore }}</span>
-          </span>
-          <strong>{{ dashboardHomeScore }}</strong>
-          <span class="ex-kpi-label">Avg. HomeScore</span>
-        </article>
-        <article class="ex-kpi">
-          <span class="ex-kpi-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7v6l8 8 8-8-8-8H5a2 2 0 0 0-2 2z" /><circle cx="8" cy="10" r="1.4" />
-            </svg>
-          </span>
-          <strong>{{ estPropertyValue }}</strong>
-          <span class="ex-kpi-label">Est. property value</span>
-        </article>
-      </section>
+              <div v-if="loadingPrimary" class="dsh-skel dsh-skel--hero" />
 
-      <!-- ─────────────── ADD ANOTHER PROPERTY ─────────────── -->
-      <button type="button" class="ex-addprop" @click="startClaimFlow">
-        <span class="ex-addprop-ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </span>
-        <span class="ex-addprop-body">
-          <strong>Add another property</strong>
-          <small>Verify ownership, then choose Rental or Seller Passport</small>
-        </span>
-        <span class="ex-addprop-cta">
-          Add
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-          </svg>
-        </span>
-      </button>
+              <!-- Buyer passport -->
+              <article
+                v-else-if="isBuyerView && buyerProfile"
+                class="apc"
+                role="button"
+                tabindex="0"
+                @click="navigateTo('/buyer-profile/view')"
+                @keydown.enter="navigateTo('/buyer-profile/view')"
+              >
+                <div class="apc-book">
+                  <PassportCard line1="" line2="" type="BUYER" />
+                </div>
+                <div class="apc-info">
+                  <span class="apc-pill">Buyer passport</span>
+                  <h3 class="apc-name">Buyer Passport</h3>
+                  <p v-if="buyerIdVerified" class="apc-verified">
+                    <Icon name="i-lucide-badge-check" />
+                    Identity verified
+                  </p>
+                  <p v-else class="apc-unverified">
+                    <Icon name="i-lucide-shield-alert" />
+                    Identity not yet verified
+                  </p>
+                  <div class="apc-prog-row">
+                    <span>Finance <strong>{{ financePercent }}%</strong> complete</span>
+                  </div>
+                  <div class="apc-track">
+                    <div class="apc-fill" :style="{ width: financePercent + '%' }" />
+                  </div>
+                  <div class="apc-actions">
+                    <button
+                      class="apc-cta"
+                      type="button"
+                      @click.stop="navigateTo('/buyer-profile/build')"
+                    >
+                      Continue my Buyer Passport
+                      <Icon name="i-lucide-arrow-right" />
+                    </button>
+                    <button
+                      class="apc-link"
+                      type="button"
+                      @click.stop="navigateTo('/passport/collections')"
+                    >
+                      View all passports
+                      <Icon name="i-lucide-chevron-right" />
+                    </button>
+                  </div>
+                </div>
+              </article>
 
-      <!-- ─────────────── FEATURE CARDS · HOMESCORE + PASSPORT ─────────────── -->
-      <section class="ex-block">
-        <div class="ex-features">
-          <!-- HomeScore -->
-          <article class="ex-feature ex-feature--hs" @click="navigateTo('/homescore')">
-            <div class="ex-feature-media">
-              <img src="/profile new icon/passportHasAStory.png" alt="HomeScore" />
-            </div>
-            <div class="ex-feature-body">
-              <div class="ex-feature-top">
-                <span class="ex-feature-eyebrow">HomeScore</span>
-                <span class="ex-feature-pill hs">Free</span>
-              </div>
-              <h3 class="ex-feature-headline">Every property has a story.</h3>
-              <p class="ex-feature-sub">
-                Bills, value, comparisons and energy rating — scored 0–100 from public records.
-                <b>Done in 60 seconds.</b>
-              </p>
-              <ul class="ex-feature-list">
-                <li><i class="ex-tick" />Energy &amp; running costs</li>
-                <li><i class="ex-tick" />Sold history &amp; estimate</li>
-                <li><i class="ex-tick" />Area comparison</li>
-              </ul>
-              <button class="ex-btn solid ex-feature-cta" type="button" @click.stop="navigateTo('/homescore')">
-                Run a HomeScore →
+              <!-- Owner (seller / landlord / both) passport -->
+              <article
+                v-else-if="!isBuyerView && passports.length"
+                class="apc"
+                role="button"
+                tabindex="0"
+                @click="navigateTo('/passportview/' + primaryPassport.id)"
+                @keydown.enter="navigateTo('/passportview/' + primaryPassport.id)"
+              >
+                <div class="apc-book">
+                  <PassportCard
+                    :line1="primaryPassport.addressLine1 || primaryPassport.address || ''"
+                    :line2="primaryPassport.postcode || ''"
+                    :type="primaryPassport.type || defaultPassportType"
+                  />
+                </div>
+                <div class="apc-info">
+                  <span class="apc-pill">
+                    {{ (primaryPassport.type || defaultPassportType).toLowerCase() }} passport
+                  </span>
+                  <h3 class="apc-name">
+                    {{ primaryPassport.address || primaryPassport.addressLine1 }}
+                  </h3>
+                  <p class="apc-postcode">{{ primaryPassport.postcode }}</p>
+                  <div class="apc-prog-row">
+                    <span>
+                      Passport
+                      <strong>{{ primaryPassport.completionPercentage ?? 0 }}%</strong>
+                      complete
+                    </span>
+                    <span v-if="primaryPassport.status === 'PUBLISHED'" class="apc-live">
+                      <span class="apc-live-dot" />Published
+                    </span>
+                  </div>
+                  <div class="apc-track">
+                    <div
+                      class="apc-fill"
+                      :style="{ width: (primaryPassport.completionPercentage ?? 0) + '%' }"
+                    />
+                  </div>
+                  <div class="apc-actions">
+                    <button
+                      class="apc-cta"
+                      type="button"
+                      @click.stop="navigateTo('/passportview/' + primaryPassport.id)"
+                    >
+                      Continue my Passport
+                      <Icon name="i-lucide-arrow-right" />
+                    </button>
+                    <button
+                      class="apc-link"
+                      type="button"
+                      @click.stop="navigateTo('/passport/collections')"
+                    >
+                      View all passports
+                      <Icon name="i-lucide-chevron-right" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Nothing started yet -->
+              <button
+                v-else
+                type="button"
+                class="dsh-empty-cta"
+                @click="isBuyerView ? navigateTo('/buyer-profile/build') : startClaimFlow()"
+              >
+                <span class="dsh-empty-plus">+</span>
+                <span class="dsh-empty-body">
+                  <strong>{{ emptyPassportTitle }}</strong>
+                  <small>{{ emptyPassportSub }}</small>
+                </span>
+                <Icon name="i-lucide-chevron-right" class="dsh-empty-chev" />
               </button>
-            </div>
-          </article>
+            </section>
 
-          <!-- Property Passport -->
-          <article class="ex-feature ex-feature--pp" @click="navigateTo('/passport/sample')">
-            <div class="ex-feature-media ex-feature-media--pp">
-              <img src="/profile new icon/samplePassportImage.png" alt="Property Passport" />
-            </div>
-            <div class="ex-feature-body">
-              <div class="ex-feature-top">
-                <span class="ex-feature-eyebrow pp">Property Passport</span>
-                <span class="ex-feature-pill pp">Solicitor-grade</span>
+            <!-- ── Next for you ── -->
+            <section v-if="nextActions.length" class="dsh-section">
+              <div class="dsh-sec-head">
+                <img src="/dashboard/nextDocuments.png" alt="" class="dsh-sec-ic" loading="lazy" />
+                <div>
+                  <p class="dsh-eyebrow">Next for you</p>
+                  <h2 class="dsh-sec-title">Pick up where you left off</h2>
+                </div>
               </div>
-              <h3 class="ex-feature-headline">Every property has a history.</h3>
-              <p class="ex-feature-sub">
-                Title, planning, surveys and fittings — verified, organised and ready before any offer.
-              </p>
-              <ul class="ex-feature-list">
-                <li><i class="ex-tick" />Sells up to 12 weeks faster</li>
-                <li><i class="ex-tick" />No title surprises</li>
-                <li><i class="ex-tick" />No survey shocks</li>
-              </ul>
-              <button class="ex-btn navy ex-feature-cta" type="button" @click.stop="navigateTo('/passport/sample')">
-                See a sample Passport →
+
+              <div class="nfy">
+                <p v-if="stalenessLine" class="nfy-stale">
+                  <Icon name="i-lucide-clock" />
+                  {{ stalenessLine }}
+                </p>
+                <button
+                  v-for="action in nextActions"
+                  :key="action.title"
+                  type="button"
+                  class="nfy-row"
+                  @click="navigateTo(action.to)"
+                >
+                  <img :src="action.icon" alt="" class="nfy-ic" loading="lazy" />
+                  <span class="nfy-body">
+                    <strong>{{ action.title }}</strong>
+                    <small>{{ action.sub }}</small>
+                  </span>
+                  <Icon name="i-lucide-chevron-right" class="nfy-chev" />
+                </button>
+              </div>
+            </section>
+
+            <RecentlyViewedFeed
+              v-if="isBuyerView"
+              :properties="recentlyViewed"
+              :loading="loadingRecentlyViewed"
+            />
+
+            <ForYouFeed
+              :properties="properties"
+              :loading="loadingProperties"
+              :needs-postcode="needsPostcode"
+              :has-filters="hasAnyForYouFilters"
+              @open-filters="openForYouFilters"
+              @postcode-saved="refetchForYou"
+            />
+          </div>
+
+          <!-- ═══ Side column ═══════════════════════════════════════ -->
+          <aside class="dsh-side">
+            <!-- Owner HomeScore — only once we have a real score to show -->
+            <section
+              v-if="!isBuyerView && passports.length && primaryPassport.homeScore != null"
+              class="hsc"
+            >
+              <div class="hsc-top">
+                <div class="hsc-ring">
+                  <svg viewBox="0 0 100 100" class="hsc-ring-svg">
+                    <defs>
+                      <linearGradient id="dshHsGrad" x1="1" y1="0" x2="0" y2="0">
+                        <stop offset="0%" stop-color="#2fd0c6" />
+                        <stop offset="100%" stop-color="#00756f" />
+                      </linearGradient>
+                    </defs>
+                    <circle class="hsc-ring-bg" cx="50" cy="50" r="42" />
+                    <circle
+                      class="hsc-ring-fill"
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      stroke-dasharray="263.9"
+                      :stroke-dashoffset="homeScoreDashoffset"
+                    />
+                  </svg>
+                  <div class="hsc-ring-label">
+                    <span class="hsc-ring-num">{{ primaryPassport.homeScore }}</span>
+                    <span class="hsc-ring-den">/100</span>
+                  </div>
+                </div>
+                <div class="hsc-info">
+                  <h3 class="hsc-title">Your home today</h3>
+                  <p class="hsc-sub">
+                    How your home performs on energy, running costs and value.
+                  </p>
+                </div>
+              </div>
+              <div v-if="primaryPassport.homeScorePotential != null" class="hsc-potential">
+                <span>Potential score</span>
+                <strong>{{ primaryPassport.homeScorePotential }}/100</strong>
+              </div>
+              <button class="hsc-cta" type="button" @click="navigateTo(homeScoreHref)">
+                See my HomeScore
+                <Icon name="i-lucide-arrow-right" />
               </button>
-            </div>
-          </article>
-        </div>
-      </section>
+            </section>
 
-      <!-- ───────────────── QUICK ACTIONS + ACTIVITY ───────────────── -->
-      <section class="ex-two">
-        <div class="ex-panel">
-          <div class="ex-block-head ex-block-head--stack">
-            <h2>Quick actions</h2>
-            <p class="ex-block-sub">Everything you need to get your home ready.</p>
-          </div>
-          <div class="ex-qa-grid">
-            <button type="button" class="ex-qa" @click="navigateTo('/passport/collections')">
-              <span class="ex-qa-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5" /><path d="m8 9 4-4 4 4" /><path d="M5 19h14" /></svg>
-              </span>
-              <span class="ex-qa-body"><strong>Upload documents</strong><small>Add or manage property docs</small></span>
-              <span class="ex-qa-arrow" aria-hidden="true">→</span>
-            </button>
-            <button type="button" class="ex-qa" @click="navigateTo('/homescore')">
-              <span class="ex-qa-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z" /><path d="M9 3v16" /><path d="M15 5v16" /></svg>
-              </span>
-              <span class="ex-qa-body"><strong>Compare area</strong><small>Explore local insights</small></span>
-              <span class="ex-qa-arrow" aria-hidden="true">→</span>
-            </button>
-            <button type="button" class="ex-qa" @click="navigateTo('/marketplace')">
-              <span class="ex-qa-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M3 12h18" /></svg>
-              </span>
-              <span class="ex-qa-body"><strong>Book a service</strong><small>Find trusted professionals</small></span>
-              <span class="ex-qa-arrow" aria-hidden="true">→</span>
-            </button>
-            <button type="button" class="ex-qa" @click="navigateTo('/marketplace')">
-              <span class="ex-qa-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /><path d="M8 4v5" /></svg>
-              </span>
-              <span class="ex-qa-body"><strong>Marketplace</strong><small>Trusted partner services</small></span>
-              <span class="ex-qa-arrow" aria-hidden="true">→</span>
-            </button>
-          </div>
-        </div>
+            <!-- Watching -->
+            <section class="dsh-card">
+              <div class="dsh-card-head">
+                <img src="/dashboard/sectionWatching.png" alt="" class="dsh-card-ic" loading="lazy" />
+                <div class="dsh-card-head-text">
+                  <h3>
+                    Watching
+                    <span v-if="savedProperties.length" class="dsh-count">
+                      {{ savedProperties.length }}
+                    </span>
+                  </h3>
+                  <small>Properties you're keeping an eye on</small>
+                </div>
+              </div>
 
-        <div class="ex-panel">
-          <div class="ex-block-head ex-block-head--stack">
-            <h2>Activity</h2>
-            <p class="ex-block-sub">Recent updates on your home.</p>
-          </div>
-          <ul class="ex-activity">
-            <li v-for="(a, i) in activityItems" :key="`act-${i}`" class="ex-activity-item">
-              <span class="ex-activity-ic">
-                <span v-html="a.icon" />
-              </span>
-              <span class="ex-activity-body">
-                <strong>{{ a.title }}</strong>
-                <small>{{ a.sub }}</small>
-              </span>
-              <span class="ex-activity-time">{{ a.time }}</span>
-            </li>
-          </ul>
-        </div>
-      </section>
+              <div v-if="loadingSaved" class="dsh-skel dsh-skel--row" />
 
-      <!-- ───────────────────── RECOMMENDED ───────────────────── -->
-      <section class="ex-block">
-        <div class="ex-block-head ex-block-head--stack">
-          <h2>Recommended for you</h2>
-          <p class="ex-block-sub">Trusted services to support your property journey.</p>
+              <template v-else-if="savedProperties.length">
+                <NuxtLink
+                  v-for="(prop, i) in savedProperties.slice(0, 3)"
+                  :key="prop.id"
+                  :to="`/property/${prop.id}`"
+                  class="watch-row"
+                >
+                  <span class="watch-media">
+                    <PropertyImage
+                      :src="prop.imageUrl"
+                      :alt="prop.addressLine1"
+                      :seed="prop.id"
+                      :variant-index="i"
+                      :show-caption="false"
+                      class="watch-img"
+                    />
+                  </span>
+                  <span class="watch-body">
+                    <strong>{{ prop.addressLine1 }}</strong>
+                    <small>{{ prop.postcode }}</small>
+                    <small v-if="prop.homeScore != null" class="watch-hs">
+                      HomeScore <b>{{ prop.homeScore }}/100</b>
+                    </small>
+                  </span>
+                  <Icon name="i-lucide-chevron-right" class="watch-chev" />
+                </NuxtLink>
+                <button
+                  v-if="savedProperties.length > 3"
+                  type="button"
+                  class="dsh-card-more"
+                  @click="navigateTo('/profile/saved-properties')"
+                >
+                  {{ savedProperties.length - 3 }} more
+                  {{ savedProperties.length - 3 === 1 ? 'property' : 'properties' }} watching
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="dsh-card-more"
+                  @click="navigateTo('/profile/saved-properties')"
+                >
+                  View all saved properties
+                </button>
+              </template>
+
+              <div v-else class="dsh-card-empty">
+                <p>Nothing saved yet.</p>
+                <button type="button" @click="navigateTo('/marketplace')">
+                  Browse properties
+                </button>
+              </div>
+            </section>
+
+            <!-- Run a HomeScore on any property -->
+            <button class="hec" type="button" @click="navigateTo('/homescore')">
+              <img src="/dashboard/sectionHomescore.png" alt="" class="hec-art" loading="lazy" />
+              <span class="hec-body">
+                <strong>Check any home's HomeScore</strong>
+                <small>
+                  Instant insight on energy, running costs and value — for any UK
+                  property, not just your own.
+                </small>
+                <span class="hec-cta">
+                  Run a free HomeScore
+                  <Icon name="i-lucide-arrow-right" />
+                </span>
+              </span>
+            </button>
+
+            <!-- 'both' role: compact buyer-side summary alongside the owner view -->
+            <section v-if="role === 'both'" class="dsh-card">
+              <div class="dsh-card-head">
+                <img src="/dashboard/passportBuyer.png" alt="" class="dsh-card-ic" loading="lazy" />
+                <div class="dsh-card-head-text">
+                  <h3>Also buying?</h3>
+                  <small>Your buyer side, at a glance</small>
+                </div>
+              </div>
+              <div v-if="loadingBuyerSummary" class="dsh-skel dsh-skel--row" />
+              <template v-else>
+                <button
+                  type="button"
+                  class="watch-row watch-row--plain"
+                  @click="navigateTo(buyerProfile ? '/buyer-profile/view' : '/buyer-profile/build')"
+                >
+                  <span class="watch-body">
+                    <strong>
+                      {{ buyerProfile ? 'Your Buyer Passport' : 'Start your Buyer Passport' }}
+                    </strong>
+                    <small>
+                      {{
+                        buyerProfile
+                          ? `Finance ${financePercent}% complete`
+                          : 'Verify your identity and buying position.'
+                      }}
+                    </small>
+                  </span>
+                  <Icon name="i-lucide-chevron-right" class="watch-chev" />
+                </button>
+              </template>
+            </section>
+
+            <!-- Add another property -->
+            <button v-if="!isBuyerView" class="apr" type="button" @click="startClaimFlow">
+              <img src="/dashboard/addProperty.png" alt="" class="apr-ic" loading="lazy" />
+              <span class="apr-body">
+                <strong>Add another property</strong>
+                <small>Verify ownership, then choose a Rental or Seller Passport.</small>
+              </span>
+              <Icon name="i-lucide-chevron-right" class="apr-chev" />
+            </button>
+          </aside>
         </div>
-        <div class="ex-reco-grid">
-          <button type="button" class="ex-reco" @click="navigateTo('/marketplace')">
-            <span class="ex-reco-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1.5 3.5-1.5 5-1.5 7.5A3.5 3.5 0 0 0 14 13c0-2 1-3 1-3 1 1.5 2.5 3 2.5 5.5A5.5 5.5 0 0 1 12 21a5.5 5.5 0 0 1-5.5-5.5C6.5 11 9 9 9 6c0-1.5 1.5-3 3-4Z" /></svg>
-            </span>
-            <strong class="ex-reco-title">Gas safety check</strong>
-            <span class="ex-reco-price">From £79</span>
-            <small class="ex-reco-sub">Certificate lands in your Passport</small>
-          </button>
-          <button type="button" class="ex-reco" @click="navigateTo('/marketplace')">
-            <span class="ex-reco-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2" /><path d="m9 8 2 2 4-4" /><path d="M9 14h6M9 17h4" /></svg>
-            </span>
-            <strong class="ex-reco-title">Property survey</strong>
-            <span class="ex-reco-price">From £299</span>
-            <small class="ex-reco-sub">RICS certified surveyors</small>
-          </button>
-          <button type="button" class="ex-reco" @click="navigateTo('/marketplace')">
-            <span class="ex-reco-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18" /><path d="M6 7h12" /><path d="M7 7 4 14a3 3 0 0 0 6 0L7 7Z" /><path d="M17 7l-3 7a3 3 0 0 0 6 0l-3-7Z" /><path d="M8 21h8" /></svg>
-            </span>
-            <strong class="ex-reco-title">Solicitor quote</strong>
-            <span class="ex-reco-price">From £250</span>
-            <small class="ex-reco-sub">Fixed-fee conveyancing</small>
-          </button>
-          <button type="button" class="ex-reco" @click="navigateTo('/marketplace')">
-            <span class="ex-reco-ic">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2" /><path d="M3 11h18" /><circle cx="7" cy="15" r="1" /></svg>
-            </span>
-            <strong class="ex-reco-title">Mortgage advice</strong>
-            <span class="ex-reco-price">Free</span>
-            <small class="ex-reco-sub">Compare trusted advisors</small>
-          </button>
-        </div>
-      </section>
+      </template>
     </main>
 
-    <!-- ─────────────────────────── FOOTER ─────────────────────────── -->
-    <footer class="ex-footer">
-      <div class="ex-shell ex-footer-grid">
-        <div class="ex-footer-intro">
-          <div class="ex-footer-brand">
-            <img src="/logo-new.png" alt="" class="ex-footer-logo" />
-            <strong>umovingu</strong>
-            <span style="font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#2fd0c6;background:rgba(0,161,154,.16);border:1px solid rgba(47,208,198,.35);border-radius:6px;padding:2px 7px;margin-left:2px;">BETA</span>
-          </div>
-          <p>The consumer-side property passport. Free HomeScore, solicitor-grade Passport, ready before your first viewing.</p>
-          <div class="ex-footer-chips">
-            <span>OPDA standard</span>
-            <span>Property Redress Scheme</span>
-            <span>HM Land Registry</span>
-          </div>
-        </div>
+    <PropertySearchFiltersModal
+      v-model="forYouFiltersModalOpen"
+      :initial-filters="forYouPendingFilters"
+      @search="onForYouFiltersSearch"
+    />
 
-        <div class="ex-footer-col">
-          <h5>Product</h5>
-          <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
-          <button type="button" @click="navigateTo('/passport/collections')">Property Passport</button>
-          <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
-        </div>
-
-        <div class="ex-footer-col">
-          <h5>Company</h5>
-          <button type="button" @click="navigateTo('/')">Our story</button>
-          <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
-          <button type="button" @click="navigateTo('/profile')">Account</button>
-        </div>
-
-        <div class="ex-footer-col">
-          <h5>Get started</h5>
-          <button type="button" @click="navigateTo('/homescore')">Free HomeScore</button>
-          <button type="button" @click="startClaimFlow">Add a property</button>
-          <button type="button" @click="navigateTo('/passport/sample')">Sample Passport</button>
-        </div>
-      </div>
-      <div class="ex-shell ex-footer-bottom">© 2026 umovingu. All rights reserved.</div>
-    </footer>
+    <SiteFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
+// The post-login landing page. Built around the signed-in user's role —
+// buyer, seller, landlord or both — since each one arrives wanting a
+// different first screen: a buyer wants matches and their buying position,
+// an owner wants their passport's completeness and their home's score.
+//
+// This lives at /explore (rather than a separate /dashboard route) because
+// Explore is where every in-app link, the bottom nav and the post-login
+// redirect already point. That also means landlord can't be bounced to
+// /explore the way a standalone dashboard could — it would redirect to
+// itself — so the landlord role gets real content here.
+definePageMeta({ title: 'Your dashboard - UmovingU', middleware: 'auth' })
 
-definePageMeta({ title: 'Explore - UmovingU', middleware: 'auth' })
+import { ref, computed, onMounted } from 'vue'
+import WebTopNav from '~/components/core/WebTopNav.vue'
+import NotificationBell from '~/components/ui/NotificationBell.vue'
+import UserAvatar from '~/components/ui/UserAvatar.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import PassportCard from '~/components/passport-view/PassportCard.vue'
+import PropertyImage from '~/components/property/PropertyImage.vue'
+import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
+import PropertySearchFiltersModal from '~/components/property/PropertySearchFiltersModal.vue'
+import ForYouFeed from '~/components/property/ForYouFeed.vue'
+import RecentlyViewedFeed from '~/components/property/RecentlyViewedFeed.vue'
+import { usePropertyForYou } from '~/composables/usePropertyForYou'
 
 useHead({
   link: [
@@ -409,29 +493,47 @@ useHead({
 
 const config = useRuntimeConfig()
 const { profile, fetchProfile } = useProfile()
-const route = useRoute()
 
-const mobileNavOpen = ref(false)
-const navIsActive = (basePath: string) =>
-  route.path === basePath || route.path.startsWith(`${basePath}/`)
-const goMobile = (path: string) => {
-  mobileNavOpen.value = false
-  navigateTo(path)
-}
-const goMobileClaim = () => {
-  mobileNavOpen.value = false
-  startClaimFlow()
-}
-watch(() => route.path, () => { mobileNavOpen.value = false })
-
-// ── Data ────────────────────────────────────────────────────────────
-const preferences = ref<any>(null)
-const passports = ref<any[]>([])
-const properties = ref<any[]>([])
-const verifiedPassportProperties = ref<any[]>([])
 const role = ref<string>('buy')
-const activeRadius = ref<number | null>(null)
+const roleResolved = ref(false)
+
+const passports = ref<any[]>([])
+const passportSections = ref<any[]>([])
+const loadingPassport = ref(true)
+
+const buyerProfile = ref<any>(null)
+const loadingBuyerProfile = ref(true)
+const savedProperties = ref<any[]>([])
+const loadingSaved = ref(true)
+// The 'both' role shows a buyer summary beside the owner view. It reuses
+// buyerProfile/savedProperties, which the owner branch never populates
+// otherwise, so it needs its own flag — loadingBuyerProfile/loadingSaved
+// default to true and are only flipped by the pure-buyer branch.
+const loadingBuyerSummary = ref(true)
+
+const recentlyViewed = ref<any[]>([])
+const loadingRecentlyViewed = ref(true)
+
 const searchQuery = ref('')
+
+const {
+  properties,
+  loadingProperties,
+  needsPostcode,
+  forYouFiltersModalOpen,
+  forYouPendingFilters,
+  hasAnyForYouFilters,
+  openForYouFilters,
+  onForYouFiltersSearch,
+} = usePropertyForYou()
+
+// ── Role shape ─────────────────────────────────────────────────────────
+const isBuyerView = computed(() => role.value === 'buy')
+const isLandlord = computed(() => role.value === 'landlord')
+
+const defaultPassportType = computed(() => (isLandlord.value ? 'LANDLORD' : 'SELLER'))
+
+const primaryPassport = computed<any>(() => passports.value[0] ?? {})
 
 const roleLabel = computed(() => {
   if (role.value === 'sell') return 'Seller'
@@ -440,99 +542,211 @@ const roleLabel = computed(() => {
   return 'Buyer'
 })
 
-const avatarInitials = computed(() => {
-  const f = profile.value?.firstName?.[0] || 'V'
-  const l = profile.value?.lastName?.[0] || ''
-  return (f + l).toUpperCase()
+const roleArt = computed(() => {
+  if (role.value === 'landlord') return '/dashboard/passportLandlord.png'
+  if (role.value === 'buy') return '/dashboard/passportBuyer.png'
+  return '/dashboard/passportSeller.png'
 })
 
-const userPostcode = computed(() => (profile.value as any)?.postcode?.trim() || '')
-
-const dashboardHomeScore = computed(() => {
-  const primary = properties.value[0] as any
-  const score =
-    primary?.HomeScore ?? primary?.homeScore ?? primary?.epcScore ?? passports.value[0]?.homeScore
-  if (typeof score === 'number') return Math.max(0, Math.min(100, Math.round(score)))
-  return 74
-})
-
-// KPI overview tiles
-const activePassportCount = computed(() => passports.value.length)
-const availableFeedCount = computed(
-  () => verifiedPassportProperties.value.length || properties.value.length || 3,
+const headline = computed(() =>
+  isBuyerView.value ? 'Your move at a glance' : 'Your property at a glance',
 )
-const estPropertyValue = computed(() => {
-  const v = (properties.value[0] as any)?.estimatedPrice ?? (properties.value[0] as any)?.price
-  return formatPrice(v) || '£425,000'
+
+const lede = computed(() => {
+  if (isBuyerView.value) {
+    return 'Your buying position, the homes you are watching, and fresh matches near you.'
+  }
+  if (isLandlord.value) {
+    return 'Your rental record, compliance documents and how your property is performing.'
+  }
+  if (role.value === 'both') {
+    return 'Your property record and your buying position, side by side.'
+  }
+  return 'Your passport progress, your home’s score, and who is looking.'
 })
 
-// Passport progress (hero)
-const passportPct = computed(() => {
-  const p = passports.value[0] as any
-  const v = p?.progress ?? p?.completion ?? p?.percentComplete ?? 0
-  return Math.max(0, Math.min(100, Math.round(typeof v === 'number' ? v : 0)))
-})
-const passportLabel = computed(() => {
-  if (passportPct.value >= 100) return 'complete'
-  if (passportPct.value > 0) return 'in progress'
-  return 'not started'
+const passportSectionTitle = computed(() => {
+  if (isBuyerView.value) return 'Buyer Passport'
+  if (isLandlord.value) return 'Rental Passport'
+  return 'Property Passport'
 })
 
-function formatPrice(n?: number | null): string {
-  if (!n || typeof n !== 'number') return ''
-  return '£' + Math.round(n).toLocaleString('en-GB')
-}
+const emptyPassportTitle = computed(() =>
+  isBuyerView.value ? 'Start your Buyer Passport' : 'Start your Property Passport',
+)
+const emptyPassportSub = computed(() =>
+  isBuyerView.value
+    ? 'Verify your identity and buying position.'
+    : 'Verify ownership and build your record.',
+)
 
-// ── Hero property (best match / owned) ───────────────────────────────
-// Prefer the user's own claimed passport so "View property details" opens the
-// real passport (/passportview/:id). Fall back to a recommended/verified
-// property, then to the demo sample.
-const spotlight = computed(() => {
-  const p = (passports.value[0] ||
-    properties.value[0] ||
-    verifiedPassportProperties.value[0]) as any
-  if (p) {
-    return {
-      id: p.id,
-      image: p.imageUrl || p.image || '/images/uk-houses/house-1.jpg',
-      address: `${p.addressLine1 || p.address || '49 Woodfield Road'}, ${p.city || 'Coventry'}, ${p.postcode || userPostcode.value || 'CV5 6AJ'}`,
+// The primary card is what the page is "about" for this role, so the
+// section skeleton keys off whichever fetch actually feeds it.
+const loadingPrimary = computed(() =>
+  isBuyerView.value ? loadingBuyerProfile.value : loadingPassport.value,
+)
+
+// ── Greeting ───────────────────────────────────────────────────────────
+// Deterministic, never Math.random(): this page server-renders then
+// hydrates, and a random pick would differ between the two and trip a
+// hydration mismatch.
+const LATE_NIGHT_LINES = ['Having a late one', 'Burning the midnight oil', 'Still up']
+
+const greeting = computed(() => {
+  const now = new Date()
+  const h = now.getHours()
+  const first = profile.value?.firstName?.trim()
+  const emailLocal = profile.value?.email?.split('@')[0]?.trim()
+  const name = first || emailLocal || ''
+
+  if (h >= 23 || h < 5) {
+    const line = LATE_NIGHT_LINES[now.getDate() % LATE_NIGHT_LINES.length]
+    return name ? `${line}, ${name}?` : `${line}?`
+  }
+  const timeOfDay = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+  return name ? `${timeOfDay}, ${name}` : timeOfDay
+})
+
+// ── Derived numbers ────────────────────────────────────────────────────
+const homeScoreDashoffset = computed(() => {
+  const s = primaryPassport.value?.homeScore
+  if (typeof s !== 'number') return '263.9'
+  return (263.9 * (1 - Math.min(Math.max(s, 0), 100) / 100)).toFixed(1)
+})
+
+const homeScoreHref = computed(() => {
+  const propertyId = primaryPassport.value?.propertyId
+  return propertyId ? `/homescore/${propertyId}` : '/homescore'
+})
+
+// Real KYC signal — buyer-profile.service.ts's getMine() overrides the
+// always-false stored column with the actual User.kycStatus check before
+// this reaches the frontend.
+const buyerIdVerified = computed(() => buyerProfile.value?.idVerified === true)
+
+// No isolated "finance %" field exists on BuyerProfile, so this is derived
+// from the underlying funds fields rather than invented: nothing set (0),
+// funds declared but not reviewed (55), reviewed and verified (100).
+const financePercent = computed(() => {
+  const p = buyerProfile.value
+  if (!p) return 0
+  if (p.fundsVerified) return 100
+  if (p.fundsType && p.fundsAmount != null) return 55
+  return 0
+})
+
+// BuyerProfile has 5 flat completion steps (identity / funds / chain /
+// solicitor / statement) rather than a sections→tasks→questions tree.
+const buyerIncompleteCount = computed(() => {
+  const steps = buyerProfile.value?.completedSteps ?? 0
+  return Math.max(0, 5 - steps)
+})
+
+// Unanswered questions across every task in every section. Nothing derives
+// this server-side yet, so it's summed here from GET /passport/:id/sections,
+// which already returns per-task totalQuestions/answeredQuestions.
+const incompleteItemCount = computed(() => {
+  let total = 0
+  for (const section of passportSections.value) {
+    for (const task of section?.tasks ?? []) {
+      total += Math.max(0, (task.totalQuestions ?? 0) - (task.answeredQuestions ?? 0))
     }
   }
-  return {
-    id: null,
-    image: '/images/uk-houses/house-1.jpg',
-    address: '49 Woodfield Road, Coventry, CV5 6AJ',
-  }
+  return total
 })
 
-function openSpotlight() {
-  if (spotlight.value.id) navigateTo(`/passportview/${spotlight.value.id}`)
-  else navigateTo('/passport/sample')
+// A real "last touched N days ago" nudge rather than a fabricated deadline
+// — there isn't one anywhere in the data. Only once something has actually
+// gone stale (3+ days), and only while the record is genuinely incomplete.
+function stalenessCopy(createdAt?: string | null, lastTouchedAt?: string | null): string | null {
+  const source = lastTouchedAt || createdAt
+  if (!source) return null
+  const days = Math.floor((Date.now() - new Date(source).getTime()) / 86_400_000)
+  if (days < 3) return null
+  const verb = lastTouchedAt ? 'Last touched' : 'Started'
+  const when = days === 1 ? 'yesterday' : `${days} days ago`
+  return `${verb} ${when} — pick up where you left off.`
 }
 
-// Hero image with a resilient fallback: if the property's own photo is missing
-// or fails to load, drop back to a local house image instead of a blank tile.
-const HERO_FALLBACK = '/images/uk-houses/house-1.jpg'
-const heroImgSrc = ref(HERO_FALLBACK)
-watch(
-  () => spotlight.value.image,
-  (v) => { heroImgSrc.value = v && v.trim() ? v : HERO_FALLBACK },
-  { immediate: true },
-)
-function onHeroImgError() {
-  if (heroImgSrc.value !== HERO_FALLBACK) heroImgSrc.value = HERO_FALLBACK
-}
+const stalenessLine = computed(() => {
+  if (isBuyerView.value) {
+    if (!buyerProfile.value || buyerIncompleteCount.value === 0) return null
+    return stalenessCopy(buyerProfile.value.createdAt, buyerProfile.value.updatedAt)
+  }
+  if (!passports.value.length || incompleteItemCount.value === 0) return null
+  return stalenessCopy(primaryPassport.value.createdAt, primaryPassport.value.lastVisitedAt)
+})
 
-// ── Activity ─────────────────────────────────────────────────────────
-const ICON_HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>'
-const ICON_SCORE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 12l5-5"/></svg>'
+// ── "Next for you" rows, per role ──────────────────────────────────────
+const nextActions = computed(() => {
+  const rows: { title: string; sub: string; icon: string; to: string }[] = []
 
-const activityItems = computed(() => [
-  { icon: ICON_HOME, title: 'Property added', sub: userPostcode.value || 'CV5 6AJ', time: '2 days ago' },
-  { icon: ICON_SCORE, title: 'HomeScore pending', sub: 'Run your first score to unlock insights', time: 'now' },
-])
+  if (isBuyerView.value) {
+    if (!buyerProfile.value) return rows
+    if (buyerIncompleteCount.value > 0) {
+      rows.push({
+        title: `Complete ${buyerIncompleteCount.value} ${buyerIncompleteCount.value === 1 ? 'item' : 'items'} in your Passport`,
+        sub: 'Add documents and details to build your record.',
+        icon: '/dashboard/nextDocuments.png',
+        to: '/buyer-profile/build',
+      })
+    }
+    if (!buyerIdVerified.value) {
+      rows.push({
+        title: 'Verify your identity',
+        sub: 'A verified ID is what sellers and agents check first.',
+        icon: '/dashboard/nextIdentity.png',
+        to: '/buyer-profile/build',
+      })
+    }
+    if (financePercent.value < 100) {
+      rows.push({
+        title: 'Upload proof of funds or AIP',
+        sub: 'Strengthen your position and unlock more.',
+        icon: '/dashboard/nextFunds.png',
+        to: '/buyer-profile/build',
+      })
+    }
+    rows.push({
+      title: 'Confirm your buying position',
+      sub: 'Let agents and sellers know where you are in the chain.',
+      icon: '/dashboard/nextPosition.png',
+      to: '/buyer-profile/build',
+    })
+    return rows
+  }
 
-// ── Search ───────────────────────────────────────────────────────────
+  if (!passports.value.length) return rows
+
+  if (incompleteItemCount.value > 0) {
+    rows.push({
+      title: `Complete ${incompleteItemCount.value} ${incompleteItemCount.value === 1 ? 'item' : 'items'} in your Passport`,
+      sub: 'Add documents and details to build your record.',
+      icon: '/dashboard/nextDocuments.png',
+      to: `/passportview/${primaryPassport.value.id}`,
+    })
+  }
+
+  if (isLandlord.value) {
+    rows.push({
+      title: 'Keep your compliance documents current',
+      sub: 'Gas, electrical and EPC certificates your tenants can see.',
+      icon: '/dashboard/nextDocuments.png',
+      to: `/passportview/landlord/${primaryPassport.value.id}`,
+    })
+  }
+
+  rows.push({
+    title: 'Improve your EPC',
+    sub: 'See how you could raise your score and cut running costs.',
+    icon: '/dashboard/nextEpc.png',
+    to: homeScoreHref.value,
+  })
+
+  return rows
+})
+
+// ── Search ─────────────────────────────────────────────────────────────
 function onSearchSelect(property: { id: string }) {
   if (property?.id) navigateTo(`/property/${property.id}`)
   else navigateTo('/marketplace')
@@ -543,12 +757,59 @@ function onSearchEnter(q: string) {
 }
 function runSearch() {
   const q = searchQuery.value.trim()
-  if (q) navigateTo(`/marketplace?q=${encodeURIComponent(q)}`)
-  else navigateTo('/marketplace')
+  navigateTo(q ? `/marketplace?q=${encodeURIComponent(q)}` : '/marketplace')
 }
 
 function startClaimFlow() {
   navigateTo('/claim')
+}
+
+// ── Fetching ───────────────────────────────────────────────────────────
+function normalizeRole(r: unknown): string {
+  const allowed = ['sell', 'buy', 'both', 'landlord']
+  return typeof r === 'string' && allowed.includes(r) ? r : 'buy'
+}
+
+// Fired independently rather than awaited with the rest: /property/for-you
+// does live EPC/OS enrichment per candidate and can take seconds. Bundling
+// it in would hold the whole page on its skeleton until the slowest call
+// finished, when ForYouFeed has its own :loading state.
+async function fetchForYou(token: string) {
+  const result = await $fetch<{ items: any[]; needsPostcode?: boolean }>(
+    `${config.public.apiBase}/property/for-you`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  ).catch(() => null)
+  properties.value = result?.items ?? []
+  needsPostcode.value = result?.needsPostcode === true
+  loadingProperties.value = false
+}
+
+// Fired by ForYouFeed once a postcode is saved. Re-reads the token rather
+// than closing over onMounted's copy, since this can fire much later.
+function refetchForYou() {
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  if (token) fetchForYou(token)
+}
+
+async function fetchRecentlyViewed(token: string) {
+  const result = await $fetch<any[]>(`${config.public.apiBase}/property/recently-viewed`, {
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => null)
+  recentlyViewed.value = result ?? []
+  loadingRecentlyViewed.value = false
+}
+
+async function fetchBuyerSide(token: string) {
+  const [buyerResult, savedResult] = await Promise.allSettled([
+    $fetch<any>(`${config.public.apiBase}/buyer-profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    $fetch<any[]>(`${config.public.apiBase}/property/saved`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  ])
+  if (buyerResult.status === 'fulfilled') buyerProfile.value = buyerResult.value ?? null
+  if (savedResult.status === 'fulfilled') savedProperties.value = savedResult.value ?? []
 }
 
 onMounted(async () => {
@@ -556,823 +817,790 @@ onMounted(async () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   if (!token) return
 
-  const cachedRole = localStorage.getItem('umu_role')
-  if (cachedRole) role.value = cachedRole
+  // A cached role renders the right shell immediately; the preferences call
+  // below then confirms or corrects it.
+  const cachedRole =
+    typeof window !== 'undefined' ? localStorage.getItem('umu_role') : null
+  if (cachedRole) role.value = normalizeRole(cachedRole)
 
-  const [prefResult, passportResult, propResult, verifiedResult] = await Promise.allSettled([
-    $fetch<any>(`${config.public.apiBase}/profile/preferences`, { headers: { Authorization: `Bearer ${token}` } }),
-    $fetch<any[]>(`${config.public.apiBase}/profile/passports`, { headers: { Authorization: `Bearer ${token}` } }),
-    $fetch<{ items: any[] }>(`${config.public.apiBase}/property/for-you`, { headers: { Authorization: `Bearer ${token}` } }),
-    $fetch<{ items: any[] }>(`${config.public.apiBase}/property/verified-passports?limit=12`),
-  ])
+  const prefResult = await $fetch<any>(`${config.public.apiBase}/profile/preferences`, {
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => null)
 
-  if (prefResult.status === 'fulfilled') {
-    preferences.value = prefResult.value
-    const r = (prefResult.value?.purpose as string[])?.[0] ?? 'buy'
-    role.value = r
-    if (typeof window !== 'undefined') localStorage.setItem('umu_role', r)
+  role.value = normalizeRole((prefResult?.purpose as string[])?.[0] ?? cachedRole)
+  if (typeof window !== 'undefined') localStorage.setItem('umu_role', role.value)
+  roleResolved.value = true
+
+  fetchForYou(token) // not awaited — see its own comment
+
+  if (isBuyerView.value) {
+    fetchRecentlyViewed(token) // not awaited — has its own loading state
+    await fetchBuyerSide(token)
+    loadingBuyerProfile.value = false
+    loadingSaved.value = false
+    return
   }
-  if (passportResult.status === 'fulfilled') passports.value = passportResult.value ?? []
-  if (propResult.status === 'fulfilled') properties.value = propResult.value?.items ?? []
-  if (verifiedResult.status === 'fulfilled') verifiedPassportProperties.value = verifiedResult.value?.items ?? []
+
+  // Owner roles (sell / landlord / both) also get the saved-properties list,
+  // which feeds the Watching card shown for every role.
+  fetchBuyerSide(token).then(() => {
+    loadingSaved.value = false
+    loadingBuyerSummary.value = false
+  })
+
+  const passportResult = await $fetch<any[]>(`${config.public.apiBase}/profile/passports`, {
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => null)
+
+  if (passportResult) {
+    const all = passportResult ?? []
+    // /profile/passports returns every passport the user owns, any type,
+    // most-recently-visited first. Prefer the one matching their role so a
+    // landlord doesn't land on a seller book, falling back to whatever is
+    // first rather than showing nothing.
+    const wanted = isLandlord.value ? 'LANDLORD' : 'SELLER'
+    const matching = all.filter((p: any) => p.type === wanted)
+    passports.value = matching.length ? matching : all
+  }
+  loadingPassport.value = false
+
+  if (passports.value.length) {
+    const sections = await $fetch<any[]>(
+      `${config.public.apiBase}/passport/${passports.value[0].id}/sections`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    ).catch(() => [])
+    passportSections.value = sections ?? []
+  }
 })
 </script>
 
 <style scoped>
-.ex {
-  --navy: #231d45;
-  --navy-2: #2c2456;
-  --teal: #00a19a;
-  --teal-dark: #00857f;
-  --teal-bright: #2fd0c6;
-  --ink: #231d45;
-  --ink-soft: #5a5570;
-  --ink-faint: #8b8799;
-  --line: #ececf2;
-  --bg: #f3f2ef;
-  --card: #ffffff;
-
+.dsh {
   min-height: 100dvh;
-  color: var(--ink);
-  background: var(--bg);
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: clip;
-}
-
-.ex-shell {
-  width: min(1180px, calc(100% - 48px));
-  margin: 0 auto;
-}
-
-/* ── Buttons ──────────────────────────────────────────────────────── */
-.ex-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid transparent;
-  border-radius: 11px;
-  padding: 11px 18px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-  white-space: nowrap;
-}
-.ex-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
-.ex-btn.solid { background: var(--teal); color: #fff; }
-.ex-btn.solid:hover { background: var(--teal-dark); transform: translateY(-1px); }
-.ex-btn.navy { background: var(--navy); color: #fff; }
-.ex-btn.navy:hover { background: var(--navy-2); transform: translateY(-1px); }
-.ex-btn.ghost {
-  background: #fff;
-  color: var(--navy);
-  border-color: var(--line);
-}
-.ex-btn.ghost:hover { border-color: var(--teal); color: var(--teal-dark); transform: translateY(-1px); }
-.ex-plus { font-weight: 800; margin-right: 2px; }
-
-.ex-link {
-  border: 0;
-  background: transparent;
-  color: var(--teal-dark);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-}
-.ex-link:hover { color: var(--teal); }
-
-.ex-tick {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--teal);
-  position: relative;
-  flex-shrink: 0;
-}
-.ex-tick::after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 3px;
-  width: 4px;
-  height: 7px;
-  border: solid #fff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-/* ── Navbar ───────────────────────────────────────────────────────── */
-.ex-nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(243, 242, 239, 0.88);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
-}
-.ex-nav-inner {
-  min-height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-.ex-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-.ex-brand-img { height: 32px; width: auto; display: block; object-fit: contain; }
-.ex-brand-name { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; color: var(--navy); }
-.ex-brand-beta { font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: var(--teal-dark); background: rgba(0, 161, 154, 0.1); border: 1px solid rgba(0, 161, 154, 0.3); border-radius: 6px; padding: 2px 7px; margin-left: 2px; }
-
-.ex-nav-links { display: flex; gap: 4px; }
-.ex-nav-links button {
-  border: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  padding: 8px 12px;
-  border-radius: 9px;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-}
-.ex-nav-links button:hover { color: var(--navy); background: rgba(35, 29, 69, 0.05); }
-.ex-nav-links button.active { color: var(--teal-dark); background: rgba(0, 161, 154, 0.1); }
-
-.ex-nav-actions { display: inline-flex; align-items: center; gap: 10px; }
-.ex-icon-btn {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--ink-soft);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.ex-icon-btn svg { width: 19px; height: 19px; }
-.ex-icon-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
-
-.ex-profile-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  padding: 5px 12px 5px 5px;
-  cursor: pointer;
-}
-.ex-profile-chip:hover { border-color: var(--teal); }
-.ex-profile-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: var(--navy);
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-}
-.ex-profile-meta { display: flex; flex-direction: column; line-height: 1.15; text-align: left; }
-.ex-profile-meta strong { font-size: 13px; font-weight: 700; color: var(--navy); }
-.ex-profile-meta small { font-size: 10.5px; color: var(--ink-faint); font-weight: 600; }
-
-.ex-burger {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  cursor: pointer;
-}
-.ex-burger span,
-.ex-burger span::before,
-.ex-burger span::after {
-  content: '';
-  display: block;
-  width: 18px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--navy);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-.ex-burger span { position: relative; }
-.ex-burger span::before { position: absolute; top: -6px; }
-.ex-burger span::after { position: absolute; top: 6px; }
-.ex-burger span.open { background: transparent; }
-.ex-burger span.open::before { top: 0; transform: rotate(45deg); }
-.ex-burger span.open::after { top: 0; transform: rotate(-45deg); }
-
-.ex-mobile-menu {
-  border-top: 1px solid rgba(35, 29, 69, 0.07);
-  background: rgba(243, 242, 239, 0.98);
-  backdrop-filter: blur(12px);
-  padding: 8px 0 14px;
-}
-.ex-mobile-menu .ex-shell { display: flex; flex-direction: column; }
-.ex-mobile-menu button {
-  border: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--navy);
-  text-align: left;
-  padding: 13px 4px;
-  cursor: pointer;
-  border-bottom: 1px solid rgba(35, 29, 69, 0.06);
-}
-.ex-mobile-claim { color: var(--teal-dark) !important; font-weight: 700 !important; }
-.ex-menu-enter-active, .ex-menu-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.ex-menu-enter-from, .ex-menu-leave-to { opacity: 0; transform: translateY(-8px); }
-
-/* ── Stage ────────────────────────────────────────────────────────── */
-.ex-stage { padding: 28px 0 80px; }
-
-/* ── Hero · Property Hub ──────────────────────────────────────────── */
-.ex-hub {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 20px 32px;
-  align-items: stretch;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  padding: 22px;
-  box-shadow: 0 18px 44px rgba(35, 29, 69, 0.06);
-  margin-bottom: 28px;
-}
-.ex-hub-media {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  min-height: 280px;
-}
-.ex-hub-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.ex-hub-photo {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--navy);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 8px 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.16);
-}
-.ex-hub-photo svg { width: 15px; height: 15px; }
-.ex-hub-photo:hover { background: #fff; }
-.ex-hub-view {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
-  z-index: 2;
-  border: 0;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--navy);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 8px 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.16);
-}
-.ex-hub-view:hover { background: #fff; color: var(--teal-dark); }
-
-.ex-hub-body { display: flex; flex-direction: column; padding: 6px 6px 6px 0; }
-.ex-hub-eyebrow {
-  margin: 0 0 8px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: var(--teal-dark);
-}
-.ex-hub-title {
-  margin: 0 0 6px;
-  font-size: clamp(30px, 3.4vw, 40px);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -1.2px;
-  color: var(--navy);
-}
-.ex-hub-meta { margin: 0 0 14px; font-size: 14.5px; font-weight: 600; color: var(--ink-soft); }
-.ex-hub-copy { margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: var(--ink-soft); max-width: 52ch; }
-
-.ex-hub-progress { margin-bottom: 22px; max-width: 480px; }
-.ex-hub-progress-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--ink-soft);
-}
-.ex-hub-progress-track {
-  height: 8px;
-  border-radius: 999px;
-  background: #eceaf0;
-  overflow: hidden;
-}
-.ex-hub-progress-track i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--teal) 0%, var(--teal-bright) 100%);
-  transition: width 0.6s ease;
-}
-.ex-hub-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: auto; }
-
-/* ── Search bar ───────────────────────────────────────────────────── */
-.ex-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 7px;
-  box-shadow: 0 10px 28px rgba(35, 29, 69, 0.05);
-  margin-bottom: 28px;
-}
-.ex-search-field { flex: 1; min-width: 0; }
-.ex-search-field :deep(.psi-wrap) { width: 100%; }
-.ex-search-field :deep(.psi-input) {
-  min-height: 42px;
-  border: 0 !important;
-  border-radius: 10px;
-  background: transparent;
-  font-size: 14.5px;
-  box-shadow: none;
-}
-.ex-search-field :deep(.psi-input:focus) { border: 0 !important; background: transparent; }
-.ex-search-radius { position: relative; flex-shrink: 0; }
-.ex-search-radius select {
-  appearance: none;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  padding: 9px 28px 9px 12px;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  cursor: pointer;
-}
-.ex-search-radius::after {
-  content: '▾';
-  position: absolute;
-  right: 11px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px;
-  color: var(--ink-faint);
-  pointer-events: none;
-}
-.ex-search-btn { flex-shrink: 0; }
-
-/* Search sitting inline, to the right of the hub action buttons */
-.ex-search--hub {
-  flex: 1 1 300px;
-  min-width: 260px;
-  margin-bottom: 0;
-  box-shadow: none;
-  background: #f8f8f6;
-  border-color: var(--line);
-}
-/* The input field is narrow (it shares the row with the radius + Search button),
-   so anchor the autocomplete dropdown to the whole search bar rather than the
-   input alone: it then spans the full search-bar width and drops cleanly beneath
-   it, instead of squashing into the input or sprawling under the buttons. */
-.ex-search--hub { position: relative; }
-.ex-search--hub :deep(.psi-wrap) { position: static; }
-.ex-search--hub :deep(.psi-drop) {
-  left: 0;
-  right: 0;
-  width: auto;
-  max-width: none;
-  top: calc(100% + 8px);
-}
-
-/* ── KPI overview ─────────────────────────────────────────────────── */
-.ex-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 36px;
-}
-.ex-kpi {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  padding: 18px;
-}
-.ex-kpi-ic {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(0, 161, 154, 0.1);
-  color: var(--teal-dark);
-  display: grid;
-  place-items: center;
-  margin-bottom: 14px;
-}
-.ex-kpi-ic svg { width: 20px; height: 20px; }
-.ex-kpi-ic--ring { position: relative; }
-.ex-kpi-ic--ring::before {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  border: 2px solid var(--teal);
-}
-.ex-kpi-ring-val { font-size: 12px; font-weight: 800; color: var(--teal-dark); }
-.ex-kpi strong { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.8px; color: var(--navy); line-height: 1; }
-.ex-kpi-label { display: block; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
-
-/* ── Add another property ─────────────────────────────────────────── */
-.ex-addprop {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  width: 100%;
-  text-align: left;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: linear-gradient(135deg, #ffffff 0%, #f6faf9 100%);
-  padding: 18px 20px;
-  cursor: pointer;
-  margin-bottom: 36px;
-  font-family: inherit;
-  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
-}
-.ex-addprop:hover {
-  border-color: var(--teal);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 36px rgba(35, 29, 69, 0.08);
-}
-.ex-addprop-ic {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--navy);
-  color: var(--teal-bright);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.ex-addprop-ic svg { width: 26px; height: 26px; }
-.ex-addprop-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.ex-addprop-body strong { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; color: var(--navy); }
-.ex-addprop-body small { font-size: 13.5px; color: var(--ink-soft); }
-.ex-addprop-cta {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--teal);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 10px 18px;
-  border-radius: 11px;
-  transition: background 0.16s ease;
-}
-.ex-addprop-cta svg { width: 15px; height: 15px; }
-.ex-addprop:hover .ex-addprop-cta { background: var(--teal-dark); }
-
-/* ── Blocks ───────────────────────────────────────────────────────── */
-.ex-block { margin-bottom: 36px; }
-.ex-block-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.ex-block-head h2 {
-  margin: 0;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--navy);
-}
-.ex-block-head--stack { flex-direction: column; align-items: flex-start; gap: 4px; }
-.ex-block-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
-
-/* ── Feature cards (story / history) ──────────────────────────────── */
-.ex-features {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-.ex-feature {
-  display: flex;
-  gap: 18px;
-  border: 1.5px solid;
-  border-radius: 20px;
-  padding: 18px;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-.ex-feature--hs {
-  background: linear-gradient(180deg, #f2faf8 0%, #ffffff 72%);
-  border-color: rgba(0, 161, 154, 0.28);
-}
-.ex-feature--hs:hover {
-  border-color: var(--teal);
-  transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(0, 161, 154, 0.16);
-}
-.ex-feature--pp {
-  background: linear-gradient(180deg, rgba(35, 29, 69, 0.04) 0%, #ffffff 72%);
-  border-color: rgba(35, 29, 69, 0.18);
-}
-.ex-feature--pp:hover {
-  border-color: var(--navy);
-  transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(35, 29, 69, 0.16);
-}
-.ex-feature-media {
-  flex-shrink: 0;
-  width: 132px;
-  height: 132px;
-  border-radius: 16px;
-  background: #fff;
-  border: 1px solid var(--line);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  align-self: center;
-}
-.ex-feature-media img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
-.ex-feature-media--pp img { padding: 6px; }
-.ex-feature-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.ex-feature-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.ex-feature-eyebrow {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: var(--teal-dark);
-}
-.ex-feature-eyebrow.pp { color: var(--navy); }
-.ex-feature-pill {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 100px;
-  color: #fff;
-}
-.ex-feature-pill.hs { background: var(--teal); }
-.ex-feature-pill.pp { background: var(--navy); }
-.ex-feature-headline {
-  margin: 0 0 5px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  line-height: 1.2;
-  color: var(--navy);
-}
-.ex-feature-sub {
-  margin: 0 0 12px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-.ex-feature-sub b { color: var(--navy); font-weight: 800; }
-.ex-feature-list {
-  list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  background: #f3f2ef;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #231d45;
 }
-.ex-feature-list li {
-  display: flex;
+
+.dsh-shell {
+  flex: 1;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 30px 24px 64px;
+}
+
+/* ── Navbar actions ────────────────────────────────────────────────── */
+/* The bell ships as a bare transparent circle; against the cream navbar it
+   needs the same bordered-chip treatment as the profile pill beside it, or
+   the two read as unrelated. :deep() because .nb-btn is scoped to the
+   NotificationBell component. */
+.dsh :deep(.nb-btn) {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e4e5ed;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dsh :deep(.nb-btn:hover) {
+  border-color: #9fe0d8;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
+}
+
+.dsh-nav-profile {
+  display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.ex-feature-cta { width: 100%; margin-top: auto; }
-
-/* ── Two-column · quick actions + activity ────────────────────────── */
-.ex-two {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 20px;
-  margin-bottom: 36px;
-}
-.ex-panel {
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  border: 1px solid #e4e5ed;
   background: #fff;
-  padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dsh-nav-profile:hover {
+  border-color: #9fe0d8;
+  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
+}
+.dsh-nav-profile-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.dsh-nav-profile-text strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #231d45;
+}
+.dsh-nav-profile-text small {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #8a90a6;
+}
+/* Below this the name would crowd the bar; the avatar alone still reads. */
+@media (max-width: 1120px) {
+  .dsh-nav-profile-text { display: none; }
+  .dsh-nav-profile { padding: 5px; }
 }
 
-/* ── Quick actions ────────────────────────────────────────────────── */
-.ex-qa-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+/* ── Head ──────────────────────────────────────────────────────────── */
+.dsh-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
-.ex-qa {
+.dsh-greeting {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #00a19a;
+}
+.dsh-title {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.dsh-lede {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #6b7089;
+}
+.dsh-head-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dsh-role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e4e5ed;
+}
+.dsh-role-art {
+  width: 26px;
+  height: 34px;
+  object-fit: contain;
+}
+.dsh-role-chip small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a8a9ad;
+}
+.dsh-role-chip strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #231d45;
+}
+.dsh-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 12px 14px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00a19a, #008a84);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.28);
+}
+.dsh-add:hover { filter: brightness(1.06); }
+.dsh-add-ic { width: 22px; height: 22px; object-fit: contain; }
+
+/* ── Search ────────────────────────────────────────────────────────── */
+.dsh-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 6px;
+  background: #fff;
+  border: 1px solid #e4e5ed;
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(31, 61, 98, 0.06);
+  margin-bottom: 26px;
+}
+.dsh-search-field { flex: 1; min-width: 0; }
+.dsh-search-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 12px;
+  background: #00a19a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.dsh-search-btn:hover { background: #008a84; }
+
+/* ── Boot skeleton ─────────────────────────────────────────────────── */
+.dsh-boot { display: grid; gap: 16px; }
+.dsh-boot-card, .dsh-boot-row, .dsh-skel {
+  border-radius: 18px;
+  background: linear-gradient(100deg, #eceff4 30%, #e2e6ee 50%, #eceff4 70%);
+  background-size: 250% 100%;
+  animation: dsh-shimmer 1.4s ease-in-out infinite;
+}
+.dsh-boot-card { height: 210px; }
+.dsh-boot-rows { display: grid; gap: 10px; }
+.dsh-boot-row { height: 66px; }
+.dsh-skel--hero { height: 210px; }
+.dsh-skel--row { height: 72px; }
+@keyframes dsh-shimmer {
+  from { background-position: 140% 0; }
+  to { background-position: -40% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsh-boot-card, .dsh-boot-row, .dsh-skel { animation: none; }
+}
+
+/* ── Layout ────────────────────────────────────────────────────────── */
+.dsh-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 348px;
+  gap: 26px;
+  align-items: start;
+}
+.dsh-main { min-width: 0; }
+.dsh-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+.dsh-section { margin-bottom: 30px; }
+.dsh-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 14px;
+}
+.dsh-sec-ic { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
+.dsh-eyebrow {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #00a19a;
+}
+.dsh-sec-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ── Active passport card ──────────────────────────────────────────── */
+.apc {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e9ecf2;
+  border-radius: 22px;
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.apc:hover {
+  border-color: #d8e4e2;
+  box-shadow: 0 16px 36px rgba(31, 61, 98, 0.1);
+}
+.apc:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
+.apc-book { flex-shrink: 0; width: 116px; }
+.apc-info { flex: 1; min-width: 0; }
+.apc-pill {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: #e9f6f5;
+  color: #00756f;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.apc-name {
+  margin: 9px 0 1px;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.apc-postcode {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a90a6;
+}
+.apc-verified, .apc-unverified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.apc-verified { color: #00756f; }
+.apc-unverified { color: #b45309; }
+.apc-prog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5876;
+}
+.apc-prog-row strong { color: #231d45; font-weight: 800; }
+.apc-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #00756f;
+}
+.apc-live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #00a19a;
+  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.16);
+}
+.apc-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #edf0f5;
+  overflow: hidden;
+}
+.apc-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2fd0c6, #00a19a);
+  transition: width 0.4s ease;
+}
+.apc-actions {
   display: flex;
   align-items: center;
   gap: 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
-  padding: 16px;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.16s ease, transform 0.16s ease;
+  flex-wrap: wrap;
+  margin-top: 18px;
 }
-.ex-qa:hover { border-color: var(--teal); transform: translateY(-2px); }
-.ex-qa-ic {
-  width: 44px;
-  height: 44px;
+.apc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
   border-radius: 12px;
-  background: var(--navy);
+  background: linear-gradient(135deg, #00a19a, #008a84);
   color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.26);
+}
+.apc-cta:hover { filter: brightness(1.06); }
+.apc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #00a19a;
+  cursor: pointer;
+}
+.apc-link:hover { color: #00756f; }
+
+/* ── Empty CTA ─────────────────────────────────────────────────────── */
+.dsh-empty-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 22px 24px;
+  text-align: left;
+  background: #fff;
+  border: 1px dashed #cfd8e3;
+  border-radius: 20px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.dsh-empty-cta:hover { border-color: #9fe0d8; background: #fbfffe; }
+.dsh-empty-plus {
+  width: 46px; height: 46px;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  flex-shrink: 0;
+  border-radius: 14px;
+  background: #e9f6f5;
+  color: #00a19a;
+  font-size: 24px;
+  font-weight: 700;
 }
-.ex-qa-ic svg { width: 21px; height: 21px; color: var(--teal-bright); }
-.ex-qa-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.ex-qa-body strong { font-size: 15px; font-weight: 700; color: var(--navy); }
-.ex-qa-body small { font-size: 13px; color: var(--ink-soft); }
-.ex-qa-arrow { color: var(--ink-faint); font-size: 16px; font-weight: 700; flex-shrink: 0; }
-.ex-qa:hover .ex-qa-arrow { color: var(--teal-dark); }
+.dsh-empty-body { flex: 1; min-width: 0; }
+.dsh-empty-body strong { display: block; font-size: 15.5px; font-weight: 800; }
+.dsh-empty-body small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b7089;
+}
+.dsh-empty-chev { color: #a8a9ad; font-size: 18px; }
 
-/* ── Activity ─────────────────────────────────────────────────────── */
-.ex-activity { list-style: none; margin: 0; padding: 0; }
-.ex-activity-item {
+/* ── Next for you ──────────────────────────────────────────────────── */
+.nfy {
+  background: #fff;
+  border: 1px solid #e9ecf2;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.nfy-stale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 20px;
+  background: #fff8ed;
+  border-bottom: 1px solid #fbe4bd;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #92400e;
+}
+.nfy-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 20px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-top: 1px solid #f0f2f6;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+.nfy-row:first-of-type { border-top: none; }
+.nfy-row:hover { background: #fafbfd; }
+.nfy-ic { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+.nfy-body { flex: 1; min-width: 0; }
+.nfy-body strong { display: block; font-size: 14.5px; font-weight: 800; }
+.nfy-body small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b7089;
+}
+.nfy-chev { color: #c3c6d2; font-size: 18px; flex-shrink: 0; }
+
+/* ── Side cards ────────────────────────────────────────────────────── */
+.dsh-card {
+  background: #fff;
+  border: 1px solid #e9ecf2;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.dsh-card-head {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f2f6;
 }
-.ex-activity-item:last-child { border-bottom: 0; padding-bottom: 0; }
-.ex-activity-item:first-child { padding-top: 4px; }
-.ex-activity-ic {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  background: rgba(0, 161, 154, 0.1);
-  color: var(--teal-dark);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.ex-activity-ic :deep(svg) { width: 18px; height: 18px; }
-.ex-activity-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.ex-activity-body strong { font-size: 14px; font-weight: 700; color: var(--navy); }
-.ex-activity-body small { font-size: 12.5px; color: var(--ink-soft); }
-.ex-activity-time { font-size: 12px; font-weight: 600; color: var(--ink-faint); white-space: nowrap; flex-shrink: 0; }
-
-/* ── Recommended ──────────────────────────────────────────────────── */
-.ex-reco-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-.ex-reco {
+.dsh-card-ic { width: 34px; height: 38px; object-fit: contain; flex-shrink: 0; }
+.dsh-card-head-text h3 {
+  margin: 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  padding: 20px;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.16s ease, transform 0.16s ease;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 800;
 }
-.ex-reco:hover { border-color: var(--teal); transform: translateY(-2px); }
-.ex-reco-ic {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--navy);
-  color: var(--teal-bright);
-  display: grid;
-  place-items: center;
-  margin-bottom: 16px;
-}
-.ex-reco-ic svg { width: 21px; height: 21px; }
-.ex-reco-title { font-size: 15.5px; font-weight: 700; color: var(--navy); }
-.ex-reco-price { margin: 4px 0 5px; font-size: 14px; font-weight: 700; color: var(--teal-dark); }
-.ex-reco-sub { font-size: 12.5px; color: var(--ink-faint); line-height: 1.4; }
-
-/* ── Footer (landing style) ───────────────────────────────────────── */
-.ex-footer { background: var(--navy); color: #fff; padding: 56px 0 28px; }
-.ex-footer-grid {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr;
-  gap: 28px;
-  padding-bottom: 36px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.ex-footer-brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 14px; }
-.ex-footer-logo { height: 26px; width: auto; display: block; object-fit: contain; }
-.ex-footer-brand strong { font-size: 18px; font-weight: 800; color: #fff; }
-.ex-footer-intro p { font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); margin: 0 0 16px; max-width: 34ch; }
-.ex-footer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.ex-footer-chips span {
-  font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 7px; padding: 5px 9px;
-}
-.ex-footer-col h5 {
-  margin: 2px 0 14px;
-  font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-}
-.ex-footer-col button {
+.dsh-card-head-text small {
   display: block;
-  border: 0; background: transparent;
-  font-family: inherit; font-size: 13.5px; font-weight: 600;
-  color: rgba(255, 255, 255, 0.78);
-  padding: 0; margin-bottom: 11px; cursor: pointer;
-  text-align: left;
-  transition: color 0.15s;
+  margin-top: 1px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #8a90a6;
 }
-.ex-footer-col button:hover { color: var(--teal-bright); }
-.ex-footer-bottom {
-  padding-top: 22px;
+.dsh-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #e9f6f5;
+  color: #00756f;
+  font-size: 11px;
+  font-weight: 800;
+}
+.dsh-card-more {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  background: #fafbfd;
+  border: none;
+  border-top: 1px solid #f0f2f6;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #00a19a;
+  cursor: pointer;
+}
+.dsh-card-more:hover { background: #f2faf8; }
+.dsh-card-empty { padding: 22px 18px; text-align: center; }
+.dsh-card-empty p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a90a6;
+}
+.dsh-card-empty button {
+  padding: 9px 18px;
+  border: 1px solid #e4e5ed;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #231d45;
+  cursor: pointer;
+}
+.dsh-card-empty button:hover { border-color: #9fe0d8; color: #00756f; }
+
+.watch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-top: 1px solid #f5f6f9;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+.watch-row:first-of-type { border-top: none; }
+.watch-row:hover { background: #fafbfd; }
+.watch-row--plain { padding: 14px 16px; }
+.watch-media {
+  width: 56px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eef4f2;
+}
+.watch-img { width: 100%; height: 100%; }
+.watch-body { flex: 1; min-width: 0; }
+.watch-body strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.watch-body small {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8a90a6;
+}
+.watch-hs { color: #00756f !important; }
+.watch-hs b { font-weight: 800; }
+.watch-chev { color: #c3c6d2; font-size: 17px; flex-shrink: 0; }
+
+/* ── HomeScore (owner) ─────────────────────────────────────────────── */
+.hsc {
+  padding: 20px;
+  background: linear-gradient(160deg, #0a0f2c, #131a3a);
+  border-radius: 20px;
+  color: #fff;
+}
+.hsc-top { display: flex; align-items: center; gap: 16px; }
+.hsc-ring { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
+.hsc-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hsc-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 8;
+}
+.hsc-ring-fill {
+  fill: none;
+  stroke: url(#dshHsGrad);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.hsc-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1px;
+}
+.hsc-ring-num { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.hsc-ring-den { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.5); }
+.hsc-info { flex: 1; min-width: 0; }
+.hsc-title { margin: 0 0 3px; font-size: 15.5px; font-weight: 800; }
+.hsc-sub {
+  margin: 0;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.6);
+}
+.hsc-potential {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+.hsc-potential strong { color: #5eead4; font-weight: 800; }
+.hsc-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00a19a, #008a84);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.hsc-cta:hover { filter: brightness(1.08); }
+
+/* ── HomeScore explore entry ───────────────────────────────────────── */
+.hec {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  text-align: left;
+  background: linear-gradient(160deg, #f0fbf8, #e4f5f1);
+  border: 1px solid #d3ece6;
+  border-radius: 20px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.hec:hover {
+  border-color: #9fe0d8;
+  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.14);
+}
+.hec-art { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
+.hec-body { flex: 1; min-width: 0; }
+.hec-body strong { display: block; font-size: 15px; font-weight: 800; }
+.hec-body small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #4a5876;
+}
+.hec-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #00756f;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────── */
+/* ── Add another property ──────────────────────────────────────────── */
+.apr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  text-align: left;
+  background: #fff;
+  border: 1px dashed #cfd8e3;
+  border-radius: 20px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.apr:hover { border-color: #9fe0d8; background: #fbfffe; }
+.apr-ic { width: 38px; height: 38px; object-fit: contain; flex-shrink: 0; }
+.apr-body { flex: 1; min-width: 0; }
+.apr-body strong { display: block; font-size: 14.5px; font-weight: 800; }
+.apr-body small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #6b7089;
+}
+.apr-chev { color: #c3c6d2; font-size: 17px; flex-shrink: 0; }
+
+/* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 1080px) {
-  .ex-nav-links { display: none; }
-  .ex-burger { display: flex; }
-  .ex-profile-meta { display: none; }
+  .dsh-grid { grid-template-columns: minmax(0, 1fr); }
+  .dsh-side { position: static; }
 }
-@media (max-width: 980px) {
-  .ex-hub { grid-template-columns: 1fr; }
-  .ex-hub-media { min-height: 220px; }
-  .ex-kpis { grid-template-columns: repeat(2, 1fr); }
-  .ex-features { grid-template-columns: 1fr; }
-  .ex-two { grid-template-columns: 1fr; }
-  .ex-reco-grid { grid-template-columns: repeat(2, 1fr); }
-  .ex-footer-grid { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 760px) {
-  .ex-nav-inner { gap: 12px; }
-  .ex-profile-chip { display: none; }
-  .ex-nav-actions .ex-btn.solid { display: none; }
-  .ex-search { flex-wrap: wrap; }
-  .ex-search-field { flex: 1 1 100%; order: -1; }
-  .ex-hub-actions .ex-btn { flex: 1 1 auto; }
-  .ex-search--hub { flex: 1 1 100%; }
-  .ex-qa-grid { grid-template-columns: 1fr; }
-  .ex-addprop { flex-wrap: wrap; }
-  .ex-addprop-cta { width: 100%; justify-content: center; }
-  .ex-feature { flex-direction: column; }
-  .ex-feature-media { align-self: flex-start; }
-}
-@media (max-width: 520px) {
-  .ex-shell { width: calc(100% - 32px); }
-  .ex-kpis { grid-template-columns: 1fr 1fr; }
-  .ex-reco-grid { grid-template-columns: 1fr; }
-  .ex-footer-grid { grid-template-columns: 1fr; }
+@media (max-width: 720px) {
+  .dsh-shell { padding: 22px 16px 48px; }
+  .dsh-title { font-size: 25px; }
+  .dsh-head { align-items: flex-start; }
+  .dsh-head-side { width: 100%; flex-wrap: wrap; }
+  .dsh-search { flex-direction: column; align-items: stretch; padding: 12px; }
+  .dsh-search-btn { justify-content: center; }
+  .apc { flex-direction: column; gap: 18px; }
+  .apc-book { width: 96px; }
 }
 </style>
