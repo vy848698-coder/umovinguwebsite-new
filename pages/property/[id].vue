@@ -6229,18 +6229,25 @@ onMounted(async () => {
     // Strip the query so back-nav / refresh doesn't keep reopening it.
     router.replace({ path: route.path }).catch(() => {})
   }
+  // Only the property record gates first paint. Previously all three calls
+  // sat in one Promise.all, so the page held its loading state until the
+  // slowest finished — passport status and saved/wishlist state are both
+  // secondary UI whose consumers already optional-chain through null, so
+  // making the page wait on them just delayed everything for no benefit.
+  const secondary = Promise.allSettled([
+    getPassportStatus(propertyId),
+    fetchActions(propertyId),
+  ]).then(([statusResult]) => {
+    if (statusResult.status === 'fulfilled') passportStatus.value = statusResult.value
+  })
+
   try {
-    const [propData, statusData] = await Promise.all([
-      getPropertyDetails(propertyId),
-      getPassportStatus(propertyId),
-      fetchActions(propertyId),
-    ])
+    const propData = await getPropertyDetails(propertyId)
     if (!propData) {
       loadError.value = 'Property not found.'
     } else {
       property.value = propData
     }
-    passportStatus.value = statusData
   } catch (err) {
     loadError.value = 'Failed to load property details.'
     console.error(err)
@@ -6252,6 +6259,10 @@ onMounted(async () => {
       initMap()
     }
   }
+
+  // Everything below reads passport status, so join it here — after the
+  // page has already painted.
+  await secondary
 
   // Enrichment (non-blocking)
   try {

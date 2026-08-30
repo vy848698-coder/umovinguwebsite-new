@@ -7,6 +7,13 @@
       class="prop-img-photo"
       @error="failed = true"
     />
+    <template v-else-if="!logoFallback">
+      <img :src="stockImage" alt="" class="prop-img-photo" loading="lazy" />
+      <!-- Labelled, so a generic house photo is never mistaken for this
+           property's own. Hidden by container query on thumbnails too small
+           to carry it (see .prop-img-nophoto). -->
+      <span class="prop-img-nophoto">No photo yet</span>
+    </template>
     <template v-else>
       <div class="prop-img-logo">
         <svg viewBox="0 0 43 33" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,18 +32,74 @@
 </template>
 
 <script setup lang="ts">
+// Real house photos rather than a logo mark, so a grid of properties reads as
+// properties. Deliberately generic and labelled "No photo yet" (see template)
+// so one never passes as the actual property's photograph.
+//
+// A set rather than a single image: with one shared fallback, a feed of
+// unphotographed properties renders the identical picture down the whole
+// grid, which reads as a rendering bug rather than as missing data.
+const STOCK_IMAGES = [
+  '/dashboard/home-1.jpg',
+  '/dashboard/home-2.jpg',
+  '/dashboard/home-3.jpg',
+  '/dashboard/home-4.jpg',
+  '/dashboard/home-5.jpg',
+  '/dashboard/home-6.jpg',
+  '/dashboard/home-7.jpg',
+  '/dashboard/home-8.jpg',
+  '/dashboard/home-9.jpg',
+]
+
+// Deterministic, never Math.random(): this renders on the server and then
+// hydrates on the client, so a random pick would differ between the two and
+// trip a hydration mismatch.
+//
+// Hashing an id alone isn't enough for a grid. Nine ids hashed into nine
+// slots collide by the pigeonhole principle — measured ~6 distinct images
+// across 9 cards, so neighbouring cards still visibly repeat. Where the
+// caller knows the row's position in its own list it passes that instead,
+// which walks the set and guarantees no repeat until it is exhausted.
+function pickStock(seed: string): string {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) {
+    h = (h * 31 + seed.charCodeAt(i)) | 0
+  }
+  return STOCK_IMAGES[Math.abs(h) % STOCK_IMAGES.length]
+}
+
 const props = withDefaults(
   defineProps<{
     src?: string | null
     alt?: string
     showCaption?: boolean
+    // Opt back into the bare umu logo mark — for surfaces where a stock
+    // house photo would be misleading rather than helpful (a map pin
+    // thumbnail, a document row), not for property cards.
+    logoFallback?: boolean
+    // Anything stable and unique per property (its id) — used to choose the
+    // stand-in photo when the caller has no list position to offer.
+    seed?: string | null
+    // The row's index in its own list. Preferred over `seed` because it
+    // cycles the set, so no two cards on screen share a photo.
+    variantIndex?: number | null
   }>(),
   {
     src: null,
     alt: 'Property',
     showCaption: true,
+    logoFallback: false,
+    seed: null,
+    variantIndex: null,
   },
 )
+
+const stockImage = computed(() => {
+  if (typeof props.variantIndex === 'number' && props.variantIndex >= 0) {
+    return STOCK_IMAGES[props.variantIndex % STOCK_IMAGES.length]
+  }
+  return pickStock(props.seed || props.alt || '')
+})
 
 const failed = ref(false)
 const resolvedSrc = computed(() => (props.src && props.src.trim() ? props.src : null))
@@ -48,6 +111,7 @@ watch(() => props.src, () => { failed.value = false })
 <style scoped>
 .prop-img {
   position: relative;
+  container-type: inline-size;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -78,6 +142,24 @@ watch(() => props.src, () => { failed.value = false })
   justify-content: center;
 }
 .prop-img-logo svg { width: 100%; height: auto; }
+/* Too small to read on a 56px watch-row thumbnail, and it would cover most
+   of the image — so it only appears once there's room for it. */
+@container (max-width: 150px) {
+  .prop-img-nophoto { display: none; }
+}
+.prop-img-nophoto {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(35, 29, 69, 0.62);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
 .prop-img-caption {
   font-size: 11px;
   font-weight: 700;

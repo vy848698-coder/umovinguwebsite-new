@@ -15,7 +15,7 @@
         <button type="button" :class="{ active: learnIsActive }" @click="navigateTo('/profile/learn')">Learn</button>
       </nav>
 
-      <div v-if="$slots.actions" class="webtop-actions">
+      <div class="webtop-actions">
         <slot name="actions" />
       </div>
 
@@ -100,11 +100,16 @@ watch(
   z-index: 2;
 }
 
+/* Three tracks rather than space-between: with flex, the links block sits
+   wherever the brand and actions widths leave it, so it drifts right when
+   there are no actions and shifts again as the actions change width. Equal
+   1fr side tracks pin the menu to the true centre of the bar on every page,
+   whatever is either side of it. */
 .webtop-inner {
   min-height: 70px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
 }
 
@@ -117,6 +122,8 @@ watch(
   color: #231d45;
   cursor: pointer;
   flex-shrink: 0;
+  /* Start of the left track, so it never stretches across it. */
+  justify-self: start;
 }
 
 .webtop-brand-logo {
@@ -147,6 +154,7 @@ watch(
 .webtop-links {
   display: flex;
   gap: 4px;
+  justify-self: center;
 }
 
 .webtop-links button {
@@ -174,11 +182,16 @@ watch(
 
 .webtop-actions {
   display: inline-flex;
+  align-items: center;
   gap: 8px;
+  justify-self: end;
 }
 
 .webtop-mobile-toggle {
   display: none;
+  justify-self: end;
+  grid-column: 3;
+  grid-row: 1;
   width: 40px;
   height: 40px;
   border-radius: 12px;
@@ -208,6 +221,10 @@ watch(
     width: calc(100% - 18px);
   }
 
+  .webtop-inner {
+    grid-template-columns: 1fr auto;
+  }
+
   .webtop-links,
   .webtop-actions {
     display: none;
@@ -215,6 +232,8 @@ watch(
 
   .webtop-mobile-toggle {
     display: inline-flex;
+    /* Only two tracks at this width. */
+    grid-column: 2;
   }
 
   .webtop-mobile-panel {

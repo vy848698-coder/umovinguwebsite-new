@@ -7,7 +7,7 @@
       <div class="buyer-hero-card">
         <div class="buyer-hero-glow" />
         <div class="buyer-hero-book">
-          <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+          <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" type="BUYER" />
         </div>
         <div class="buyer-hero-info">
           <div class="buyer-hero-eyebrow">Verified Property Passport</div>
