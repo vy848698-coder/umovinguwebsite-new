@@ -42,9 +42,9 @@
 
     <div class="map-content">
       <div class="map-placeholder">
-        <div class="isometric-map">
+        <div class="isometric-map" :style="mapCanvasStyle">
           <div
-            v-for="(decoration, index) in decorativeObjects"
+            v-for="(decoration, index) in visibleDecorations"
             :key="`decoration-${index}-${decoration.icon}`"
             class="map-decoration"
             :style="getDecorationStyle(decoration)"
@@ -348,6 +348,18 @@ const mapLayout = {
   stepGapY: '-31',
 }
 
+// Steps flow down the column 140px apart (`.step-platform` height) and are
+// pulled back up 31px each by `getStepPosition`, so each one advances the
+// path by 109px. The canvas has to be tall enough for the last platform plus
+// a little road beyond it - and no taller, or short passports get a wall of
+// empty grass under the final step.
+const STEP_ADVANCE = 109
+const PLATFORM_HEIGHT = 140
+const mapCanvasHeight = computed(
+  () => Math.max(steps.value.length - 1, 0) * STEP_ADVANCE + PLATFORM_HEIGHT + 60,
+)
+const mapCanvasStyle = computed(() => ({ minHeight: `${mapCanvasHeight.value}px` }))
+
 const decorativeObjects = [
   { icon: 'tree', x: 18, y: 90 },
   { icon: 'lampPost', x: 198, y: 294 },
@@ -372,6 +384,12 @@ const decorativeObjects = [
   { icon: 'tree', x: 174, y: 1777 },
   // { icon: 'post', x: 150, y: 2065, z: 7 },
 ]
+
+// Scenery is placed at fixed coordinates down a full-length path; drop the
+// pieces that would fall past the end of a shorter one.
+const visibleDecorations = computed(() =>
+  decorativeObjects.filter((d) => d.y < mapCanvasHeight.value - 40),
+)
 
 const getStepPosition = (index) => {
   const row = index
@@ -548,7 +566,10 @@ const navigateToStep = (stepId) => {
 .isometric-map {
   position: relative;
   width: 300px;
-  min-height: 2300px;
+  /* Height comes from `mapCanvasStyle` - it has to track the number of steps.
+     This used to be a hard-coded 2300px sized for a full section list, so a
+     passport with fewer sections drew its steps at the top of a tall empty
+     column that read as a broken map. */
   margin: 0 auto;
 }
 
