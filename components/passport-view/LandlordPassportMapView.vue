@@ -20,13 +20,14 @@
       <div class="map-now-eyebrow">Currently viewing</div>
       <div class="map-now-row">
         <div class="map-now-icon">
-          <OPIcon
-            :name="currentStep.icon || currentStep.key"
-            class="w-[24px] h-[24px]"
+          <img
+            :src="iconUrlForSection(currentStep.key)"
+            :alt="currentStep.title"
+            class="map-now-icon-img"
           />
         </div>
         <div class="map-now-body">
-          <div class="map-now-title">{{ currentStep.title }}</div>
+          <div class="map-now-title">{{ toSmartTitleCase(currentStep.title) }}</div>
           <div class="map-now-meta">
             {{ currentStepCompletedTasks }}/{{
               currentStep.tasks?.length ?? 0
@@ -34,7 +35,7 @@
             tasks · {{ getStepCompletion(currentStep) }}% complete
           </div>
         </div>
-        <button class="map-now-cta" @click="openStepDrawer(currentStep)">
+        <button class="map-now-cta" @click="openStep(currentStep)">
           View tasks
         </button>
       </div>
@@ -84,7 +85,11 @@
               <OPIcon name="mapBackgroundTile" class="map-shadow-tile" />
               <OPIcon name="mapBackgroundTile" class="map-background-tile" />
               <div class="step-illustration">
-                <OPIcon :name="step.icon || step.key" class="step-icon-art" />
+                <img
+                  :src="iconUrlForSection(step.key)"
+                  :alt="step.title"
+                  class="step-icon-art"
+                />
               </div>
 
               <!-- Completion ring (prototype-matching): white circle with
@@ -122,117 +127,47 @@
         </div>
       </div>
     </div>
-
-    <!-- Bottom drawer — prototype "sheet" design -->
-    <Teleport to="body">
-      <Transition name="sheet">
-        <div
-          v-if="drawerStep"
-          class="sheet-backdrop"
-          @click.self="drawerStep = null"
-        >
-          <div class="sheet" @click.stop>
-            <div class="grabber" />
-            <div class="sheet-head">
-              <div class="sheet-icon-wrap">
-                <div class="sheet-icon">
-                  <OPIcon
-                    :name="drawerStep.icon || drawerStep.key"
-                    class="w-[50px] h-[50px]"
-                  />
-                </div>
-              </div>
-              <div class="sheet-meta">
-                <div class="sheet-title">{{ toSmartTitleCase(drawerStep.title) }}</div>
-                <div class="sheet-sub">
-                  {{ drawerStep.subtitle || drawerStep.description || '' }}
-                </div>
-                <span v-if="drawerStepMaxPoints > 0" class="sheet-points">
-                  ⭐ Up to {{ drawerStepMaxPoints }} points
-                </span>
-              </div>
-            </div>
-
-            <div class="sheet-progress">
-              <div class="pgr-bar">
-                <div
-                  class="pgr-fill"
-                  :style="{ width: getStepCompletion(drawerStep) + '%' }"
-                />
-              </div>
-              <div class="pgr-text">
-                {{ drawerStepCompletedTasks }} of
-                {{ drawerStep.tasks?.length ?? 0 }} tasks done
-              </div>
-            </div>
-
-            <div class="task-list-head">
-              <div class="lbl">Your tasks</div>
-              <div class="sort">Sort ⌄</div>
-            </div>
-
-            <button
-              v-for="task in drawerStep.tasks ?? []"
-              :key="task.id"
-              class="task-row"
-              :class="{ done: task.completed }"
-              @click="goToTask(drawerStep, task)"
-            >
-              <div class="task-status">
-                <template
-                  v-if="!task.completed && Number(task.answeredQuestions) > 0"
-                >
-                  {{ task.answeredQuestions }}
-                </template>
-              </div>
-              <div class="task-info">
-                <div class="task-title">{{ toSmartTitleCase(task.title) }}</div>
-                <p
-                  v-if="task.description"
-                  class="task-description"
-                >
-                  {{ task.description }}
-                </p>
-                <div class="task-meta">
-                  <span v-if="getTaskPoints(task)" class="points">
-                    +{{ getTaskPoints(task) }} points
-                  </span>
-                  <span class="task-meta-mins">
-                    ~{{ getTaskMinutes(task) }} min
-                  </span>
-                  <span class="task-meta-q">
-                    {{ getTaskQuestionCount(task) }}
-                    {{
-                      getTaskQuestionCount(task) === 1
-                        ? 'question'
-                        : 'questions'
-                    }}
-                  </span>
-                </div>
-              </div>
-              <span class="task-arrow">›</span>
-            </button>
-
-            <div v-if="!(drawerStep.tasks ?? []).length" class="sheet-empty">
-              No tasks in this section yet.
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { toSmartTitleCase } from '~/utils/titleCase'
 import { computed, ref, watch } from 'vue'
-import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import OPIcon from '~/components/ui/OPIcon.vue'
-import { useRoute, useRouter } from 'vue-router'
+import { toSmartTitleCase } from '~/utils/titleCase'
+import { landlordSectionIconUrl } from '~/utils/landlordSectionIcons'
 
-const { steps } = usePassportRuntime()
-const route = useRoute()
-const router = useRouter()
+// Landlord-specific map view. Same isometric path, road connectors,
+// decorations and walking lady as the seller's PassportMapView — the
+// only differences are:
+//   1. `sections` arrive as a prop (the landlord page already owns the
+//      passport data; we don't go through usePassportRuntime).
+//   2. The step icon is rendered as an <img> pointing at the
+//      rental-passport SVG set instead of going via OPIcon's registry.
+//   3. The bottom drawer is owned by the parent — we emit 'open-section'
+//      with the section so the landlord page can pop its existing
+//      section drawer (which handles upload / replace / expiry dates).
+const props = defineProps({
+  sections: {
+    type: Array,
+    default: () => [],
+  },
+  // The landlord page works out a section's completion from documents and
+  // saved answers (see cardData there); the generic answered-questions maths
+  // below disagreed with it, so a section read 0% on its list card and 50%
+  // on its map ring. When the parent supplies its figure, use that.
+  completionFor: {
+    type: Function,
+    default: null,
+  },
+})
+const emit = defineEmits(['open-section'])
+
+const steps = computed(() => props.sections ?? [])
+
+// ── Icon mapping ─────────────────────────────────────────────────
+// Shared with the list view so both show the same emblem for a
+// section - see utils/landlordSectionIcons.ts.
+const iconUrlForSection = landlordSectionIconUrl
 
 // ── Filter tabs ─────────────────────────────────────────────────
 const activeFilter = ref('all')
@@ -274,65 +209,12 @@ const currentStepCompletedTasks = computed(
   () => currentStep.value?.tasks?.filter((t) => t.completed).length ?? 0,
 )
 
-// ── Bottom drawer ──────────────────────────────────────────────
-const drawerStep = ref(null)
-const drawerStepCompletedTasks = computed(
-  () => drawerStep.value?.tasks?.filter((t) => t.completed).length ?? 0,
-)
-const drawerStepPoints = computed(() => {
-  const tasks = drawerStep.value?.tasks ?? []
-  return tasks
-    .filter((t) => t.completed)
-    .reduce(
-      (sum, t) =>
-        sum + Number(t.points || t.pointsReward || t.pointsAward || 0),
-      0,
-    )
-})
-
-// Maximum points available across the whole section — used in the head pill.
-const drawerStepMaxPoints = computed(() => {
-  const tasks = drawerStep.value?.tasks ?? []
-  return tasks.reduce((sum, t) => sum + Number(getTaskPoints(t) || 0), 0)
-})
-
-function getTaskPoints(task) {
-  return Number(task?.points || task?.pointsReward || task?.pointsAward || 0)
-}
-
-function getTaskQuestionCount(task) {
-  if (Number.isFinite(Number(task?.totalQuestions))) {
-    return Number(task.totalQuestions)
-  }
-  if (Array.isArray(task?.questions)) return task.questions.length
-  if (Array.isArray(task?.passportQuestions)) {
-    return task.passportQuestions.length
-  }
-  return 1
-}
-
-function getTaskMinutes(task) {
-  // Allow a server-provided estimate; otherwise budget ~1 min per question.
-  const estimated =
-    Number(task?.estimatedMinutes) ||
-    Number(task?.minimumMinutes) ||
-    Number(task?.minutes)
-  if (estimated > 0) return estimated
-  return Math.max(1, getTaskQuestionCount(task))
-}
 function onStepClick(step) {
   currentStepId.value = step.id
-  drawerStep.value = step
+  openStep(step)
 }
-function openStepDrawer(step) {
-  drawerStep.value = step
-}
-function goToTask(step, task) {
-  const propertyId = route.params.id
-  if (!propertyId || !task?.id) return
-  router.push(
-    `/passportview/steps/tasks/${task.id}?stepId=${step.id}&propertyId=${propertyId}`,
-  )
+function openStep(step) {
+  if (step) emit('open-section', step)
 }
 
 watch(steps, (next) => {
@@ -371,18 +253,7 @@ const decorativeObjects = [
   { icon: 'lampPost', x: 254, y: 626 },
   { icon: 'post', x: 150, y: 745, z: 7 },
   { icon: 'tree', x: 110, y: 850 },
-  // { icon: 'dog', x: 248, y: 844 },
   { icon: 'postInverted', x: 113, y: 1056, z: 7 },
-  // { icon: 'tree', x: 20, y: 1130 },
-  { icon: 'lampPost', x: 135, y: 1237 },
-  { icon: 'tree', x: 189, y: 1367, z: 7 },
-  // { icon: 'orangeDog', x: 22, y: 1460 },
-  // { icon: 'tree', x: 250, y: 1565 },
-  { icon: 'postInverted', x: 152, y: 1586, z: 7 },
-  { icon: 'lampPost', x: 56, y: 1673 },
-  // { icon: 'dog', x: 250, y: 1870 },
-  { icon: 'tree', x: 174, y: 1777 },
-  // { icon: 'post', x: 150, y: 2065, z: 7 },
 ]
 
 // Scenery is placed at fixed coordinates down a full-length path; drop the
@@ -405,27 +276,33 @@ const getStepPosition = (index) => {
 
 const getStepStatusClass = (step) => {
   const completion = getSectionCompletion(step)
-
-  if (completion >= 100) {
-    return 'status-completed'
-  }
-
-  if (completion > 0) {
-    return 'status-active'
-  }
-
+  if (completion >= 100) return 'status-completed'
+  if (completion > 0) return 'status-active'
   return 'status-pending'
 }
 
 const getSectionCompletion = (step) => {
+  if (props.completionFor) {
+    const supplied = Number(props.completionFor(step))
+    if (Number.isFinite(supplied)) return Math.max(0, Math.min(100, Math.round(supplied)))
+  }
+
   if (!step?.tasks?.length) {
     return Number(step?.progress) || 0
   }
 
   const stats = step.tasks.reduce(
     (acc, task) => {
-      const totalQuestions = Number(task?.totalQuestions) || 0
-      const answeredQuestions = Number(task?.answeredQuestions) || 0
+      const totalQuestions =
+        Number(task?.totalQuestions) ||
+        (Array.isArray(task?.passportQuestions)
+          ? task.passportQuestions.length
+          : 0)
+      const answeredQuestions =
+        Number(task?.answeredQuestions) ||
+        (Array.isArray(task?.passportQuestions)
+          ? task.passportQuestions.filter((q) => q?.answer).length
+          : 0)
 
       acc.totalQuestions += totalQuestions
       acc.answeredQuestions += Math.min(answeredQuestions, totalQuestions)
@@ -447,21 +324,11 @@ const getSectionCompletion = (step) => {
 }
 
 const getRoadIcon = (index) => {
-  // Roads should connect from previous step to current step
-  // If current step is on right (even index), road should go left-to-right
-  // If current step is on left (odd index), road should go right-to-left
   const isCurrentRight = index % 2 === 0
   const isPrevRight = (index - 1) % 2 === 0
 
-  // Determine direction based on positions
-  if (isPrevRight && !isCurrentRight) {
-    // From right to left
-    return 'roadRightToLeft'
-  } else if (!isPrevRight && isCurrentRight) {
-    // From left to right
-    return 'roadLeftToRight'
-  }
-  // Default fallback
+  if (isPrevRight && !isCurrentRight) return 'roadRightToLeft'
+  if (!isPrevRight && isCurrentRight) return 'roadLeftToRight'
   return 'roadLeftToRight'
 }
 
@@ -469,34 +336,25 @@ const getRoadClass = (index) => {
   const isCurrentRight = index % 2 === 0
   const isPrevRight = (index - 1) % 2 === 0
 
-  if (isPrevRight && !isCurrentRight) {
-    return 'road-right-to-left'
-  } else if (!isPrevRight && isCurrentRight) {
-    return 'road-left-to-right'
-  }
+  if (isPrevRight && !isCurrentRight) return 'road-right-to-left'
+  if (!isPrevRight && isCurrentRight) return 'road-left-to-right'
   return 'road-left-to-right'
 }
 
-const getDecorationStyle = (decoration) => {
-  return {
-    left: `${decoration.x}px`,
-    top: `${decoration.y}px`,
-    '--decoration-size': `${decoration.size || 48}px`,
-    '--decoration-z': `${decoration.z || 12}`,
-  }
-}
+const getDecorationStyle = (decoration) => ({
+  left: `${decoration.x}px`,
+  top: `${decoration.y}px`,
+  '--decoration-size': `${decoration.size || 48}px`,
+  '--decoration-z': `${decoration.z || 12}`,
+})
 
 const getStepCompletion = (step) => getSectionCompletion(step)
 
 const ladyStepIndex = computed(() => {
-  if (!steps.value.length) {
-    return 0
-  }
-
+  if (!steps.value.length) return 0
   const firstIncomplete = steps.value.findIndex(
     (step) => getStepCompletion(step) < 100,
   )
-
   return firstIncomplete === -1 ? steps.value.length - 1 : firstIncomplete
 })
 
@@ -522,27 +380,6 @@ const ladyPosition = computed(() => {
     top: `${stepTop - 26}px`,
   }
 })
-
-const navigateToStep = (stepId) => {
-  const propertyId = route.params.id
-  if (!propertyId) {
-    return
-  }
-
-  const section = steps.value.find((item) => item.id === stepId)
-  const targetTask = section?.tasks?.find((task) => !task.completed)
-  const fallbackTask = section?.tasks?.[0]
-  const targetTaskId = targetTask?.id || fallbackTask?.id
-
-  if (targetTaskId) {
-    router.push(
-      `/passportview/steps/tasks/${targetTaskId}?stepId=${stepId}&propertyId=${propertyId}`,
-    )
-    return
-  }
-
-  router.push(`/passportview/steps/${stepId}?propertyId=${propertyId}`)
-}
 </script>
 
 <style scoped>
@@ -559,7 +396,6 @@ const navigateToStep = (stepId) => {
   background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
   border-radius: 16px;
   padding: 40px 20px;
-  /* overflow-x: auto; */
   min-height: 500px;
 }
 
@@ -675,6 +511,7 @@ const navigateToStep = (stepId) => {
   height: 80px;
   transform: none;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.15));
+  object-fit: contain;
 }
 
 .step-platform.status-completed .map-shadow-tile {
@@ -730,12 +567,13 @@ const navigateToStep = (stepId) => {
   object-fit: contain;
 }
 
-/* ── Filter tabs (All / In Progress / Done / To Do) ──────────── */
+/* ── Filter tabs ──────────────────────────────────────────────── */
 .map-filter-tabs {
   display: flex;
   gap: 6px;
   padding: 8px 0 12px;
   overflow-x: auto;
+  justify-content: center;
   -webkit-overflow-scrolling: touch;
 }
 .map-filter-tab {
@@ -809,6 +647,12 @@ const navigateToStep = (stepId) => {
   place-items: center;
   flex-shrink: 0;
   color: #00a19a;
+  overflow: hidden;
+}
+.map-now-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .map-now-body {
   flex: 1;
@@ -855,7 +699,6 @@ const navigateToStep = (stepId) => {
 .map-step-active .step-platform {
   filter: drop-shadow(0 6px 14px rgba(0, 161, 154, 0.35));
 }
-/* Prototype-matching progress ring on each pin */
 .map-step-ring {
   position: absolute;
   top: 50px;
@@ -887,7 +730,7 @@ const navigateToStep = (stepId) => {
   transition: stroke-dashoffset 0.6s ease;
 }
 .map-step-ring-fg--done {
-  stroke: #16a34a;
+  stroke: #008a84;
 }
 .map-step-ring-text {
   position: absolute;
@@ -900,276 +743,7 @@ const navigateToStep = (stepId) => {
   color: #00a19a;
 }
 .map-step-ring-text--done {
-  color: #16a34a;
+  color: #008a84;
   font-size: 14px;
-}
-
-/* ── Sheet drawer (prototype-matching) ─────────────────────── */
-.sheet-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(14, 40, 64, 0.4);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.sheet {
-  width: 100%;
-  max-width: 28rem;
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px 20px 18px;
-  max-height: 88vh;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
-  color: #231d45;
-  font-family:
-    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter,
-    system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-.sheet::-webkit-scrollbar {
-  display: none;
-}
-.grabber {
-  display: none;
-}
-.sheet-head {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 10px;
-}
-.sheet-icon-wrap {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
-}
-.sheet-icon {
-  width: 52px;
-  height: 52px;
-  background: linear-gradient(165deg, #f4fbf7, #e2f1ea);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #00a19a;
-}
-.sheet-meta {
-  flex: 1;
-  min-width: 0;
-}
-.sheet-title {
-  font-weight: 900;
-  font-size: 18px;
-  color: #231d45;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-.sheet-sub {
-  font-size: 12.5px;
-  color: #5b6d89;
-  margin-top: 3px;
-  line-height: 1.45;
-}
-.sheet-points {
-  margin-top: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(61, 189, 163, 0.12);
-  color: #00a19a;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 100px;
-  letter-spacing: 0.4px;
-}
-
-.sheet-progress {
-  background: linear-gradient(135deg, #f4fbf7, #f1f9f4);
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin: 4px 0 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.sheet-progress .pgr-bar {
-  flex: 1;
-  height: 6px;
-  background: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.sheet-progress .pgr-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00a19a, #00a19a);
-  border-radius: 4px;
-  transition: width 0.6s ease;
-}
-.sheet-progress .pgr-text {
-  font-size: 11px;
-  font-weight: 800;
-  color: #00a19a;
-  white-space: nowrap;
-}
-
-.task-list-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.task-list-head .lbl {
-  font-size: 10.5px;
-  font-weight: 900;
-  color: #64748b;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.task-list-head .sort {
-  font-size: 11px;
-  font-weight: 700;
-  color: #64748b;
-}
-
-.task-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: #f8faf9;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-  width: 100%;
-  text-align: left;
-}
-.task-row:hover {
-  background: #f0f7f3;
-  border-color: #e2f1ea;
-}
-.task-row.done {
-  cursor: default;
-}
-.task-row.done:hover {
-  background: #f8faf9;
-  border-color: transparent;
-}
-.task-status {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid #d5e0da;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  color: #00a19a;
-  transition: all 0.3s;
-}
-.task-row.done .task-status {
-  background: #00a19a;
-  border-color: #00a19a;
-  color: #fff;
-}
-.task-row.done .task-status::before {
-  content: '✓';
-  font-size: 12px;
-}
-.task-info {
-  flex: 1;
-  min-width: 0;
-}
-.task-title {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: #231d45;
-  letter-spacing: -0.01em;
-}
-.task-description {
-  font-size: 12px;
-  color: #5b6d89;
-  line-height: 1.5;
-  margin: 3px 0 0;
-}
-.task-row.done .task-description {
-  color: #94a3b8;
-}
-.task-row.done .task-title {
-  color: #6b7c8e;
-  text-decoration: line-through;
-}
-.task-meta {
-  font-size: 11.5px;
-  color: #5b6d89;
-  margin-top: 3px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.task-meta > * + *::before {
-  content: '·';
-  margin-right: 6px;
-  color: #c1cad3;
-}
-.task-meta .points {
-  color: #00a19a;
-  font-weight: 800;
-}
-.task-meta-mins,
-.task-meta-q {
-  color: #6b7c8e;
-  font-weight: 500;
-}
-.task-row.done .task-meta {
-  color: #94a3b8;
-}
-.task-row.done .task-meta .points {
-  color: #94a3b8;
-  font-weight: 700;
-}
-.task-arrow {
-  color: #6b7c8e;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.sheet-empty {
-  padding: 24px 0;
-  text-align: center;
-  font-size: 13px;
-  color: #94a3b8;
-}
-
-/* Sheet enter/leave animation — centered fade + scale */
-.sheet-enter-active .sheet,
-.sheet-leave-active .sheet {
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
-}
-.sheet-enter-from .sheet,
-.sheet-leave-to .sheet {
-  transform: scale(0.94);
-  opacity: 0;
-}
-.sheet-enter-active.sheet-backdrop,
-.sheet-leave-active.sheet-backdrop {
-  transition: opacity 0.3s ease;
-}
-.sheet-enter-from.sheet-backdrop,
-.sheet-leave-to.sheet-backdrop {
-  opacity: 0;
 }
 </style>
