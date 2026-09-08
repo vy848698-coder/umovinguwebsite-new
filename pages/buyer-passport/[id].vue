@@ -59,10 +59,14 @@
           <div class="bp-hero-glow" />
 
           <div class="bp-hero-book">
+            <!-- This page shows a property passport the buyer has unlocked,
+                 so the book is the SELLER's (or landlord's) cover, not the
+                 buyer's own. Hard-coding BUYER here put an orange "Buyer
+                 Passport" book on someone else's property record. -->
             <PassportCard
               :line1="data.passport.addressLine1"
               :line2="data.passport.postcode"
-              type="BUYER"
+              :type="data.passport.type || 'SELLER'"
             />
           </div>
 
@@ -1336,14 +1340,20 @@ async function deleteNote(noteId: string) {
   pointer-events: none;
 }
 .bp-hero-book {
-  width: 150px;
+  /* Matches the seller hero's book. Below ~200px PassportCard's address
+     auto-fit bottoms out on its font-size floor and long addresses crowd the
+     cover edges. */
+  width: 200px;
   flex-shrink: 0;
-  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.42));
+  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.45));
   position: relative;
   z-index: 1;
 }
 .bp-hero-book :deep(.passport-card) { margin: 0; padding: 0; }
-.bp-hero-book :deep(.passport-container) { width: 100%; height: 200px; }
+/* height:auto lets .passport-container's own aspect-ratio size the book. The
+   old fixed 200px letterboxed it - the covers are near-square, so a 150x200
+   box left dead space above and below the artwork. */
+.bp-hero-book :deep(.passport-container) { width: 100%; height: auto; }
 
 .bp-hero-main { position: relative; z-index: 1; min-width: 0; }
 .bp-hero-eyebrow {
