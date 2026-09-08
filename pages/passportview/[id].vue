@@ -88,7 +88,10 @@
           <div class="pp-hero-stats">
             <div class="pp-hero-stat">
               <div class="pp-hero-stat-val">{{ heroHsScore }}</div>
-              <div class="pp-hero-stat-lbl">Points</div>
+              <!-- heroHsScore is the property's HomeScore, not reward points
+                   (those are per-task, see getStepPoints). It was labelled
+                   "Points", which made the hero state something untrue. -->
+              <div class="pp-hero-stat-lbl">HomeScore</div>
             </div>
             <div class="pp-hero-stat">
               <div class="pp-hero-stat-val">{{ heroDocsCount }}</div>
@@ -97,6 +100,29 @@
             <div class="pp-hero-stat">
               <div class="pp-hero-stat-val">{{ heroSectionsLabel }}</div>
               <div class="pp-hero-stat-lbl">Sections</div>
+            </div>
+          </div>
+
+          <!-- Passport progress — the walking-man bar the landlord passport
+               and the reference build both use. Replaces the donut that used
+               to sit in a third hero column showing the same percentage. -->
+          <div class="pp-hero-dash">
+            <div class="pp-hero-dash-row">
+              <span class="pp-hero-dash-label">Passport progress</span>
+              <span class="pp-hero-dash-pct">{{ overallProgress }}%</span>
+            </div>
+            <div class="pp-hero-dash-bar">
+              <div class="pp-hero-dash-fill" :style="{ width: safeProgress + '%' }">
+                <OPIcon name="progressMan" class="pp-hero-dash-man" />
+              </div>
+            </div>
+            <div v-if="isPublished" class="pp-hero-dash-issued">
+              <span class="pp-hero-dash-dot" />
+              Passport issued
+            </div>
+            <div v-else class="pp-hero-dash-issued pp-hero-dash-issued--draft">
+              <span class="pp-hero-dash-dot" />
+              Draft
             </div>
           </div>
 
@@ -122,45 +148,11 @@
             </button>
           </div>
         </div>
-
-        <div class="pp-hero-side">
-          <div class="pp-hero-ring">
-            <svg viewBox="0 0 72 72" class="pp-hero-ring-svg">
-              <defs>
-                <linearGradient id="ppRingGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#2fd0c6" />
-                  <stop offset="100%" stop-color="#00a19a" />
-                </linearGradient>
-              </defs>
-              <circle cx="36" cy="36" r="30" class="pp-hero-ring-track" />
-              <circle
-                cx="36"
-                cy="36"
-                r="30"
-                class="pp-hero-ring-fill"
-                stroke-dasharray="188.5"
-                :stroke-dashoffset="188.5 - (188.5 * safeProgress) / 100"
-              />
-            </svg>
-            <div class="pp-hero-ring-center">
-              <span class="pp-hero-ring-pct">{{ overallProgress }}%</span>
-            </div>
-          </div>
-          <div class="pp-hero-side-label">Passport Progress</div>
-          <div v-if="isPublished" class="pp-hero-issued">
-            <span class="pp-hero-issued-dot" />
-            Passport issued
-          </div>
-          <div v-else class="pp-hero-issued pp-hero-issued--draft">
-            <span class="pp-hero-issued-dot" />
-            Draft
-          </div>
-        </div>
       </div>
 
       <!-- ── Publish-readiness band ──────────────────────────────────
-           Deliberately separate from the completion ring in the hero:
-           that ring tracks the whole passport, this tracks only the
+           Deliberately separate from the progress bar in the hero:
+           that bar tracks the whole passport, this tracks only the
            disclosures a buyer pays to unlock, so it can reach 100% well
            before the passport itself is fully filled in. ── -->
       <button
@@ -1766,46 +1758,6 @@ function formatStamp(iso) {
   align-items: center;
   gap: 14px;
   flex-shrink: 0;
-}
-
-.pp-hero-ring {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  flex-shrink: 0;
-}
-
-.pp-hero-ring-svg {
-  width: 72px;
-  height: 72px;
-  display: block;
-}
-
-.pp-hero-ring-track {
-  fill: none;
-  stroke: #e2f1ea;
-  stroke-width: 6;
-}
-
-.pp-hero-ring-fill {
-  fill: none;
-  stroke: #00a19a;
-  stroke-width: 6;
-  stroke-linecap: round;
-  transform: rotate(-90deg);
-  transform-origin: center;
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.pp-hero-ring-pct {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-  font-weight: 900;
-  color: #231d45;
-  letter-spacing: -0.02em;
 }
 
 .pp-hero-progress-meta {
@@ -3639,9 +3591,13 @@ function formatStamp(iso) {
   box-shadow: 0 26px 64px rgba(13, 9, 36, 0.3);
 }
 .pp-hero-book {
-  width: 172px;
+  /* The book is the page's hero object and the address is printed on it, so
+     it has to be big enough for PassportCard's auto-fit to land the address
+     above its font-size floor - below ~200px long addresses crowd the cover
+     edges. Height stays auto so each cover keeps its own proportions. */
+  width: 220px;
   flex-shrink: 0;
-  filter: drop-shadow(0 20px 36px rgba(0, 140, 134, 0.42));
+  filter: drop-shadow(0 22px 40px rgba(0, 140, 134, 0.45));
 }
 /* Let the book render at its natural 965×1362 aspect ratio so the baked-in
    layout and the overlaid address stay aligned (a forced fixed height was
@@ -3775,112 +3731,6 @@ function formatStamp(iso) {
   font-weight: 900;
   padding: 1px 7px;
   border-radius: 999px;
-}
-
-.pp-hero-side {
-  flex-shrink: 0;
-  width: 176px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 22px 18px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(6px);
-}
-.pp-hero-ring {
-  position: relative;
-  width: 116px;
-  height: 116px;
-  display: grid;
-  place-items: center;
-}
-.pp-hero-ring::before {
-  content: '';
-  position: absolute;
-  inset: 12px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(47, 208, 198, 0.16), transparent 70%);
-}
-.pp-hero-ring-svg {
-  width: 116px;
-  height: 116px;
-}
-.pp-hero-ring-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-width: 7;
-}
-.pp-hero-ring-fill {
-  fill: none;
-  stroke: url(#ppRingGrad);
-  stroke-width: 7;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s ease;
-  filter: drop-shadow(0 0 5px rgba(47, 208, 198, 0.5));
-}
-.pp-hero-ring-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-}
-.pp-hero-ring-pct {
-  color: #fff;
-  font-size: 27px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-.pp-hero-ring-sub {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #8f8ab0;
-}
-.pp-hero-side-label {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #a5a0c4;
-  text-align: center;
-}
-.pp-hero-issued {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(0, 212, 195, 0.14);
-  border: 1px solid rgba(47, 208, 198, 0.3);
-  color: #4fe3d5;
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 6px 14px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-}
-.pp-hero-issued--draft {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #b6b1d6;
-}
-.pp-hero-issued-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00d4c3;
-  box-shadow: 0 0 0 3px rgba(0, 212, 195, 0.18);
-}
-.pp-hero-issued--draft .pp-hero-issued-dot {
-  background: #b6b1d6;
-  box-shadow: 0 0 0 3px rgba(182, 177, 214, 0.16);
 }
 
 /* ── Publish-readiness band — amber on purpose, so it never reads as a
@@ -4133,17 +3983,54 @@ function formatStamp(iso) {
     width: 144px;
     align-self: center;
   }
-  .pp-hero-side {
-    width: 100%;
-    flex-direction: row;
-    justify-content: center;
-    gap: 16px;
-  }
   .pp-tabs-row {
     flex-wrap: wrap;
   }
   .ppv-head {
     align-items: flex-start;
   }
+}
+
+/* ── Passport progress bar on the dark hero ──────────────────────────
+   The base .pp-hero-dash rules above were written for a light card; the
+   hero is navy, so the label, track and caption need inverting. */
+.pp-hero-main .pp-hero-dash {
+  margin-top: 18px;
+  max-width: 420px;
+}
+.pp-hero-main .pp-hero-dash-label {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.pp-hero-main .pp-hero-dash-pct {
+  color: #2fd0c6;
+  font-size: 14px;
+}
+.pp-hero-main .pp-hero-dash-bar {
+  height: 7px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.pp-hero-main .pp-hero-dash-fill {
+  background: linear-gradient(90deg, #2fd0c6, #00a19a);
+}
+.pp-hero-main .pp-hero-dash-man {
+  width: 26px !important;
+  height: 26px !important;
+  right: -13px;
+}
+.pp-hero-main .pp-hero-dash-issued {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10.5px;
+}
+.pp-hero-main .pp-hero-dash-dot {
+  background: #2fd0c6;
+  box-shadow: 0 0 0 2.5px rgba(47, 208, 198, 0.18);
+}
+/* Not yet published - amber, so "Draft" never reads as "issued". */
+.pp-hero-main .pp-hero-dash-issued--draft { color: rgba(255, 200, 140, 0.85); }
+.pp-hero-main .pp-hero-dash-issued--draft .pp-hero-dash-dot {
+  background: #ffb066;
+  box-shadow: 0 0 0 2.5px rgba(255, 176, 102, 0.18);
 }
 </style>

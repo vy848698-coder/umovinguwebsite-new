@@ -88,15 +88,11 @@
             <span class="ppw-dots" />
             <div class="ppw-visual-glow" />
             <article class="ppw-book">
-              <img
-                src="/umu-passport.png"
-                alt="umovingu Property Passport"
-                class="ppw-book-img"
+              <PassportCard
+                :line1="heroBook.line1"
+                :line2="heroBook.line2"
+                :type="heroBook.type"
               />
-              <div class="ppw-book-plate">
-                <span class="ppw-book-line1">{{ heroBook.line1 }}</span>
-                <span class="ppw-book-line2">{{ heroBook.line2 }}</span>
-              </div>
             </article>
 
             <div class="ppw-chip ppw-chip--docs">
@@ -403,6 +399,7 @@
                     </div>
                   </div>
 
+
                   <div class="prop-card-foot">
                     <span class="prop-pct">{{ passportPct(passport) }}%</span>
                     <span class="prop-status">{{ passportStatusLabel(passport) }}</span>
@@ -704,6 +701,7 @@ const heroBook = computed(() => {
   return {
     line1: p?.addressLine1 || '13 Delius Street',
     line2: p?.postcode || 'CV4 9PF',
+    type: p?.type || 'SELLER',
   }
 })
 const heroScore = computed(() => {
@@ -1200,9 +1198,14 @@ const executeDelete = async () => {
 .ppw-visual {
   position: relative;
   width: 100%;
-  max-width: 430px;
+  /* Grown with the book. The floating chips are anchored to this box's edges
+     and deliberately overlap the book (they sit at z-index 2, the book at 1),
+     so enlarging the book alone would have walked them over the address
+     printed on the cover. Widening the frame by the same amount keeps the
+     original overlap. */
+  max-width: 500px;
   margin: 0 auto;
-  min-height: 340px;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1233,51 +1236,23 @@ const executeDelete = async () => {
 .ppw-book {
   position: relative;
   z-index: 1;
-  width: 232px;
+  /* The book is this page's hero object and carries the address on its
+     cover, so it is sized for the address to be readable rather than to a
+     tidy round number. */
+  width: 300px;
   transform: rotate(-6deg);
   animation: ppw-sway 7s ease-in-out infinite;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Real passport artwork — the PNG carries its own cover + soft shadow */
-.ppw-book-img {
-  display: block;
+.ppw-book :deep(.passport-card) {
+  margin: 0;
+  padding: 0;
+}
+
+.ppw-book :deep(.passport-container) {
   width: 100%;
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Sample address + reference embossed into the empty lower cover */
-.ppw-book-plate {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 13%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  text-align: center;
-  pointer-events: none;
-}
-
-.ppw-book-line1 {
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #ffffff;
-}
-
-.ppw-book-line2 {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: rgba(255, 255, 255, 0.82);
+  max-width: none;
 }
 
 @keyframes ppw-sway {
@@ -1657,9 +1632,11 @@ const executeDelete = async () => {
 
 /* ── Property card grid ───────────────────────────────────────────── */
 .passport-grid {
+  /* Wider cells than before: the passport book is the point of this grid, so
+     it gets room to render at a readable size rather than a 58px thumbnail. */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
 }
 
 .prop-card {
@@ -1684,55 +1661,60 @@ const executeDelete = async () => {
   border-color: rgba(0, 161, 154, 0.3);
 }
 
+/* Stacked, not side-by-side: at 58px wide the book was unreadable and its
+   address overlay illegible. The book now leads the card at a size where the
+   cover art and the address printed on it both actually read. */
 .prop-card-top {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .prop-book {
   position: relative;
-  width: 58px;
-  height: 78px;
+  width: 132px;
+  height: 132px;
   flex-shrink: 0;
-  filter: drop-shadow(0 6px 12px rgba(0, 140, 134, 0.22));
+  filter: drop-shadow(0 10px 18px rgba(0, 140, 134, 0.2));
 }
 
 .prop-book :deep(.passport-card) {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .prop-book :deep(.passport-container) {
   width: 100%;
   height: 100%;
+  /* Without this the component's own 360px cap fights the cell size. */
+  max-width: none;
 }
 
-.prop-book :deep(.passport-image) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 7px;
-}
+/* No object-fit override here. The component sets `contain` deliberately —
+   `cover` cropped the book's stand and side edges off, which is what made
+   these thumbnails look wrong. */
 
 .prop-book--stack {
-  width: 64px;
+  width: 132px;
 }
 
 .prop-book--stack .prop-book-layer {
-  width: 58px;
-  height: 78px;
+  width: 132px;
+  height: 132px;
 }
 
 .prop-card-info {
-  flex: 1;
+  width: 100%;
   min-width: 0;
-  padding-top: 2px;
+  text-align: center;
 }
 
 .prop-card-name {
   margin: 0;
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 800;
   color: var(--navy);
   letter-spacing: -0.01em;
@@ -1967,7 +1949,8 @@ const executeDelete = async () => {
   box-shadow: 0 12px 26px rgba(31, 122, 102, 0.16);
 }
 .coll-resume-book {
-  width: 70px;
+  /* Was 70px, where the address printed on the cover was unreadable. */
+  width: 96px;
   flex-shrink: 0;
   filter: drop-shadow(0 6px 12px rgba(0, 140, 134, 0.22));
 }
@@ -1977,7 +1960,8 @@ const executeDelete = async () => {
 }
 .coll-resume-book :deep(.passport-container) {
   width: 100%;
-  height: 92px;
+  height: 96px;
+  max-width: none;
 }
 .coll-resume-content {
   flex: 1;
