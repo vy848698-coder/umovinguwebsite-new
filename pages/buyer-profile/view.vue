@@ -9,7 +9,7 @@
           <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">
-          <button type="button" class="active" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" class="active" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" @click="navigateTo('/passport')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -43,15 +43,15 @@
     </header>
 
     <!-- Loading / empty -->
-    <div v-if="loading" class="bp-loading">Loading your Profile…</div>
+    <div v-if="loading" class="bp-loading">Loading your Passport…</div>
     <div v-else-if="!passport" class="bp-empty">
-      <img class="bp-empty-ic" src="/buyer-profile-icon/notepad.png" alt="" loading="lazy" />
-      <div class="bp-empty-title">No Profile yet</div>
+      <img class="bp-empty-ic" src="/op-icons/misc/book.png" alt="" loading="lazy" />
+      <div class="bp-empty-title">No Passport yet</div>
       <div class="bp-empty-sub">
-        Build your Buyer Profile to share with sellers and agents.
+        Build your Buyer Passport to share with sellers and agents.
       </div>
       <button class="cta-btn" @click="router.push('/buyer-profile')">
-        Build my Profile
+        Build my Passport
       </button>
     </div>
 
@@ -59,8 +59,8 @@
       <!-- ── Page hero ── -->
       <div class="hsw-shell bpvw-hero">
         <div class="bpvw-hero-text">
-          <p class="bpvw-eyebrow">Buyer Profile</p>
-          <h1 class="bpvw-h1">Your verified <span class="bpvw-h1-accent">buyer profile</span></h1>
+          <p class="bpvw-eyebrow"><span class="bpvw-pulse-dot" />Buyer Passport</p>
+          <h1 class="bpvw-h1">Your verified <span class="bpvw-h1-accent">buyer passport</span></h1>
           <p class="bpvw-sub">
             Share proof of identity, funds and chain position with agents and
             sellers in one trusted link.
@@ -79,39 +79,34 @@
         <div class="hero-card">
           <div class="bp-hero-top">
             <span class="bp-hero-eyebrow">{{ tierLabel.toUpperCase() }}</span>
-            <span class="bp-hero-strength">{{ Math.round(animatedStrength) }}% COMPLETE</span>
+            <span class="bp-hero-strength">{{ Math.round(animatedStrength) }}% STRENGTH</span>
           </div>
           <div class="bp-hero-body">
-            <!-- Circular gauge -->
-            <div class="bp-gauge-wrap">
-              <svg width="108" height="108" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="7" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="7"
-                  :stroke-dasharray="passportGaugeDash"
-                  :stroke-dashoffset="passportGaugeOffset"
-                  stroke-linecap="round"
-                  transform="rotate(-90 50 50)"
-                  style="transition: stroke-dashoffset 0.9s cubic-bezier(.22,1,.36,1)"
-                />
-                <text x="50" y="46" text-anchor="middle" font-size="22" font-weight="800" fill="white">
-                  {{ Math.round(animatedStrength) }}%
-                </text>
-                <text x="50" y="62" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.72)">
-                  Profile
-                </text>
-                <text x="50" y="71" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.72)">
-                  Strength
-                </text>
-              </svg>
-            </div>
+            <!-- Passport cover — the same book the mobile app shows -->
+            <img
+              src="/op-icons/passport-covers/buyer_tilted_right_on_tile.png"
+              alt=""
+              class="bph-hero-icon"
+              loading="lazy"
+            />
             <div class="bp-hero-info">
               <div class="bp-hero-name">{{ displayName }}</div>
-              <div class="bp-hero-ref">{{ tierLabel }}</div>
+              <div class="bp-hero-ref">
+                <template v-if="passport.publicRef">Verified · {{ passport.publicRef }}</template>
+                <template v-else>Verified buyer</template>
+              </div>
+              <div class="bp-hero-pills">
+                <span class="hero-pill">
+                  <Icon name="i-lucide-badge-check" class="hero-pill-ic" />Verified
+                </span>
+                <span v-if="fundsLabelShort" class="hero-pill">{{ fundsLabelShort }}</span>
+                <span class="hero-pill">{{ chainShortLabel }}</span>
+              </div>
             </div>
           </div>
           <div class="bp-hero-actions">
-            <button class="bp-hero-btn bp-hero-btn--solid" @click="goShare">View Profile</button>
-            <button class="bp-hero-btn bp-hero-btn--ghost" @click="goEdit">Settings</button>
+            <button class="bp-hero-btn bp-hero-btn--solid" @click="goShare">Share Passport</button>
+            <button class="bp-hero-btn bp-hero-btn--ghost" @click="goEdit">Edit</button>
           </div>
         </div>
 
@@ -120,7 +115,7 @@
           <!-- Profile completion -->
           <div class="bp-pb-wrap">
             <div class="bp-pb-row">
-              <span class="bp-pb-label">Profile Completion</span>
+              <span class="bp-pb-label">Passport completion</span>
               <span class="bp-pb-pct">{{ Math.round(animatedStrength) }}%</span>
             </div>
             <div class="pb-track">
@@ -129,27 +124,22 @@
             <div v-if="completionTip" class="bp-pb-tip">{{ completionTip }}</div>
           </div>
 
-          <!-- Identity verified strip -->
+          <!-- UK DVS strip — the Trust Framework badge the app carries -->
           <div class="dvs-strip">
-            <div class="dvs-badge-ic">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007e78" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
-            </div>
+            <div class="dvs-badge">UK DVS</div>
             <div class="dvs-text">
-              <div class="dvs-title">Identity verified via OneID &amp; KYC Digital Verification</div>
-              <div class="dvs-sub">Secured by Bank-Grade Encryption</div>
+              Identity verified under the UK Digital Verification Services Trust
+              Framework
             </div>
           </div>
 
           <!-- Permanence banner — the app's "carries forward" promise -->
           <div class="persist-banner">
-            <img
-              class="persist-icon"
-              src="/buyer-profile-icon/chain.png"
-              alt=""
-              loading="lazy"
-            />
+            <div class="persist-icon">
+              <Icon name="i-lucide-infinity" class="persist-icon-svg" />
+            </div>
             <div>
-              <div class="persist-title">Your profile carries forward</div>
+              <div class="persist-title">Your passport carries forward</div>
               <div class="persist-sub">
                 When you buy your next home, your verified identity and
                 documents come with you — no need to reverify.
@@ -161,9 +151,9 @@
           <div class="reward-banner">
             <img class="reward-icon" src="/homescore-icon/gift.png" alt="" loading="lazy" />
             <div>
-              <div class="reward-title">Your profile creation reward</div>
+              <div class="reward-title">Your passport creation reward</div>
               <div class="reward-sub">
-                You're almost there! Complete your profile identity and documents to
+                You're almost there! Complete your passport identity and documents to
                 earn exclusive rewards instantly.
               </div>
             </div>
@@ -227,7 +217,7 @@
             <div class="tile-title">Identity</div>
           </div>
           <div class="tile-value">Verified</div>
-          <div class="tile-prov">OneID &amp; KYC Verified</div>
+          <div class="tile-prov">via Onfido / DVS</div>
         </div>
         <div class="tile" :class="{ amber: !passport.fundsType }" @click="goEdit">
           <div class="tile-head">
@@ -237,10 +227,10 @@
             <div class="tile-title">Funds</div>
           </div>
           <div class="tile-value" :class="{ amber: !passport.fundsType }">
-            {{ passport.fundsType ? fundsLabelLong : 'Add proof' }}
+            {{ fundsLabelLong || 'Add proof' }}
           </div>
           <div class="tile-prov" :class="{ amber: !passport.fundsType }">
-            {{ passport.fundsType ? fundsTypeLong : 'Add proof of funds' }}
+            {{ fundsTypeLong }}
           </div>
         </div>
         <div class="tile">
@@ -249,9 +239,9 @@
             <div class="tile-title">Chain</div>
           </div>
           <div class="tile-value">{{ chainShortLabel }}</div>
-          <div class="tile-prov">Link attached</div>
+          <div class="tile-prov">Self-declared</div>
         </div>
-        <div class="tile" :class="{ amber: !hasMortgageAip }" @click="goEdit">
+        <div class="tile" :class="{ amber: !hasMortgageAip }" @click="triggerUpload('mortgage')">
           <div class="tile-head">
             <div class="tile-icon" :class="{ 'amber-bg': !hasMortgageAip }">
               <img class="tile-icon-img" src="/buyer-profile-icon/mortgageHouse.png" alt="" loading="lazy" />
@@ -259,10 +249,10 @@
             <div class="tile-title">Mortgage</div>
           </div>
           <div class="tile-value" :class="{ amber: !hasMortgageAip }">
-            {{ hasMortgageAip ? 'AIP held' : 'Add LVR' }}
+            {{ hasMortgageAip ? 'AIP held' : 'Add AIP' }}
           </div>
           <div class="tile-prov" :class="{ amber: !hasMortgageAip }">
-            {{ hasMortgageAip ? 'Lender verified' : 'Add LVR details' }}
+            {{ hasMortgageAip ? 'Lender verified' : 'Not yet verified' }}
           </div>
         </div>
       </div>
@@ -280,50 +270,66 @@
           <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Identity Verification</div>
-            <div class="doc-meta">OneID / KYC Process · Last verified: {{ lastVerifiedLabel }}</div>
+            <div class="doc-meta">{{ idTypeLabel }} · verified by Onfido (DVS)</div>
           </div>
           <div class="doc-right">
             <span class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
             <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
-        <div class="doc-row">
+        <div class="doc-row doc-row--action" @click="triggerUpload('funds')">
           <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/moneyBag.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Proof of Funds</div>
-            <div class="doc-meta">{{ passport.fundsType ? fundsMetaText : 'Banking or financial proof documents' }}</div>
+            <div class="doc-meta">{{ fundsMetaText }}</div>
           </div>
           <div class="doc-right">
-            <span v-if="passport.fundsType" class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
-            <span v-else class="risk-pill add">ADD DOCS</span>
+            <span v-if="uploading === 'funds'" class="risk-pill add">Uploading…</span>
+            <span v-else-if="passport.fundsVerified" class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
+            <span v-else-if="passport.fundsReviewStatus === 'pending'" class="risk-pill add">
+              <Icon name="i-lucide-clock" class="pill-ic" />IN REVIEW
+            </span>
+            <span v-else-if="passport.fundsReviewStatus === 'rejected'" class="risk-pill reject">
+              <Icon name="i-lucide-x" class="pill-ic" />RESUBMIT
+            </span>
+            <span v-else class="risk-pill add">+ ADD DOC</span>
             <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
-        <div class="doc-row" @click="goEdit()">
+        <div class="doc-row doc-row--action" @click="triggerUpload('mortgage')">
           <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/mortgageHouse.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Mortgage in Principle</div>
-            <div class="doc-meta">
-              {{ hasMortgageAip
-                ? 'AIP on file · lender verified'
-                : 'Optional if your LVR · Lender can view or fund' }}
-            </div>
+            <div class="doc-meta">{{ mortgageMetaText }}</div>
           </div>
           <div class="doc-right">
-            <span :class="hasMortgageAip ? 'risk-pill clear' : 'risk-pill add'">
-              <Icon v-if="hasMortgageAip" name="heroicons:check-16-solid" class="pill-ic" />{{ hasMortgageAip ? 'VERIFIED' : 'ADD DOCS' }}
+            <span v-if="uploading === 'mortgage'" class="risk-pill add">Uploading…</span>
+            <span v-else-if="passport.mortgageAipVerified" class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
+            <span v-else-if="passport.mortgageAipReviewStatus === 'pending'" class="risk-pill add">
+              <Icon name="i-lucide-clock" class="pill-ic" />IN REVIEW
             </span>
+            <span v-else-if="passport.mortgageAipReviewStatus === 'rejected'" class="risk-pill reject">
+              <Icon name="i-lucide-x" class="pill-ic" />RESUBMIT
+            </span>
+            <span v-else class="risk-pill add">+ ADD DOC</span>
             <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
-        <div class="doc-row" @click="goEdit()">
-          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/chainLink.png" alt="" loading="lazy" /></div>
+        <input
+          ref="docFileInput"
+          type="file"
+          accept="application/pdf,image/*"
+          style="display: none"
+          @change="onDocFileChosen"
+        />
+        <div class="doc-row doc-row--action" @click="goEdit()">
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/clipboardLink.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Chain Position</div>
-            <div class="doc-meta">Existing sale information · Verify to move</div>
+            <div class="doc-meta">{{ chainShortLabel }} · self-declared · ready to move</div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill add">Link / Add details</span>
+            <span class="risk-pill flag">Self-declared</span>
             <Icon name="heroicons:chevron-right" class="doc-chev" />
           </div>
         </div>
@@ -352,8 +358,8 @@
         <div class="section-header">
           <div class="sec-icon"><Icon name="heroicons:arrow-up-tray" class="sec-icon-svg" /></div>
           <div>
-            <div class="sec-title">SHARE YOUR PROFILE</div>
-            <div class="sec-sub">Connect &amp; share your profile instantly</div>
+            <div class="sec-title">SHARE YOUR PASSPORT</div>
+            <div class="sec-sub">Connect &amp; share your passport instantly</div>
           </div>
         </div>
         <div class="bp-share-grid">
@@ -361,7 +367,7 @@
             <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/upload.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
               <div class="share-card-title">Share</div>
-              <div class="share-card-sub">Send to agents or professionals</div>
+              <div class="share-card-sub">Send to agents or generate link</div>
             </div>
             <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
@@ -369,7 +375,7 @@
             <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/pdf.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
               <div class="share-card-title">Download PDF</div>
-              <div class="share-card-sub">Get a linked profile document</div>
+              <div class="share-card-sub">Certified passport document</div>
             </div>
             <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
@@ -377,7 +383,7 @@
             <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/signature.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
               <div class="share-card-title">
-                {{ passport.signedAt ? 'Re-sign profile' : 'Add digital signature' }}
+                {{ passport.signedAt ? 'Re-sign passport' : 'Add digital signature' }}
               </div>
               <div class="share-card-sub">
                 {{
@@ -392,7 +398,7 @@
           <button class="share-card" @click="goEdit">
             <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/editBox.png" alt="" loading="lazy" /></div>
             <div class="share-card-body">
-              <div class="share-card-title">Edit Profile</div>
+              <div class="share-card-title">Edit Passport</div>
               <div class="share-card-sub">Update your information</div>
             </div>
             <Icon name="heroicons:chevron-right" class="share-card-chev" />
@@ -439,7 +445,7 @@ import { useAppToast } from '~/composables/useCustomToast'
 import TierUpgradeDrawer from '~/components/buyer-profile/TierUpgradeDrawer.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
-definePageMeta({ title: 'Buyer Profile — UmovingU', middleware: 'auth' })
+definePageMeta({ title: 'Buyer Passport — UmovingU', middleware: 'auth' })
 
 const router = useRouter()
 const { getBuyerProfile } = useBuyerProfile()
@@ -458,7 +464,10 @@ function goAccessRequest(id: string) {
   router.push(`/buyer-profile/access-request/${id}`)
 }
 
-const goBack = useGoBack('/buyer-profile')
+// Falls back to /profile, not /buyer-profile — that checklist page now
+// auto-redirects back here for a published passport, which would turn a
+// direct-entry back-tap into an infinite bounce between the two pages.
+const goBack = useGoBack('/profile')
 
 onMounted(async () => {
   fetchProfile?.().catch(() => {})
@@ -527,12 +536,6 @@ function tweenStrength(to: number) {
 watch(strength, (v) => tweenStrength(Number(v) || 0), { immediate: true })
 onBeforeUnmount(() => cancelAnimationFrame(strengthRaf))
 
-// SVG gauge — r=40 → circumference ≈ 251
-const passportGaugeDash = 251
-const passportGaugeOffset = computed(
-  () => passportGaugeDash - (passportGaugeDash * animatedStrength.value) / 100,
-)
-
 // ── Display labels ───────────────────────────────────────────
 const displayName = computed(() => {
   const first = profile.value?.firstName?.trim()
@@ -559,13 +562,25 @@ const fundsTypeLong = computed(() => {
   return 'Not yet verified'
 })
 
+// Picking a funds type in the wizard is a self-declared statement, not a
+// verification — only the admin-approved fundsVerified flag earns that word.
 const fundsMetaText = computed(() => {
   const t = passport.value?.fundsType
   const amt = fundsLabelShort.value
-  if (t === 'mortgage') return `Mortgage in principle · ${amt} verified`
-  if (t === 'cash') return `Cash buyer · ${amt} on deposit`
-  if (t === 'help') return `Help to Buy scheme · ${amt} max`
+  const verifiedSuffix = passport.value?.fundsVerified ? ' · verified' : ''
+  if (t === 'mortgage') return `Mortgage in principle · ${amt}${verifiedSuffix}`
+  if (t === 'cash') return `Cash buyer · ${amt} on deposit${verifiedSuffix}`
+  if (t === 'help') return `Help to Buy scheme · ${amt} max${verifiedSuffix}`
   return 'Add your funds proof to unlock'
+})
+
+const mortgageMetaText = computed(() => {
+  if (passport.value?.mortgageAipVerified) return 'AIP on file · lender verified'
+  if (passport.value?.mortgageAipReviewStatus === 'pending')
+    return 'AIP uploaded · awaiting review'
+  if (passport.value?.mortgageAipReviewStatus === 'rejected')
+    return "Couldn't verify that AIP — please re-upload"
+  return 'Upload your AIP — lender will be verified'
 })
 
 const chainShortLabel = computed(() => {
@@ -581,29 +596,17 @@ const idTypeLabel = computed(() => {
   const t = passport.value?.idDocumentType
   if (t === 'passport') return 'UK / EU Passport'
   if (t === 'drivingLicence') return 'UK Driving Licence'
-  if (t === 'nationalId') return 'National ID Card'
+  if (t === 'nationalId') return 'Biometric Residence Permit'
   return 'Photo ID'
 })
 
-const hasMortgageAip = computed(
-  () => passport.value?.fundsType === 'mortgage' && !!passport.value?.fundsDocumentUrl,
-)
-
-const lastVerifiedLabel = computed(() => {
-  const iso =
-    (passport.value as any)?.identityVerifiedAt ||
-    (passport.value as any)?.verifiedAt ||
-    (passport.value as any)?.updatedAt ||
-    (passport.value as any)?.createdAt
-  const d = iso ? new Date(iso) : new Date()
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-})
+const hasMortgageAip = computed(() => !!passport.value?.mortgageAipVerified)
 
 const completionTip = computed(() => {
   if (animatedStrength.value >= 95) return ''
-  if (!hasMortgageAip.value) return '+ Add Mortgage AIP to reach 100% Platinum'
-  if (!passport.value?.statement) return '+ Add your story to reach 100% Platinum'
-  return '+ Upgrade your tier to reach 100% Platinum'
+  if (!hasMortgageAip.value) return '+ Add Mortgage AIP to strengthen your passport'
+  if (!passport.value?.statement) return '+ Add your story to strengthen your passport'
+  return ''
 })
 
 function formatSignedAt(iso: string) {
@@ -612,6 +615,51 @@ function formatSignedAt(iso: string) {
     month: 'short',
     year: 'numeric',
   })
+}
+
+// ── Document upload (Proof of Funds / Mortgage AIP) ────────────
+// Uploads go to a private storage bucket and land in an admin review queue —
+// the "VERIFIED" badge only appears once a human has actually checked the
+// document, not the moment a file is selected.
+const config = useRuntimeConfig()
+const docFileInput = ref<HTMLInputElement | null>(null)
+const uploadKind = ref<'funds' | 'mortgage' | null>(null)
+const uploading = ref<'funds' | 'mortgage' | null>(null)
+
+function triggerUpload(kind: 'funds' | 'mortgage') {
+  if (uploading.value) return
+  uploadKind.value = kind
+  docFileInput.value?.click()
+}
+
+async function onDocFileChosen(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  const kind = uploadKind.value
+  input.value = ''
+  if (!file || !kind) return
+  uploading.value = kind
+  try {
+    const token =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    if (!token) throw new Error('Not signed in')
+    const form = new FormData()
+    form.append('file', file)
+    await $fetch(`${config.public.apiBase}/buyer-profile/documents/${kind}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    })
+    passport.value = await getBuyerProfile()
+    showToast({ message: 'Uploaded — awaiting review', iconEmoji: '📄' })
+  } catch (e: any) {
+    showToast({
+      message: e?.data?.message ?? 'Upload failed — try again',
+      iconEmoji: '⚠️',
+    })
+  } finally {
+    uploading.value = null
+  }
 }
 
 // ── Navigation ───────────────────────────────────────────────
@@ -668,6 +716,23 @@ function goEdit() { router.push('/buyer-profile/build') }
   text-transform: uppercase; color: #00a19a;
 }
 .bpvw-eyebrow-dash { width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
+/* Live "passport is active" dot — the pill the mobile app shows above the hero */
+.bpvw-pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #00a19a; position: relative; flex-shrink: 0;
+}
+.bpvw-pulse-dot::after {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%;
+  background: #00a19a; opacity: 0.35;
+  animation: bp-pulse-ring 1.8s ease-out infinite;
+}
+@keyframes bp-pulse-ring {
+  0% { transform: scale(0.7); opacity: 0.45; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bpvw-pulse-dot::after { animation: none; }
+}
 .bpvw-h1 {
   margin: 0; font-size: clamp(28px, 3.4vw, 40px); font-weight: 800;
   line-height: 1.08; letter-spacing: -0.02em; color: #231d45;
@@ -769,7 +834,22 @@ function goEdit() { router.push('/buyer-profile/build') }
   display: flex; align-items: center; gap: 18px;
   margin-bottom: 20px;
 }
-.bp-gauge-wrap { flex-shrink: 0; }
+.bph-hero-icon {
+  flex-shrink: 0;
+  width: 88px; height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22));
+}
+.bp-hero-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 100px; padding: 4px 9px;
+  color: #fff; white-space: nowrap;
+}
+.hero-pill-ic { width: 11px; height: 11px; }
 .bp-hero-info { flex: 1; min-width: 0; }
 .bp-hero-name {
   font-size: 22px; font-weight: 800; color: white;
@@ -821,21 +901,22 @@ function goEdit() { router.push('/buyer-profile/build') }
 
 /* ── Identity verified strip ── */
 .dvs-strip {
-  background: #f2faf8;
-  border: 1px solid #d8efeb;
+  background: linear-gradient(90deg, #f6f5fb, #f2faf8);
+  border: 1px solid #e5f4f2;
   border-radius: 14px;
   padding: 14px 16px;
   display: flex; align-items: center; gap: 12px;
   animation: bp-fadeUp 0.4s 0.18s both;
 }
-.dvs-badge-ic {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: #fff; border: 1px solid #d8efeb;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.dvs-badge {
+  background: #231d45; color: #fff;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+  padding: 4px 8px; border-radius: 5px; flex-shrink: 0;
 }
-.dvs-text { min-width: 0; }
-.dvs-title { font-size: 12.5px; font-weight: 800; color: #17314a; line-height: 1.3; }
-.dvs-sub { font-size: 11px; font-weight: 600; color: #6b6783; margin-top: 2px; }
+.dvs-text {
+  min-width: 0;
+  font-size: 11.5px; font-weight: 700; color: #4a4566; line-height: 1.35;
+}
 
 /* ── Reward banner ── */
 .reward-banner {
@@ -852,10 +933,15 @@ function goEdit() { router.push('/buyer-profile/build') }
   display: flex; align-items: flex-start; gap: 12px;
   padding: 14px;
   border-radius: 14px;
-  background: #f2faf8;
-  border: 1px solid #d7efea;
+  background: linear-gradient(135deg, #f6f5fb, #f2faf8);
+  border: 1px solid #e5f4f2;
 }
-.persist-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+.persist-icon {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  background: #efedfb; border: 1px solid #e0dcf6;
+  display: flex; align-items: center; justify-content: center;
+}
+.persist-icon-svg { width: 17px; height: 17px; color: #5a4cf0; }
 .persist-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
 .persist-sub { font-size: 11.5px; color: #6b6783; line-height: 1.5; }
 .reward-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
@@ -1005,6 +1091,9 @@ function goEdit() { router.push('/buyer-profile/build') }
 }
 .risk-pill.add {
   background: #fbefd9; color: #c4821a; border: 1px solid #e6a23c;
+}
+.risk-pill.reject {
+  background: #fdecea; color: #c0392b; border: 1px solid #f5b7b1;
 }
 
 .sol-verified {

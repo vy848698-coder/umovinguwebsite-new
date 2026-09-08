@@ -69,12 +69,42 @@
         </div>
 
         <div class="pps-herocard-grid">
+          <!-- Photo. heroImage already prefers an uploaded picture, then the
+               Street View still from /enrichment, then null - PropertyImage
+               handles that last case with its labelled stand-in so a stock
+               photo never passes as this property. -->
+          <div class="pps-herocard-photo">
+            <PropertyImage
+              :src="heroImage"
+              :alt="property.addressLine1"
+              :seed="propertyId"
+              :show-caption="false"
+            />
+            <span v-if="propertyImages.length > 0" class="pps-herocard-photo-count">
+              <svg viewBox="0 0 24 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3l1.5-2h5L16 3h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3z" />
+                <circle cx="12" cy="11" r="3.5" />
+              </svg>
+              {{ propertyImages.length }}
+            </span>
+          </div>
+
           <!-- Left: identity -->
           <div class="pps-herocard-lead">
-            <span class="pps-herocard-state">
-              <span class="pps-herocard-state-dot" :style="{ background: heroStatePill.dot }" />
-              {{ heroStatePill.label }}
-            </span>
+            <div class="pps-herocard-staterow">
+              <span class="pps-herocard-state">
+                <span class="pps-herocard-state-dot" :style="{ background: heroStatePill.dot }" />
+                {{ heroStatePill.label }}
+              </span>
+              <button
+                type="button"
+                class="pps-herocard-explain"
+                aria-label="What does this mean?"
+                @click="onClaimExplain"
+              >
+                What does this mean?<span class="pps-herocard-explain-q">?</span>
+              </button>
+            </div>
 
             <h1 class="pps-herocard-title">{{ property.addressLine1 }}</h1>
             <p class="pps-herocard-sub">
@@ -89,6 +119,17 @@
             <p class="pps-herocard-price-src">
               {{ priceSourceLabel }} · HM Land Registry connected
             </p>
+
+            <div class="pps-herocard-quick">
+              <button type="button" class="pps-herocard-quick-btn" @click="onWatchClick">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                {{ wishlisted ? 'Watching' : 'Watch this' }}
+              </button>
+              <button type="button" class="pps-herocard-quick-btn" @click="onContactClick">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z" /></svg>
+                Ask a question
+              </button>
+            </div>
 
             <div class="pps-herocard-pills">
               <span v-if="property.propertyType" class="pps-herocard-pill">{{
@@ -180,52 +221,6 @@
         </div>
       </div>
 
-      <!-- ─── SECTION 2: Quick actions ─────────────────────────────── -->
-      <div class="pps-actions">
-        <button type="button" class="pps-actionbar" @click="onWatchClick">
-          <span class="pps-actionbar-ic pps-actionbar-ic--img">
-            <img src="/property-cards/watchThis.jpeg" alt="" loading="lazy" />
-          </span>
-          <span class="pps-actionbar-body">
-            <strong>{{ pageState === 'progress' ? 'Get notified' : 'Watch this property' }}</strong>
-            <small>{{ pageState === 'progress' ? 'Alert when the Passport is live' : 'Save it & get alerts when anything changes' }}</small>
-          </span>
-          <span class="pps-actionbar-arrow">→</span>
-        </button>
-        <button type="button" class="pps-actionbar" @click="onContactClick">
-          <span class="pps-actionbar-ic pps-actionbar-ic--img">
-            <img src="/property-cards/askAQuestion.jpeg" alt="" loading="lazy" />
-          </span>
-          <span class="pps-actionbar-body">
-            <strong>{{ pageState === 'published' ? 'Make contact' : 'Ask a question' }}</strong>
-            <small>{{ pageState === 'published' ? 'Owner or neighbour — start a conversation' : 'Neighbour or curious buyer — ask the community' }}</small>
-          </span>
-          <span class="pps-actionbar-arrow">→</span>
-        </button>
-      </div>
-
-      <!-- ─── Two-column web body ──────────────────────────────────── -->
-      <div class="pps-grid">
-      <div class="pps-col-main">
-      <!-- ─── SECTION 4: Live Signal Bar ──────────────────────────── -->
-      <div class="pps-signal-bar">
-        <div class="pps-signal-left">
-          <span
-            v-if="pageState === 'progress'"
-            class="pps-pulse-dot"
-            style="background: #e6a23c"
-          />
-          <span v-else class="pps-pulse-dot" />
-          <span
-            class="pps-signal-viewing"
-            :style="pageState === 'progress' ? { color: '#b07a1c' } : undefined"
-          >
-            {{ signalLeftLabel }}
-          </span>
-        </div>
-        <span class="pps-signal-count">{{ signalCountLabel }}</span>
-      </div>
-
       <!-- ─── SECTION 5: HomeScore ─────────────────────────────────── -->
       <div
         class="pps-score-card pps-score-card--clickable"
@@ -275,6 +270,23 @@
           >
             Run a full HomeScore
           </button>
+        </div>
+
+        <!-- Component-level EPC ratings from the public certificate. epcBars
+             was already computed here and never rendered - this is where the
+             reference app shows it, and it belongs with the score rather than
+             in a sidebar card away from its context. -->
+        <div v-if="epcBars.length > 0" class="pps-score-bottom">
+          <div class="pps-epc-header">From the public EPC certificate</div>
+          <div class="pps-epc-rows">
+            <div v-for="bar in epcBars" :key="bar.label" class="pps-epc-row">
+              <span class="pps-epc-label">{{ bar.label }}</span>
+              <div class="pps-epc-track">
+                <div class="pps-bar-fill" :style="{ width: bar.pct + '%', background: bar.color }" />
+              </div>
+              <span class="pps-epc-rating">{{ bar.rating }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -348,295 +360,6 @@
         </div>
       </div>
 
-      <!-- ─── SECTION 7: Passport Card ─────────────────────────────── -->
-      <div
-        v-if="pageState === 'unclaimed'"
-        class="pps-passport-card pps-passport-card--dark"
-      >
-        <div class="pps-passport-eyebrow-row">
-          <span class="pps-passport-eyebrow pps-passport-eyebrow--dark"
-            >Property Passport</span
-          >
-          <span
-            class="pps-passport-price-pill pps-passport-price-pill--unclaimed-dark"
-            >Unclaimed</span
-          >
-        </div>
-        <div class="pps-passport-title pps-passport-title--dark">
-          No Passport yet —
-          <span class="pps-passport-title-accent">be the first.</span>
-        </div>
-        <div class="pps-passport-explain pps-passport-explain--unclaimed-dark">
-          <div style="flex: 1">
-            <div
-              class="pps-passport-explain-eyebrow pps-passport-explain-eyebrow--dark"
-            >
-              Your home's permanent record
-            </div>
-            <div class="pps-passport-explain-body pps-passport-explain-body--dark">
-              Why would anyone buy a home without seeing its full history?
-              <strong>A Passport stays with this property for life</strong> —
-              documents, certificates, everything verified, before a buyer's
-              solicitor ever asks.
-            </div>
-          </div>
-        </div>
-
-        <div class="pps-pp-stepper pps-pp-stepper--dark">
-          <div class="pps-pp-step pps-pp-step--active">
-            <div class="pps-pp-step-dot">1</div>
-            <div class="pps-pp-step-label">Claim</div>
-          </div>
-          <div class="pps-pp-step-line" />
-          <div class="pps-pp-step">
-            <div class="pps-pp-step-dot">2</div>
-            <div class="pps-pp-step-label">Verify</div>
-          </div>
-          <div class="pps-pp-step-line" />
-          <div class="pps-pp-step">
-            <div class="pps-pp-step-dot">3</div>
-            <div class="pps-pp-step-label">Score</div>
-          </div>
-          <div class="pps-pp-step-line" />
-          <div class="pps-pp-step">
-            <div class="pps-pp-step-dot">4</div>
-            <div class="pps-pp-step-label">Publish</div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          class="pps-passport-cta pps-passport-cta--dark"
-          @click="onClaimClick"
-        >
-          Claim this property — it's free →
-        </button>
-        <div class="pps-passport-cta-sub pps-passport-cta-sub--dark">
-          Takes 2 minutes · <strong>No listing required</strong> · Free forever
-        </div>
-      </div>
-
-      <div v-else-if="pageState === 'progress'" class="pps-passport-card">
-        <div class="pps-score-blob-tr" />
-        <div class="pps-score-blob-bl" />
-        <div class="pps-passport-eyebrow-row">
-          <span class="pps-passport-eyebrow"
-            ><span
-              class="pps-passport-eyebrow-dot"
-              style="background: #00a19a"
-            />Property Passport</span
-          >
-          <span
-            class="pps-passport-price-pill"
-            style="background: #e6f7f6; color: #007e78; border-color: #b2e4e1"
-            >In progress</span
-          >
-        </div>
-        <div class="pps-passport-title" style="color: #00a19a">
-          Passport being built
-        </div>
-        <div class="pps-passport-explain pps-passport-explain--progress">
-          <div style="flex: 1">
-            <div class="pps-passport-explain-eyebrow" style="color: #007e78">
-              Stop buying blind
-            </div>
-            <div class="pps-passport-explain-body" style="color: #2a5c58">
-              This Passport is being built right now — so when you make your
-              move, the answers are already there.
-            </div>
-          </div>
-          <button
-            type="button"
-            class="pps-explain-btn"
-            style="background: #00a19a"
-            @click.stop="openSheet('explain-progress')"
-            aria-label="Why a Property Passport"
-          >
-            ?
-          </button>
-        </div>
-
-        <div class="pps-progress-bar-wrap">
-          <div
-            class="pps-progress-bar-fill"
-            :style="{
-              width: progressPct + '%',
-              background: 'linear-gradient(90deg, #00a19a, #4DD4CE)',
-            }"
-          />
-        </div>
-        <div class="pps-progress-label">{{ progressPct }}% complete</div>
-
-        <div class="pps-passport-features">
-          <div
-            v-for="f in passportFeatures"
-            :key="f.title"
-            class="pps-passport-feature"
-          >
-            <div
-              class="pps-feature-icon"
-              :class="
-                f.verified
-                  ? 'pps-feature-icon--verified'
-                  : 'pps-feature-icon--locked'
-              "
-            >
-              <svg
-                v-if="f.verified"
-                width="14"
-                height="11"
-                viewBox="0 0 14 11"
-                fill="none"
-              >
-                <path
-                  d="M1.5 5.5L5.5 9.5L12.5 1.5"
-                  stroke="#00b6ae"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <svg
-                v-else
-                width="12"
-                height="14"
-                viewBox="0 0 12 14"
-                fill="none"
-                stroke="#c0bdcc"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="1.5" y="6" width="9" height="7" rx="2" />
-                <path d="M3.5 6V4a2.5 2.5 0 0 1 5 0v2" />
-              </svg>
-            </div>
-            <div>
-              <div
-                :class="
-                  f.verified
-                    ? 'pps-feature-text-title--verified'
-                    : 'pps-feature-text-title--locked'
-                "
-              >
-                {{ f.title }}
-              </div>
-              <div class="pps-feature-text-sub">{{ f.sub }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CTA: owner/collaborator gets a "continue building" path; everyone
-             else sees the original "notify me on publish" watch CTA. -->
-        <button
-          type="button"
-          class="pps-passport-cta"
-          style="
-            background: #00a19a;
-            box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
-            color: white;
-          "
-          @click="onProgressCtaClick"
-        >
-          <template v-if="isPassportOwnerOrCollab">
-            <svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="4" rx="1.4"/><path d="M9 6H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3M8.5 12h7M8.5 16h5"/></svg> Continue building your Passport →
-          </template>
-          <template v-else><svg class="pps-cta-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9ZM10.5 20a2 2 0 0 0 3 0"/></svg> Get notified when published →</template>
-        </button>
-        <div class="pps-passport-cta-sub">
-          <template v-if="isPassportOwnerOrCollab">
-            <template v-if="progressPct > 0">
-              You're {{ progressPct }}% complete — tap to finish your remaining
-              sections.
-            </template>
-            <template v-else>
-              Open your Passport to start filling in sections.
-            </template>
-          </template>
-          <template v-else>
-            We'll alert you the moment this Passport goes live.
-          </template>
-        </div>
-      </div>
-
-      <div
-        v-else
-        class="pps-passport-card pps-passport-card--clickable"
-        role="button"
-        tabindex="0"
-        @click="onAccessPassport"
-      >
-        <div class="pps-score-blob-tr" />
-        <div class="pps-score-blob-bl" />
-        <div class="pps-passport-eyebrow-row">
-          <span class="pps-passport-eyebrow"
-            ><span class="pps-passport-eyebrow-dot" />Property Passport</span
-          >
-          <span class="pps-passport-price-pill">£99 →</span>
-        </div>
-
-        <div class="pps-passport-title">This home's Passport</div>
-        <div class="pps-passport-explain pps-passport-explain--published">
-          <div style="flex: 1">
-            <div class="pps-passport-explain-eyebrow" style="color: #b07a1c">
-              The HPI check for your home
-            </div>
-            <div class="pps-passport-explain-body" style="color: #6b4c1a">
-              The verified record that should have always existed — and now it
-              does.
-            </div>
-          </div>
-          <button
-            type="button"
-            class="pps-explain-btn"
-            style="background: #d4822a"
-            @click.stop="openSheet('explain-published')"
-            aria-label="Why a Property Passport"
-          >
-            ?
-          </button>
-        </div>
-
-        <div class="pps-progress-bar-wrap">
-          <div class="pps-progress-bar-fill" style="width: 100%" />
-        </div>
-        <div class="pps-progress-label">100% complete — Passport live</div>
-
-        <div class="pps-passport-features">
-          <div
-            v-for="f in publishedFeatures"
-            :key="f.title"
-            class="pps-passport-feature"
-          >
-            <div class="pps-feature-icon pps-feature-icon--verified">
-              <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
-                <path
-                  d="M1.5 5.5L5.5 9.5L12.5 1.5"
-                  stroke="#00b6ae"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-            <div>
-              <div class="pps-feature-text-title--verified">{{ f.title }}</div>
-              <div class="pps-feature-text-sub">{{ f.sub }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="pps-passport-cta-sub"
-          style="margin-top: 14px; text-align: left"
-        >
-          Secure payment · Instant access · No subscription
-        </div>
-      </div>
-
-      </div><!-- /pps-col-main -->
-
-      <aside class="pps-col-side">
       <!-- ─── SECTION 8: Running Costs ─────────────────────────────── -->
       <div v-if="costsBoxes.length > 0" class="pps-costs-card">
         <div class="pps-costs-header">
@@ -693,140 +416,49 @@
         </div>
       </div>
 
-      <!-- ─── SECTION 9: Property Details ──────────────────────────── -->
-      <div class="pps-details-card">
-        <div class="pps-details-header">Property details</div>
-        <div class="pps-details-grid">
-          <div v-if="property.propertyType" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/type.jpeg" alt="Type" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">Type</div>
-              <div class="pps-detail-value">{{ property.propertyType }}</div>
-            </div>
-          </div>
-          <div v-if="property.tenure" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/legal.jpeg" alt="Tenure" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">Tenure</div>
-              <div class="pps-detail-value">{{ property.tenure }}</div>
-            </div>
-          </div>
-          <div v-if="property.yearBuilt" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/calendar.png" alt="Year built" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">Year built</div>
-              <div class="pps-detail-value">{{ property.yearBuilt }}</div>
-            </div>
-          </div>
-          <div
-            v-if="property.sqft || property.floorAreaSqm"
-            class="pps-detail-tile"
-          >
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/areaSqft.png" alt="Floor area" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">Floor area</div>
-              <div class="pps-detail-value">
-                <template v-if="property.sqft"
-                  >{{ property.sqft.toLocaleString() }} sqft</template
-                >
-                <template v-else>{{ property.floorAreaSqm }} m²</template>
+      <!-- Keep going with umovingu - ported from the reference app. It is the
+           only thing on that page offering a next step once you have read the
+           record; without it this column simply stops. -->
+      <div class="pps-keepgoing">
+        <div class="pps-keepgoing-title">Keep going with umovingu</div>
+        <div class="pps-keepgoing-sub">
+          More tools. More insight. More ways to get move-ready.
+        </div>
+        <div class="pps-keepgoing-cards">
+          <div class="pps-keepgoing-card">
+            <div class="pps-keepgoing-card-top">
+              <img src="/op-icons/misc/passportFanReversed.png" alt="" class="pps-keepgoing-card-ic pps-keepgoing-card-ic--fan" loading="lazy" />
+              <div class="pps-keepgoing-card-body">
+                <div class="pps-keepgoing-card-title">Explore passports</div>
+                <div class="pps-keepgoing-card-sub">
+                  Discover how Property, Buyer and Tenant Passports keep key
+                  information organised, verified and reusable.
+                </div>
               </div>
             </div>
+            <button type="button" class="pps-keepgoing-card-btn" @click="passportEcosystemOpen = true">
+              Explore passports
+            </button>
           </div>
-          <div v-if="property.epcRating" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/epc.jpeg" alt="EPC rating" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">EPC rating</div>
-              <div class="pps-detail-value">
-                <span class="pps-epc-badge">{{ property.epcRating }}</span>
-                <template v-if="property.epcScore">
-                  {{ property.epcScore }}/100</template
-                >
+          <div class="pps-keepgoing-card">
+            <div class="pps-keepgoing-card-top">
+              <img src="/op-icons/misc/exploreLocation.png" alt="" class="pps-keepgoing-card-ic" loading="lazy" />
+              <div class="pps-keepgoing-card-body">
+                <div class="pps-keepgoing-card-title">Explore more homes</div>
+                <div class="pps-keepgoing-card-sub">
+                  Compare listings, review HomeScores and dig into the
+                  neighbourhood data near you.
+                </div>
               </div>
             </div>
-          </div>
-          <div v-if="property.uprn" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/uprn.jpeg" alt="UPRN" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">UPRN</div>
-              <div class="pps-detail-value">{{ property.uprn }}</div>
-            </div>
-          </div>
-          <!-- Title number tile (restored) -->
-          <div v-if="property.titleNumber" class="pps-detail-tile">
-            <span class="pps-detail-tile-icon pps-detail-tile-icon--img">
-              <img src="/property-cards/title.jpeg" alt="Title number" loading="lazy" />
-            </span>
-            <div class="pps-detail-tile-body">
-              <div class="pps-detail-label">Title number</div>
-              <div class="pps-detail-value">{{ property.titleNumber }}</div>
-            </div>
-          </div>
-          <!-- (Flood tile removed from Property Details — the same data is
-               already in the explore-grid 'Flood & Risk' tile + its own
-               bottom sheet, so a duplicate here only invited drift.) -->
-        </div>
-      </div>
-
-      <!-- EPC fabric breakdown (restored from old version) — only when we
-           have at least one component-level rating from the EPC API. -->
-      <div v-if="epcComponents.length > 0" class="pps-details-card">
-        <div class="pps-details-header">EPC fabric breakdown</div>
-        <div class="pps-details-sub">
-          How each part of the building scores in the latest Energy Performance
-          Certificate.
-        </div>
-        <div class="pps-epc-comp-list">
-          <div
-            v-for="c in epcComponents"
-            :key="c.label"
-            class="pps-epc-comp-row"
-          >
-            <div class="pps-epc-comp-label">{{ c.label }}</div>
-            <div class="pps-epc-comp-track">
-              <div
-                class="pps-epc-comp-fill"
-                :class="epcCompClass(c.eff)"
-                :style="{ width: c.pct + '%' }"
-              />
-            </div>
-            <div
-              class="pps-epc-comp-rating"
-              :style="{ color: epcCompColor(c.eff) }"
-            >
-              {{ c.eff }}
-            </div>
+            <button type="button" class="pps-keepgoing-card-btn" @click="goBack">
+              Back to Explore
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- ─── Ask a question (sidebar) ─────────────────────────────── -->
-      <div class="pps-ask-card">
-        <div class="pps-ask-ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <div class="pps-ask-title">Need something specific?</div>
-        <div class="pps-ask-sub">
-          Ask a neighbour or our community — answers land in this record.
-        </div>
-        <button type="button" class="pps-ask-btn" @click="onContactClick">Ask a question</button>
-      </div>
-      </aside><!-- /pps-col-side -->
-      </div><!-- /pps-grid -->
+
       </div><!-- /pps-shell -->
 
       <!-- ─────────────────────────── FOOTER ─────────────────────────── -->
@@ -871,6 +503,11 @@
         <div class="pps-footer-bottom">© 2026 umovingu. All rights reserved.</div>
       </footer>
     </template>
+
+    <PassportEcosystemDrawer
+      :open="passportEcosystemOpen"
+      @close="passportEcosystemOpen = false"
+    />
 
     <!-- Drawers — wired to the new state-driven CTAs. -->
     <!-- Owner-claim (free) goes through the global /claim/[id] flow which
@@ -953,6 +590,64 @@
           </div>
 
           <!-- ── History (Land Registry) ─────────────────────────── -->
+          <template v-if="activeSheet === 'property-details'">
+            <div class="pps-ds-header" style="background: #e9f6f5">
+              <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/op-icons/property/type.jpeg" alt="" loading="lazy" /></span>
+              <div class="pps-ds-header-text">
+                <div class="pps-ds-header-title">Property details</div>
+                <div class="pps-ds-header-meta">
+                  Ordnance Survey · EPC Register · HM Land Registry
+                </div>
+              </div>
+            </div>
+            <div class="pps-ds-kv-list">
+              <div v-if="property?.propertyType" class="pps-ds-kv">
+                <span class="pps-ds-k">Type</span>
+                <span class="pps-ds-v">{{ property.propertyType }}</span>
+              </div>
+              <div v-if="property?.tenure" class="pps-ds-kv">
+                <span class="pps-ds-k">Tenure</span>
+                <span class="pps-ds-v">{{ property.tenure }}</span>
+              </div>
+              <div v-if="property?.floorAreaSqm" class="pps-ds-kv">
+                <span class="pps-ds-k">Floor area</span>
+                <span class="pps-ds-v">{{ property.floorAreaSqm }} m2</span>
+              </div>
+              <div v-if="property?.bedrooms" class="pps-ds-kv">
+                <span class="pps-ds-k">Bedrooms</span>
+                <span class="pps-ds-v">{{ property.bedrooms }}</span>
+              </div>
+              <div v-if="property?.yearBuilt" class="pps-ds-kv">
+                <span class="pps-ds-k">Year built</span>
+                <span class="pps-ds-v">{{ property.yearBuilt }}</span>
+              </div>
+              <div v-if="property?.epcRating" class="pps-ds-kv">
+                <span class="pps-ds-k">EPC rating</span>
+                <span class="pps-ds-v">
+                  <span class="pps-epc-badge" :style="{ background: epcDotColor }">{{ property.epcRating }}</span>
+                  <template v-if="property.epcScore"> {{ property.epcScore }}/100</template>
+                </span>
+              </div>
+              <div v-if="property?.uprn" class="pps-ds-kv">
+                <span class="pps-ds-k">UPRN</span>
+                <span class="pps-ds-v">{{ property.uprn }}</span>
+              </div>
+            </div>
+            <button
+              v-if="property?.epcRating"
+              type="button"
+              class="pps-pd-download"
+              :disabled="epcDownloading"
+              @click="downloadEpc"
+            >
+              {{ epcDownloading ? 'Opening...' : 'View the EPC certificate' }}
+            </button>
+            <div class="pps-ds-attribution">
+              Sourced from the public record. Figures update as new
+              certificates and registrations are published.
+            </div>
+          </template>
+
           <template v-if="activeSheet === 'history'">
             <div class="pps-ds-header" style="background: #fff3e0">
               <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/property-cards/propertyHistory.jpeg" alt="" loading="lazy" /></span>
@@ -3398,6 +3093,8 @@ import ClaimPassportDrawer from '~/components/property/ClaimPassportDrawer.vue'
 import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
 import BaseDrawer from '~/components/ui/BaseDrawer.vue'
 import ImageSlider from '~/components/ui/ImageSlider.vue'
+import PropertyImage from '~/components/property/PropertyImage.vue'
+import PassportEcosystemDrawer from '~/components/property/PassportEcosystemDrawer.vue'
 import Toast from '~/components/ui/Toast.vue'
 import ShareContent from '~/components/property/ShareContent.vue'
 import LlcChargesCard from '~/components/property/LlcChargesCard.vue'
@@ -3407,7 +3104,15 @@ import { usePassportClaim } from '~/composables/usePassportClaim'
 import { usePropertyActions } from '~/composables/usePropertyActions'
 import { toTitleCase } from '~/utils/form-helpres'
 
-definePageMeta({ middleware: 'auth' })
+// Deliberately PUBLIC - no auth middleware. This is the page a guest lands on
+// after searching from Explore, and letting them see a property before asking
+// for an account is the whole point of that entry path.
+//
+// Every authenticated call below already degrades on its own rather than
+// assuming a token: fetchActions() early-returns, getPassportStatus() catches
+// to a safe default, and the enrichment / HomeScore / register-interest calls
+// all send the Authorization header conditionally.
+definePageMeta({})
 
 const route = useRoute()
 const router = useRouter()
@@ -3417,6 +3122,7 @@ const { getPropertyDetails, formatPrice } = usePropertySearch()
 const { getPassportStatus } = usePassportClaim()
 const { toastState, showToast, hideToast } = useAppToast()
 const { wishlisted, toggleWishlist, fetchActions } = usePropertyActions()
+const { recordExplored } = useRecentlyExplored()
 
 const config = useRuntimeConfig()
 const property = ref<any>(null)
@@ -4594,6 +4300,21 @@ const exploreTiles = computed(() => {
   const p = property.value
   if (!p) return []
   const tiles: Array<any> = []
+  // Property details - first tile, matching the reference app. Replaces the
+  // sidebar card of the same name so the data lives with every other
+  // data-source drawer instead of in a panel of its own.
+  const detailsValue = p.epcRating
+    ? `EPC ${p.epcRating}${p.epcScore ? ` · ${p.epcScore}` : ''}`
+    : p.propertyType || '-'
+  tiles.push({
+    key: 'property-details',
+    icon: '',
+    iconBg: '#EEF3F7',
+    iconImage: '/op-icons/property/type.jpeg',
+    title: 'Property details',
+    value: detailsValue,
+    sub: p.uprn ? `UPRN ${p.uprn}` : 'Type · EPC · UPRN',
+  })
   // Property history (Land Registry sold history)
   tiles.push({
     key: 'history',
@@ -5120,6 +4841,7 @@ function onScoreCardTap() {
 
 // ─── Bottom-sheet system (prototype's openSheet/closeSheet) ────────────────
 type SheetKey =
+  | 'property-details'
   | 'history'
   | 'street'
   | 'schools'
@@ -5198,6 +4920,7 @@ onBeforeUnmount(() => {
 function onExploreTileClick(key: string) {
   // Every explore tile now opens its matching bottom sheet (prototype parity).
   const map: Record<string, SheetKey | null> = {
+    'property-details': 'property-details',
     history: 'history',
     street: 'street',
     schools: 'schools',
@@ -6247,6 +5970,20 @@ onMounted(async () => {
       loadError.value = 'Property not found.'
     } else {
       property.value = propData
+      // Guest-safe localStorage history that feeds Explore's "Recently
+      // explored" list. Fires for signed-out visitors too - that page has no
+      // auth middleware, so the backend's own recently-viewed feed (which is
+      // JWT-gated) can never cover it.
+      recordExplored({
+        id: propertyId,
+        addressLine1: propData.addressLine1 ?? '',
+        postcode: propData.postcode ?? null,
+        city: propData.city ?? null,
+        estimatedPrice: propData.estimatedPrice ?? null,
+        lastSoldPrice: propData.lastSoldPrice ?? null,
+        lastSoldDate: propData.lastSoldDate ?? null,
+        image: propData.images?.[0] ?? propData.imageUrl ?? null,
+      })
     }
   } catch (err) {
     loadError.value = 'Failed to load property details.'
@@ -6356,8 +6093,44 @@ function onClaimCtaClick() {
   goToClaim()
 }
 
+// router.back() dead-ends for anyone with no history to pop - a guest opening
+// a shared link, or a new tab - and this page is public, so that is a common
+// arrival. Route explicitly instead.
 function goBack() {
-  router.back()
+  const isAuthed =
+    typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
+  navigateTo(isAuthed ? '/dashboard?focusSearch=1' : '/explore')
+}
+
+// The EPC certificate lives on gov.uk, keyed by its LMK. Prefer the key we
+// already persist; fall back to the backend UPRN lookup for older cache rows
+// that predate that column.
+const passportEcosystemOpen = ref(false)
+const epcDownloading = ref(false)
+async function downloadEpc() {
+  if (epcDownloading.value) return
+  epcDownloading.value = true
+  try {
+    const openCert = (lmk: string) => {
+      window.open(
+        `https://find-energy-certificate.service.gov.uk/energy-certificate/${lmk}`,
+        '_blank',
+        'noopener,noreferrer',
+      )
+    }
+    const stored = (property.value as any)?.epcLmkKey
+    if (stored) return openCert(stored)
+    const res = await fetch(
+      `${config.public.apiBase}/property/${propertyId}/epc-download-info`,
+    ).catch(() => null)
+    const info = res && res.ok ? await res.json().catch(() => null) : null
+    if (info?.lmkKey) return openCert(info.lmkKey)
+    showToast({ message: 'No EPC certificate is on file for this property.', duration: 3000 })
+  } catch {
+    showToast({ message: 'Could not open the EPC certificate. Please try again.', duration: 3000 })
+  } finally {
+    epcDownloading.value = false
+  }
 }
 
 function openRegisterInterest() {
@@ -6533,9 +6306,10 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Shell + two-column grid ─────────────────────────────────── */
 .pps-shell {
-  width: min(1180px, calc(100% - 48px));
+  width: min(1100px, calc(100% - 48px));
   margin: 0 auto;
-  padding-top: 22px;
+  padding-top: 28px;
+  padding-bottom: 8px;
 }
 
 /* ── Footer (app-wide standard) ───────────────────────────────── */
@@ -6596,13 +6370,15 @@ function formatSaleDate(dateStr: string): string {
   .pps-footer-bottom { width: calc(100% - 32px); }
 }
 
-.pps-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 22px;
-  align-items: start;
-  margin-top: 16px;
+/* Single-column body. Every top-level section sits directly in .pps-shell
+   and carries its own top margin, so the rhythm is set in one place. */
+.pps-shell > .pps-score-card,
+.pps-shell > .pps-explore-header,
+.pps-shell > .pps-costs-card,
+.pps-shell > .pps-keepgoing {
+  margin-top: 34px;
 }
+.pps-shell > .pps-explore-grid { margin-top: 18px; }
 .pps-col-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .pps-col-side {
   display: flex;
@@ -6747,10 +6523,93 @@ function formatSaleDate(dateStr: string): string {
 .pps-herocard-grid {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: 232px minmax(0, 1fr) 320px;
   gap: 34px;
   align-items: start;
 }
+.pps-herocard-staterow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.pps-herocard-explain {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.62);
+  cursor: pointer;
+}
+.pps-herocard-explain:hover { color: #fff; }
+.pps-herocard-explain-q {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 10px;
+}
+.pps-herocard-quick {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0 4px;
+}
+.pps-herocard-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+.pps-herocard-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.pps-herocard-quick-btn svg { width: 16px; height: 16px; }
+
+.pps-herocard-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pps-herocard-photo :deep(img) { width: 100%; height: 100%; object-fit: cover; }
+.pps-herocard-photo-count {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(20, 16, 42, 0.72);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.pps-herocard-photo-count svg { width: 13px; height: 11px; }
+
 .pps-herocard-lead {
   min-width: 0;
 }
@@ -7677,9 +7536,21 @@ function formatSaleDate(dateStr: string): string {
   flex-shrink: 0;
 }
 .pps-score-bottom {
-  background: white;
-  padding: 16px 18px;
+  background: #fff;
+  padding: 20px 28px 24px 34px;
+  border-top: 1px solid #eceaf3;
 }
+.pps-epc-rows { display: grid; gap: 10px; margin-top: 12px; }
+.pps-epc-row {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) 74px;
+  align-items: center;
+  gap: 14px;
+}
+.pps-epc-label { font-size: 13px; font-weight: 700; color: #545a72; }
+.pps-epc-track { height: 8px; border-radius: 999px; background: #eceaf3; overflow: hidden; }
+.pps-epc-track .pps-bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+.pps-epc-rating { text-align: right; font-size: 12.5px; font-weight: 700; color: #8a90a6; }
 .pps-epc-header {
   font-size: 9px;
   font-weight: 800;
@@ -8282,6 +8153,50 @@ function formatSaleDate(dateStr: string): string {
 }
 
 /* ─── Costs card ────────────────────────────────────────────── */
+.pps-keepgoing {
+  padding: 28px 26px 26px;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid #eceaf3;
+}
+.pps-keepgoing-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; color: #231d45; text-align: center; }
+.pps-keepgoing-sub { margin-top: 5px; font-size: 13.5px; font-weight: 500; color: #8a90a6; text-align: center; }
+.pps-keepgoing-cards {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 16px;
+}
+.pps-keepgoing-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px 18px;
+  border-radius: 18px;
+  background: #faf9fd;
+  border: 1px solid #eceaf3;
+}
+.pps-keepgoing-card-top { display: flex; align-items: flex-start; gap: 14px; flex: 1; }
+.pps-keepgoing-card-ic { width: 58px; height: 58px; flex-shrink: 0; object-fit: contain; }
+.pps-keepgoing-card-ic--fan { width: 64px; }
+.pps-keepgoing-card-body { min-width: 0; }
+.pps-keepgoing-card-title { font-size: 15px; font-weight: 800; letter-spacing: -0.015em; color: #231d45; margin-bottom: 5px; }
+.pps-keepgoing-card-sub { font-size: 12.5px; font-weight: 500; line-height: 1.55; color: #6b7089; }
+.pps-keepgoing-card-btn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #231d45;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.pps-keepgoing-card-btn:hover { background: #322a5f; transform: translateY(-1px); }
+
 .pps-costs-card {
   width: 100%;
   margin: 0;
@@ -9470,6 +9385,23 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   color: #6b6783;
   line-height: 1.55;
 }
+.pps-pd-download {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #00a19a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+.pps-pd-download:hover { background: #018e88; }
+.pps-pd-download:disabled { opacity: 0.6; cursor: default; }
+
 .pps-ds-attribution {
   font-size: 12px;
   color: #c0bdcc;

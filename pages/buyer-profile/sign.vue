@@ -9,7 +9,7 @@
         <div class="sd-kicker"><span class="sd-kicker-dot" />SIGN YOUR PROFILE</div>
         <h1 class="sd-h1">Add your digital signature</h1>
         <p class="sd-sub">
-          Sign to confirm this profile is accurate and authorise its sharing.
+          Sign to confirm this passport is accurate and authorise its sharing.
           Your signature is embedded in the certified PDF.
         </p>
       </div>
@@ -79,12 +79,12 @@
             <div class="sd-doc-label">
               <Icon name="heroicons:document-text" class="sd-doc-label-ic" />SIGNING
             </div>
-            <div class="sd-doc-title">UMU Buyer Profile</div>
+            <div class="sd-doc-title">UMU Buyer Passport</div>
             <div class="sd-doc-name">{{ displayName }}</div>
             <div class="sd-doc-rows">
               <div class="sd-doc-row"><span>Reference</span><strong>{{ publicRef }}</strong></div>
               <div class="sd-doc-row"><span>Date</span><strong>{{ todayLabel }}</strong></div>
-              <div class="sd-doc-row"><span>Scope</span><strong>Profile + Financials</strong></div>
+              <div class="sd-doc-row"><span>Scope</span><strong>Passport + Financial Credentials</strong></div>
             </div>
           </div>
 
@@ -111,7 +111,7 @@ import {
 import { useProfile } from '~/composables/useProfile'
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
-definePageMeta({ title: 'Sign Profile — UmovingU', middleware: 'auth' })
+definePageMeta({ title: 'Sign Passport — UmovingU', middleware: 'auth' })
 
 const router = useRouter()
 const { getBuyerProfile, signProfile } = useBuyerProfile()

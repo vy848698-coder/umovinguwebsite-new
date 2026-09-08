@@ -6,7 +6,7 @@
     <main class="pv-shell">
       <div class="pv-head">
         <div class="pv-kicker"><span class="pv-kicker-dot" />CERTIFIED DOCUMENT</div>
-        <h1 class="pv-h1">Your Buyer Profile PDF</h1>
+        <h1 class="pv-h1">Your Buyer Passport PDF</h1>
         <p class="pv-sub">
           A verified, PDTF-conformant document agents and solicitors can trust.
           Sign it, then download or share.
@@ -218,7 +218,7 @@ import { useAppToast } from '~/composables/useCustomToast'
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
-definePageMeta({ title: 'Profile PDF — UmovingU', middleware: 'auth' })
+definePageMeta({ title: 'Passport PDF — UmovingU', middleware: 'auth' })
 
 const router = useRouter()
 const { getBuyerProfile } = useBuyerProfile()

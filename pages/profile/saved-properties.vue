@@ -4,7 +4,7 @@
     <WebTopNav>
       <template #actions>
         <button class="sp-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
-        <button class="sp-quick-btn solid" type="button" @click="navigateTo('/explore')">Explore</button>
+        <button class="sp-quick-btn solid" type="button" @click="navigateTo('/dashboard')">Explore</button>
       </template>
     </WebTopNav>
 

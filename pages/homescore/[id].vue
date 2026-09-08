@@ -40,7 +40,7 @@
             <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
           <nav class="hsw-links" aria-label="Primary navigation">
-            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" @click="navigateTo('/dashboard')">Explore</button>
             <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" @click="navigateTo('/passport')">Passport</button>
             <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -115,7 +115,7 @@
             <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
           <nav class="hsw-links" aria-label="Primary navigation">
-            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" @click="navigateTo('/dashboard')">Explore</button>
             <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" @click="navigateTo('/passport')">Passport</button>
             <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -162,7 +162,7 @@
             <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
           <nav class="hsw-links" aria-label="Primary navigation">
-            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" @click="navigateTo('/dashboard')">Explore</button>
             <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" @click="navigateTo('/passport')">Passport</button>
             <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -202,7 +202,7 @@
             <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
           <nav class="hsw-links" aria-label="Primary navigation">
-            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" @click="navigateTo('/dashboard')">Explore</button>
             <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" @click="navigateTo('/passport')">Passport</button>
             <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -240,7 +240,7 @@
             <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
           <nav class="hsw-links" aria-label="Primary navigation">
-            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button type="button" @click="navigateTo('/dashboard')">Explore</button>
             <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" @click="navigateTo('/passport')">Passport</button>
             <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -276,7 +276,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -693,7 +693,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -995,7 +995,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -1225,7 +1225,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -1351,7 +1351,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -1464,7 +1464,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -1605,7 +1605,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -1990,7 +1990,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -2739,7 +2739,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -2929,7 +2929,7 @@
               <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
             </button>
             <nav class="hsw-links" aria-label="Primary navigation">
-              <button type="button" @click="navigateTo('/explore')">Explore</button>
+              <button type="button" @click="navigateTo('/dashboard')">Explore</button>
               <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
               <button type="button" @click="navigateTo('/passport')">Passport</button>
               <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>

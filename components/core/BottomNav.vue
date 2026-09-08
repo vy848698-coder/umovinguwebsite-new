@@ -6,7 +6,7 @@
       <button
         class="flex flex-col items-center py-2"
         :class="isActive('explore')"
-        @click="router.push('/explore')"
+        @click="router.push('/dashboard')"
       >
         <OPIcon name="explore" :class="iconSize" />
         <span class="text-xs mt-1">Explore</span>

@@ -175,7 +175,7 @@
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" @click="navigateTo('/passport')">Property Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
         </div>
 
         <div class="pf-footer-col">
@@ -389,7 +389,7 @@ const profileItems = [
     route: '/profile/personal-information',
   },
   {
-    title: 'Your Buyer Profile',
+    title: 'Your Buyer Passport',
     description:
       'Verified ID, proof of funds and chain position — share with sellers, agents and solicitors.',
     icon: 'personalInformation',

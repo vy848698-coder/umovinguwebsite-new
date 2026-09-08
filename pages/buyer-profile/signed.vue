@@ -1,7 +1,7 @@
 <template>
   <div class="sn-page">
 
-    <BuyerProfileNav back-label="My profile" @back="goView" />
+    <BuyerProfileNav back-label="My passport" @back="goView" />
 
     <main class="sn-shell">
       <!-- Celebration hero -->
@@ -10,7 +10,7 @@
           <Icon name="heroicons:check-badge-solid" class="sn-badge-ic" />
         </div>
         <div class="sn-kicker"><span class="sn-kicker-dot" />PROFILE SIGNED</div>
-        <h1 class="sn-title">Your profile is signed &amp; sealed</h1>
+        <h1 class="sn-title">Your passport is signed &amp; sealed</h1>
         <p class="sn-sub">
           Your digital signature has been embedded. The certified PDF is now ready
           to share with agents or download.
@@ -29,7 +29,7 @@
               <Icon name="heroicons:check-16-solid" class="sn-pill-ic" />eIDAS
             </span>
           </div>
-          <div class="sn-doc-title">UMU Buyer Profile — {{ displayName }}</div>
+          <div class="sn-doc-title">UMU Buyer Passport — {{ displayName }}</div>
 
           <!-- Signature — image OR typed -->
           <div class="sn-sig-wrap">
@@ -75,8 +75,8 @@
             <button class="sn-action" @click="goView">
               <span class="sn-action-ic"><Icon name="heroicons:user-circle" /></span>
               <span class="sn-action-body">
-                <span class="sn-action-t">Back to my profile</span>
-                <span class="sn-action-s">View your full profile</span>
+                <span class="sn-action-t">Back to my passport</span>
+                <span class="sn-action-s">View your full passport</span>
               </span>
               <Icon name="heroicons:chevron-right" class="sn-action-chev" />
             </button>
@@ -101,7 +101,7 @@ import {
 import { useProfile } from '~/composables/useProfile'
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
-definePageMeta({ title: 'Profile Signed — UmovingU', middleware: 'auth' })
+definePageMeta({ title: 'Passport Signed — UmovingU', middleware: 'auth' })
 
 const router = useRouter()
 const { getBuyerProfile } = useBuyerProfile()

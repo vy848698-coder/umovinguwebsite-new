@@ -69,10 +69,10 @@ const props = defineProps({
 })
 
 const PASSPORT_COVERS = {
-  BUYER: '/dashboard/passportBuyer.png',
-  SELLER: '/dashboard/passportSeller.png',
-  LANDLORD: '/dashboard/passportLandlord.png',
-  TENANT: '/dashboard/passportTenant.png',
+  BUYER: '/dashboard-art/passportBuyer.png',
+  SELLER: '/dashboard-art/passportSeller.png',
+  LANDLORD: '/dashboard-art/passportLandlord.png',
+  TENANT: '/dashboard-art/passportTenant.png',
 }
 
 const passportImage = computed(

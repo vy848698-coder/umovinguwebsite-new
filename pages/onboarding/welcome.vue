@@ -116,7 +116,7 @@ const continueToApp = async () => {
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('redirectAfterLogin')
   }
-  await navigateTo('/explore')
+  await navigateTo('/dashboard')
 }
 
 // Top-of-screen confetti shower — pieces start above the viewport and fall

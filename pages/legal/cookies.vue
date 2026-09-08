@@ -130,7 +130,7 @@
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" @click="navigateTo('/passport')">Property Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
         </div>
 
         <div class="lg-foot-col">

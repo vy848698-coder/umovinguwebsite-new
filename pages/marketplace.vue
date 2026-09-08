@@ -10,7 +10,7 @@
         </button>
 
         <nav class="web-links" aria-label="Marketplace navigation">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" :class="{ active: navIsActive('/dashboard') }" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -38,7 +38,7 @@
       <div class="marketplace-web-shell">
         <div class="web-mobile-backdrop" :class="{ open: mobileNavOpen }" @click="mobileNavOpen = false" />
         <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
+          <button type="button" :class="{ active: navIsActive('/dashboard') }" @click="goMobile('/dashboard')">Explore</button>
           <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
           <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Passport</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="goMobile('/marketplace')">Marketplace</button>

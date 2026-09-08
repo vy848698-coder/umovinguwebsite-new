@@ -13,7 +13,7 @@
         </div>
 
         <nav class="pw-nav-links" aria-label="Primary navigation">
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" @click="navigateTo('/passport')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -36,7 +36,7 @@
 
       <transition name="pw-menu">
         <nav v-if="mobileMenuOpen" class="pw-mobile-menu" aria-label="Mobile navigation">
-          <button type="button" @click="navGo('/explore')">Explore</button>
+          <button type="button" @click="navGo('/dashboard')">Explore</button>
           <button type="button" @click="navGo('/homescore')">HomeScore</button>
           <button type="button" @click="navGo('/passport')">Passport</button>
           <button type="button" @click="navGo('/marketplace')">Marketplace</button>

@@ -17,8 +17,16 @@ export interface BuyerProfile {
   fundsType: string | null
   fundsAmount: number | null
   fundsDocumentUrl: string | null
+  // Set when a proof-of-funds document is uploaded and sitting in the admin
+  // review queue: 'pending' | 'approved' | 'rejected'. fundsVerified only
+  // flips once a human has actually approved it.
+  fundsReviewStatus: string | null
   fundsVerified: boolean
   fundsAmountVerified: number | null
+  // Mortgage Agreement in Principle — same upload → review → verified path.
+  mortgageAipUrl: string | null
+  mortgageAipReviewStatus: string | null
+  mortgageAipVerified: boolean
   amlStatus: string | null
   affordabilityScore: number | null
   sourceOfFundsJson: any
