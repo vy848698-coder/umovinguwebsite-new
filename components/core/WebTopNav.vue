@@ -8,6 +8,7 @@
       </button>
 
       <nav class="webtop-links" aria-label="Primary navigation">
+        <button v-if="signedIn" type="button" :class="{ active: navIsActive('/dashboard') }" @click="navigateTo('/dashboard')">Dashboard</button>
         <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
         <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
         <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
@@ -35,6 +36,7 @@
     <div class="webtop-shell">
       <div class="webtop-mobile-backdrop" :class="{ open: mobileOpen }" @click="mobileOpen = false" />
       <div class="webtop-mobile-panel" :class="{ open: mobileOpen }">
+        <button v-if="signedIn" type="button" :class="{ active: navIsActive('/dashboard') }" @click="goMobile('/dashboard')">Dashboard</button>
         <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
         <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
         <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Passport</button>
@@ -61,6 +63,22 @@ const mobileOpen = ref(false)
 
 const navIsActive = (basePath: string) =>
   route.path === basePath || route.path.startsWith(`${basePath}/`)
+
+// Dashboard and Explore are two different products, not two names for one:
+//   /dashboard - the signed-in, role-aware home (auth middleware)
+//   /explore   - the public browse page, no account needed
+// So Dashboard only appears once there's a session to show; Explore is always
+// there, for guests and members alike.
+//
+// Resolved after mount because localStorage doesn't exist during SSR. Until
+// then signedIn is false, which is the safe default: the first paint shows the
+// guest menu and the Dashboard row appears on hydration, rather than offering
+// an auth-gated link to someone who would only be bounced off it.
+const signedIn = ref(false)
+onMounted(() => {
+  signedIn.value =
+    typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
+})
 
 const learnIsActive = computed(() =>
   navIsActive('/profile/learn') || (props.includeChatInLearn && navIsActive('/profile/chat')),

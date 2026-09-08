@@ -40,15 +40,15 @@
 // unphotographed properties renders the identical picture down the whole
 // grid, which reads as a rendering bug rather than as missing data.
 const STOCK_IMAGES = [
-  '/dashboard/home-1.jpg',
-  '/dashboard/home-2.jpg',
-  '/dashboard/home-3.jpg',
-  '/dashboard/home-4.jpg',
-  '/dashboard/home-5.jpg',
-  '/dashboard/home-6.jpg',
-  '/dashboard/home-7.jpg',
-  '/dashboard/home-8.jpg',
-  '/dashboard/home-9.jpg',
+  '/dashboard-art/home-1.jpg',
+  '/dashboard-art/home-2.jpg',
+  '/dashboard-art/home-3.jpg',
+  '/dashboard-art/home-4.jpg',
+  '/dashboard-art/home-5.jpg',
+  '/dashboard-art/home-6.jpg',
+  '/dashboard-art/home-7.jpg',
+  '/dashboard-art/home-8.jpg',
+  '/dashboard-art/home-9.jpg',
 ]
 
 // Deterministic, never Math.random(): this renders on the server and then

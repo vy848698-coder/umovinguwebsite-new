@@ -9,7 +9,7 @@
           <span class="spn-brand-beta">BETA</span>
         </button>
         <nav class="spn-links" aria-label="Primary navigation">
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" class="active" @click="navigateTo('/passport/sample')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -63,7 +63,7 @@
         <section class="sp-hero">
           <!-- passport card -->
           <div class="sp-hero-book">
-            <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+            <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" type="SELLER" />
           </div>
 
           <!-- middle info -->
@@ -178,11 +178,11 @@
             </div>
             <div class="sp-card-pills">
               <span class="sp-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05 12.25 20.2a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.67 3.67 0 1 1 5.18 5.18l-9.2 9.2a1.83 1.83 0 1 1-2.59-2.6l8.49-8.48" /></svg>
+                <img src="/op-icons/misc/paperClip.png" alt="" loading="lazy" />
                 {{ s.docs }} docs
               </span>
               <span class="sp-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.3" /><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none" /></svg>
+                <img src="/op-icons/misc/question.png" alt="" loading="lazy" />
                 {{ s.questions }} questions
               </span>
             </div>
@@ -216,15 +216,11 @@
           <!-- ── Hero card ─────────────────────────────────────────── -->
           <section class="lp-hero">
             <div class="lp-hero-book">
-              <img
-                src="/landlordPassport.png"
-                alt="umovingu Landlord Passport"
-                class="lp-hero-book-img"
+              <PassportCard
+                line1="14 Hazel Grove"
+                line2="Stockport, SK7 4BL"
+                type="LANDLORD"
               />
-              <div class="lp-hero-book-plate">
-                <span class="lp-hero-book-line1">14 Hazel Grove</span>
-                <span class="lp-hero-book-line2">Stockport, SK7 4BL</span>
-              </div>
             </div>
 
             <div class="lp-hero-info">
@@ -324,7 +320,7 @@
                 </div>
                 <div class="sp-card-pills">
                   <span class="lp-doc-pill">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
+                    <img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" />
                     {{ s.docs }}
                   </span>
                   <span class="lp-status-pill" :class="`lp-status-pill--${s.status.tone}`">
@@ -386,7 +382,7 @@
           <!-- ── Verified hero ─────────────────────────────────────── -->
           <section class="by-hero">
             <div class="by-hero-book">
-              <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" />
+              <PassportCard line1="55, Woodfield Road" line2="Coventry, CV5 6AJ" type="SELLER" />
             </div>
             <div class="by-hero-info">
               <span class="by-hero-kicker">
@@ -699,7 +695,7 @@ onBeforeUnmount(() => {
 function startPassport() {
   const loggedIn =
     typeof window !== 'undefined' && !!localStorage.getItem('token')
-  navigateTo(loggedIn ? '/explore' : '/onboarding/signup')
+  navigateTo(loggedIn ? '/dashboard' : '/onboarding/signup')
 }
 
 const sections = [
@@ -1157,7 +1153,7 @@ const buyerRecords = [
 }
 
 .sp-hero-book {
-  width: 150px;
+  width: 190px;
   flex-shrink: 0;
 }
 
@@ -1608,9 +1604,12 @@ const buyerRecords = [
   padding: 7px 14px;
 }
 
-.sp-pill svg {
-  width: 13px;
-  height: 13px;
+.sp-pill svg,
+.sp-pill img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  display: block;
 }
 
 .sp-card-track {
@@ -1765,48 +1764,13 @@ const buyerRecords = [
 
 .lp-hero-book {
   position: relative;
-  width: 148px;
+  width: 190px;
   flex-shrink: 0;
   filter: drop-shadow(0 14px 28px rgba(20, 20, 32, 0.3));
 }
 
-.lp-hero-book-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.lp-hero-book-plate {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 12%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  text-align: center;
-  pointer-events: none;
-}
-
-.lp-hero-book-line1 {
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px;
-  font-weight: 800;
-  color: #fff;
-}
-
-.lp-hero-book-line2 {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.8);
+.lp-hero-book :deep(.passport-card) {
+  margin: 0;
 }
 
 .lp-hero-info {
@@ -2037,9 +2001,12 @@ const buyerRecords = [
   padding: 7px 13px;
 }
 
-.lp-doc-pill svg {
-  width: 13px;
-  height: 13px;
+.lp-doc-pill svg,
+.lp-doc-pill img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  display: block;
 }
 
 .lp-status-pill {
@@ -2159,8 +2126,11 @@ const buyerRecords = [
   box-shadow: 0 24px 50px rgba(35, 29, 69, 0.22);
 }
 
+/* Matched to .sp-hero-book — at 132px the two-line address crowded the
+   cover's edges, because the hero address size bottoms out at its clamp
+   floor rather than shrinking with the book. */
 .by-hero-book {
-  width: 132px;
+  width: 190px;
   flex-shrink: 0;
 }
 
@@ -2954,7 +2924,8 @@ const buyerRecords = [
 
 /* Living passport visual — gentle float + tilt, straightens & lifts on hover. */
 .sp-hero-book,
-.by-hero-book {
+.by-hero-book,
+.lp-hero-book {
   animation: sp-book-float 6.5s ease-in-out infinite;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
@@ -2966,7 +2937,8 @@ const buyerRecords = [
 }
 
 .sp-hero:hover .sp-hero-book,
-.by-hero:hover .by-hero-book {
+.by-hero:hover .by-hero-book,
+.lp-hero:hover .lp-hero-book {
   animation-play-state: paused;
   transform: translateY(-10px) rotate(0deg) scale(1.03);
 }
@@ -2993,7 +2965,8 @@ const buyerRecords = [
   .by-record:hover .by-record-fill,
   .by-completion:hover .by-completion-fill,
   .sp-hero-book,
-  .by-hero-book {
+  .by-hero-book,
+  .lp-hero-book {
     animation: none;
   }
 }

@@ -17,5 +17,5 @@ export default defineNuxtRouteMiddleware(() => {
   const token = localStorage.getItem('token')
   if (!token) return
 
-  return navigateTo('/explore', { replace: true, external: true })
+  return navigateTo('/dashboard', { replace: true, external: true })
 })

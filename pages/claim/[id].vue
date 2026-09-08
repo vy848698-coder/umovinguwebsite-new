@@ -12,14 +12,14 @@
           <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="navigateTo('/explore')">
+          <button class="hsw-back" type="button" @click="navigateTo('/dashboard')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>

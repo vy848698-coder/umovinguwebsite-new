@@ -98,7 +98,7 @@
               ? 'Try a different search term.'
               : 'Tap the heart icon on any property to save it here.' }}
           </p>
-          <button v-if="!search" type="button" class="ss-empty-cta" @click="navigateTo('/explore')">
+          <button v-if="!search" type="button" class="ss-empty-cta" @click="navigateTo('/dashboard')">
             Explore properties <Icon name="heroicons:arrow-right" class="ss-empty-cta-ic" />
           </button>
         </div>

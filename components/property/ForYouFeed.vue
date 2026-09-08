@@ -57,7 +57,7 @@
             class="fyf-badge"
             :class="prop.passportPublished ? 'is-published' : 'is-progress'"
           >
-            <img src="/dashboard/passportBadge.png" alt="" class="fyf-badge-ic" loading="lazy" />
+            <img src="/dashboard-art/passportBadge.png" alt="" class="fyf-badge-ic" loading="lazy" />
             {{ prop.passportPublished ? 'Published' : 'In progress' }}
           </span>
           <span class="fyf-price">{{ priceLabel(prop) }}</span>
@@ -93,7 +93,7 @@
          feed has nothing to rank against — ask for it here rather than
          showing an empty grid. -->
     <div v-else-if="needsPostcode" class="fyf-empty">
-      <img src="/dashboard/emptyPostcode.png" alt="" class="fyf-empty-ic" loading="lazy" />
+      <img src="/dashboard-art/emptyPostcode.png" alt="" class="fyf-empty-ic" loading="lazy" />
       <h3 class="fyf-empty-title">Add a postcode to see matches</h3>
       <p class="fyf-empty-sub">
         We'll tailor properties to your budget, preferred types and must-have
@@ -105,7 +105,7 @@
     </div>
 
     <div v-else class="fyf-empty">
-      <img src="/dashboard/emptySearch.png" alt="" class="fyf-empty-ic" loading="lazy" />
+      <img src="/dashboard-art/emptySearch.png" alt="" class="fyf-empty-ic" loading="lazy" />
       <h3 class="fyf-empty-title">No matches yet</h3>
       <p class="fyf-empty-sub">
         Nothing in your area matches your saved preferences. Try broadening
@@ -127,7 +127,7 @@
             <button class="pcs-close" type="button" aria-label="Close" @click="closePostcodeSheet">
               <Icon name="i-lucide-x" />
             </button>
-            <img src="/dashboard/emptyPostcode.png" alt="" class="pcs-ic" loading="lazy" />
+            <img src="/dashboard-art/emptyPostcode.png" alt="" class="pcs-ic" loading="lazy" />
             <h3 class="pcs-title">Set your postcode</h3>
             <p class="pcs-sub">We'll use this to find properties near you.</p>
             <input

@@ -60,7 +60,7 @@ onMounted(async () => {
       localStorage.removeItem('redirectAfterLogin')
       await navigateTo(redirect, { replace: true })
     } else {
-      await navigateTo('/explore', { replace: true })
+      await navigateTo('/dashboard', { replace: true })
     }
   } catch (e) {
     console.error('Apple callback error', e)

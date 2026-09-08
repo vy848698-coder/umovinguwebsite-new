@@ -1,486 +1,518 @@
 <template>
-  <div class="dsh">
-    <!-- Navbar actions. Both are signed-in essentials this dashboard has no
-         other route to: notifications had no entry point anywhere in the app
-         despite the backend serving them, and the profile was only reachable
-         from the mobile menu. Neither duplicates anything already on the
-         page (Add a property lives in the page head). -->
-    <WebTopNav>
+  <div class="dsc">
+    <!-- Guest-first page, so the nav actions are Sign in / Get started rather
+         than the bell + avatar the signed-in dashboard shows. A visitor who
+         already has a session still gets their profile pill, since this page
+         is reachable from the nav at any time.
+         show-profile-mobile is off for guests: the burger panel's Profile row
+         would otherwise bounce a signed-out visitor to the sign-in screen,
+         which is exactly what this page exists to avoid. -->
+    <WebTopNav :show-profile-mobile="signedIn">
       <template #actions>
-        <NotificationBell />
+        <template v-if="signedIn">
+          <NuxtLink to="/profile" class="dsc-nav-profile" aria-label="Your profile">
+            <UserAvatar
+              :src="profile?.avatarUrl"
+              :first-name="profile?.firstName"
+              :last-name="profile?.lastName"
+              :size="30"
+            />
+            <span class="dsc-nav-profile-text">
+              <strong>{{ profile?.firstName || 'Profile' }}</strong>
+              <small>Your account</small>
+            </span>
+          </NuxtLink>
+        </template>
+        <template v-else>
+          <button class="dsc-nav-signin" type="button" @click="navigateTo('/onboarding/signin')">
+            Sign in
+          </button>
+          <button class="dsc-nav-join" type="button" @click="navigateTo('/onboarding/signup')">
+            Get started
+          </button>
+        </template>
+      </template>
 
-        <NuxtLink to="/profile" class="dsh-nav-profile" aria-label="Your profile">
-          <UserAvatar
-            :src="profile?.avatarUrl"
-            :first-name="profile?.firstName"
-            :last-name="profile?.lastName"
-            :size="30"
-          />
-          <span class="dsh-nav-profile-text">
-            <strong>{{ profile?.firstName || 'Profile' }}</strong>
-            <small>{{ roleLabel }}</small>
-          </span>
-        </NuxtLink>
+      <!-- The desktop actions above are hidden at mobile widths, so a guest on
+           a phone would otherwise have no way in at all - the burger panel is
+           the only nav there. -->
+      <template #mobile-extra="{ closeMenu }">
+        <template v-if="!signedIn">
+          <button
+            type="button"
+            class="dsc-mobile-auth"
+            @click="closeMenu(); navigateTo('/onboarding/signin')"
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            class="dsc-mobile-auth dsc-mobile-auth--solid"
+            @click="closeMenu(); navigateTo('/onboarding/signup')"
+          >
+            Get started
+          </button>
+        </template>
       </template>
     </WebTopNav>
 
-    <main class="dsh-shell">
-      <!-- ── Greeting + search ───────────────────────────────────────── -->
-      <section class="dsh-head">
-        <div class="dsh-head-text">
-          <p class="dsh-greeting">{{ greeting }}</p>
-          <h1 class="dsh-title">{{ headline }}</h1>
-          <p class="dsh-lede">{{ lede }}</p>
-        </div>
+    <!-- ── Hero ──────────────────────────────────────────────────────────
+         Deliberately no background of its own. WebTopNav is translucent, so a
+         tinted band here bled straight through the bar and made this page's
+         navbar look like a different colour to every other page's. Same flat
+         #f3f2ef ground as the landing page instead. -->
+    <header class="dsc-band">
+      <div class="dsc-band-inner">
+        <span class="dsc-badge">
+          <Icon name="i-lucide-shield-check" class="dsc-badge-ic" />
+          No account needed to explore
+        </span>
+        <h1 class="dsc-title">Explore any UK property<span class="dsc-dot">.</span></h1>
+        <p class="dsc-lede">
+          Search any UK address to see what we already know — value, history, energy,
+          planning, local area, available Property Passport information and more.
+        </p>
 
-        <div class="dsh-head-side">
-          <span class="dsh-role-chip">
-            <img :src="roleArt" alt="" class="dsh-role-art" loading="lazy" />
-            <span>
-              <small>Signed in as</small>
-              <strong>{{ roleLabel }}</strong>
-            </span>
-          </span>
-          <button class="dsh-add" type="button" @click="startClaimFlow">
-            <img src="/dashboard/addProperty.png" alt="" class="dsh-add-ic" loading="lazy" />
-            Add a property
-          </button>
-        </div>
-      </section>
-
-      <div class="dsh-search">
-        <div class="dsh-search-field">
-          <PropertySearchInput
-            placeholder="Search by postcode, address or area"
-            variant="light"
-            @select="onSearchSelect"
-            @enter="onSearchEnter"
-          />
-        </div>
-        <button class="dsh-search-btn" type="button" @click="runSearch">
-          <Icon name="i-lucide-search" />
-          Search
-        </button>
+        <ul class="dsc-sources">
+          <li>HM Land Registry</li>
+          <li>EPC register</li>
+          <li>Sold prices</li>
+          <li>Planning records</li>
+        </ul>
       </div>
+    </header>
 
-      <!-- ── Loading skeleton until the role is known, so the page never
-              flashes the wrong role's content ─────────────────────────── -->
-      <div v-if="!roleResolved" class="dsh-boot">
-        <div class="dsh-boot-card" />
-        <div class="dsh-boot-rows">
-          <div class="dsh-boot-row" />
-          <div class="dsh-boot-row" />
-          <div class="dsh-boot-row" />
-        </div>
-      </div>
-
-      <template v-else>
-        <div class="dsh-grid">
-          <!-- ═══ Main column ═══════════════════════════════════════ -->
-          <div class="dsh-main">
-            <!-- ── Active passport ── -->
-            <section class="dsh-section">
-              <div class="dsh-sec-head">
-                <img src="/dashboard/sectionPassport.png" alt="" class="dsh-sec-ic" loading="lazy" />
-                <div>
-                  <p class="dsh-eyebrow">Your active passport</p>
-                  <h2 class="dsh-sec-title">{{ passportSectionTitle }}</h2>
-                </div>
-              </div>
-
-              <div v-if="loadingPrimary" class="dsh-skel dsh-skel--hero" />
-
-              <!-- Buyer passport -->
-              <article
-                v-else-if="isBuyerView && buyerProfile"
-                class="apc"
-                role="button"
-                tabindex="0"
-                @click="navigateTo('/buyer-profile/view')"
-                @keydown.enter="navigateTo('/buyer-profile/view')"
-              >
-                <div class="apc-book">
-                  <PassportCard line1="" line2="" type="BUYER" />
-                </div>
-                <div class="apc-info">
-                  <span class="apc-pill">Buyer passport</span>
-                  <h3 class="apc-name">Buyer Passport</h3>
-                  <p v-if="buyerIdVerified" class="apc-verified">
-                    <Icon name="i-lucide-badge-check" />
-                    Identity verified
-                  </p>
-                  <p v-else class="apc-unverified">
-                    <Icon name="i-lucide-shield-alert" />
-                    Identity not yet verified
-                  </p>
-                  <div class="apc-prog-row">
-                    <span>Finance <strong>{{ financePercent }}%</strong> complete</span>
-                  </div>
-                  <div class="apc-track">
-                    <div class="apc-fill" :style="{ width: financePercent + '%' }" />
-                  </div>
-                  <div class="apc-actions">
-                    <button
-                      class="apc-cta"
-                      type="button"
-                      @click.stop="navigateTo('/buyer-profile/build')"
-                    >
-                      Continue my Buyer Passport
-                      <Icon name="i-lucide-arrow-right" />
-                    </button>
-                    <button
-                      class="apc-link"
-                      type="button"
-                      @click.stop="navigateTo('/passport/collections')"
-                    >
-                      View all passports
-                      <Icon name="i-lucide-chevron-right" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <!-- Owner (seller / landlord / both) passport -->
-              <article
-                v-else-if="!isBuyerView && passports.length"
-                class="apc"
-                role="button"
-                tabindex="0"
-                @click="navigateTo('/passportview/' + primaryPassport.id)"
-                @keydown.enter="navigateTo('/passportview/' + primaryPassport.id)"
-              >
-                <div class="apc-book">
-                  <PassportCard
-                    :line1="primaryPassport.addressLine1 || primaryPassport.address || ''"
-                    :line2="primaryPassport.postcode || ''"
-                    :type="primaryPassport.type || defaultPassportType"
-                  />
-                </div>
-                <div class="apc-info">
-                  <span class="apc-pill">
-                    {{ (primaryPassport.type || defaultPassportType).toLowerCase() }} passport
-                  </span>
-                  <h3 class="apc-name">
-                    {{ primaryPassport.address || primaryPassport.addressLine1 }}
-                  </h3>
-                  <p class="apc-postcode">{{ primaryPassport.postcode }}</p>
-                  <div class="apc-prog-row">
-                    <span>
-                      Passport
-                      <strong>{{ primaryPassport.completionPercentage ?? 0 }}%</strong>
-                      complete
-                    </span>
-                    <span v-if="primaryPassport.status === 'PUBLISHED'" class="apc-live">
-                      <span class="apc-live-dot" />Published
-                    </span>
-                  </div>
-                  <div class="apc-track">
-                    <div
-                      class="apc-fill"
-                      :style="{ width: (primaryPassport.completionPercentage ?? 0) + '%' }"
-                    />
-                  </div>
-                  <div class="apc-actions">
-                    <button
-                      class="apc-cta"
-                      type="button"
-                      @click.stop="navigateTo('/passportview/' + primaryPassport.id)"
-                    >
-                      Continue my Passport
-                      <Icon name="i-lucide-arrow-right" />
-                    </button>
-                    <button
-                      class="apc-link"
-                      type="button"
-                      @click.stop="navigateTo('/passport/collections')"
-                    >
-                      View all passports
-                      <Icon name="i-lucide-chevron-right" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <!-- Nothing started yet -->
-              <button
-                v-else
-                type="button"
-                class="dsh-empty-cta"
-                @click="isBuyerView ? navigateTo('/buyer-profile/build') : startClaimFlow()"
-              >
-                <span class="dsh-empty-plus">+</span>
-                <span class="dsh-empty-body">
-                  <strong>{{ emptyPassportTitle }}</strong>
-                  <small>{{ emptyPassportSub }}</small>
-                </span>
-                <Icon name="i-lucide-chevron-right" class="dsh-empty-chev" />
-              </button>
-            </section>
-
-            <!-- ── Next for you ── -->
-            <section v-if="nextActions.length" class="dsh-section">
-              <div class="dsh-sec-head">
-                <img src="/dashboard/nextDocuments.png" alt="" class="dsh-sec-ic" loading="lazy" />
-                <div>
-                  <p class="dsh-eyebrow">Next for you</p>
-                  <h2 class="dsh-sec-title">Pick up where you left off</h2>
-                </div>
-              </div>
-
-              <div class="nfy">
-                <p v-if="stalenessLine" class="nfy-stale">
-                  <Icon name="i-lucide-clock" />
-                  {{ stalenessLine }}
-                </p>
-                <button
-                  v-for="action in nextActions"
-                  :key="action.title"
-                  type="button"
-                  class="nfy-row"
-                  @click="navigateTo(action.to)"
-                >
-                  <img :src="action.icon" alt="" class="nfy-ic" loading="lazy" />
-                  <span class="nfy-body">
-                    <strong>{{ action.title }}</strong>
-                    <small>{{ action.sub }}</small>
-                  </span>
-                  <Icon name="i-lucide-chevron-right" class="nfy-chev" />
-                </button>
-              </div>
-            </section>
-
-            <RecentlyViewedFeed
-              v-if="isBuyerView"
-              :properties="recentlyViewed"
-              :loading="loadingRecentlyViewed"
-            />
-
-            <ForYouFeed
-              :properties="properties"
-              :loading="loadingProperties"
-              :needs-postcode="needsPostcode"
-              :has-filters="hasAnyForYouFilters"
-              @open-filters="openForYouFilters"
-              @postcode-saved="refetchForYou"
+    <main class="dsc-shell">
+      <!-- ── Search panel ────────────────────────────────────────────────
+           A raised console rather than a full-bleed strip: the input, the
+           scope control and the action sit on one card with the example
+           hint tucked underneath a hairline, so the whole thing reads as a
+           single instrument instead of three widgets in a row. -->
+      <section class="dsc-search-panel">
+        <div class="dsc-search-row">
+          <div class="dsc-search-field">
+            <Icon name="i-lucide-search" class="dsc-search-lead" />
+            <PropertySearchInput
+              ref="searchInputEl"
+              :initial-query="initialQuery"
+              placeholder="Enter a postcode or address"
+              variant="light"
+              show-passport-status
+              postcode-fallback
+              @select="onSearchSelect"
+              @enter="onSearchEnter"
             />
           </div>
 
-          <!-- ═══ Side column ═══════════════════════════════════════ -->
-          <aside class="dsh-side">
-            <!-- Owner HomeScore — only once we have a real score to show -->
-            <section
-              v-if="!isBuyerView && passports.length && primaryPassport.homeScore != null"
-              class="hsc"
+          <!-- Search scope. Exact keeps the query as typed; Nearby widens a
+               full postcode to its outward code, so "CV1 3PQ" also returns the
+               rest of CV1. Anything that isn't a postcode has no sensible
+               "nearby", so the control disables itself rather than silently
+               doing nothing. -->
+          <div class="dsc-scope" :class="{ 'dsc-scope--off': !scopeAvailable }" role="group" aria-label="Search area">
+            <button
+              type="button"
+              class="dsc-scope-btn"
+              :class="{ on: searchScope === 'exact' }"
+              :disabled="!scopeAvailable"
+              @click="setScope('exact')"
             >
-              <div class="hsc-top">
-                <div class="hsc-ring">
-                  <svg viewBox="0 0 100 100" class="hsc-ring-svg">
-                    <defs>
-                      <linearGradient id="dshHsGrad" x1="1" y1="0" x2="0" y2="0">
-                        <stop offset="0%" stop-color="#2fd0c6" />
-                        <stop offset="100%" stop-color="#00756f" />
-                      </linearGradient>
-                    </defs>
-                    <circle class="hsc-ring-bg" cx="50" cy="50" r="42" />
-                    <circle
-                      class="hsc-ring-fill"
-                      cx="50"
-                      cy="50"
-                      r="42"
-                      stroke-dasharray="263.9"
-                      :stroke-dashoffset="homeScoreDashoffset"
-                    />
-                  </svg>
-                  <div class="hsc-ring-label">
-                    <span class="hsc-ring-num">{{ primaryPassport.homeScore }}</span>
-                    <span class="hsc-ring-den">/100</span>
-                  </div>
-                </div>
-                <div class="hsc-info">
-                  <h3 class="hsc-title">Your home today</h3>
-                  <p class="hsc-sub">
-                    How your home performs on energy, running costs and value.
-                  </p>
-                </div>
-              </div>
-              <div v-if="primaryPassport.homeScorePotential != null" class="hsc-potential">
-                <span>Potential score</span>
-                <strong>{{ primaryPassport.homeScorePotential }}/100</strong>
-              </div>
-              <button class="hsc-cta" type="button" @click="navigateTo(homeScoreHref)">
-                See my HomeScore
-                <Icon name="i-lucide-arrow-right" />
-              </button>
-            </section>
-
-            <!-- Watching -->
-            <section class="dsh-card">
-              <div class="dsh-card-head">
-                <img src="/dashboard/sectionWatching.png" alt="" class="dsh-card-ic" loading="lazy" />
-                <div class="dsh-card-head-text">
-                  <h3>
-                    Watching
-                    <span v-if="savedProperties.length" class="dsh-count">
-                      {{ savedProperties.length }}
-                    </span>
-                  </h3>
-                  <small>Properties you're keeping an eye on</small>
-                </div>
-              </div>
-
-              <div v-if="loadingSaved" class="dsh-skel dsh-skel--row" />
-
-              <template v-else-if="savedProperties.length">
-                <NuxtLink
-                  v-for="(prop, i) in savedProperties.slice(0, 3)"
-                  :key="prop.id"
-                  :to="`/property/${prop.id}`"
-                  class="watch-row"
-                >
-                  <span class="watch-media">
-                    <PropertyImage
-                      :src="prop.imageUrl"
-                      :alt="prop.addressLine1"
-                      :seed="prop.id"
-                      :variant-index="i"
-                      :show-caption="false"
-                      class="watch-img"
-                    />
-                  </span>
-                  <span class="watch-body">
-                    <strong>{{ prop.addressLine1 }}</strong>
-                    <small>{{ prop.postcode }}</small>
-                    <small v-if="prop.homeScore != null" class="watch-hs">
-                      HomeScore <b>{{ prop.homeScore }}/100</b>
-                    </small>
-                  </span>
-                  <Icon name="i-lucide-chevron-right" class="watch-chev" />
-                </NuxtLink>
-                <button
-                  v-if="savedProperties.length > 3"
-                  type="button"
-                  class="dsh-card-more"
-                  @click="navigateTo('/profile/saved-properties')"
-                >
-                  {{ savedProperties.length - 3 }} more
-                  {{ savedProperties.length - 3 === 1 ? 'property' : 'properties' }} watching
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="dsh-card-more"
-                  @click="navigateTo('/profile/saved-properties')"
-                >
-                  View all saved properties
-                </button>
-              </template>
-
-              <div v-else class="dsh-card-empty">
-                <p>Nothing saved yet.</p>
-                <button type="button" @click="navigateTo('/marketplace')">
-                  Browse properties
-                </button>
-              </div>
-            </section>
-
-            <!-- Run a HomeScore on any property -->
-            <button class="hec" type="button" @click="navigateTo('/homescore')">
-              <img src="/dashboard/sectionHomescore.png" alt="" class="hec-art" loading="lazy" />
-              <span class="hec-body">
-                <strong>Check any home's HomeScore</strong>
-                <small>
-                  Instant insight on energy, running costs and value — for any UK
-                  property, not just your own.
-                </small>
-                <span class="hec-cta">
-                  Run a free HomeScore
-                  <Icon name="i-lucide-arrow-right" />
-                </span>
-              </span>
+              Exact
             </button>
-
-            <!-- 'both' role: compact buyer-side summary alongside the owner view -->
-            <section v-if="role === 'both'" class="dsh-card">
-              <div class="dsh-card-head">
-                <img src="/dashboard/passportBuyer.png" alt="" class="dsh-card-ic" loading="lazy" />
-                <div class="dsh-card-head-text">
-                  <h3>Also buying?</h3>
-                  <small>Your buyer side, at a glance</small>
-                </div>
-              </div>
-              <div v-if="loadingBuyerSummary" class="dsh-skel dsh-skel--row" />
-              <template v-else>
-                <button
-                  type="button"
-                  class="watch-row watch-row--plain"
-                  @click="navigateTo(buyerProfile ? '/buyer-profile/view' : '/buyer-profile/build')"
-                >
-                  <span class="watch-body">
-                    <strong>
-                      {{ buyerProfile ? 'Your Buyer Passport' : 'Start your Buyer Passport' }}
-                    </strong>
-                    <small>
-                      {{
-                        buyerProfile
-                          ? `Finance ${financePercent}% complete`
-                          : 'Verify your identity and buying position.'
-                      }}
-                    </small>
-                  </span>
-                  <Icon name="i-lucide-chevron-right" class="watch-chev" />
-                </button>
-              </template>
-            </section>
-
-            <!-- Add another property -->
-            <button v-if="!isBuyerView" class="apr" type="button" @click="startClaimFlow">
-              <img src="/dashboard/addProperty.png" alt="" class="apr-ic" loading="lazy" />
-              <span class="apr-body">
-                <strong>Add another property</strong>
-                <small>Verify ownership, then choose a Rental or Seller Passport.</small>
-              </span>
-              <Icon name="i-lucide-chevron-right" class="apr-chev" />
+            <button
+              type="button"
+              class="dsc-scope-btn"
+              :class="{ on: searchScope === 'nearby' }"
+              :disabled="!scopeAvailable"
+              :title="scopeAvailable ? 'Widen to the whole outward postcode' : 'Enter a full postcode to search nearby'"
+              @click="setScope('nearby')"
+            >
+              Nearby
             </button>
-          </aside>
+          </div>
+
+          <button class="dsc-search-btn" type="button" @click="runSearch">
+            Search
+            <Icon name="i-lucide-arrow-right" class="dsc-search-btn-ic" />
+          </button>
         </div>
+
+        <p v-if="!hasSearched" class="dsc-search-hint">
+          <Icon name="i-lucide-sparkles" class="dsc-hint-ic" />
+          <span>Try a postcode like <b>CV1 3PQ</b>, or an address like <b>10 Downing Street, London</b></span>
+        </p>
+      </section>
+
+      <!-- ── Search results ───────────────────────────────────────────── -->
+      <section v-if="hasSearched" class="dsc-block">
+        <div class="dsc-block-head">
+          <div>
+            <h2 class="dsc-h2">
+              {{ searchLoading ? 'Searching…' : resultHeading }}
+            </h2>
+            <p v-if="lastQuery" class="dsc-h2-sub">
+              for “{{ lastQuery }}”<template v-if="searchScope === 'nearby'"> · nearby</template>
+            </p>
+          </div>
+          <button class="dsc-textlink" type="button" @click="clearSearch">
+            <Icon name="i-lucide-x" class="dsc-textlink-ic" />
+            Clear search
+          </button>
+        </div>
+
+        <div v-if="searchLoading" class="dsc-grid">
+          <div v-for="n in 8" :key="`sk-${n}`" class="dsc-skeleton" />
+        </div>
+
+        <div v-else-if="results.length" class="dsc-grid">
+          <article
+            v-for="p in results"
+            :key="p.id"
+            class="dsc-card"
+            role="link"
+            tabindex="0"
+            @click="openProperty(p.id)"
+            @keydown.enter="openProperty(p.id)"
+          >
+            <div class="dsc-card-photo">
+              <PropertyImage :src="p.imageUrl" :alt="p.addressLine1" :show-caption="false" />
+              <span v-if="p.hasPassport" class="dsc-card-flag">
+                <Icon name="i-lucide-badge-check" class="dsc-card-flag-ic" />
+                Passport
+              </span>
+            </div>
+            <div class="dsc-card-body">
+              <h3 class="dsc-card-addr">{{ p.addressLine1 }}</h3>
+              <p class="dsc-card-meta">
+                <template v-if="p.city">{{ p.city }} · </template>{{ p.postcode }}
+              </p>
+              <div class="dsc-card-foot">
+                <p class="dsc-card-price">{{ formatPrice(p.estimatedPrice) }}</p>
+                <div class="dsc-card-tags">
+                  <span v-if="p.epcRating" class="dsc-tag">EPC {{ p.epcRating }}</span>
+                  <span v-if="p.bedrooms" class="dsc-tag">{{ p.bedrooms }} bed</span>
+                  <span v-if="p.floorAreaSqm" class="dsc-tag">{{ sqftLabel(p.floorAreaSqm) }}</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div v-else class="dsc-empty">
+          <span class="dsc-empty-ring"><Icon name="i-lucide-map-pin-off" class="dsc-empty-ic" /></span>
+          <p class="dsc-empty-title">No properties matched “{{ lastQuery }}”</p>
+          <p class="dsc-empty-sub">
+            Try a full postcode, or a house number with the street name.
+          </p>
+        </div>
+      </section>
+
+      <!-- Everything below is the browse experience — hidden while results are
+           on screen so the page reads as one thing at a time. -->
+      <template v-if="!hasSearched">
+        <!-- ── Three entry points ─────────────────────────────────────── -->
+        <section class="dsc-block">
+          <div class="dsc-entry-grid">
+            <button type="button" class="dsc-entry dsc-entry--teal" @click="goToBuyerPassport">
+              <span class="dsc-entry-plate">
+                <img
+                  src="/op-icons/passport-covers/buyer_tilted_right_on_tile.png"
+                  alt=""
+                  class="dsc-entry-art dsc-entry-art--book"
+                  loading="lazy"
+                />
+              </span>
+              <h3 class="dsc-entry-title">Buyer Passport</h3>
+              <p class="dsc-entry-sub">
+                Your verified buying position — identity, proof of funds and readiness,
+                in one record sellers can trust.
+              </p>
+              <span class="dsc-entry-cta">
+                Start yours
+                <span class="dsc-entry-chev"><Icon name="i-lucide-arrow-right" /></span>
+              </span>
+            </button>
+
+            <button type="button" class="dsc-entry dsc-entry--violet" @click="goToWatching">
+              <span class="dsc-entry-plate">
+                <img
+                  src="/op-icons/misc/exploreWatching.png"
+                  alt=""
+                  class="dsc-entry-art"
+                  loading="lazy"
+                />
+              </span>
+              <h3 class="dsc-entry-title">Watched properties</h3>
+              <p class="dsc-entry-sub">
+                Keep the homes you like in one place and get told the moment
+                something changes.
+              </p>
+              <span class="dsc-entry-cta">
+                {{ signedIn ? 'View yours' : 'Sign in to watch' }}
+                <span class="dsc-entry-chev"><Icon name="i-lucide-arrow-right" /></span>
+              </span>
+            </button>
+
+            <div class="dsc-entry dsc-entry--soon">
+              <span class="dsc-entry-plate">
+                <img
+                  src="/op-icons/passport-covers/tenant_passport_tilted_left_on_tile.png"
+                  alt=""
+                  class="dsc-entry-art dsc-entry-art--book"
+                  loading="lazy"
+                />
+              </span>
+              <div class="dsc-entry-titlerow">
+                <h3 class="dsc-entry-title">Tenant Passport</h3>
+                <span class="dsc-soon">COMING SOON</span>
+              </div>
+              <p class="dsc-entry-sub">
+                A reusable rental profile you can share with any landlord or agent.
+              </p>
+              <span class="dsc-entry-cta dsc-entry-cta--muted">In development</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── HomeScore + Property Passport ────────────────────────────
+             Two big, quiet cards. The tick lists and full-width buttons that
+             were here before crowded them into feature comparisons - what
+             these actually need to do is name the thing, show it, and get out
+             of the way. The whole card is the target, so the arrow is an
+             affordance rather than a second control. -->
+        <section class="dsc-block">
+          <div class="dsc-feature-grid">
+            <button type="button" class="dsc-feature dsc-feature--teal" @click="navigateTo('/homescore')">
+              <span class="dsc-feature-glow" aria-hidden="true" />
+
+              <div class="dsc-feature-top">
+                <div class="dsc-feature-heading">
+                  <p class="dsc-feature-eyebrow">HomeScore&trade;</p>
+                  <span class="dsc-pill dsc-pill--free">FREE</span>
+                </div>
+                <!-- Illustrative score, matching the reference app's card. A
+                     sample figure for a marketing card, not a reading for any
+                     property - the real number only ever comes from /homescore
+                     once an address is chosen. -->
+                <span class="dsc-hs-ring" role="img" aria-label="Example HomeScore of 55 out of 100">
+                  <svg viewBox="0 0 100 100">
+                    <circle class="dsc-hs-ring-bg" cx="50" cy="50" r="42" />
+                    <circle class="dsc-hs-ring-fill" cx="50" cy="50" r="42" stroke-dasharray="263.9" :stroke-dashoffset="263.9 - 0.55 * 263.9" />
+                  </svg>
+                  <span class="dsc-hs-ring-label">
+                    <span class="dsc-hs-ring-num"><strong>55</strong><small>/100</small></span>
+                    <span class="dsc-hs-ring-note">example</span>
+                  </span>
+                </span>
+              </div>
+
+              <h3 class="dsc-feature-title">Know what your home<br />could be costing you</h3>
+              <p class="dsc-feature-sub">
+                Check energy performance, running costs and where you could improve.
+              </p>
+
+              <span class="dsc-feature-go">
+                Run a free HomeScore
+                <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
+              </span>
+            </button>
+
+            <button type="button" class="dsc-feature dsc-feature--amber" @click="navigateTo('/passport/sample')">
+              <span class="dsc-feature-glow" aria-hidden="true" />
+
+              <div class="dsc-feature-top">
+                <div class="dsc-feature-heading">
+                  <p class="dsc-feature-eyebrow">Property Passport</p>
+                  <span class="dsc-pill dsc-pill--grade">SOLICITOR-GRADE</span>
+                </div>
+                <span class="dsc-feature-plate">
+                  <img src="/op-icons/misc/passportFan.png" alt="" class="dsc-feature-art" loading="lazy" />
+                </span>
+              </div>
+
+              <h3 class="dsc-feature-title">Build your home's<br />verified record</h3>
+              <p class="dsc-feature-sub">
+                Store, verify and share documents, answers and history in one place.
+              </p>
+
+              <span class="dsc-feature-go dsc-feature-go--amber">
+                See a sample Passport
+                <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ── Passport ecosystem ─────────────────────────────────────────
+             The reference app hides all of this behind a bottom sheet on the
+             Property Passport card. On a desktop page a drawer buries it, so
+             it's a full section here - same hero copy, same blurb, same four
+             passports, same "power of the ecosystem" rail and footer strip. -->
+        <section class="dsc-block dsc-eco">
+          <span class="dsc-eco-glow" aria-hidden="true" />
+
+          <div class="dsc-eco-head">
+            <div class="dsc-eco-head-text">
+              <p class="dsc-eco-eyebrow">The passport ecosystem</p>
+              <h2 class="dsc-eco-title">One home.<br />Many passports<span class="dsc-dot">.</span></h2>
+              <p class="dsc-eco-sub">One permanent record.<br />Built for every journey.</p>
+              <p class="dsc-eco-lede">
+                Your Property Passport is the foundation. When life changes, unlock new
+                roles with the right passport for the next chapter.
+              </p>
+            </div>
+            <img
+              src="/op-icons/misc/passportGroupOnTile.png"
+              alt="Seller, Landlord, Buyer and Tenant Passport covers"
+              class="dsc-eco-art"
+              loading="lazy"
+            />
+          </div>
+
+          <div class="dsc-eco-blurb">
+            <img src="/homescore-icon/house.png" alt="" class="dsc-eco-blurb-ic" loading="lazy" />
+            <div>
+              <p class="dsc-eco-blurb-title">A passport ecosystem that moves with you</p>
+              <p class="dsc-eco-blurb-desc">
+                Built once. Reuse always. Your verified information flows seamlessly
+                between passports, saving you time, effort and money on every step you
+                buy, sell, live or rent.
+              </p>
+            </div>
+          </div>
+
+          <div class="dsc-eco-grid">
+            <button
+              v-for="c in passportCards"
+              :key="c.key"
+              type="button"
+              class="dsc-eco-card"
+              :class="{ 'dsc-eco-card--soon': c.status === 'soon' }"
+              :disabled="c.status === 'soon'"
+              @click="onPassportCardClick(c)"
+            >
+              <img :src="c.img" :alt="`${c.title} cover`" class="dsc-eco-book" loading="lazy" />
+              <h3 class="dsc-eco-card-title" :style="{ color: c.color }">{{ c.title }}</h3>
+              <p class="dsc-eco-card-desc">{{ c.desc }}</p>
+              <span class="dsc-eco-pill" :class="`dsc-eco-pill--${c.status}`">{{ c.statusLabel }}</span>
+            </button>
+          </div>
+
+          <!-- ── The power of the ecosystem ── -->
+          <div class="dsc-power">
+            <p class="dsc-power-title">The power of the ecosystem</p>
+            <div class="dsc-power-list">
+              <template v-for="(item, i) in powerItems" :key="item.title">
+                <div class="dsc-power-col">
+                  <span class="dsc-power-plate">
+                    <img :src="item.img" alt="" class="dsc-power-ic" loading="lazy" />
+                  </span>
+                  <p class="dsc-power-item-title">{{ item.title }}</p>
+                  <p class="dsc-power-item-desc">{{ item.desc }}</p>
+                </div>
+                <span v-if="i < powerItems.length - 1" class="dsc-power-connector" aria-hidden="true" />
+              </template>
+            </div>
+          </div>
+
+          <div class="dsc-eco-foot">
+            <p class="dsc-eco-foot-tag">Your journey. <span>Our ecosystem.</span></p>
+            <div class="dsc-eco-foot-links">
+              <span><Icon name="i-lucide-shield-check" class="dsc-eco-foot-ic" />Secure by design</span>
+              <span>umovingu.com</span>
+              <span>legal@umu.com</span>
+              <NuxtLink to="/legal/terms">Terms &amp; conditions</NuxtLink>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Recently explored ──────────────────────────────────────── -->
+        <section v-if="recentlyExplored.length" class="dsc-block">
+          <div class="dsc-block-head">
+            <div>
+              <h2 class="dsc-h2">Recently explored</h2>
+              <p class="dsc-h2-sub">Saved in this browser — no account involved</p>
+            </div>
+            <button class="dsc-textlink" type="button" @click="clearHistory">
+              <Icon name="i-lucide-trash-2" class="dsc-textlink-ic" />
+              Clear
+            </button>
+          </div>
+          <ul class="dsc-recent">
+            <li
+              v-for="item in recentlyExplored"
+              :key="item.id"
+              class="dsc-recent-row"
+              role="link"
+              tabindex="0"
+              @click="openProperty(item.id)"
+              @keydown.enter="openProperty(item.id)"
+            >
+              <div class="dsc-recent-photo">
+                <PropertyImage
+                  :src="item.image"
+                  :alt="item.addressLine1"
+                  :show-caption="false"
+                />
+              </div>
+              <div class="dsc-recent-body">
+                <p class="dsc-recent-addr">{{ item.addressLine1 }}</p>
+                <p class="dsc-recent-meta">
+                  <template v-if="item.city">{{ item.city }}, </template>{{ item.postcode }}
+                </p>
+              </div>
+              <div class="dsc-recent-mid">
+                <p class="dsc-recent-price">{{ formatPrice(item.estimatedPrice) }}</p>
+                <p v-if="item.lastSoldDate" class="dsc-recent-sold">
+                  Last sold {{ lastSoldLabel(item.lastSoldDate) }}
+                </p>
+              </div>
+              <div class="dsc-recent-right">
+                <span class="dsc-recent-when">{{ relativeTimeLabel(item.viewedAt) }}</span>
+                <span class="dsc-recent-chev"><Icon name="i-lucide-chevron-right" /></span>
+              </div>
+            </li>
+          </ul>
+        </section>
       </template>
     </main>
 
-    <PropertySearchFiltersModal
-      v-model="forYouFiltersModalOpen"
-      :initial-filters="forYouPendingFilters"
-      @search="onForYouFiltersSearch"
-    />
-
     <SiteFooter />
+
+    <AuthGateModal
+      v-model="authGateOpen"
+      :title="authGateCopy.title"
+      :body="authGateCopy.body"
+      :redirect-target="authGateRedirect"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-// The post-login landing page. Built around the signed-in user's role —
-// buyer, seller, landlord or both — since each one arrives wanting a
-// different first screen: a buyer wants matches and their buying position,
-// an owner wants their passport's completeness and their home's score.
+// The public browse page: search and open any UK property with no account.
+// Its signed-in counterpart is /dashboard, the role-aware home.
 //
-// This lives at /explore (rather than a separate /dashboard route) because
-// Explore is where every in-app link, the bottom nav and the post-login
-// redirect already point. That also means landlord can't be bounced to
-// /explore the way a standalone dashboard could — it would redirect to
-// itself — so the landlord role gets real content here.
-definePageMeta({ title: 'Your dashboard - UmovingU', middleware: 'auth' })
+// Deliberately NO middleware — not `auth`, not `guest`. A signed-out visitor
+// must be able to search and open a property without an account, which is the
+// whole promise of the "no account needed" badge in the hero.
+// pages/property/[id].vue is public for the same reason.
+//
+// Reached from the landing page's Explore buttons, from WebTopNav's Explore
+// link, and from the property page's back button.
+definePageMeta({ title: 'Explore homes - UmovingU' })
 
 import { ref, computed, onMounted } from 'vue'
 import WebTopNav from '~/components/core/WebTopNav.vue'
-import NotificationBell from '~/components/ui/NotificationBell.vue'
-import UserAvatar from '~/components/ui/UserAvatar.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import PassportCard from '~/components/passport-view/PassportCard.vue'
+import UserAvatar from '~/components/ui/UserAvatar.vue'
+import AuthGateModal from '~/components/ui/AuthGateModal.vue'
 import PropertyImage from '~/components/property/PropertyImage.vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
-import PropertySearchFiltersModal from '~/components/property/PropertySearchFiltersModal.vue'
-import ForYouFeed from '~/components/property/ForYouFeed.vue'
-import RecentlyViewedFeed from '~/components/property/RecentlyViewedFeed.vue'
-import { usePropertyForYou } from '~/composables/usePropertyForYou'
+import { usePropertySearch } from '~/composables/usePropertySearch'
+import {
+  useRecentlyExplored,
+  type RecentlyExploredEntry,
+} from '~/composables/useRecentlyExplored'
 
 useHead({
   link: [
@@ -491,391 +523,332 @@ useHead({
   ],
 })
 
-const config = useRuntimeConfig()
+const route = useRoute()
+// Read during setup, not in onMounted: the field has to render already filled
+// on the first paint, or a visitor handed over from the landing page's search
+// sees their own query vanish into an empty box.
+const initialQuery = typeof route.query.q === 'string' ? route.query.q : ''
+
 const { profile, fetchProfile } = useProfile()
+const { formatPrice } = usePropertySearch()
+const { getRecentlyExplored, clearRecentlyExplored } = useRecentlyExplored()
 
-const role = ref<string>('buy')
-const roleResolved = ref(false)
+const config = useRuntimeConfig()
 
-const passports = ref<any[]>([])
-const passportSections = ref<any[]>([])
-const loadingPassport = ref(true)
+// Resolved in onMounted rather than inline: localStorage doesn't exist during
+// SSR, so reading it in a computed would make the server and client renders
+// disagree (hydration mismatch) for every signed-in visitor.
+const signedIn = ref(false)
 
-const buyerProfile = ref<any>(null)
-const loadingBuyerProfile = ref(true)
-const savedProperties = ref<any[]>([])
-const loadingSaved = ref(true)
-// The 'both' role shows a buyer summary beside the owner view. It reuses
-// buyerProfile/savedProperties, which the owner branch never populates
-// otherwise, so it needs its own flag — loadingBuyerProfile/loadingSaved
-// default to true and are only flipped by the pure-buyer branch.
-const loadingBuyerSummary = ref(true)
+const recentlyExplored = ref<RecentlyExploredEntry[]>([])
 
-const recentlyViewed = ref<any[]>([])
-const loadingRecentlyViewed = ref(true)
+const searchInputEl = ref<{ closeDropdown?: () => void } | null>(null)
+const results = ref<any[]>([])
+const searchLoading = ref(false)
+const hasSearched = ref(false)
+const lastQuery = ref('')
 
-const searchQuery = ref('')
-
-const {
-  properties,
-  loadingProperties,
-  needsPostcode,
-  forYouFiltersModalOpen,
-  forYouPendingFilters,
-  hasAnyForYouFilters,
-  openForYouFilters,
-  onForYouFiltersSearch,
-} = usePropertyForYou()
-
-// ── Role shape ─────────────────────────────────────────────────────────
-const isBuyerView = computed(() => role.value === 'buy')
-const isLandlord = computed(() => role.value === 'landlord')
-
-const defaultPassportType = computed(() => (isLandlord.value ? 'LANDLORD' : 'SELLER'))
-
-const primaryPassport = computed<any>(() => passports.value[0] ?? {})
-
-const roleLabel = computed(() => {
-  if (role.value === 'sell') return 'Seller'
-  if (role.value === 'landlord') return 'Landlord'
-  if (role.value === 'both') return 'Buyer + Seller'
-  return 'Buyer'
+// ── Auth gate ─────────────────────────────────────────────────────────────
+// One modal, re-titled per entry point, so a guest is always told what they
+// are signing in *for* rather than getting a generic prompt.
+const authGateOpen = ref(false)
+const authGateRedirect = ref('/profile/saved-properties')
+const authGateCopy = ref({
+  title: 'Sign in to see watched properties',
+  body: 'Create a free account to save properties, watch homes and get alerted the moment something changes.',
 })
 
-const roleArt = computed(() => {
-  if (role.value === 'landlord') return '/dashboard/passportLandlord.png'
-  if (role.value === 'buy') return '/dashboard/passportBuyer.png'
-  return '/dashboard/passportSeller.png'
-})
+// ── Search scope ──────────────────────────────────────────────────────────
+// 'exact'  - send the query through as typed (the backend default)
+// 'nearby' - widen a full postcode to its outward code, so CV1 3PQ also
+//            returns the rest of CV1
+type SearchScope = 'exact' | 'nearby'
+const searchScope = ref<SearchScope>('exact')
+const scopeQuery = ref('')
 
-const headline = computed(() =>
-  isBuyerView.value ? 'Your move at a glance' : 'Your property at a glance',
-)
+// A full UK postcode, e.g. CV1 3PQ / SW1A 1AA - the only shape where widening
+// to an outward code means anything. Deliberately not matching a bare outward
+// code ("CV1"), which is already as wide as this control could make it.
+const FULL_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i
 
-const lede = computed(() => {
-  if (isBuyerView.value) {
-    return 'Your buying position, the homes you are watching, and fresh matches near you.'
-  }
-  if (isLandlord.value) {
-    return 'Your rental record, compliance documents and how your property is performing.'
-  }
-  if (role.value === 'both') {
-    return 'Your property record and your buying position, side by side.'
-  }
-  return 'Your passport progress, your home’s score, and who is looking.'
-})
+const scopeAvailable = computed(() => FULL_POSTCODE.test(scopeQuery.value.trim()))
 
-const passportSectionTitle = computed(() => {
-  if (isBuyerView.value) return 'Buyer Passport'
-  if (isLandlord.value) return 'Rental Passport'
-  return 'Property Passport'
-})
-
-const emptyPassportTitle = computed(() =>
-  isBuyerView.value ? 'Start your Buyer Passport' : 'Start your Property Passport',
-)
-const emptyPassportSub = computed(() =>
-  isBuyerView.value
-    ? 'Verify your identity and buying position.'
-    : 'Verify ownership and build your record.',
-)
-
-// The primary card is what the page is "about" for this role, so the
-// section skeleton keys off whichever fetch actually feeds it.
-const loadingPrimary = computed(() =>
-  isBuyerView.value ? loadingBuyerProfile.value : loadingPassport.value,
-)
-
-// ── Greeting ───────────────────────────────────────────────────────────
-// Deterministic, never Math.random(): this page server-renders then
-// hydrates, and a random pick would differ between the two and trip a
-// hydration mismatch.
-const LATE_NIGHT_LINES = ['Having a late one', 'Burning the midnight oil', 'Still up']
-
-const greeting = computed(() => {
-  const now = new Date()
-  const h = now.getHours()
-  const first = profile.value?.firstName?.trim()
-  const emailLocal = profile.value?.email?.split('@')[0]?.trim()
-  const name = first || emailLocal || ''
-
-  if (h >= 23 || h < 5) {
-    const line = LATE_NIGHT_LINES[now.getDate() % LATE_NIGHT_LINES.length]
-    return name ? `${line}, ${name}?` : `${line}?`
-  }
-  const timeOfDay = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-  return name ? `${timeOfDay}, ${name}` : timeOfDay
-})
-
-// ── Derived numbers ────────────────────────────────────────────────────
-const homeScoreDashoffset = computed(() => {
-  const s = primaryPassport.value?.homeScore
-  if (typeof s !== 'number') return '263.9'
-  return (263.9 * (1 - Math.min(Math.max(s, 0), 100) / 100)).toFixed(1)
-})
-
-const homeScoreHref = computed(() => {
-  const propertyId = primaryPassport.value?.propertyId
-  return propertyId ? `/homescore/${propertyId}` : '/homescore'
-})
-
-// Real KYC signal — buyer-profile.service.ts's getMine() overrides the
-// always-false stored column with the actual User.kycStatus check before
-// this reaches the frontend.
-const buyerIdVerified = computed(() => buyerProfile.value?.idVerified === true)
-
-// No isolated "finance %" field exists on BuyerProfile, so this is derived
-// from the underlying funds fields rather than invented: nothing set (0),
-// funds declared but not reviewed (55), reviewed and verified (100).
-const financePercent = computed(() => {
-  const p = buyerProfile.value
-  if (!p) return 0
-  if (p.fundsVerified) return 100
-  if (p.fundsType && p.fundsAmount != null) return 55
-  return 0
-})
-
-// BuyerProfile has 5 flat completion steps (identity / funds / chain /
-// solicitor / statement) rather than a sections→tasks→questions tree.
-const buyerIncompleteCount = computed(() => {
-  const steps = buyerProfile.value?.completedSteps ?? 0
-  return Math.max(0, 5 - steps)
-})
-
-// Unanswered questions across every task in every section. Nothing derives
-// this server-side yet, so it's summed here from GET /passport/:id/sections,
-// which already returns per-task totalQuestions/answeredQuestions.
-const incompleteItemCount = computed(() => {
-  let total = 0
-  for (const section of passportSections.value) {
-    for (const task of section?.tasks ?? []) {
-      total += Math.max(0, (task.totalQuestions ?? 0) - (task.answeredQuestions ?? 0))
-    }
-  }
-  return total
-})
-
-// A real "last touched N days ago" nudge rather than a fabricated deadline
-// — there isn't one anywhere in the data. Only once something has actually
-// gone stale (3+ days), and only while the record is genuinely incomplete.
-function stalenessCopy(createdAt?: string | null, lastTouchedAt?: string | null): string | null {
-  const source = lastTouchedAt || createdAt
-  if (!source) return null
-  const days = Math.floor((Date.now() - new Date(source).getTime()) / 86_400_000)
-  if (days < 3) return null
-  const verb = lastTouchedAt ? 'Last touched' : 'Started'
-  const when = days === 1 ? 'yesterday' : `${days} days ago`
-  return `${verb} ${when} — pick up where you left off.`
+function outwardCode(q: string): string {
+  const t = q.trim().toUpperCase().replace(/\s+/g, '')
+  return t.slice(0, t.length - 3)
 }
 
-const stalenessLine = computed(() => {
-  if (isBuyerView.value) {
-    if (!buyerProfile.value || buyerIncompleteCount.value === 0) return null
-    return stalenessCopy(buyerProfile.value.createdAt, buyerProfile.value.updatedAt)
-  }
-  if (!passports.value.length || incompleteItemCount.value === 0) return null
-  return stalenessCopy(primaryPassport.value.createdAt, primaryPassport.value.lastVisitedAt)
+// Re-runs immediately when the scope changes on an already-committed search, so
+// the toggle behaves like a filter rather than a setting you then have to
+// re-submit.
+function setScope(next: SearchScope) {
+  if (!scopeAvailable.value || searchScope.value === next) return
+  searchScope.value = next
+  if (hasSearched.value && scopeQuery.value.trim()) runQuery(scopeQuery.value)
+}
+
+const resultHeading = computed(() => {
+  const n = results.value.length
+  return `${n} ${n === 1 ? 'result' : 'results'}`
 })
 
-// ── "Next for you" rows, per role ──────────────────────────────────────
-const nextActions = computed(() => {
-  const rows: { title: string; sub: string; icon: string; to: string }[] = []
-
-  if (isBuyerView.value) {
-    if (!buyerProfile.value) return rows
-    if (buyerIncompleteCount.value > 0) {
-      rows.push({
-        title: `Complete ${buyerIncompleteCount.value} ${buyerIncompleteCount.value === 1 ? 'item' : 'items'} in your Passport`,
-        sub: 'Add documents and details to build your record.',
-        icon: '/dashboard/nextDocuments.png',
-        to: '/buyer-profile/build',
-      })
-    }
-    if (!buyerIdVerified.value) {
-      rows.push({
-        title: 'Verify your identity',
-        sub: 'A verified ID is what sellers and agents check first.',
-        icon: '/dashboard/nextIdentity.png',
-        to: '/buyer-profile/build',
-      })
-    }
-    if (financePercent.value < 100) {
-      rows.push({
-        title: 'Upload proof of funds or AIP',
-        sub: 'Strengthen your position and unlock more.',
-        icon: '/dashboard/nextFunds.png',
-        to: '/buyer-profile/build',
-      })
-    }
-    rows.push({
-      title: 'Confirm your buying position',
-      sub: 'Let agents and sellers know where you are in the chain.',
-      icon: '/dashboard/nextPosition.png',
-      to: '/buyer-profile/build',
-    })
-    return rows
-  }
-
-  if (!passports.value.length) return rows
-
-  if (incompleteItemCount.value > 0) {
-    rows.push({
-      title: `Complete ${incompleteItemCount.value} ${incompleteItemCount.value === 1 ? 'item' : 'items'} in your Passport`,
-      sub: 'Add documents and details to build your record.',
-      icon: '/dashboard/nextDocuments.png',
-      to: `/passportview/${primaryPassport.value.id}`,
-    })
-  }
-
-  if (isLandlord.value) {
-    rows.push({
-      title: 'Keep your compliance documents current',
-      sub: 'Gas, electrical and EPC certificates your tenants can see.',
-      icon: '/dashboard/nextDocuments.png',
-      to: `/passportview/landlord/${primaryPassport.value.id}`,
-    })
-  }
-
-  rows.push({
-    title: 'Improve your EPC',
-    sub: 'See how you could raise your score and cut running costs.',
-    icon: '/dashboard/nextEpc.png',
-    to: homeScoreHref.value,
-  })
-
-  return rows
-})
-
-// ── Search ─────────────────────────────────────────────────────────────
-function onSearchSelect(property: { id: string }) {
-  if (property?.id) navigateTo(`/property/${property.id}`)
-  else navigateTo('/marketplace')
-}
-function onSearchEnter(q: string) {
-  searchQuery.value = q
-  runSearch()
-}
-function runSearch() {
-  const q = searchQuery.value.trim()
-  navigateTo(q ? `/marketplace?q=${encodeURIComponent(q)}` : '/marketplace')
+function hasToken(): boolean {
+  return typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
 }
 
-function startClaimFlow() {
-  navigateTo('/claim')
+function sqftLabel(floorAreaSqm: number): string {
+  return `${Math.round(floorAreaSqm * 10.764).toLocaleString('en-GB')} sq ft`
 }
 
-// ── Fetching ───────────────────────────────────────────────────────────
-function normalizeRole(r: unknown): string {
-  const allowed = ['sell', 'buy', 'both', 'landlord']
-  return typeof r === 'string' && allowed.includes(r) ? r : 'buy'
-}
-
-// Fired independently rather than awaited with the rest: /property/for-you
-// does live EPC/OS enrichment per candidate and can take seconds. Bundling
-// it in would hold the whole page on its skeleton until the slowest call
-// finished, when ForYouFeed has its own :loading state.
-async function fetchForYou(token: string) {
-  const result = await $fetch<{ items: any[]; needsPostcode?: boolean }>(
-    `${config.public.apiBase}/property/for-you`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  ).catch(() => null)
-  properties.value = result?.items ?? []
-  needsPostcode.value = result?.needsPostcode === true
-  loadingProperties.value = false
-}
-
-// Fired by ForYouFeed once a postcode is saved. Re-reads the token rather
-// than closing over onMounted's copy, since this can fire much later.
-function refetchForYou() {
-  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
-  if (token) fetchForYou(token)
-}
-
-async function fetchRecentlyViewed(token: string) {
-  const result = await $fetch<any[]>(`${config.public.apiBase}/property/recently-viewed`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }).catch(() => null)
-  recentlyViewed.value = result ?? []
-  loadingRecentlyViewed.value = false
-}
-
-async function fetchBuyerSide(token: string) {
-  const [buyerResult, savedResult] = await Promise.allSettled([
-    $fetch<any>(`${config.public.apiBase}/buyer-profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-    $fetch<any[]>(`${config.public.apiBase}/property/saved`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-  ])
-  if (buyerResult.status === 'fulfilled') buyerProfile.value = buyerResult.value ?? null
-  if (savedResult.status === 'fulfilled') savedProperties.value = savedResult.value ?? []
-}
-
-onMounted(async () => {
-  if (!profile.value) await fetchProfile()
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  if (!token) return
-
-  // A cached role renders the right shell immediately; the preferences call
-  // below then confirms or corrects it.
-  const cachedRole =
-    typeof window !== 'undefined' ? localStorage.getItem('umu_role') : null
-  if (cachedRole) role.value = normalizeRole(cachedRole)
-
-  const prefResult = await $fetch<any>(`${config.public.apiBase}/profile/preferences`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }).catch(() => null)
-
-  role.value = normalizeRole((prefResult?.purpose as string[])?.[0] ?? cachedRole)
-  if (typeof window !== 'undefined') localStorage.setItem('umu_role', role.value)
-  roleResolved.value = true
-
-  fetchForYou(token) // not awaited — see its own comment
-
-  if (isBuyerView.value) {
-    fetchRecentlyViewed(token) // not awaited — has its own loading state
-    await fetchBuyerSide(token)
-    loadingBuyerProfile.value = false
-    loadingSaved.value = false
+// ── Search ────────────────────────────────────────────────────────────────
+// Two modes, matching the dashboard's search contract: picking a real address
+// from the dropdown goes straight to that property, while Enter or the Search
+// button shows a result list on this page.
+function onSearchSelect(property: any) {
+  if (property?.id) {
+    openProperty(property.id)
     return
   }
+  // Postcode-only fallback selection — there's no property row to open, so
+  // treat the postcode as a query instead.
+  if (property?.postcode) runQuery(property.postcode)
+}
 
-  // Owner roles (sell / landlord / both) also get the saved-properties list,
-  // which feeds the Watching card shown for every role.
-  fetchBuyerSide(token).then(() => {
-    loadingSaved.value = false
-    loadingBuyerSummary.value = false
-  })
+function onSearchEnter(query: string) {
+  runQuery(query)
+}
 
-  const passportResult = await $fetch<any[]>(`${config.public.apiBase}/profile/passports`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }).catch(() => null)
+function runSearch() {
+  const el = document.querySelector<HTMLInputElement>('.dsc-search-field input')
+  const q = (el?.value || '').trim()
+  if (q) runQuery(q)
+  else el?.focus()
+}
 
-  if (passportResult) {
-    const all = passportResult ?? []
-    // /profile/passports returns every passport the user owns, any type,
-    // most-recently-visited first. Prefer the one matching their role so a
-    // landlord doesn't land on a seller book, falling back to whatever is
-    // first rather than showing nothing.
-    const wanted = isLandlord.value ? 'LANDLORD' : 'SELLER'
-    const matching = all.filter((p: any) => p.type === wanted)
-    passports.value = matching.length ? matching : all
+async function runQuery(q: string) {
+  const query = q.trim()
+  if (!query) return
+  scopeQuery.value = query
+  // 'nearby' only ever applies to a full postcode; for anything else the
+  // control is disabled and the scope stays on its 'exact' default.
+  const effective =
+    searchScope.value === 'nearby' && FULL_POSTCODE.test(query)
+      ? outwardCode(query)
+      : query
+  lastQuery.value = query
+  hasSearched.value = true
+  searchLoading.value = true
+  // The suggestion dropdown is absolutely positioned over the content below
+  // the bar. Left open it sits on top of the result grid and swallows the
+  // click on the first card, so dismiss it as soon as a search is committed.
+  searchInputEl.value?.closeDropdown?.()
+  // Keep the URL shareable and back-navigable, and let the landing page hand a
+  // query straight over via /explore?q=…
+  navigateTo({ path: '/explore', query: { q: query } }, { replace: true })
+  try {
+    const res = await $fetch<{ items: any[] }>(
+      `${config.public.apiBase}/property/search`,
+      { query: { q: effective, offset: 0, limit: 24 } },
+    )
+    results.value = res?.items ?? []
+  } catch {
+    // Backend unreachable — an empty result set reads as "nothing found",
+    // which is the honest outcome either way.
+    results.value = []
+  } finally {
+    searchLoading.value = false
   }
-  loadingPassport.value = false
+}
 
-  if (passports.value.length) {
-    const sections = await $fetch<any[]>(
-      `${config.public.apiBase}/passport/${passports.value[0].id}/sections`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    ).catch(() => [])
-    passportSections.value = sections ?? []
+function clearSearch() {
+  hasSearched.value = false
+  results.value = []
+  lastQuery.value = ''
+  scopeQuery.value = ''
+  searchScope.value = 'exact'
+  navigateTo({ path: '/explore' }, { replace: true })
+}
+
+function openProperty(id: string) {
+  navigateTo(`/property/${id}`)
+}
+
+// ── Entry-point cards ─────────────────────────────────────────────────────
+// Two different gates on purpose. Buyer Passport is a considered, multi-step
+// commitment, so a guest gets the full sign-up screen with a redirect back
+// into the build flow. Watching a property is a one-tap action, so it gets the
+// lighter in-page modal instead of a whole page transition.
+function goToBuyerPassport() {
+  if (!hasToken()) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('redirectAfterLogin', '/buyer-profile/build')
+    }
+    navigateTo('/onboarding/signup')
+    return
+  }
+  navigateTo('/buyer-profile/build')
+}
+
+function goToWatching() {
+  if (!hasToken()) {
+    authGateCopy.value = {
+      title: 'Sign in to see watched properties',
+      body: 'Create a free account to save properties, watch homes and get alerted the moment something changes.',
+    }
+    authGateRedirect.value = '/profile/saved-properties'
+    authGateOpen.value = true
+    return
+  }
+  navigateTo('/profile/saved-properties')
+}
+
+// ── Passport ecosystem ────────────────────────────────────────────────────
+// Cover-art note carried over from the reference app: seller/landlord use the
+// *_tilted_right_on_tile.png asset, which is branded "Property Passport" on
+// the cover rather than the role - role-specific art only exists for buyer and
+// tenant. The title under each cover is correct either way.
+const passportCards = [
+  {
+    key: 'seller',
+    img: '/op-icons/passport-covers/seller_tilted_right_on_tile.png',
+    title: 'Seller Passport',
+    color: '#00858a',
+    desc: 'Prove accuracy and promote. Gain buyer confidence. Streamline every step to settlement.',
+    status: 'now',
+    statusLabel: 'AVAILABLE NOW',
+  },
+  {
+    key: 'landlord',
+    img: '/op-icons/passport-covers/landlord_tilted_right_on_tile.png',
+    title: 'Landlord Passport',
+    color: '#4b2e83',
+    desc: 'Proof of trust and care of your asset. Stronger tenants. Fewer surprises.',
+    status: 'now',
+    statusLabel: 'AVAILABLE NOW',
+  },
+  {
+    key: 'buyer',
+    img: '/op-icons/passport-covers/buyer_tilted_right_on_tile.png',
+    title: 'Buyer Passport',
+    color: '#c9601a',
+    desc: 'A clear, confident purchase journey with less stress, more certainty.',
+    status: 'now',
+    statusLabel: 'AVAILABLE NOW',
+  },
+  {
+    key: 'tenant',
+    img: '/op-icons/passport-covers/tenant_tilted_right_on_tile.png',
+    title: 'Tenant Passport',
+    color: '#4a4a52',
+    desc: 'Your trusted profile simplifies rental applications and makes life easier.',
+    status: 'soon',
+    statusLabel: 'AVAILABLE SOON',
+  },
+]
+
+// "The power of the ecosystem" rail, carried over from the reference app's
+// drawer along with its icon choices.
+const powerItems = [
+  {
+    title: 'One verified foundation',
+    desc: 'Maximise trust, reduce rework and eliminate lost information.',
+    img: '/op-icons/onboarding/trustShield.png',
+  },
+  {
+    title: 'Reuse across roles',
+    desc: "Move your data wherever you're heading next.",
+    img: '/op-icons/investment/refreshArrows.png',
+  },
+  {
+    title: 'Save time & money',
+    desc: 'Fewer forms. Faster decisions. More wins.',
+    img: '/op-icons/calendar/clock.png',
+  },
+  {
+    title: 'Secure for life',
+    desc: 'Your data. Your control. Encrypted and always yours.',
+    img: '/op-icons/matched-buyers/lock-big.png',
+  },
+  {
+    title: 'More value for you',
+    desc: 'Unlock stronger offers and a stronger property outcome.',
+    img: '/op-icons/investment/growthChart.png',
+  },
+]
+
+const ECO_COPY: Record<string, { title: string; body: string }> = {
+  seller: {
+    title: 'Sign in to start your Seller Passport',
+    body: 'Create a free account to verify your home and build a Seller Passport buyers can trust.',
+  },
+  landlord: {
+    title: 'Sign in to start your Landlord Passport',
+    body: 'Create a free account to build a Landlord Passport — compliance, tenancy documents and more, all in one place.',
+  },
+  buyer: {
+    title: 'Sign in to start your Buyer Passport',
+    body: 'Create a free account to build a verified Buyer Passport and move with more confidence.',
+  },
+}
+
+function onPassportCardClick(card: { key: string; status: string }) {
+  if (card.status === 'soon') return
+  if (hasToken()) {
+    navigateTo('/dashboard')
+    return
+  }
+  authGateCopy.value = ECO_COPY[card.key] ?? {
+    title: 'Sign in to continue',
+    body: 'Create a free account to get started.',
+  }
+  authGateRedirect.value = '/dashboard'
+  authGateOpen.value = true
+}
+
+// ── Recently explored ─────────────────────────────────────────────────────
+function clearHistory() {
+  clearRecentlyExplored()
+  recentlyExplored.value = []
+}
+
+function relativeTimeLabel(viewedAt: number): string {
+  const minutes = Math.floor((Date.now() - viewedAt) / 60000)
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days}d ago`
+  return new Date(viewedAt).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+function lastSoldLabel(dateStr: string): string {
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+}
+
+onMounted(() => {
+  signedIn.value = hasToken()
+  if (signedIn.value && !profile.value) fetchProfile()
+  recentlyExplored.value = getRecentlyExplored()
+
+  // ?q=… arrives from the landing page, so the visitor lands here with results
+  // already loading rather than an empty second search box.
+  const q = route.query.q
+  if (typeof q === 'string' && q.trim()) {
+    scopeQuery.value = q
+    runQuery(q)
   }
 })
 </script>
 
 <style scoped>
-.dsh {
+.dsc {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -885,33 +858,45 @@ onMounted(async () => {
   color: #231d45;
 }
 
-.dsh-shell {
+.dsc-shell {
   flex: 1;
   width: 100%;
-  max-width: 1240px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 30px 24px 64px;
+  padding: 0 24px 72px;
 }
 
-/* ── Navbar actions ────────────────────────────────────────────────── */
-/* The bell ships as a bare transparent circle; against the cream navbar it
-   needs the same bordered-chip treatment as the profile pill beside it, or
-   the two read as unrelated. :deep() because .nb-btn is scoped to the
-   NotificationBell component. */
-.dsh :deep(.nb-btn) {
-  width: 40px;
-  height: 40px;
+/* ── Nav actions ──────────────────────────────────────────────────────── */
+.dsc-nav-signin,
+.dsc-nav-join {
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+.dsc-nav-signin {
   border: 1px solid #e4e5ed;
   background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  color: #231d45;
 }
-.dsh :deep(.nb-btn:hover) {
+.dsc-nav-signin:hover {
   border-color: #9fe0d8;
-  background: #fff;
   box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
 }
-
-.dsh-nav-profile {
+.dsc-nav-join {
+  border: none;
+  background: #00a19a;
+  color: #fff;
+}
+.dsc-nav-join:hover {
+  background: #018e88;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.3);
+}
+.dsc-nav-profile {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -921,686 +906,978 @@ onMounted(async () => {
   background: #fff;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.dsh-nav-profile:hover {
-  border-color: #9fe0d8;
-  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
+.dsc-nav-profile:hover { border-color: #9fe0d8; }
+.dsc-nav-profile-text { display: flex; flex-direction: column; line-height: 1.15; }
+.dsc-nav-profile-text strong { font-size: 13px; font-weight: 800; color: #231d45; }
+.dsc-nav-profile-text small { font-size: 10.5px; font-weight: 700; color: #8a90a6; }
+@media (max-width: 1120px) {
+  .dsc-nav-profile-text { display: none; }
+  .dsc-nav-profile { padding: 5px; }
 }
-.dsh-nav-profile-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-}
-.dsh-nav-profile-text strong {
-  font-size: 13px;
+.dsc-mobile-auth {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid #e4e5ed;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 800;
   color: #231d45;
+  cursor: pointer;
 }
-.dsh-nav-profile-text small {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #8a90a6;
-}
-/* Below this the name would crowd the bar; the avatar alone still reads. */
-@media (max-width: 1120px) {
-  .dsh-nav-profile-text { display: none; }
-  .dsh-nav-profile { padding: 5px; }
+.dsc-mobile-auth--solid {
+  border-color: #00a19a;
+  background: #00a19a;
+  color: #fff;
 }
 
-/* ── Head ──────────────────────────────────────────────────────────── */
-.dsh-head {
+/* ── Hero band ────────────────────────────────────────────────────────── */
+.dsc-band {
+  position: relative;
+  padding: 52px 0 34px;
+}
+.dsc-band-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 28px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-.dsh-greeting {
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #00a19a;
-}
-.dsh-title {
-  margin: 0 0 6px;
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-.dsh-lede {
-  margin: 0;
-  max-width: 58ch;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.55;
-  color: #6b7089;
-}
-.dsh-head-side {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  text-align: center;
 }
-.dsh-role-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px 8px 10px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #e4e5ed;
-}
-.dsh-role-art {
-  width: 26px;
-  height: 34px;
-  object-fit: contain;
-}
-.dsh-role-chip small {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #a8a9ad;
-}
-.dsh-role-chip strong {
-  display: block;
-  font-size: 13.5px;
-  font-weight: 800;
-  color: #231d45;
-}
-.dsh-add {
+.dsc-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px 12px 14px;
-  border: none;
+  padding: 9px 18px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13.5px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 161, 154, 0.24);
+  box-shadow: 0 6px 18px rgba(0, 161, 154, 0.1);
+  font-size: 12.5px;
   font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.28);
+  color: #00776f;
+  margin-bottom: 18px;
 }
-.dsh-add:hover { filter: brightness(1.06); }
-.dsh-add-ic { width: 22px; height: 22px; object-fit: contain; }
+.dsc-badge-ic { width: 16px; height: 16px; }
+.dsc-title {
+  margin: 0 0 14px;
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.03;
+}
+.dsc-dot { color: #00a19a; }
+.dsc-lede {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 16.5px;
+  font-weight: 500;
+  line-height: 1.65;
+  color: #5c627c;
+}
+.dsc-sources {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+}
+.dsc-sources li {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7089;
+}
 
-/* ── Search ────────────────────────────────────────────────────────── */
-.dsh-search {
+/* ── Search panel ─────────────────────────────────────────────────────── */
+.dsc-search-panel {
+  position: relative;
+  z-index: 2;
+  /* Rides up over the band's bottom edge so the two read as one unit */
+  width: min(940px, 100%);
+  margin: 0 auto 64px;
+  padding: 14px 14px 0;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  border-radius: 22px;
+  box-shadow: 0 26px 60px rgba(31, 61, 98, 0.12);
+}
+.dsc-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dsc-search-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 10px 10px 6px;
-  background: #fff;
-  border: 1px solid #e4e5ed;
-  border-radius: 18px;
-  box-shadow: 0 10px 26px rgba(31, 61, 98, 0.06);
-  margin-bottom: 26px;
+  padding-left: 18px;
+  border-radius: 15px;
+  background: #f7f7fa;
+  border: 1px solid transparent;
+  transition: border-color 0.16s ease, background 0.16s ease;
 }
-.dsh-search-field { flex: 1; min-width: 0; }
-.dsh-search-btn {
+.dsc-search-field:focus-within {
+  background: #fff;
+  border-color: #9fe0d8;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
+}
+.dsc-search-lead {
+  width: 19px; height: 19px;
+  flex-shrink: 0;
+  color: #8a90a6;
+}
+/* The shared input ships its own chrome; strip it back so the field above
+   provides the surface instead of nesting two boxes. */
+.dsc-search-field :deep(.psi-wrap) { position: static; width: 100%; }
+.dsc-search-field :deep(.psi-icon) { display: none; }
+.dsc-search-field :deep(.psi-input) {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  height: 56px;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+.dsc-search-field :deep(.psi-input:focus) { border: 0 !important; background: transparent !important; }
+.dsc-search-field :deep(.psi-drop) { z-index: 40; }
+
+.dsc-scope {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 4px;
+  gap: 3px;
+  border-radius: 999px;
+  background: #f2f1f6;
+  border: 1px solid rgba(35, 29, 69, 0.06);
+  transition: opacity 0.16s ease;
+}
+.dsc-scope--off { opacity: 0.5; }
+.dsc-scope-btn {
+  padding: 9px 17px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #6b7089;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+.dsc-scope-btn.on {
+  background: #fff;
+  color: #231d45;
+  box-shadow: 0 2px 8px rgba(31, 61, 98, 0.12);
+}
+.dsc-scope-btn:disabled { cursor: not-allowed; }
+
+.dsc-search-btn {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 12px 22px;
+  gap: 9px;
+  padding: 17px 30px;
   border: none;
-  border-radius: 12px;
+  border-radius: 15px;
   background: #00a19a;
   color: #fff;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.26);
+  transition: background 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
-.dsh-search-btn:hover { background: #008a84; }
+.dsc-search-btn:hover {
+  background: #018e88;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 161, 154, 0.32);
+}
+.dsc-search-btn-ic { width: 17px; height: 17px; }
 
-/* ── Boot skeleton ─────────────────────────────────────────────────── */
-.dsh-boot { display: grid; gap: 16px; }
-.dsh-boot-card, .dsh-boot-row, .dsh-skel {
-  border-radius: 18px;
-  background: linear-gradient(100deg, #eceff4 30%, #e2e6ee 50%, #eceff4 70%);
-  background-size: 250% 100%;
-  animation: dsh-shimmer 1.4s ease-in-out infinite;
+.dsc-search-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 13px 6px 15px;
+  border-top: 1px solid rgba(35, 29, 69, 0.06);
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a90a6;
 }
-.dsh-boot-card { height: 210px; }
-.dsh-boot-rows { display: grid; gap: 10px; }
-.dsh-boot-row { height: 66px; }
-.dsh-skel--hero { height: 210px; }
-.dsh-skel--row { height: 72px; }
-@keyframes dsh-shimmer {
-  from { background-position: 140% 0; }
+.dsc-hint-ic { width: 15px; height: 15px; color: #00a19a; flex-shrink: 0; }
+.dsc-search-hint b { color: #545a72; font-weight: 800; }
+
+/* ── Blocks ───────────────────────────────────────────────────────────── */
+.dsc-block { margin-bottom: 64px; }
+.dsc-block:last-child { margin-bottom: 0; }
+.dsc-block-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.dsc-h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.dsc-h2-sub {
+  margin: 5px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #8a90a6;
+}
+.dsc-textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border: 1px solid rgba(35, 29, 69, 0.09);
+  border-radius: 999px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #6b7089;
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+.dsc-textlink:hover { border-color: #c9ccd8; color: #231d45; }
+.dsc-textlink-ic { width: 14px; height: 14px; }
+
+/* ── Result grid ──────────────────────────────────────────────────────── */
+.dsc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 22px;
+}
+.dsc-skeleton {
+  height: 296px;
+  border-radius: 20px;
+  background: linear-gradient(100deg, #eceaf3 30%, #f6f5fa 50%, #eceaf3 70%);
+  background-size: 220% 100%;
+  animation: dsc-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes dsc-shimmer {
+  from { background-position: 180% 0; }
   to { background-position: -40% 0; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .dsh-boot-card, .dsh-boot-row, .dsh-skel { animation: none; }
-}
-
-/* ── Layout ────────────────────────────────────────────────────────── */
-.dsh-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 348px;
-  gap: 26px;
-  align-items: start;
-}
-.dsh-main { min-width: 0; }
-.dsh-side {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: sticky;
-  top: 20px;
-}
-
-.dsh-section { margin-bottom: 30px; }
-.dsh-sec-head {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-bottom: 14px;
-}
-.dsh-sec-ic { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
-.dsh-eyebrow {
-  margin: 0 0 2px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #00a19a;
-}
-.dsh-sec-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-/* ── Active passport card ──────────────────────────────────────────── */
-.apc {
-  display: flex;
-  gap: 24px;
-  padding: 24px;
+.dsc-card {
   background: #fff;
-  border: 1px solid #e9ecf2;
-  border-radius: 22px;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  border-radius: 20px;
+  overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.apc:hover {
-  border-color: #d8e4e2;
-  box-shadow: 0 16px 36px rgba(31, 61, 98, 0.1);
+.dsc-card:hover,
+.dsc-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: rgba(0, 161, 154, 0.4);
+  box-shadow: 0 20px 40px rgba(31, 61, 98, 0.13);
+  outline: none;
 }
-.apc:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
-.apc-book { flex-shrink: 0; width: 116px; }
-.apc-info { flex: 1; min-width: 0; }
-.apc-pill {
-  display: inline-block;
-  padding: 4px 11px;
-  border-radius: 999px;
-  background: #e9f6f5;
-  color: #00756f;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.apc-name {
-  margin: 9px 0 1px;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-.apc-postcode {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8a90a6;
-}
-.apc-verified, .apc-unverified {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin: 6px 0 0;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.apc-verified { color: #00756f; }
-.apc-unverified { color: #b45309; }
-.apc-prog-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 14px 0 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #4a5876;
-}
-.apc-prog-row strong { color: #231d45; font-weight: 800; }
-.apc-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  font-weight: 800;
-  color: #00756f;
-}
-.apc-live-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #00a19a;
-  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.16);
-}
-.apc-track {
-  height: 7px;
-  border-radius: 999px;
-  background: #edf0f5;
+.dsc-card-photo {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: #eceaf3;
   overflow: hidden;
 }
-.apc-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #2fd0c6, #00a19a);
-  transition: width 0.4s ease;
-}
-.apc-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-}
-.apc-cta {
+.dsc-card-photo :deep(img) { width: 100%; height: 100%; object-fit: cover; }
+.dsc-card-flag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0, 161, 154, 0.95);
   color: #fff;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.26);
-}
-.apc-cta:hover { filter: brightness(1.06); }
-.apc-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: #00a19a;
-  cursor: pointer;
-}
-.apc-link:hover { color: #00756f; }
-
-/* ── Empty CTA ─────────────────────────────────────────────────────── */
-.dsh-empty-cta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  padding: 22px 24px;
-  text-align: left;
-  background: #fff;
-  border: 1px dashed #cfd8e3;
-  border-radius: 20px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-.dsh-empty-cta:hover { border-color: #9fe0d8; background: #fbfffe; }
-.dsh-empty-plus {
-  width: 46px; height: 46px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: #e9f6f5;
-  color: #00a19a;
-  font-size: 24px;
-  font-weight: 700;
-}
-.dsh-empty-body { flex: 1; min-width: 0; }
-.dsh-empty-body strong { display: block; font-size: 15.5px; font-weight: 800; }
-.dsh-empty-body small {
-  display: block;
-  margin-top: 2px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #6b7089;
-}
-.dsh-empty-chev { color: #a8a9ad; font-size: 18px; }
-
-/* ── Next for you ──────────────────────────────────────────────────── */
-.nfy {
-  background: #fff;
-  border: 1px solid #e9ecf2;
-  border-radius: 20px;
-  overflow: hidden;
-}
-.nfy-stale {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 12px 20px;
-  background: #fff8ed;
-  border-bottom: 1px solid #fbe4bd;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #92400e;
-}
-.nfy-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 16px 20px;
-  text-align: left;
-  background: none;
-  border: none;
-  border-top: 1px solid #f0f2f6;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.14s ease;
-}
-.nfy-row:first-of-type { border-top: none; }
-.nfy-row:hover { background: #fafbfd; }
-.nfy-ic { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
-.nfy-body { flex: 1; min-width: 0; }
-.nfy-body strong { display: block; font-size: 14.5px; font-weight: 800; }
-.nfy-body small {
-  display: block;
-  margin-top: 2px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #6b7089;
-}
-.nfy-chev { color: #c3c6d2; font-size: 18px; flex-shrink: 0; }
-
-/* ── Side cards ────────────────────────────────────────────────────── */
-.dsh-card {
-  background: #fff;
-  border: 1px solid #e9ecf2;
-  border-radius: 20px;
-  overflow: hidden;
-}
-.dsh-card-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 18px;
-  border-bottom: 1px solid #f0f2f6;
-}
-.dsh-card-ic { width: 34px; height: 38px; object-fit: contain; flex-shrink: 0; }
-.dsh-card-head-text h3 {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 15px;
-  font-weight: 800;
-}
-.dsh-card-head-text small {
-  display: block;
-  margin-top: 1px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #8a90a6;
-}
-.dsh-count {
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: #e9f6f5;
-  color: #00756f;
   font-size: 11px;
   font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 121, 115, 0.3);
 }
-.dsh-card-more {
-  display: block;
-  width: 100%;
-  padding: 13px;
-  background: #fafbfd;
-  border: none;
-  border-top: 1px solid #f0f2f6;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #00a19a;
-  cursor: pointer;
-}
-.dsh-card-more:hover { background: #f2faf8; }
-.dsh-card-empty { padding: 22px 18px; text-align: center; }
-.dsh-card-empty p {
-  margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8a90a6;
-}
-.dsh-card-empty button {
-  padding: 9px 18px;
-  border: 1px solid #e4e5ed;
-  border-radius: 10px;
-  background: #fff;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #231d45;
-  cursor: pointer;
-}
-.dsh-card-empty button:hover { border-color: #9fe0d8; color: #00756f; }
-
-.watch-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-decoration: none;
-  color: inherit;
-  padding: 12px 16px;
-  text-align: left;
-  background: none;
-  border: none;
-  border-top: 1px solid #f5f6f9;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.14s ease;
-}
-.watch-row:first-of-type { border-top: none; }
-.watch-row:hover { background: #fafbfd; }
-.watch-row--plain { padding: 14px 16px; }
-.watch-media {
-  width: 56px;
-  height: 46px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #eef4f2;
-}
-.watch-img { width: 100%; height: 100%; }
-.watch-body { flex: 1; min-width: 0; }
-.watch-body strong {
-  display: block;
-  font-size: 13.5px;
+.dsc-card-flag-ic { width: 13px; height: 13px; }
+.dsc-card-body { padding: 16px 18px 18px; }
+.dsc-card-addr {
+  margin: 0 0 4px;
+  font-size: 15.5px;
   font-weight: 800;
+  letter-spacing: -0.015em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.watch-body small {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 600;
+.dsc-card-meta { margin: 0 0 12px; font-size: 12.5px; font-weight: 600; color: #8a90a6; }
+.dsc-card-foot { border-top: 1px solid rgba(35, 29, 69, 0.06); padding-top: 12px; }
+.dsc-card-price { margin: 0 0 10px; font-size: 19px; font-weight: 800; color: #00776f; letter-spacing: -0.02em; }
+.dsc-card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsc-tag {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #f5f4f8;
+  border: 1px solid rgba(35, 29, 69, 0.05);
+  font-size: 11px;
+  font-weight: 700;
+  color: #545a72;
+}
+
+/* ── Empty ────────────────────────────────────────────────────────────── */
+.dsc-empty {
+  padding: 64px 24px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  border-radius: 22px;
+}
+.dsc-empty-ring {
+  display: inline-grid;
+  place-items: center;
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  background: #f3f2f7;
+  margin-bottom: 16px;
+}
+.dsc-empty-ic { width: 26px; height: 26px; color: #a8acbd; }
+.dsc-empty-title { margin: 0 0 6px; font-size: 17px; font-weight: 800; }
+.dsc-empty-sub { margin: 0; font-size: 14px; font-weight: 500; color: #8a90a6; }
+
+/* ── Entry cards ──────────────────────────────────────────────────────── */
+.dsc-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+}
+.dsc-entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 30px 28px 28px;
+  border-radius: 24px;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  background: #fff;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.dsc-entry::before {
+  content: '';
+  position: absolute;
+  top: -70px; right: -50px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.dsc-entry--teal::before { background: radial-gradient(circle, rgba(0,161,154,.14) 0%, rgba(0,161,154,0) 70%); }
+.dsc-entry--violet::before { background: radial-gradient(circle, rgba(107,79,216,.13) 0%, rgba(107,79,216,0) 70%); }
+.dsc-entry--soon::before { background: radial-gradient(circle, rgba(35,29,69,.06) 0%, rgba(35,29,69,0) 70%); }
+.dsc-entry:hover,
+.dsc-entry:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 44px rgba(31, 61, 98, 0.13);
+  outline: none;
+}
+.dsc-entry--teal:hover { border-color: rgba(0, 161, 154, 0.4); }
+.dsc-entry--violet:hover { border-color: rgba(107, 79, 216, 0.35); }
+.dsc-entry--soon {
+  cursor: default;
+  background: #faf9f7;
+}
+.dsc-entry--soon:hover { transform: none; box-shadow: none; }
+
+.dsc-entry-plate {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px; height: 92px;
+  border-radius: 22px;
+  margin-bottom: 20px;
+  background: linear-gradient(160deg, #f4f8f7 0%, #fbfbfa 100%);
+  border: 1px solid rgba(35, 29, 69, 0.05);
+}
+.dsc-entry--violet .dsc-entry-plate { background: linear-gradient(160deg, #f4f1fc 0%, #fbfbfd 100%); }
+.dsc-entry-art { width: 62px; height: 62px; object-fit: contain; }
+.dsc-entry-art--book { width: 52px; height: 66px; }
+
+.dsc-entry-titlerow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.dsc-entry-title {
+  position: relative;
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.dsc-entry-titlerow .dsc-entry-title { margin: 0; }
+.dsc-entry-sub {
+  position: relative;
+  margin: 0 0 20px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #5c627c;
+}
+.dsc-entry-cta {
+  position: relative;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #00a19a;
+}
+.dsc-entry--violet .dsc-entry-cta { color: #6b4fd8; }
+.dsc-entry-cta--muted { color: #a3a7b8; }
+.dsc-entry-chev {
+  display: grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 161, 154, 0.12);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.dsc-entry-chev :deep(svg) { width: 14px; height: 14px; }
+.dsc-entry--violet .dsc-entry-chev { background: rgba(107, 79, 216, 0.12); }
+.dsc-entry:hover .dsc-entry-chev { transform: translateX(4px); }
+.dsc-soon {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #efeef4;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
   color: #8a90a6;
 }
-.watch-hs { color: #00756f !important; }
-.watch-hs b { font-weight: 800; }
-.watch-chev { color: #c3c6d2; font-size: 17px; flex-shrink: 0; }
 
-/* ── HomeScore (owner) ─────────────────────────────────────────────── */
-.hsc {
-  padding: 20px;
-  background: linear-gradient(160deg, #0a0f2c, #131a3a);
-  border-radius: 20px;
-  color: #fff;
+/* ── Feature cards ────────────────────────────────────────────────────── */
+.dsc-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
 }
-.hsc-top { display: flex; align-items: center; gap: 16px; }
-.hsc-ring { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
-.hsc-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.hsc-ring-bg {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.12);
-  stroke-width: 8;
-}
-.hsc-ring-fill {
-  fill: none;
-  stroke: url(#dshHsGrad);
-  stroke-width: 8;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.6s ease;
-}
-.hsc-ring-label {
-  position: absolute;
-  inset: 0;
+.dsc-feature {
+  position: relative;
   display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 1px;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 34px 34px 30px;
+  border-radius: 26px;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  background: linear-gradient(165deg, #ffffff 0%, #fafbfb 100%);
+  overflow: hidden;
+  box-shadow: 0 16px 38px rgba(31, 61, 98, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.hsc-ring-num { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-.hsc-ring-den { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.5); }
-.hsc-info { flex: 1; min-width: 0; }
-.hsc-title { margin: 0 0 3px; font-size: 15.5px; font-weight: 800; }
-.hsc-sub {
+.dsc-feature:hover,
+.dsc-feature:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 56px rgba(31, 61, 98, 0.13);
+  outline: none;
+}
+.dsc-feature--teal:hover { border-color: rgba(0, 161, 154, 0.4); }
+.dsc-feature--amber:hover { border-color: rgba(224, 164, 58, 0.45); }
+.dsc-feature-glow {
+  position: absolute;
+  top: -130px; right: -90px;
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.dsc-feature--teal .dsc-feature-glow { background: radial-gradient(circle, rgba(0,161,154,.17) 0%, rgba(0,161,154,0) 70%); }
+.dsc-feature--amber .dsc-feature-glow { background: radial-gradient(circle, rgba(224,164,58,.18) 0%, rgba(224,164,58,0) 70%); }
+
+.dsc-feature-top {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 26px;
+}
+.dsc-feature-heading { min-width: 0; padding-top: 4px; }
+.dsc-feature-eyebrow {
+  margin: 0 0 11px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.dsc-pill {
+  display: inline-block;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+.dsc-pill--free { background: #e6f6f4; border: 1px solid rgba(0, 161, 154, 0.26); color: #00776f; }
+.dsc-pill--grade { background: #fdf3e1; border: 1px solid rgba(224, 164, 58, 0.36); color: #9a6b12; }
+
+/* The visual is the point of these cards, so it is allowed to be big. */
+.dsc-feature-plate {
+  display: grid;
+  place-items: center;
+  width: 132px; height: 132px;
+  flex-shrink: 0;
+  border-radius: 30px;
+  background: linear-gradient(160deg, #fdf7ec 0%, #fdfcfa 100%);
+  border: 1px solid rgba(35, 29, 69, 0.05);
+}
+.dsc-feature-art { width: 96px; height: 96px; object-fit: contain; }
+
+.dsc-hs-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 132px; height: 132px;
+  flex-shrink: 0;
+}
+.dsc-hs-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.dsc-hs-ring-bg { fill: none; stroke: rgba(0, 161, 154, 0.14); stroke-width: 9; }
+.dsc-hs-ring-fill { fill: none; stroke: #00a19a; stroke-width: 9; stroke-linecap: round; }
+.dsc-hs-ring-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #231d45;
+}
+.dsc-hs-ring-num { display: flex; align-items: baseline; gap: 1px; }
+.dsc-hs-ring-label strong { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+.dsc-hs-ring-label small { font-size: 13px; font-weight: 700; color: #8a90a6; }
+.dsc-hs-ring-note {
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b3b7c6;
+}
+
+.dsc-feature-title {
+  position: relative;
+  margin: 0 0 12px;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.22;
+}
+.dsc-feature-sub {
+  position: relative;
+  margin: 0 0 26px;
+  max-width: 40ch;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.62;
+  color: #5c627c;
+}
+.dsc-feature-go {
+  position: relative;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #00a19a;
+}
+.dsc-feature-go--amber { color: #b07f18; }
+.dsc-feature-chev {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 161, 154, 0.12);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.dsc-feature-go--amber .dsc-feature-chev { background: rgba(224, 164, 58, 0.18); }
+.dsc-feature-chev :deep(svg) { width: 17px; height: 17px; }
+.dsc-feature:hover .dsc-feature-chev { transform: translateX(5px); }
+
+/* ── Passport ecosystem ───────────────────────────────────────────────── */
+.dsc-eco {
+  position: relative;
+  padding: 40px 38px 38px;
+  border-radius: 28px;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  box-shadow: 0 18px 44px rgba(31, 61, 98, 0.07);
+  overflow: hidden;
+}
+.dsc-eco-glow {
+  position: absolute;
+  top: -160px; right: -60px;
+  width: 460px; height: 460px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.09) 0%, rgba(0, 161, 154, 0) 70%);
+}
+.dsc-eco-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 34px;
+  margin-bottom: 32px;
+}
+.dsc-eco-head-text { min-width: 0; }
+.dsc-eco-eyebrow {
+  margin: 0 0 9px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #00a19a;
+}
+.dsc-eco-title {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: #231d45;
+}
+.dsc-eco-title .dsc-dot { color: #00a19a; }
+.dsc-eco-lede {
+  margin: 0;
+  max-width: 56ch;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.65;
+  color: #5c627c;
+}
+.dsc-eco-art {
+  width: min(230px, 34%);
+  height: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(35, 29, 69, 0.18));
+}
+.dsc-eco-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(212px, 1fr));
+  gap: 16px;
+}
+.dsc-eco-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px 20px 20px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.09);
+  box-shadow: 0 8px 22px rgba(31, 61, 98, 0.05);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+.dsc-eco-card:hover:not(:disabled),
+.dsc-eco-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: rgba(0, 161, 154, 0.42);
+  box-shadow: 0 18px 36px rgba(31, 61, 98, 0.12);
+  outline: none;
+}
+.dsc-eco-card--soon { cursor: default; background: #faf9fb; box-shadow: none; }
+.dsc-eco-card--soon .dsc-eco-card-title,
+.dsc-eco-card--soon .dsc-eco-card-desc { opacity: 0.62; }
+.dsc-eco-book {
+  width: 56px;
+  height: 70px;
+  object-fit: contain;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 8px 16px rgba(35, 29, 69, 0.18));
+}
+.dsc-eco-card-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  /* Per-passport brand colour is set inline; these are all light enough to
+     hold up on the navy panel. */
+}
+.dsc-eco-card-desc {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #6b7089;
+}
+.dsc-eco-pill {
+  margin-top: auto;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.dsc-eco-pill--now { background: #e6f6f4; border: 1px solid rgba(0, 161, 154, 0.26); color: #00776f; }
+.dsc-eco-pill--soon { background: #f2f1f6; border: 1px solid rgba(35, 29, 69, 0.08); color: #8a90a6; }
+
+/* ── Ecosystem blurb ── */
+.dsc-eco-sub {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #00a19a;
+}
+.dsc-eco-blurb {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px 24px;
+  margin-bottom: 26px;
+  border-radius: 20px;
+  background: #f4f6fc;
+  border: 1px solid rgba(35, 29, 69, 0.06);
+}
+.dsc-eco-blurb-ic { width: 54px; height: 54px; flex-shrink: 0; object-fit: contain; }
+.dsc-eco-blurb-title {
+  margin: 0 0 7px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #00a19a;
+}
+.dsc-eco-blurb-desc {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #5c627c;
+}
+
+/* ── Power of the ecosystem ── */
+.dsc-power {
+  position: relative;
+  margin-top: 32px;
+  padding: 30px 26px 26px;
+  border-radius: 22px;
+  background: #f7f7fb;
+  border: 1px solid rgba(35, 29, 69, 0.06);
+}
+.dsc-power-title {
+  margin: 0 0 26px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #8a90a6;
+}
+.dsc-power-list {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+.dsc-power-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.dsc-power-plate {
+  display: grid;
+  place-items: center;
+  width: 66px; height: 66px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  box-shadow: 0 6px 16px rgba(31, 61, 98, 0.06);
+}
+.dsc-power-ic { width: 40px; height: 40px; object-fit: contain; }
+.dsc-power-item-title {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #231d45;
+}
+.dsc-power-item-desc {
   margin: 0;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6b7089;
 }
-.hsc-potential {
+.dsc-power-connector {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 26px;
+  height: 1px;
+  margin-top: -46px;
+  background: repeating-linear-gradient(90deg, rgba(35,29,69,.2) 0 4px, transparent 4px 8px);
+}
+
+/* ── Ecosystem footer strip ── */
+.dsc-eco-foot {
+  position: relative;
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(35, 29, 69, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 13px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.dsc-eco-foot-tag {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #231d45;
+}
+.dsc-eco-foot-tag span { color: #00a19a; }
+.dsc-eco-foot-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
   font-size: 12.5px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: #8a90a6;
 }
-.hsc-potential strong { color: #5eead4; font-weight: 800; }
-.hsc-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  margin-top: 14px;
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.hsc-cta:hover { filter: brightness(1.08); }
-
-/* ── HomeScore explore entry ───────────────────────────────────────── */
-.hec {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px;
-  text-align: left;
-  background: linear-gradient(160deg, #f0fbf8, #e4f5f1);
-  border: 1px solid #d3ece6;
-  border-radius: 20px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.hec:hover {
-  border-color: #9fe0d8;
-  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.14);
-}
-.hec-art { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
-.hec-body { flex: 1; min-width: 0; }
-.hec-body strong { display: block; font-size: 15px; font-weight: 800; }
-.hec-body small {
-  display: block;
-  margin-top: 4px;
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1.5;
-  color: #4a5876;
-}
-.hec-cta {
+.dsc-eco-foot-links span,
+.dsc-eco-foot-links a {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 10px;
-  font-size: 13px;
-  font-weight: 800;
-  color: #00756f;
+  gap: 7px;
+  color: inherit;
+  text-decoration: none;
 }
+.dsc-eco-foot-links a:hover { color: #00a19a; }
+.dsc-eco-foot-ic { width: 14px; height: 14px; color: #00a19a; }
 
-/* ── Add another property ──────────────────────────────────────────── */
-.apr {
+/* ── Recently explored ────────────────────────────────────────────────── */
+.dsc-recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  border-radius: 22px;
+  overflow: hidden;
+}
+.dsc-recent-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  text-align: left;
-  background: #fff;
-  border: 1px dashed #cfd8e3;
-  border-radius: 20px;
-  font-family: inherit;
+  gap: 18px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(35, 29, 69, 0.05);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: background 0.16s ease;
 }
-.apr:hover { border-color: #9fe0d8; background: #fbfffe; }
-.apr-ic { width: 38px; height: 38px; object-fit: contain; flex-shrink: 0; }
-.apr-body { flex: 1; min-width: 0; }
-.apr-body strong { display: block; font-size: 14.5px; font-weight: 800; }
-.apr-body small {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.45;
-  color: #6b7089;
+.dsc-recent-row:last-child { border-bottom: none; }
+.dsc-recent-row:hover,
+.dsc-recent-row:focus-visible { background: #fafafd; outline: none; }
+.dsc-recent-photo {
+  width: 84px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  overflow: hidden;
+  background: #eceaf3;
 }
-.apr-chev { color: #c3c6d2; font-size: 17px; flex-shrink: 0; }
+.dsc-recent-photo :deep(img) { width: 100%; height: 100%; object-fit: cover; }
+.dsc-recent-body { flex: 1; min-width: 0; }
+.dsc-recent-addr {
+  margin: 0 0 3px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dsc-recent-meta { margin: 0; font-size: 12.5px; font-weight: 600; color: #8a90a6; }
+.dsc-recent-mid { flex-shrink: 0; text-align: right; }
+.dsc-recent-price { margin: 0; font-size: 15px; font-weight: 800; color: #00776f; letter-spacing: -0.02em; }
+.dsc-recent-sold { margin: 3px 0 0; font-size: 11.5px; font-weight: 600; color: #a3a7b8; }
+.dsc-recent-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.dsc-recent-when {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f3f2f7;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #8a90a6;
+  white-space: nowrap;
+}
+.dsc-recent-chev { display: grid; place-items: center; color: #b9bcca; }
+.dsc-recent-chev :deep(svg) { width: 18px; height: 18px; }
 
-/* ── Responsive ────────────────────────────────────────────────────── */
-@media (max-width: 1080px) {
-  .dsh-grid { grid-template-columns: minmax(0, 1fr); }
-  .dsh-side { position: static; }
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .dsc-band { padding: 40px 0 28px; }
+  .dsc-title { font-size: 38px; }
+  .dsc-eco-head { flex-direction: column; align-items: flex-start; gap: 22px; }
+  .dsc-eco-art { width: min(210px, 56%); align-self: center; }
+  .dsc-eco-title { font-size: 26px; }
+  .dsc-power-list { flex-wrap: wrap; justify-content: center; gap: 22px 10px; }
+  .dsc-power-col { flex: 0 0 calc(50% - 12px); }
+  .dsc-power-connector { display: none; }
 }
-@media (max-width: 720px) {
-  .dsh-shell { padding: 22px 16px 48px; }
-  .dsh-title { font-size: 25px; }
-  .dsh-head { align-items: flex-start; }
-  .dsh-head-side { width: 100%; flex-wrap: wrap; }
-  .dsh-search { flex-direction: column; align-items: stretch; padding: 12px; }
-  .dsh-search-btn { justify-content: center; }
-  .apc { flex-direction: column; gap: 18px; }
-  .apc-book { width: 96px; }
+@media (max-width: 760px) {
+  .dsc-shell { padding: 0 16px 72px; }
+  .dsc-search-panel { padding: 12px 12px 0; margin-bottom: 48px; }
+  .dsc-search-row { flex-wrap: wrap; }
+  .dsc-search-field { flex: 1 1 100%; }
+  .dsc-scope { flex: 0 0 auto; }
+  .dsc-search-btn { flex: 1; justify-content: center; }
+  .dsc-block { margin-bottom: 48px; }
+  .dsc-title { font-size: 31px; }
+  .dsc-lede { font-size: 15px; }
+  .dsc-eco { padding: 30px 22px 26px; }
+  .dsc-recent-row { flex-wrap: wrap; gap: 12px; }
+  .dsc-recent-mid { text-align: left; }
+  .dsc-eco-blurb { flex-direction: column; gap: 12px; }
+  .dsc-eco-foot { flex-direction: column; align-items: flex-start; }
 }
 </style>

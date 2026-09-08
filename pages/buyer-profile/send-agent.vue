@@ -6,7 +6,7 @@
     <main class="sa-shell">
       <div class="sa-head">
         <div class="sa-kicker"><span class="sa-kicker-dot" />SHARE WITH AGENT</div>
-        <h1 class="sa-h1">Send your verified profile</h1>
+        <h1 class="sa-h1">Send your verified passport</h1>
         <p class="sa-sub">
           Email a secure, time-limited link to any agent. They see only your
           verified credentials — never your raw data.
@@ -69,13 +69,13 @@
           <!-- Confirmation -->
           <div v-else class="sa-confirm">
             <div class="sa-confirm-badge"><Icon name="heroicons:check-badge-solid" class="sa-confirm-badge-ic" /></div>
-            <div class="sa-confirm-title">Profile sent!</div>
+            <div class="sa-confirm-title">Passport sent!</div>
             <div class="sa-confirm-sub">{{ sentSubLine }}</div>
             <div class="sa-confirm-foot">
               They'll receive a secure link to view your verified credentials.
             </div>
             <div class="sa-confirm-actions">
-              <button class="cta-btn outline" @click="goView">Back to my profile</button>
+              <button class="cta-btn outline" @click="goView">Back to my passport</button>
               <button class="sa-add-another" @click="resetForm">
                 <Icon name="heroicons:plus" class="sa-add-ic" />Send to another agent
               </button>
@@ -166,7 +166,7 @@ function resetForm() {
 
 async function onSend() {
   if (!published.value) {
-    showToast({ message: 'Publish your profile first', iconEmoji: '⚠️' })
+    showToast({ message: 'Publish your passport first', iconEmoji: '⚠️' })
     return
   }
   if (!canSubmit.value) return

@@ -9,7 +9,7 @@
           <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
         </button>
         <nav class="hsw-links" aria-label="Primary navigation">
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" @click="navigateTo('/passport')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -17,7 +17,7 @@
         </nav>
         <div class="hsw-actions">
           <button class="hsw-back" type="button" @click="navigateTo('/buyer-profile')">
-            My Profile
+            My Passport
           </button>
         </div>
       </div>
@@ -563,6 +563,7 @@
                     <div class="bp-upload-title">Tap to upload your document</div>
                     <div class="bp-upload-meta">PDF, JPG or PNG · max 10MB · encrypted</div>
                   </div>
+                  <div v-if="fundsUploadError" class="bp-upload-error">{{ fundsUploadError }}</div>
                 </div>
               </div>
               </div>
@@ -624,7 +625,7 @@
               <div class="bp-tier-reassure-ic"><Icon name="heroicons:clock" class="bp-tier-reassure-svg" /></div>
               <div>
                 <div class="bp-tier-reassure-t">Takes just a few minutes</div>
-                <div class="bp-tier-reassure-s">Complete your profile and get verified quickly.</div>
+                <div class="bp-tier-reassure-s">Complete your passport and get verified quickly.</div>
               </div>
             </div>
           </div>
@@ -639,7 +640,7 @@
             <div class="bp-sheet-sub">
               For {{ currentFundsLabel.toLowerCase() }} — choose how you'd like to share your document.
             </div>
-            <button class="bp-method" @click="simulateFundsUpload('camera')">
+            <button class="bp-method" @click="pickFundsFile('camera')">
               <div class="bp-method-ic">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
@@ -652,7 +653,7 @@
               </div>
               <div class="bp-method-chev">›</div>
             </button>
-            <button class="bp-method" @click="simulateFundsUpload('photos')">
+            <button class="bp-method" @click="pickFundsFile('photos')">
               <div class="bp-method-ic">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -666,7 +667,7 @@
               </div>
               <div class="bp-method-chev">›</div>
             </button>
-            <button class="bp-method" @click="simulateFundsUpload('files')">
+            <button class="bp-method" @click="pickFundsFile('files')">
               <div class="bp-method-ic">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -679,7 +680,7 @@
               </div>
               <div class="bp-method-chev">›</div>
             </button>
-            <button class="bp-method" @click="simulateFundsUpload('cloud')">
+            <button class="bp-method" @click="pickFundsFile('files')">
               <div class="bp-method-ic">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
@@ -693,6 +694,19 @@
             </button>
             <button class="bp-cancel" @click="closeFundsSheet">Cancel</button>
           </div>
+
+          <!-- Hidden real file input backing every "upload" method above —
+               replaces the old fully-simulated flow (fake filename + fake
+               progress bar, no file ever touched the server). `capture` is
+               set dynamically only for the "Take a photo" method so the
+               other methods open the normal file/photo picker. -->
+          <input
+            ref="fundsFileInputEl"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,image/*,application/pdf"
+            style="display: none"
+            @change="onFundsFileChosen"
+          />
         </Teleport>
       </div>
 
@@ -889,7 +903,7 @@
                     ? 'Drafting…'
                     : statement.trim()
                       ? 'Rewrite my story to be warmer and clearer'
-                      : 'Let AI write a compelling story based on your profile'
+                      : 'Let AI write a compelling story based on your passport'
                 }}
               </span>
               <span class="bp-ai-try">Try it ›</span>
@@ -1399,22 +1413,64 @@ function openFundsSheet() {
 function closeFundsSheet() {
   fundsSheetOpen.value = false
 }
-function simulateFundsUpload(_method: string) {
-  const id = fundsType.value
-  if (!id) return
+// Real upload, replacing the old fully-simulated flow (which faked a
+// filename and a progress bar and never touched the server — "Add proof of
+// funds" did nothing real, so the document never reached the review queue
+// the Passport view reads its badges from). Backed by the existing
+// POST /buyer-profile/documents/:kind endpoint.
+const fundsFileInputEl = ref<HTMLInputElement | null>(null)
+const fundsPickMethod = ref<'camera' | 'photos' | 'files'>('files')
+const fundsUploadError = ref('')
+
+function pickFundsFile(method: 'camera' | 'photos' | 'files') {
+  if (!fundsType.value) return
+  fundsPickMethod.value = method
   closeFundsSheet()
+  const el = fundsFileInputEl.value
+  if (!el) return
+  // Only "Take a photo" opens the camera directly; the others open the
+  // normal file/photo picker (which on most phones also exposes cloud
+  // storage apps via the OS share sheet).
+  if (method === 'camera') el.setAttribute('capture', 'environment')
+  else el.removeAttribute('capture')
+  el.value = ''
+  el.click()
+}
+
+async function onFundsFileChosen(e: Event) {
+  const id = fundsType.value
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!id || !file) return
+  fundsUploadError.value = ''
   fundsUploadingType.value = id
-  fundsUploadPct.value = 0
-  setTimeout(() => { fundsUploadPct.value = 35 }, 100)
-  setTimeout(() => { fundsUploadPct.value = 70 }, 600)
-  setTimeout(() => { fundsUploadPct.value = 100 }, 1100)
-  setTimeout(() => {
+  fundsUploadPct.value = 40
+  try {
+    const config = useRuntimeConfig()
+    const token =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    const kind = id === 'mortgage' ? 'mortgage' : 'funds'
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(
+      `${config.public.apiBase}/buyer-profile/documents/${kind}`,
+      {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+      },
+    )
+    if (!res.ok) throw new Error(`Upload failed (${res.status})`)
+    fundsUploadPct.value = 100
     fundsUploads.value[id] = {
-      name: fundsLabels[id]?.file ?? 'document.pdf',
-      size: '1.2 MB · file',
+      name: file.name,
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB · file`,
     }
+  } catch (err: any) {
+    fundsUploadError.value = err?.message || 'Upload failed — try again.'
+  } finally {
     fundsUploadingType.value = null
-  }, 1500)
+  }
 }
 function removeFundsUpload() {
   if (!fundsType.value) return
@@ -1425,7 +1481,7 @@ function removeFundsUpload() {
 const idTypeOptions = [
   { value: 'passport', icon: '/build/passport.png', title: 'UK / EU Passport', sub: 'Fastest match', recommended: true },
   { value: 'drivingLicence', icon: '/build/drivingLicence.png', title: 'UK Driving Licence', sub: 'Photocard, front + back' },
-  { value: 'nationalId', icon: '/build/idBadge.png', title: 'National ID Card', sub: 'EU national ID' },
+  { value: 'nationalId', icon: '/build/idBadge.png', title: 'Biometric Residence Permit', sub: 'EU national ID' },
 ]
 const fundsOptions = [
   { value: 'mortgage', emoji: '/buyer-profile-icon/mortgageHouse.png', title: 'Mortgage in principle', sub: 'Upload your DIP document' },
@@ -2704,6 +2760,13 @@ onBeforeUnmount(() => {
   font-size: 11px;
   color: #94a3b8;
   margin-top: 3px;
+}
+.bp-upload-error {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #c73e36;
+  margin-top: 8px;
+  text-align: center;
 }
 
 .bp-uploaded-chip {

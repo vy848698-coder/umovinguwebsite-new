@@ -9,7 +9,7 @@
           <span class="ppn-brand-beta">BETA</span>
         </button>
         <nav class="ppn-links" aria-label="Primary navigation">
-          <button type="button" @click="navigateTo('/explore')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -317,7 +317,7 @@
                   <div class="coll-state-sub">
                     Start by claiming a property from Explore, then your Passports will appear here.
                   </div>
-                  <button class="coll-state-btn" @click="router.push('/explore')">
+                  <button class="coll-state-btn" @click="router.push('/dashboard')">
                     Go to Explore
                   </button>
                 </div>
@@ -418,7 +418,7 @@
                 </div>
 
                 <!-- Add New -->
-                <button class="prop-card prop-card--add" @click="router.push('/explore')">
+                <button class="prop-card prop-card--add" @click="router.push('/dashboard')">
                   <span class="prop-add-plus">+</span>
                   <span class="prop-add-name">Add New</span>
                   <span class="prop-add-sub">Create a new Property Passport</span>

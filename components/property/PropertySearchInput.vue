@@ -61,100 +61,99 @@
       >
         <!-- Postcode-only suggestions (postcodes.io fallback) -->
         <template v-if="results.length === 0 && postcodeResults.length > 0">
+          <div class="psi-drop-header">Postcodes</div>
           <div
             v-for="pc in postcodeResults"
             :key="pc"
-            class="psi-drop-item psi-drop-item--pc"
+            class="psi-drop-item"
             @mousedown.prevent="selectPostcode(pc)"
           >
-            <div class="psi-drop-ic psi-drop-ic--pc">📍</div>
+            <div class="psi-drop-ic">
+              <img src="/dashboard-art/searchHouse.png" alt="" loading="lazy" />
+            </div>
             <div class="psi-drop-body">
-              <div class="psi-drop-title">{{ pc }}</div>
-              <div class="psi-drop-sub">Use this postcode</div>
+              <div class="psi-drop-line1">{{ pc }}</div>
+              <div class="psi-drop-line2">Search this postcode</div>
             </div>
           </div>
         </template>
 
         <!-- Property results -->
         <template v-else>
-        <div
-          v-for="r in results"
-          :key="r.id"
-          class="psi-drop-item"
-          @mousedown.prevent="select(r)"
-        >
-          <!-- Leading icon -->
+          <div class="psi-drop-header">Select an address</div>
           <div
-            class="psi-drop-ic psi-drop-ic--house"
+            v-for="r in results"
+            :key="r.id"
+            class="psi-drop-item"
+            @mousedown.prevent="select(r)"
           >
-            <img src="/homescore-icon/house.png" alt="" class="psi-drop-ic-img" />
-          </div>
-          <!-- Body column: title + sub + badges -->
-          <div class="psi-drop-body">
-            <div class="psi-drop-title">
-              {{ r.addressLine1 || r.address || '—' }}
+            <div class="psi-drop-ic">
+              <img src="/dashboard-art/searchHouse.png" alt="" loading="lazy" />
             </div>
-            <div class="psi-drop-sub">
-              <span v-if="r.city">{{ r.city }} · </span>{{ r.postcode || '' }}
+
+            <div class="psi-drop-body">
+              <div class="psi-drop-line1">
+                {{ r.addressLine1 || r.address || '—' }}
+              </div>
+              <div class="psi-drop-line2">
+                <span v-if="r.city">{{ r.city }} · </span>{{ r.postcode || '' }}
+              </div>
+              <!-- A coloured line rather than a pill: "Property Passport
+                   claimed · Partially Public" is far too long for a chip, and
+                   a line wraps gracefully instead of fighting fixed padding.
+                   One consistent colour across all four states so a dense
+                   list doesn't read as a wall of different colours. The
+                   padlock is only locked for 'private' — nothing is withheld
+                   in any other state. EPC is deliberately absent here:
+                   HomeScore already folds it in as a fallback, so showing
+                   both was duplicate information on one row. -->
+              <div class="psi-drop-passport">
+                <img
+                  :src="passportStateOf(r) !== 'private'
+                    ? '/dashboard-art/passportUnlocked.png'
+                    : '/dashboard-art/passportLocked.png'"
+                  alt=""
+                  class="psi-drop-passport-ic"
+                  loading="lazy"
+                />
+                {{ passportStateFullLabel(r) }}
+              </div>
             </div>
-            <div class="psi-drop-badges">
-              <span
-                v-if="r.epcRating"
-                class="psi-drop-badge"
-                :style="{ background: epcColor(r.epcRating) }"
-              >
-                ⚡ EPC {{ r.epcRating }}
-              </span>
-              <span
-                v-if="r.hasPassport && r.passportPublished"
-                class="psi-drop-badge psi-drop-badge--pub"
-              >
-                <img
-                  src="/op-icons/passportview/umu-passport.png"
-                  alt=""
-                  class="psi-drop-badge-ic"
-                />
-                Passport Published
-              </span>
-              <span
-                v-else-if="r.hasPassport"
-                class="psi-drop-badge psi-drop-badge--prog"
-              >
-                <img
-                  src="/op-icons/passportview/umu-passport.png"
-                  alt=""
-                  class="psi-drop-badge-ic"
-                />
-                Passport In Progress
-              </span>
-              <span v-else class="psi-drop-badge psi-drop-badge--unclaimed">
-                <img
-                  src="/op-icons/passportview/umu-passport.png"
-                  alt=""
-                  class="psi-drop-badge-ic"
-                />
-                Unclaimed · Claim yours? →
-              </span>
+
+            <div
+              v-if="(r.homeScore ?? r.epcScore) != null"
+              class="psi-drop-hs"
+            >
+              <span class="psi-drop-hs-cap">HomeScore</span>
+              <div class="psi-drop-hs-gauge">
+                <svg viewBox="0 0 40 40">
+                  <circle class="psi-drop-hs-bg" cx="20" cy="20" r="16" />
+                  <circle
+                    class="psi-drop-hs-fill"
+                    cx="20"
+                    cy="20"
+                    r="16"
+                    :stroke="hsColor(r.homeScore ?? r.epcScore)"
+                    stroke-dasharray="100.5"
+                    :stroke-dashoffset="100.5 - (Math.min(r.homeScore ?? r.epcScore, 100) / 100) * 100.5"
+                  />
+                </svg>
+                <span
+                  class="psi-drop-hs-num"
+                  :style="{ color: hsColor(r.homeScore ?? r.epcScore) }"
+                >{{ r.homeScore ?? r.epcScore }}</span>
+              </div>
             </div>
           </div>
-          <!-- HS score — vertically centered with the entire row -->
-          <div
-            v-if="(r.homeScore ?? r.epcScore) != null"
-            class="psi-drop-hs"
-            :style="{ color: hsColor(r.homeScore ?? r.epcScore) }"
-          >
-            <span class="psi-drop-hs-num">{{ r.homeScore ?? r.epcScore }}</span>
-            <span class="psi-drop-hs-lbl">HS</span>
+
+          <!-- Loading more indicator -->
+          <div v-if="loadingMore" class="psi-drop-loading">
+            <div class="psi-drop-spinner" />
           </div>
-        </div>
-        <!-- Loading more indicator -->
-        <div v-if="loadingMore" class="psi-drop-loading">
-          <div class="psi-drop-spinner" />
-        </div>
-        <!-- End-of-results footer -->
-        <div v-else-if="!hasMore && results.length > 0" class="psi-drop-end">
-          {{ results.length }} of {{ total }} · all results shown
-        </div>
+          <!-- End-of-results footer -->
+          <div v-else-if="!hasMore && results.length > 0" class="psi-drop-end">
+            {{ results.length }} of {{ total }} · all results shown
+          </div>
         </template>
       </div>
     </Transition>
@@ -177,6 +176,13 @@ interface Props {
    * postcode even if their home isn't in our dataset yet (e.g. signup).
    */
   postcodeFallback?: boolean
+  /**
+   * Seed text for the field, for hosts that arrive with a query already in
+   * hand (e.g. /explore?q=CV1 handed over from the landing page's hero
+   * search). Applied once on mount only - it is a starting value, not a
+   * v-model, so it never fights the user's own typing afterwards.
+   */
+  initialQuery?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -185,6 +191,7 @@ const props = withDefaults(defineProps<Props>(), {
   preferPassport: false,
   showPassportStatus: false,
   postcodeFallback: false,
+  initialQuery: '',
 })
 
 const emit = defineEmits<{
@@ -196,10 +203,15 @@ const config = useRuntimeConfig()
 
 const PAGE_SIZE = 10
 
-const query = ref('')
+const query = ref(props.initialQuery ?? '')
 const results = ref<any[]>([])
 const postcodeResults = ref<string[]>([])
 const showDropdown = ref(false)
+// Set by closeDropdown() so a suggestion fetch that is already in flight can't
+// pop the list back open a moment after the host page committed a search.
+// Cleared the instant the user types again or refocuses the field, since both
+// are a deliberate request to see suggestions.
+const suppressDropdown = ref(false)
 const loading = ref(false)
 const loadingMore = ref(false)
 const total = ref(0)
@@ -246,6 +258,7 @@ async function fetchPostcodes(q: string): Promise<string[]> {
 
 function handleInput(val: string) {
   query.value = val
+  suppressDropdown.value = false
   if (debounceTimer) clearTimeout(debounceTimer)
   if (val.trim().length < 2) {
     results.value = []
@@ -285,7 +298,8 @@ function handleInput(val: string) {
         postcodeResults.value = []
       }
       showDropdown.value =
-        items.length > 0 || postcodeResults.value.length > 0
+        !suppressDropdown.value &&
+        (items.length > 0 || postcodeResults.value.length > 0)
     } catch {
       results.value = []
       postcodeResults.value = []
@@ -335,6 +349,7 @@ function onDropdownScroll() {
 }
 
 function onFocus() {
+  suppressDropdown.value = false
   if (results.value.length > 0 || postcodeResults.value.length > 0)
     showDropdown.value = true
 }
@@ -361,6 +376,29 @@ function clearQuery() {
   showDropdown.value = false
 }
 
+// Four real states, not three: a published passport whose required
+// milestones aren't all met yet is only partially public, and collapsing
+// that into "Published" overstates what a buyer can actually see.
+function passportStateOf(
+  addr: any,
+): 'unclaimed' | 'private' | 'partiallyPublic' | 'public' {
+  if (!addr.hasPassport) return 'unclaimed'
+  if (!addr.passportPublished) return 'private'
+  return (addr.milestonePct ?? 0) >= 100 ? 'public' : 'partiallyPublic'
+}
+
+// Full "Property Passport claimed · X" phrasing. This line has its own row
+// under the address, so it's where a first-time viewer actually learns what
+// the state means — a bare word like "Private" reads as though the property
+// itself is private.
+function passportStateFullLabel(addr: any): string {
+  const state = passportStateOf(addr)
+  if (state === 'unclaimed') return 'Property Passport unclaimed'
+  if (state === 'partiallyPublic') return 'Property Passport claimed · Partially Public'
+  if (state === 'public') return 'Property Passport claimed · Public'
+  return 'Property Passport claimed · Private'
+}
+
 function epcColor(rating: string): string {
   const map: Record<string, string> = {
     A: '#00b050',
@@ -376,14 +414,26 @@ function epcColor(rating: string): string {
 
 function hsColor(score: number | null | undefined): string {
   if (score == null) return '#8e8e93'
-  if (score >= 75) return '#00a19a'
+  if (score >= 75) return '#008a84'
   if (score >= 60) return '#65a30d'
   if (score >= 45) return '#ca8a04'
   if (score >= 30) return '#92400e'
   return '#dc2626'
 }
 
-defineExpose({ clearQuery })
+// closeDropdown, unlike clearQuery, leaves the typed text in place - it only
+// dismisses the suggestion list. Host pages that render their own results
+// below the bar (e.g. pages/explore.vue) need this: after committing a
+// search the dropdown would otherwise stay open on top of those results and
+// swallow clicks on the first row.
+function closeDropdown() {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  loading.value = false
+  showDropdown.value = false
+  suppressDropdown.value = true
+}
+
+defineExpose({ clearQuery, closeDropdown })
 </script>
 
 <style scoped>
@@ -518,11 +568,22 @@ defineExpose({ clearQuery })
   background-clip: padding-box;
 }
 
+.psi-drop-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px 4px;
+}
+
 .psi-drop-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 11px 14px;
-  cursor: pointer;
   border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
   transition: background 0.12s;
 }
 .psi-drop-item:last-child {
@@ -533,57 +594,54 @@ defineExpose({ clearQuery })
   background: #f0fdfa;
 }
 
-/* The dropdown item itself is now the horizontal flex row, so the HS score
-   sits next to the entire body column (title + sub + badges) and is
-   therefore vertically centered with all of it. */
-.psi-drop-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .psi-drop-ic {
+  width: 28px;
+  height: 28px;
   color: #00a19a;
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
-.psi-drop-ic--house {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #f1f9f4;
-}
-.psi-drop-ic-img {
-  width: 28px;
-  height: 28px;
+.psi-drop-ic img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  display: block;
-}
-.psi-drop-ic--pc {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: #eef4ff;
-  font-size: 14px;
 }
 
 .psi-drop-body {
   flex: 1;
   min-width: 0;
 }
-.psi-drop-title {
-  font-size: 13px;
+.psi-drop-line1 {
+  font-size: 15px;
   font-weight: 700;
   color: #231d45;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.psi-drop-sub {
-  font-size: 11px;
+.psi-drop-line2 {
+  font-size: 12px;
   color: #94a3b8;
   margin-top: 1px;
+}
+
+.psi-drop-passport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #00817c;
+}
+.psi-drop-passport-ic {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .psi-drop-hs {
@@ -591,83 +649,59 @@ defineExpose({ clearQuery })
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  letter-spacing: -0.4px;
-  text-align: center;
-  min-width: 40px;
+  gap: 3px;
 }
-.psi-drop-hs-num {
-  font-size: 22px;
+.psi-drop-hs-cap {
+  font-size: 8px;
   font-weight: 800;
-  line-height: 1;
-  font-feature-settings: 'tnum';
-}
-.psi-drop-hs-lbl {
-  font-size: 9px;
-  font-weight: 800;
-  color: #9c98ad;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-top: 2px;
+  color: #9c98ad;
 }
-
-/* Badge strip — now inside .psi-drop-body so no left-padding needed. */
-.psi-drop-badges {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-top: 5px;
-}
-.psi-drop-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 9.5px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 999px;
-  white-space: nowrap;
-  line-height: 1.4;
-  color: #fff;
-  letter-spacing: 0.01em;
-}
-.psi-drop-badge-ic {
-  width: 10px;
-  height: 10px;
-  object-fit: contain;
+.psi-drop-hs-gauge {
+  position: relative;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
 }
-.psi-drop-badge--pub {
-  background: #231d45;
-  color: #fff;
+.psi-drop-hs-gauge svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
 }
-.psi-drop-badge--prog {
-  background: #fef3c7;
-  color: #92400e;
+.psi-drop-hs-bg {
+  fill: none;
+  stroke: #ededf3;
+  stroke-width: 4;
 }
-.psi-drop-badge--unclaimed {
-  background: #f0fdfa;
-  color: #00a19a;
-  border: 1px solid #e2f1ea;
+.psi-drop-hs-fill {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s;
 }
-.psi-drop-badge--hs {
-  background: #f0fdfa;
-  color: #1f7a66;
-  border: 1px solid #ccfbf1;
+.psi-drop-hs-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  font-feature-settings: 'tnum';
 }
 
 .psi-drop-loading {
   display: flex;
   justify-content: center;
-  padding: 14px;
+  padding: 12px;
 }
 .psi-drop-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #e5e7eb;
-  border-top-color: #00a19a;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  border-top-color: #00a19a;
   animation: psi-spin 0.7s linear infinite;
 }
 .psi-drop-end {

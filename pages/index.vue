@@ -10,7 +10,8 @@
         </button>
 
         <nav class="lp-nav-links" aria-label="Primary navigation">
-          <button type="button" @click="scrollToSection('homescore')">HomeScore</button>
+          <button type="button" @click="goToHomeScoreFrom('nav')">HomeScore</button>
+          <button type="button" @click="scrollToSection('explore')">Explore</button>
           <button type="button" @click="scrollToSection('passport')">Passport</button>
           <button type="button" @click="scrollToSection('story')">Story</button>
           <button type="button" @click="scrollToSection('market')">Market</button>
@@ -19,7 +20,7 @@
 
         <div class="lp-nav-actions">
           <button class="lp-btn lp-btn--ghost lp-nav-signin" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
-          <button class="lp-btn lp-btn--solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
+          <button class="lp-btn lp-btn--solid" type="button" @click="goToExploreFrom('nav')">Explore</button>
           <button
             class="lp-nav-burger"
             type="button"
@@ -36,12 +37,14 @@
       <transition name="lp-menu">
         <nav v-if="mobileMenuOpen" class="lp-mobile-menu" aria-label="Mobile navigation">
           <div class="lp-shell">
-            <button type="button" @click="scrollToSection('homescore')">HomeScore</button>
+            <button type="button" @click="goToHomeScoreFrom('nav_mobile')">HomeScore</button>
+            <button type="button" @click="scrollToSection('explore')">Explore</button>
             <button type="button" @click="scrollToSection('passport')">Passport</button>
             <button type="button" @click="scrollToSection('story')">Story</button>
             <button type="button" @click="scrollToSection('market')">Market</button>
             <button type="button" @click="scrollToSection('reviews')">Reviews</button>
             <button class="lp-mobile-signin" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+            <button class="lp-mobile-signin" type="button" @click="navigateTo('/onboarding/signup')">Create a free account</button>
           </div>
         </nav>
       </transition>
@@ -72,7 +75,7 @@
             </div>
 
             <ul class="lp-hero-ticks">
-              <li>No card needed</li>
+              <li>No account needed to explore</li>
               <li>60-second result</li>
               <li>HM Land Registry connected</li>
             </ul>
@@ -211,6 +214,101 @@
         </div>
       </section>
 
+      <!-- ───────────────────── EXPLORE (GUEST-FIRST) ───────────────────── -->
+      <!-- The guest-first promise, made concrete. Sits before Passport
+           deliberately: a cold visitor has no reason to care about the product
+           until they've seen they can get something out of this without
+           handing over an email first.
+           Uses the page's own split layout + feature-tile vocabulary so it
+           reads as part of the same design system as the Passport section
+           rather than a bolted-on block of text. -->
+      <section id="explore" class="lp-section lp-explore reveal" data-reveal>
+        <div class="lp-shell lp-split lp-split--explore">
+          <div class="lp-copy">
+            <p class="lp-eyebrow">Explore · no account needed</p>
+            <h2 class="lp-h2 lp-h2--sans">
+              Look up any home<br />in the UK<span class="lp-q">.</span>
+            </h2>
+            <p class="lp-lede">
+              Not just the ones that are for sale. Type an address — yours, your neighbour's,
+              or one you're weighing up — and see what the public record already says about it.
+            </p>
+
+            <div class="lp-xtiles">
+              <div class="lp-xtile">
+                <span class="lp-xtile-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                </span>
+                <strong>Search an address</strong>
+                <p>Any UK postcode or street address. No sign-up wall, no card.</p>
+              </div>
+              <div class="lp-xtile">
+                <span class="lp-xtile-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11H4z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>
+                </span>
+                <strong>See what's on record</strong>
+                <p>Value, sale history, energy, running costs and local area.</p>
+              </div>
+              <div class="lp-xtile">
+                <span class="lp-xtile-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+                </span>
+                <strong>Spot a Passport</strong>
+                <p>See at a glance which homes already have a verified record.</p>
+              </div>
+              <div class="lp-xtile">
+                <span class="lp-xtile-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                </span>
+                <strong>Decide what's next</strong>
+                <p>Watch it, score it, or start your own — only then sign up.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="lp-xvisual">
+            <article class="xp-card">
+              <span class="xp-glow" aria-hidden="true" />
+
+              <header class="xp-top">
+                <span class="xp-eyebrow"><i class="xp-dot" />Explore</span>
+                <span class="xp-chip">UK-wide</span>
+              </header>
+
+              <div class="xp-figure">
+                <span class="xp-halo" aria-hidden="true" />
+                <img
+                  src="/op-icons/misc/exploreProperty.png"
+                  alt=""
+                  class="xp-img"
+                  loading="lazy"
+                />
+              </div>
+
+              <p class="xp-headline">
+                Any address in the UK.
+                <span class="xp-headline-soft">Not just the listed ones.</span>
+              </p>
+
+              <div class="xp-rule" aria-hidden="true" />
+
+              <ul class="xp-rows">
+                <li><span class="xp-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>Value &amp; sale history</li>
+                <li><span class="xp-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>Energy &amp; running costs</li>
+                <li><span class="xp-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>Local area &amp; Passport status</li>
+              </ul>
+
+              <button class="xp-cta" type="button" @click="goToExploreFrom('explore_section')">
+                Explore homes
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+              </button>
+              <p class="xp-note">Free · no account · no card</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <!-- ───────────────────── PASSPORT (DARK) ───────────────────── -->
       <section id="passport" class="lp-section lp-dark reveal" data-reveal>
         <div class="lp-shell lp-split lp-split--passport">
@@ -241,42 +339,38 @@
                 <span class="pp-grade">Solicitor-grade</span>
               </header>
 
-              <div class="pp-hero">
-                <figure class="pp-passport">
-                  <img src="/umu-passport.png" alt="UMU Property Passport" loading="lazy" />
-                  <figcaption class="pp-passport-addr">
-                    55, Woodfield Rd
-                    <span>CV5 6AJ</span>
-                  </figcaption>
-                </figure>
-                <div class="pp-hero-meta">
-                  <span class="pp-issued"><i class="pp-issued-dot" />Issued</span>
-                  <strong class="pp-addr">55, Woodfield Road</strong>
-                  <span class="pp-post">Coventry · CV5 6AJ</span>
-                  <span class="pp-verified">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                    17 verified sections
-                  </span>
-                </div>
+              <div class="pp-headline-block">
+                <p class="pp-headline">
+                  Everything your buyer<br />will ask for.
+                  <span class="pp-headline-soft">Before they ask.</span>
+                </p>
+                <span class="pp-card-hero-figure">
+                  <span class="pp-card-hero-halo" aria-hidden="true" />
+                  <img
+                    src="/op-icons/landing/propertyPassportCard.png"
+                    alt=""
+                    class="pp-card-hero-img"
+                    loading="lazy"
+                  />
+                </span>
               </div>
 
               <p class="pp-body">
-                Everything a buyer's solicitor needs — <b>title deeds</b>, <b>searches</b>,
-                <b>documents</b> and <b>buyer matching</b>, ready before your first viewing.
+                Store, verify and securely share everything from deeds and
+                planning to guarantees and surveys.
               </p>
 
-              <div class="pp-tags">
-                <span>Deeds</span>
-                <span>Planning</span>
-                <span>Surveys</span>
-                <span>Fittings</span>
-                <span class="pp-tags-more">+13 more</span>
-              </div>
+              <div class="pp-rule" aria-hidden="true" />
 
-              <button class="pp-cta" type="button" @click="navigateTo('/passport/sample')">
-                Open the sample Passport
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </button>
+              <div class="pp-actions">
+                <button class="pp-cta" type="button" @click="navigateTo('/claim')">
+                  Start a property passport
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                </button>
+                <button class="pp-cta pp-cta--ghost" type="button" @click="navigateTo('/passport/sample')">
+                  See a sample
+                </button>
+              </div>
             </article>
           </div>
         </div>
@@ -369,6 +463,7 @@
           <div class="lp-cta-actions">
             <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScore">Get my free HomeScore</button>
             <button class="lp-btn lp-btn--ghost-dark lp-btn--lg lp-btn--icon" type="button" @click="navigateTo('/passport/sample')"><OPIcon name="passport" class="lp-btn-ic" />See a sample Passport</button>
+            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg" type="button" @click="navigateTo('/onboarding/signup')">Create a free account</button>
           </div>
           <p class="lp-cta-foot">No card needed · Free HomeScore · Property Passport from day one</p>
         </div>
@@ -395,8 +490,8 @@
             <h5>Product</h5>
             <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" @click="navigateTo('/passport/collections')">Property Passport</button>
-            <button type="button" @click="navigateTo('/explore')">For landlords</button>
-            <button type="button" @click="navigateTo('/explore')">For buyers</button>
+            <button type="button" @click="goToExploreFrom('footer_landlords')">For landlords</button>
+            <button type="button" @click="goToExploreFrom('footer_buyers')">For buyers</button>
           </div>
 
           <div class="lp-footer-col">
@@ -427,7 +522,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 
 definePageMeta({})
@@ -589,11 +683,38 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// Menu jumps have to clear the sticky navbar AND survive the reveal animation.
+//
+// scrollIntoView() measures the element's *rendered* box, and every
+// [data-reveal] section sits 28px lower than its layout position until
+// `is-visible` lands (.reveal { transform: translateY(28px) }). Scrolling
+// first and revealing second therefore dropped each section 28px behind the
+// bar - which is why only the sections that happened to be revealed already
+// landed correctly.
+//
+// So: reveal the target first, then scroll to its LAYOUT position via the
+// offsetParent chain, which transforms don't affect. Every menu item now puts
+// its section in exactly the same place, whatever its reveal state.
+function layoutTop(el: HTMLElement): number {
+  let top = 0
+  let node: HTMLElement | null = el
+  while (node) {
+    top += node.offsetTop
+    node = node.offsetParent as HTMLElement | null
+  }
+  return top
+}
+
 function scrollToSection(id: string) {
   mobileMenuOpen.value = false
   const target = document.getElementById(id)
   if (!target) return
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // Settle the reveal transform before measuring, so the target isn't
+  // mid-animation when we compute where to stop.
+  target.classList.add('is-visible')
+  const nav = document.querySelector<HTMLElement>('.lp-nav')
+  const offset = (nav?.getBoundingClientRect().height ?? 72) + 24
+  window.scrollTo({ top: Math.max(0, layoutTop(target) - offset), behavior: 'smooth' })
 }
 
 function trackLandingEvent(eventName: string, payload: Record<string, unknown> = {}) {
@@ -644,6 +765,14 @@ function onHomeScoreCheckClick() {
   })
   const input = document.querySelector<HTMLInputElement>('.lp-hero-search input')
   input?.focus()
+}
+
+// ── Explore homes ─────────────────────────────────────────────────────────
+// /explore is the public browse page - no auth middleware - so these CTAs are
+// safe for a signed-out visitor, which is the whole point of leading with them.
+function goToExploreFrom(source: string) {
+  trackCtaClick(source, '/explore')
+  navigateTo('/explore')
 }
 
 function goToStickyCtaDestination() {
@@ -868,6 +997,17 @@ onUnmounted(() => {
 .lp-btn--ghost-dark:hover { border-color: #fff; }
 
 /* ── Navbar ──────────────────────────────────────────────────────── */
+/* Menu targets. The navbar is sticky at 72px, so without this every
+   scrollIntoView() parks the section's top edge behind the bar and the
+   eyebrow/headline are hidden. One offset for all of them means each menu
+   item lands its section in the same position, every time. */
+main section[id] {
+  scroll-margin-top: 96px;
+}
+@media (max-width: 760px) {
+  main section[id] { scroll-margin-top: 80px; }
+}
+
 .lp-nav {
   position: sticky;
   top: 0;
@@ -1020,6 +1160,135 @@ onUnmounted(() => {
 
 .lp-hero-cta { margin-bottom: 20px; }
 .lp-hero-cta .lp-btn--lg { padding: 15px 26px; font-size: 16px; }
+/* ── Explore section ─────────────────────────────────────────────────────
+   Built from the same parts as the Passport section (lp-split + a glowing
+   card in the right column) so the two read as one design system. Light
+   ground rather than lp-dark: this is the low-commitment, open-door moment
+   in the page, and a dark panel here would make it feel like the product
+   pitch that follows it. */
+.lp-explore { background: linear-gradient(180deg, #eef4f3 0%, #f2f5f4 100%); }
+.lp-split--explore { align-items: center; }
+
+.lp-xtiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 28px;
+}
+.lp-xtile {
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  border-radius: 16px;
+  padding: 18px 17px;
+  box-shadow: 0 10px 26px rgba(31, 61, 98, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.lp-xtile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(23, 179, 166, 0.45);
+  box-shadow: 0 16px 34px rgba(23, 179, 166, 0.14);
+}
+.lp-xtile-ic {
+  display: inline-flex; width: 32px; height: 32px; border-radius: 10px;
+  background: rgba(0, 161, 154, 0.12); color: #0e8e83;
+  align-items: center; justify-content: center; margin-bottom: 11px;
+}
+.lp-xtile-ic svg { width: 17px; height: 17px; }
+.lp-xtile strong { display: block; font-size: 14.5px; font-weight: 800; color: var(--navy); margin-bottom: 4px; letter-spacing: -0.01em; }
+.lp-xtile p { margin: 0; font-size: 12.5px; line-height: 1.55; color: #5c627c; }
+
+.lp-explore-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 30px; }
+.lp-explore-note { font-size: 13px; font-weight: 700; color: #5c627c; }
+.lp-btn-arrow { width: 17px; height: 17px; }
+
+/* Right-column card */
+.lp-xvisual { display: grid; place-items: center; min-width: 0; }
+.xp-card {
+  position: relative;
+  width: min(430px, 100%);
+  padding: 26px 26px 26px;
+  border-radius: 24px;
+  background: linear-gradient(165deg, #ffffff 0%, #f6faf9 100%);
+  border: 1px solid rgba(35, 29, 69, 0.08);
+  box-shadow: 0 26px 60px rgba(35, 29, 69, 0.1);
+  overflow: hidden;
+}
+.xp-glow {
+  position: absolute; top: -90px; right: -70px; width: 260px; height: 260px;
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(23,179,166,.22) 0%, rgba(23,179,166,0) 70%);
+}
+.xp-top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.xp-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; color: #0e8e83;
+}
+.xp-dot { width: 7px; height: 7px; border-radius: 50%; background: #17b3a6; }
+.xp-chip {
+  padding: 4px 12px; border-radius: 999px;
+  background: rgba(35,29,69,.05); border: 1px solid rgba(35,29,69,.09);
+  font-size: 10px; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase; color: #6b7089;
+}
+.xp-figure { position: relative; display: grid; place-items: center; margin: 14px 0 4px; }
+.xp-halo {
+  position: absolute; width: 210px; height: 210px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(23,179,166,.16) 0%, rgba(23,179,166,0) 68%);
+}
+.xp-img { position: relative; width: min(230px, 78%); height: auto; object-fit: contain; }
+.xp-headline {
+  position: relative; margin: 10px 0 0;
+  font-size: 19px; font-weight: 800; line-height: 1.32;
+  letter-spacing: -0.02em; color: var(--navy);
+}
+.xp-headline-soft { display: block; font-weight: 600; color: #6b7089; }
+.xp-rule { height: 1px; background: rgba(35,29,69,.09); margin: 18px 0 16px; }
+.xp-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+.xp-rows li {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13.5px; font-weight: 700; color: #3d4460;
+}
+.xp-tick {
+  flex-shrink: 0; display: grid; place-items: center; width: 20px; height: 20px;
+  border-radius: 50%; background: rgba(0,161,154,.13); color: #0e8e83;
+}
+.xp-tick svg { width: 12px; height: 12px; }
+
+/* The action lives inside the card, the way the Passport card carries its
+   own CTA - a button floating beside the card read as a loose fragment. */
+.xp-cta {
+  width: 100%;
+  margin-top: 20px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 14px 20px;
+  border: none; border-radius: 13px;
+  background: var(--teal); color: #fff;
+  font-family: inherit; font-size: 14.5px; font-weight: 800;
+  letter-spacing: -0.01em; white-space: nowrap; cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.26);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+.xp-cta:hover {
+  transform: translateY(-1px);
+  background: var(--teal-dark);
+  box-shadow: 0 14px 30px rgba(0, 161, 154, 0.32);
+}
+.xp-cta svg { width: 17px; height: 17px; }
+.xp-note {
+  margin: 11px 0 0;
+  text-align: center;
+  font-size: 12.5px; font-weight: 700; color: #8a90a6;
+}
+
+@media (max-width: 980px) {
+  .lp-split--explore { grid-template-columns: 1fr; gap: 34px; }
+  .lp-xvisual { order: -1; }
+}
+@media (max-width: 560px) {
+  .lp-xtiles { grid-template-columns: 1fr; }
+}
+
 .lp-hero-search {
   position: relative;
   display: flex;
@@ -1614,14 +1883,35 @@ onUnmounted(() => {
   border-radius: 26px;
   overflow: hidden;
   isolation: isolate;
+  padding-top: 26px;
   /* A subtly lighter navy so the #231d45 card lifts off the #231d45 section */
   background:
-    radial-gradient(120% 90% at 85% -10%, rgba(0, 161, 154, 0.20) 0%, transparent 55%),
-    linear-gradient(165deg, #2a2352 0%, #231d45 46%, #1b1638 100%);
+    radial-gradient(120% 90% at 85% -10%, rgba(0, 161, 154, 0.22) 0%, transparent 58%),
+    radial-gradient(90% 70% at 8% 108%, rgba(90, 76, 240, 0.20) 0%, transparent 60%),
+    linear-gradient(165deg, #2f2760 0%, #251f4a 44%, #191434 100%);
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow:
-    0 40px 80px -24px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    0 48px 90px -28px rgba(0, 0, 0, 0.62),
+    0 2px 10px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+/* Lit hairline along the top edge — the detail that reads as "crafted". */
+.pp-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(47, 208, 198, 0.75),
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 2;
 }
 /* Soft teal glow blooming behind the passport */
 .pp-card-glow {
@@ -1670,165 +1960,154 @@ onUnmounted(() => {
   border-radius: 100px;
 }
 
-/* Hero: real passport image + address / status */
-.pp-hero {
+/* Headline + illustration, matching the app's landing card */
+.pp-headline-block {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
 }
-.pp-passport {
+.pp-headline {
+  margin: 0;
+  font-size: clamp(21px, 2.2vw, 27px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+  color: #fff;
+  text-wrap: balance;
+}
+/* Second sentence steps back so the first lands harder. */
+.pp-headline-soft {
+  color: rgba(255, 255, 255, 0.58);
+  font-weight: 700;
+}
+
+.pp-card-hero-figure {
   position: relative;
   flex-shrink: 0;
-  width: 104px;
-  margin: 0;
-  transform: rotate(-4deg);
-  transition: transform 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.pp-passport img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  /* Lift the faded printed text: brighter, crisper, a touch more saturated */
-  filter:
-    brightness(1.1) contrast(1.12) saturate(1.06)
-    drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
-}
-/* Address printed on the passport cover, below the umu logo */
-.pp-passport-addr {
+/* Teal bloom behind the books, so the illustration sits in light rather
+   than floating on a flat panel. */
+.pp-card-hero-halo {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 15%;
-  text-align: center;
-  font-size: 7.5px;
-  font-weight: 800;
-  line-height: 1.35;
-  letter-spacing: 0.1px;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
-}
-.pp-passport-addr span {
-  display: block;
-  font-size: 6.5px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 1px;
-}
-.pp-card:hover .pp-passport { transform: rotate(-2deg) translateY(-3px); }
-
-.pp-hero-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.pp-issued {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  font-size: 10.5px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase;
-  color: #4ad9c9;
-  background: rgba(0, 161, 154, 0.16);
-  border: 1px solid rgba(0, 161, 154, 0.4);
-  padding: 4px 10px;
-  border-radius: 100px;
-  margin-bottom: 8px;
-}
-.pp-issued-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #4ad9c9;
-  box-shadow: 0 0 6px rgba(74, 217, 201, 0.9);
-}
-.pp-addr {
-  font-size: 19px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.4px;
-  line-height: 1.2;
-}
-.pp-post {
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.1px;
-}
-.pp-verified {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.82);
-}
-.pp-verified svg {
-  width: 13px; height: 13px;
-  padding: 2.5px;
+  width: 150%;
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--teal);
-  color: #fff;
-  box-sizing: content-box;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.42) 0%, transparent 66%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+.pp-card-hero-img {
+  position: relative;
+  width: 128px;
+  height: auto;
+  object-fit: contain;
+  transform: rotate(-4deg);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.58));
+}
+.pp-card:hover .pp-card-hero-img { transform: rotate(-1deg) translateY(-5px) scale(1.03); }
+
+/* Hairline that separates the pitch from the actions. */
+.pp-rule {
+  height: 1px;
+  margin: 20px 0 18px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.14) 18%,
+    rgba(255, 255, 255, 0.14) 82%,
+    transparent
+  );
 }
 
 .pp-body {
-  font-size: 13.5px;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.62);
-  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.68;
+  color: rgba(255, 255, 255, 0.68);
+  margin: 0;
+  max-width: 42ch;
 }
 .pp-body b { color: #fff; font-weight: 700; }
 
-/* Section tags */
-.pp-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 22px;
-}
-.pp-tags span {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 7px 13px;
-  border-radius: 100px;
-}
-.pp-tags .pp-tags-more {
-  color: var(--teal-bright);
-  background: rgba(0, 161, 154, 0.14);
-  border-color: rgba(0, 161, 154, 0.34);
-}
-
 /* CTA */
 .pp-cta {
-  width: 100%;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
   letter-spacing: -0.1px;
   color: #fff;
-  background: var(--teal);
-  border: none;
+  background: linear-gradient(135deg, #00b6ae 0%, #00a19a 52%, #008b85 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 14px;
-  padding: 15px 18px;
+  padding: 15px 20px;
   cursor: pointer;
-  box-shadow: 0 12px 26px -6px rgba(0, 161, 154, 0.5);
-  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  overflow: hidden;
+  box-shadow:
+    0 14px 30px -8px rgba(0, 161, 154, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
+/* Sheen that sweeps across on hover. */
+.pp-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.24) 48%,
+    transparent 66%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.pp-cta:hover::after { transform: translateX(120%); }
 .pp-cta:hover {
-  transform: translateY(-1px);
-  background: var(--teal-dark);
-  box-shadow: 0 16px 30px -6px rgba(0, 161, 154, 0.55);
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 38px -10px rgba(0, 161, 154, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
-.pp-cta svg { width: 16px; height: 16px; }
+.pp-cta svg { width: 16px; height: 16px; position: relative; z-index: 1; }
+
+.pp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pp-actions .pp-cta { flex: 1 1 200px; }
+
+/* Secondary reads as glass, so the teal keeps the lead. */
+.pp-cta--ghost {
+  flex: 0 1 150px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}
+.pp-cta--ghost:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-cta::after { display: none; }
+  .pp-cta:hover,
+  .pp-card:hover .pp-card-hero-img { transform: none; }
+}
 
 /* ── Story ───────────────────────────────────────────────────────── */
 .lp-story { text-align: center; }

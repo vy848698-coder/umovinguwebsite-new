@@ -5,8 +5,8 @@
 
     <main class="sh-shell">
       <div class="sh-head">
-        <div class="sh-kicker"><span class="sh-kicker-dot" />SHARE YOUR PROFILE</div>
-        <h1 class="sh-h1">Share your verified profile</h1>
+        <div class="sh-kicker"><span class="sh-kicker-dot" />SHARE YOUR PASSPORT</div>
+        <h1 class="sh-h1">Share your verified passport</h1>
         <p class="sh-sub">
           Send a secure link to an agent, generate a QR, manage who has access,
           or download the certified PDF.
@@ -201,7 +201,7 @@ import { useProfile } from '~/composables/useProfile'
 import { useAppToast } from '~/composables/useCustomToast'
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 
-definePageMeta({ title: 'Share Profile — UmovingU', middleware: 'auth' })
+definePageMeta({ title: 'Share Passport — UmovingU', middleware: 'auth' })
 
 const router = useRouter()
 const { getBuyerProfile, listShares, revokeShare } = useBuyerProfile()

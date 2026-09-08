@@ -126,9 +126,9 @@ function iconFor(type: string): string {
     case 'viewing_request': return '/op-icons/calendar/calendar.png'
     case 'viewing_response': return '/op-icons/calendar/shield.png'
     case 'passport_shared': return '/op-icons/matched-buyers/link.png'
-    case 'passport_unlocked': return '/dashboard/passportBadge.png'
-    case 'invite_accepted': return '/dashboard/notifCelebrate.png'
-    default: return '/dashboard/notifBell.png'
+    case 'passport_unlocked': return '/dashboard-art/passportBadge.png'
+    case 'invite_accepted': return '/dashboard-art/notifCelebrate.png'
+    default: return '/dashboard-art/notifBell.png'
   }
 }
 

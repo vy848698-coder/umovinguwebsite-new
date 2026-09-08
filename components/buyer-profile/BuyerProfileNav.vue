@@ -6,7 +6,7 @@
         <span>umovingu</span><span class="bpnav-beta">BETA</span>
       </button>
       <nav class="bpnav-links" aria-label="Primary navigation">
-        <button type="button" class="active" @click="navigateTo('/explore')">Explore</button>
+        <button type="button" class="active" @click="navigateTo('/dashboard')">Explore</button>
         <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
         <button type="button" @click="navigateTo('/passport')">Passport</button>
         <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
