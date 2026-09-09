@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="dsc">
     <!-- Guest-first page, so the nav actions are Sign in / Get started rather
          than the bell + avatar the signed-in dashboard shows. A visitor who
@@ -498,7 +498,11 @@
 // pages/property/[id].vue is public for the same reason.
 //
 // Reached from the landing page's Explore buttons, from WebTopNav's Explore
-// link, and from the property page's back button.
+// link (guests only — see that component: this is a pre-login entry point and
+// is not advertised once you are signed in, matching the reference app's
+// /discover), and from the property page's "Back to Explore" button. The
+// route stays open to everyone regardless, so bookmarks and shared links
+// keep working.
 definePageMeta({ title: 'Explore homes - UmovingU' })
 
 import { ref, computed, onMounted } from 'vue'

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="lp" :class="{ 'calm-mode': isCalmMode, [`variant-${ctaVariant.toLowerCase()}`]: true }">
     <!-- ─────────────────────────── NAVBAR ─────────────────────────── -->
     <header class="lp-nav">
@@ -524,7 +524,11 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 
-definePageMeta({})
+// `guest`: a signed-in visitor is redirected to /dashboard rather than shown
+// the marketing page again. This is also what makes /explore a pre-login
+// entry point — the landing page holds the only in-app links to it, so once
+// there is a session nothing routes you there. See middleware/guest.ts.
+definePageMeta({ middleware: 'guest' })
 
 const gaugeScore = 74
 // Number shown inside the HomeScore ring — counts up from 0 → gaugeScore

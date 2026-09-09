@@ -1,6 +1,7 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+﻿import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useSession } from '~/composables/useSession'
+import { setSessionFlag } from '~/composables/useSessionFlag'
 
 export const useVerificationCode = () => {
   const { verifyOtp, requestOtp, register } = useAuth()
@@ -98,6 +99,7 @@ export const useVerificationCode = () => {
           password,
         })
         localStorage.setItem('token', regRes.token)
+        setSessionFlag()
         sessionStorage.removeItem('umu-pending-email')
         pendingSignup.value = null
         await navigateTo('/onboarding/preferences?new=true')

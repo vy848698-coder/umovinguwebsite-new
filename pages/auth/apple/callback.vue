@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="mobile-container min-h-screen bg-umu-gradient flex items-center justify-center">
     <div class="text-center px-6">
       <div v-if="error" class="space-y-4">
@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { setSessionFlag } from '~/composables/useSessionFlag'
 /**
  * Apple posts the authorization result here when usePopup=false (redirect flow).
  * The POST body contains: code, id_token, state, and optionally user (JSON).
@@ -53,6 +54,7 @@ onMounted(async () => {
   try {
     const result: any = await appleLogin(idToken, firstName, lastName)
     localStorage.setItem('token', result.token)
+    setSessionFlag()
     const redirect = localStorage.getItem('redirectAfterLogin')
     // replace: true — the callback URL carries a one-shot token and re-running
     // it fails, so it must never be a back-button destination.

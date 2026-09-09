@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <header class="webtop-nav">
     <div class="webtop-shell webtop-inner">
       <button class="webtop-brand" type="button" @click="navigateTo('/')">
@@ -9,7 +9,7 @@
 
       <nav class="webtop-links" aria-label="Primary navigation">
         <button v-if="signedIn" type="button" :class="{ active: navIsActive('/dashboard') }" @click="navigateTo('/dashboard')">Dashboard</button>
-        <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
+        <button v-if="!signedIn" type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
         <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
         <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
         <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -37,7 +37,7 @@
       <div class="webtop-mobile-backdrop" :class="{ open: mobileOpen }" @click="mobileOpen = false" />
       <div class="webtop-mobile-panel" :class="{ open: mobileOpen }">
         <button v-if="signedIn" type="button" :class="{ active: navIsActive('/dashboard') }" @click="goMobile('/dashboard')">Dashboard</button>
-        <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
+        <button v-if="!signedIn" type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
         <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
         <button type="button" :class="{ active: navIsActive('/passport') }" @click="goMobile('/passport')">Passport</button>
         <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="goMobile('/marketplace')">Marketplace</button>
@@ -67,13 +67,20 @@ const navIsActive = (basePath: string) =>
 // Dashboard and Explore are two different products, not two names for one:
 //   /dashboard - the signed-in, role-aware home (auth middleware)
 //   /explore   - the public browse page, no account needed
-// So Dashboard only appears once there's a session to show; Explore is always
-// there, for guests and members alike.
+// They are also mutually exclusive in this menu, matching the reference app:
+// there, /discover (our /explore) is a deliberate PRE-LOGIN entry point --
+// linked only from the logged-out landing page, and rendered without the
+// signed-in bottom nav. Nothing offers it once you have an account, because
+// a signed-in user searches from the dashboard instead. /explore carries no
+// auth middleware and no redirect (same as the reference's /discover), so a
+// bookmark or a direct link still works for anyone -- it just is not
+// advertised in this menu once you are signed in.
 //
 // Resolved after mount because localStorage doesn't exist during SSR. Until
-// then signedIn is false, which is the safe default: the first paint shows the
-// guest menu and the Dashboard row appears on hydration, rather than offering
-// an auth-gated link to someone who would only be bounced off it.
+// then signedIn is false, which means the first paint shows the guest menu
+// (Explore visible, Dashboard hidden) and the two swap on hydration. That is
+// the safe default: better to briefly show a public link than to offer an
+// auth-gated one to someone who would only be bounced off it.
 const signedIn = ref(false)
 onMounted(() => {
   signedIn.value =

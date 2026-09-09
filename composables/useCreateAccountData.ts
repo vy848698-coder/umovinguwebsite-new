@@ -1,8 +1,9 @@
-import { ref, reactive } from 'vue'
+﻿import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { navigateTo } from 'nuxt/app'
 import { useAuth } from '~/composables/useAuth'
 import { useSession } from '~/composables/useSession'
+import { setSessionFlag } from '~/composables/useSessionFlag'
 import { toTitleCase } from '~/utils/form-helpres'
 
 interface Address {
@@ -163,6 +164,7 @@ export const useCreateAccountData = () => {
 
       if (response.token) {
         localStorage.setItem('token', response.token)
+        setSessionFlag()
       }
       pendingSignup.value = null
 

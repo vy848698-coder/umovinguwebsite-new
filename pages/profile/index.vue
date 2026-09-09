@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="pf-page">
     <WebTopNav>
       <template #actions>
@@ -296,6 +296,7 @@
 
 <script setup>
 import OPIcon from '~/components/ui/OPIcon.vue'
+import { clearSessionFlag } from '~/composables/useSessionFlag'
 import UserAvatar from '~/components/ui/UserAvatar.vue'
 import ProfileRow from '~/components/profile/ProfileRow.vue'
 import WebTopNav from '~/components/core/WebTopNav.vue'
@@ -518,6 +519,9 @@ const logout = async () => {
   } finally {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
+      // Clear the routing-hint cookie too, or middleware/guest.ts keeps
+      // bouncing this browser to /dashboard after sign-out.
+      clearSessionFlag()
       localStorage.removeItem('redirectAfterLogin')
       // Account-scoped cache — left behind, the next person to sign in on
       // this browser inherits the previous user's buying/selling role until
@@ -546,6 +550,9 @@ const deleteAccount = async () => {
   } finally {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
+      // Clear the routing-hint cookie too, or middleware/guest.ts keeps
+      // bouncing this browser to /dashboard after sign-out.
+      clearSessionFlag()
       localStorage.removeItem('redirectAfterLogin')
       // Account-scoped cache — left behind, the next person to sign in on
       // this browser inherits the previous user's buying/selling role until

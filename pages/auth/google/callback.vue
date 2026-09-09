@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="mobile-container min-h-screen bg-umu-gradient flex items-center justify-center">
     <div class="text-center px-6">
       <div v-if="error" class="space-y-4">
@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { setSessionFlag } from '~/composables/useSessionFlag'
 const route = useRoute()
 const error = ref<string | null>(null)
 
@@ -33,6 +34,7 @@ onMounted(async () => {
 
   try {
     localStorage.setItem('token', decodeURIComponent(token))
+    setSessionFlag()
     const redirectPath = next
       ? decodeURIComponent(next)
       : localStorage.getItem('redirectAfterLogin')
