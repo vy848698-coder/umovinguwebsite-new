@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <NuxtPage v-if="!isProfileRoot" />
 
   <div v-else class="w-full min-h-screen bg-umu-gradient pb-8">
@@ -120,6 +120,7 @@
 
 <script setup>
 import UserAvatar from '~/components/ui/UserAvatar.vue'
+import { clearSessionFlag } from '~/composables/useSessionFlag'
 
 definePageMeta({
   title: "My Profile - UmovingU",
@@ -217,6 +218,9 @@ const onPreferenceClick = async (item) => {
 const logout = async () => {
   if (typeof window !== "undefined") {
     localStorage.removeItem("token");
+    // Clear the routing-hint cookie too, or middleware/guest.ts keeps
+    // bouncing this browser to /dashboard after sign-out.
+    clearSessionFlag();
   }
   await navigateTo("/onboarding/signin");
 };

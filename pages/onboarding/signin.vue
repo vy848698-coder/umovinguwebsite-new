@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="signin-split">
     <!-- ── Left brand panel (dark) ── -->
     <aside class="signin-aside">
@@ -312,6 +312,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import { setSessionFlag } from '~/composables/useSessionFlag'
 import OPIcon from '~/components/ui/OPIcon.vue'
 
 definePageMeta({
@@ -401,6 +402,7 @@ const handleLogin = async () => {
   try {
     const response: any = await login(emailInput.value, passwordInput.value)
     localStorage.setItem('token', response.token)
+    setSessionFlag()
     await redirectAfterAuth()
   } catch {
     loginError.value = 'Incorrect email or password. Please try again.'

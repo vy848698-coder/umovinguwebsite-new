@@ -21,7 +21,8 @@
             <span>umovingu</span><span class="pps-nav-beta">BETA</span>
           </button>
           <nav class="pps-nav-links" aria-label="Primary">
-            <button type="button" @click="navigateTo('/explore')">Explore</button>
+            <button v-if="signedIn" type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+            <button v-else type="button" @click="navigateTo('/explore')">Explore</button>
             <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
             <button type="button" class="active" @click="navigateTo('/passport')">Passport</button>
             <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -29,67 +30,21 @@
           </nav>
           <div class="pps-nav-actions">
             <button class="pps-nav-help" type="button" aria-label="Help">?</button>
-            <button class="pps-nav-allpass" type="button" @click="goBack">All passports</button>
+            <button class="pps-nav-allpass" type="button" @click="goToAllPassports">All passports</button>
           </div>
         </div>
       </header>
 
       <div class="pps-shell">
-      <!-- ─── SECTION 1: Hero (web card) ───────────────────────────── -->
+      <!-- ─── SECTION 1: Hero (web) ────────────────────────────────────
+           Desktop layout: identity + price + CTAs read first on the left,
+           a large photo panel anchors the right, and the Passport preview
+           spans the full card width as a horizontal strip underneath, so
+           the numbers get room instead of being squeezed into a phone-
+           width sidebar column. -->
       <div class="pps-herocard" :class="`pps-herocard--${pageState}`">
-        <div class="pps-herocard-actions">
-          <button
-            class="pps-herocard-icon"
-            type="button"
-            @click="onWishlistToggle"
-            aria-label="Favourite"
-          >
-            <svg width="16" height="15" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path
-                d="M8 13.5S1 9.5 1 4.5A3.5 3.5 0 0 1 8 2.9 3.5 3.5 0 0 1 15 4.5C15 9.5 8 13.5 8 13.5z"
-                :fill="wishlisted ? 'currentColor' : 'none'"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            class="pps-herocard-icon"
-            type="button"
-            @click="showShare = true"
-            aria-label="Share"
-          >
-            <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11.5" cy="2.5" r="1.8" />
-              <circle cx="2.5" cy="8" r="1.8" />
-              <circle cx="11.5" cy="13.5" r="1.8" />
-              <line x1="4.2" y1="7" x2="9.8" y2="3.5" />
-              <line x1="4.2" y1="9" x2="9.8" y2="12.5" />
-            </svg>
-          </button>
-        </div>
-
         <div class="pps-herocard-grid">
-          <!-- Photo. heroImage already prefers an uploaded picture, then the
-               Street View still from /enrichment, then null - PropertyImage
-               handles that last case with its labelled stand-in so a stock
-               photo never passes as this property. -->
-          <div class="pps-herocard-photo">
-            <PropertyImage
-              :src="heroImage"
-              :alt="property.addressLine1"
-              :seed="propertyId"
-              :show-caption="false"
-            />
-            <span v-if="propertyImages.length > 0" class="pps-herocard-photo-count">
-              <svg viewBox="0 0 24 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 3l1.5-2h5L16 3h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3z" />
-                <circle cx="12" cy="11" r="3.5" />
-              </svg>
-              {{ propertyImages.length }}
-            </span>
-          </div>
-
-          <!-- Left: identity -->
+          <!-- Left: identity ------------------------------------------->
           <div class="pps-herocard-lead">
             <div class="pps-herocard-staterow">
               <span class="pps-herocard-state">
@@ -113,28 +68,22 @@
               ><template v-if="property.postcode">{{ property.postcode }}</template>
             </p>
 
-            <div v-if="estimatedPrice" class="pps-herocard-price">
-              {{ formatPrice(estimatedPrice) }}
+            <div class="pps-herocard-pricerow">
+              <div v-if="estimatedPrice" class="pps-herocard-price">
+                {{ formatPrice(estimatedPrice) }}
+              </div>
+              <p class="pps-herocard-price-src">
+                {{ priceSourceLabel }} · HM Land Registry connected
+                <button
+                  type="button"
+                  class="pps-herocard-price-info"
+                  aria-label="About this estimate"
+                  @click.stop="openSheet('price-info')"
+                >
+                  i
+                </button>
+              </p>
             </div>
-            <p class="pps-herocard-price-src">
-              {{ priceSourceLabel }} · HM Land Registry connected
-            </p>
-
-            <div class="pps-herocard-quick">
-              <button type="button" class="pps-herocard-quick-btn" @click="onWatchClick">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                {{ wishlisted ? 'Watching' : 'Watch this' }}
-              </button>
-              <button type="button" class="pps-herocard-quick-btn" @click="onContactClick">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z" /></svg>
-                Ask a question
-              </button>
-            </div>
-
-            <p v-if="watcherCountLabel" class="pps-herocard-watchers">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-              {{ watcherCountLabel }}
-            </p>
 
             <div class="pps-herocard-pills">
               <span v-if="property.propertyType" class="pps-herocard-pill">{{
@@ -144,11 +93,19 @@
                 >EPC {{ property.epcRating
                 }}<template v-if="property.epcScore"> · {{ property.epcScore }}</template></span
               >
+              <span v-if="property.sqft" class="pps-herocard-pill"
+                ><svg class="pps-herocard-pill-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5" /></svg>
+                {{ property.sqft.toLocaleString() }} sqft</span
+              >
+              <span v-if="property.yearBuilt" class="pps-herocard-pill"
+                ><svg class="pps-herocard-pill-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5" /><path d="M8 3v4M16 3v4M3 11h18" /></svg>
+                Built {{ property.yearBuilt }}</span
+              >
               <span class="pps-herocard-pill"
                 >{{ exploreTiles.length }} live data sources</span
               >
               <span v-if="floodBadgeLabel" class="pps-herocard-pill"
-                ><svg class="pps-herocard-pill-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.4 6 10.4A6 6 0 0 1 6 13.4C6 9.4 12 3 12 3Z" /></svg>
+                ><img src="/op-icons/misc/waterDroplet.png" alt="" class="pps-herocard-pill-img" loading="lazy" />
                 {{ floodBadgeLabel }}</span
               >
             </div>
@@ -170,25 +127,83 @@
               </button>
             </div>
 
+            <div class="pps-herocard-quick">
+              <button type="button" class="pps-herocard-quick-btn" @click="onWatchClick">
+                <img src="/op-icons/misc/exploreWatching.png" alt="" class="pps-herocard-quick-ic" loading="lazy" />
+                {{ wishlisted ? 'Watching' : 'Watch this' }}
+              </button>
+              <button type="button" class="pps-herocard-quick-btn" @click="onContactClick">
+                <img src="/property-cards/askAQuestion.jpeg" alt="" class="pps-herocard-quick-ic" loading="lazy" />
+                {{ pageState === 'published' ? 'Make contact' : 'Ask a question' }}
+              </button>
+              <span v-if="watcherCountLabel" class="pps-herocard-watchers">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                {{ watcherCountLabel }}
+              </span>
+            </div>
+
             <p class="pps-herocard-foot">
               Build a verified Passport · TA6 · TA7 · TA10 · certificates ·
               history — no card needed
             </p>
           </div>
 
-          <!-- Right: passport preview -->
-          <aside class="pps-preview">
-            <div class="pps-preview-eyebrow">Property Passport · Preview</div>
-            <div class="pps-preview-addr">{{ property.addressLine1 }}</div>
-            <div class="pps-preview-sub">
-              <template v-if="property.city">{{ property.city }}</template
-              ><template v-if="property.city && property.postcode"> · </template
-              ><template v-if="property.postcode">{{ property.postcode }}</template>
+          <!-- Right: photo panel. heroImage already prefers an uploaded
+               picture, then the Street View still from /enrichment, then
+               null — PropertyImage handles that last case with its
+               labelled stand-in so a stock photo never passes as this
+               property. -->
+          <div class="pps-herocard-media">
+            <div class="pps-herocard-photo">
+              <PropertyImage
+                :src="heroImage"
+                :alt="property.addressLine1"
+                :seed="propertyId"
+                :show-caption="false"
+              />
+              <div class="pps-herocard-actions">
+                <button
+                  class="pps-herocard-icon"
+                  type="button"
+                  @click.stop="onWishlistToggle"
+                  aria-label="Favourite"
+                >
+                  <svg width="16" height="15" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path
+                      d="M8 13.5S1 9.5 1 4.5A3.5 3.5 0 0 1 8 2.9 3.5 3.5 0 0 1 15 4.5C15 9.5 8 13.5 8 13.5z"
+                      :fill="wishlisted ? 'currentColor' : 'none'"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="pps-herocard-icon"
+                  type="button"
+                  @click.stop="showShare = true"
+                  aria-label="Share"
+                >
+                  <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11.5" cy="2.5" r="1.8" />
+                    <circle cx="2.5" cy="8" r="1.8" />
+                    <circle cx="11.5" cy="13.5" r="1.8" />
+                    <line x1="4.2" y1="7" x2="9.8" y2="3.5" />
+                    <line x1="4.2" y1="9" x2="9.8" y2="12.5" />
+                  </svg>
+                </button>
+              </div>
+              <span v-if="propertyImages.length > 1" class="pps-herocard-photo-count">
+                <svg viewBox="0 0 24 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 3l1.5-2h5L16 3h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3z" />
+                  <circle cx="12" cy="11" r="3.5" />
+                </svg>
+                {{ propertyImages.length }}
+              </span>
             </div>
+          </div>
 
-            <div class="pps-preview-divider" />
-
-            <div class="pps-preview-row">
+          <!-- Passport preview — full-width strip across the hero foot -->
+          <aside class="pps-preview">
+            <div class="pps-preview-main">
               <div class="pps-preview-ring">
                 <svg viewBox="0 0 100 100">
                   <defs>
@@ -209,225 +224,406 @@
                 <span class="pps-preview-ring-num">{{ homescore }}</span>
                 <span class="pps-preview-ring-denom">/100</span>
               </div>
-              <div class="pps-preview-stats">
-                <div class="pps-preview-stat-strong">
-                  {{ heroSectionsStarted }}/{{ HERO_SECTIONS_TOTAL }} sections started
+
+              <div class="pps-preview-id">
+                <span class="pps-preview-eyebrow">Property Passport · Preview</span>
+                <div class="pps-preview-addr">{{ property.addressLine1 }}</div>
+                <div class="pps-preview-sub">
+                  <template v-if="property.city">{{ property.city }}</template
+                  ><template v-if="property.city && property.postcode"> · </template
+                  ><template v-if="property.postcode">{{ property.postcode }}</template>
                 </div>
-                <div class="pps-preview-stat-muted">— documents on file</div>
-                <div class="pps-preview-stat-strong">{{ scoreVerdict }} HomeScore</div>
+              </div>
+
+              <!-- Metrics from real data only: section progress, the score
+                   verdict, and the live source count. The old "— documents
+                   on file" line never had a number behind it. -->
+              <div class="pps-preview-metrics">
+                <div class="pps-preview-metric">
+                  <span class="pps-preview-metric-val"
+                    >{{ heroSectionsStarted
+                    }}<span class="pps-preview-metric-of">/{{ HERO_SECTIONS_TOTAL }}</span></span
+                  >
+                  <span class="pps-preview-metric-lab">sections started</span>
+                </div>
+                <div class="pps-preview-metric">
+                  <span class="pps-preview-metric-val">{{ scoreVerdict }}</span>
+                  <span class="pps-preview-metric-lab">HomeScore verdict</span>
+                </div>
+                <div class="pps-preview-metric">
+                  <span class="pps-preview-metric-val">{{ exploreTiles.length }}</span>
+                  <span class="pps-preview-metric-lab">live data sources</span>
+                </div>
               </div>
             </div>
 
-            <div class="pps-preview-hint">
-              <span class="pps-preview-hint-dot" />
-              {{ heroPreviewHint }}
+            <div class="pps-preview-foot">
+              <div class="pps-preview-hint">
+                <span class="pps-preview-hint-dot" />
+                {{ heroPreviewHint }}
+              </div>
+              <div class="pps-preview-track" role="presentation">
+                <div
+                  class="pps-preview-track-fill"
+                  :style="{ width: (pageState === 'unclaimed' ? 0 : progressPct) + '%' }"
+                />
+              </div>
             </div>
           </aside>
         </div>
       </div>
 
-      <!-- ─── SECTION 5: HomeScore ─────────────────────────────────── -->
-      <div
-        class="pps-score-card pps-score-card--clickable"
-        @click="onScoreCardTap"
-      >
-        <div class="pps-score-top">
-          <div class="pps-gauge-wrap">
-            <svg class="pps-gauge-svg" viewBox="0 0 100 100">
-              <circle class="pps-gauge-bg" cx="50" cy="50" r="40" />
-              <circle
-                class="pps-gauge-fill"
-                cx="50"
-                cy="50"
-                r="40"
-                :stroke-dashoffset="251.33 - (homescore / 100) * 251.33"
-              />
-            </svg>
-            <div class="pps-gauge-center">
-              <span class="pps-gauge-num">{{ homescore }}</span>
-              <span class="pps-gauge-denom">/100</span>
-            </div>
+      <!-- ─── SECTION 2: Passport status ───────────────────────────────
+           Whether a Passport exists for this home and whether the viewer
+           can see it (Unclaimed / Private / Partially Public / Public).
+           Hidden outright when the status fetch failed, so a network error
+           never renders as a confident "unclaimed". -->
+      <section v-if="!passportStatusUnknown" class="pps-section pps-section--claim">
+        <div class="pps-claimcard" :class="`pps-claimcard--${claimCardState}`">
+          <div v-if="streetClaimLabel" class="pps-claimcard-streetpill">
+            <span class="pps-claimcard-streetpill-dot" />
+            {{ streetClaimLabel }}
           </div>
 
-          <div class="pps-score-info">
-            <div class="pps-score-eyebrow">HomeScore™</div>
-            <div class="pps-score-verdict">{{ scoreVerdictLine }}</div>
-            <div class="pps-score-desc">{{ scoreDesc }}</div>
-            <div class="pps-score-pills">
-              <span v-if="property.epcRating" class="pps-score-pill pps-score-pill--epc">
-                EPC {{ property.epcRating
-                }}<template v-if="property.epcScore">
-                  ({{ property.epcScore }})</template
+          <div class="pps-claimcard-row">
+            <img
+              :src="claimCardIcon"
+              alt=""
+              class="pps-claimcard-ic"
+              loading="lazy"
+            />
+
+            <div class="pps-claimcard-body">
+              <h2 class="pps-claimcard-title">{{ claimCardTitle }}</h2>
+              <p class="pps-claimcard-sub">{{ claimCardSub }}</p>
+              <p v-if="claimCardEmphasis" class="pps-claimcard-emphasis">
+                {{ claimCardEmphasis }}
+              </p>
+              <p v-if="claimCardSub2" class="pps-claimcard-sub2">
+                {{ claimCardSub2 }}
+              </p>
+
+              <div class="pps-claimcard-meta">
+                <button
+                  v-if="claimCardExplainerLabel"
+                  type="button"
+                  class="pps-claimcard-explain"
+                  @click="onClaimCardExplainerClick"
                 >
-              </span>
-              <span
-                v-if="pageState !== 'published'"
-                class="pps-score-pill pps-score-pill--warn"
-                >Public data only — unverified</span
+                  {{ claimCardExplainerLabel
+                  }}<span class="pps-claimcard-explain-q">?</span>
+                </button>
+                <span v-if="watcherCountLabel" class="pps-claimcard-watchers">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                  {{ watcherCountLabel }}
+                </span>
+              </div>
+            </div>
+
+            <div class="pps-claimcard-cta">
+              <button
+                type="button"
+                class="pps-claimcard-btn"
+                @click="onClaimCardCtaClick"
               >
+                {{ claimCardCta }}
+              </button>
             </div>
           </div>
+        </div>
+      </section>
 
-          <button
-            type="button"
-            class="pps-score-run-btn"
-            @click.stop="onScoreCardTap"
-          >
+      <!-- ─── SECTION 3: HomeScore ─────────────────────────────────────
+           Two panes at desktop width: the score and its verdict on the
+           left, the EPC component breakdown in its own panel on the
+           right — the bars were previously stretched the full 1000px of
+           the shell because they came straight off the phone layout. -->
+      <section class="pps-section pps-section--score">
+        <div class="pps-section-head">
+          <div class="pps-section-heading">
+            <span class="pps-section-eyebrow">
+              <span class="pps-section-eyebrow-dash" />
+              HomeScore™
+            </span>
+            <h2 class="pps-section-title">{{ scoreVerdictLine }}</h2>
+            <p class="pps-section-sub">
+              Scored from {{ exploreTiles.length }} public data sources<template
+                v-if="property.postcode"
+              >
+                for {{ property.postcode }}</template
+              >. No document upload needed to see it.
+            </p>
+          </div>
+          <button type="button" class="pps-section-cta" @click="onScoreCardTap">
             Run a full HomeScore
+            <span aria-hidden="true">→</span>
           </button>
         </div>
 
-        <!-- Component-level EPC ratings from the public certificate. epcBars
-             was already computed here and never rendered - this is where the
-             reference app shows it, and it belongs with the score rather than
-             in a sidebar card away from its context. -->
-        <div v-if="epcBars.length > 0" class="pps-score-bottom">
-          <div class="pps-epc-header">From the public EPC certificate</div>
-          <div class="pps-epc-rows">
-            <div v-for="bar in epcBars" :key="bar.label" class="pps-epc-row">
-              <span class="pps-epc-label">{{ bar.label }}</span>
-              <div class="pps-epc-track">
-                <div class="pps-bar-fill" :style="{ width: bar.pct + '%', background: bar.color }" />
+        <div
+          class="pps-score-card pps-score-card--clickable"
+          @click="onScoreCardTap"
+        >
+          <div class="pps-score-main">
+            <div class="pps-score-top">
+              <div class="pps-gauge-wrap">
+                <svg class="pps-gauge-svg" viewBox="0 0 100 100">
+                  <circle class="pps-gauge-bg" cx="50" cy="50" r="40" />
+                  <circle
+                    class="pps-gauge-fill"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    :stroke-dashoffset="251.33 - (homescore / 100) * 251.33"
+                  />
+                </svg>
+                <div class="pps-gauge-center">
+                  <span class="pps-gauge-num">{{ homescore }}</span>
+                  <span class="pps-gauge-denom">/100</span>
+                </div>
               </div>
-              <span class="pps-epc-rating">{{ bar.rating }}</span>
+
+              <div class="pps-score-info">
+                <div class="pps-score-desc">{{ scoreDesc }}</div>
+                <div class="pps-score-pills">
+                  <span v-if="property.epcRating" class="pps-score-pill pps-score-pill--epc">
+                    EPC {{ property.epcRating
+                    }}<template v-if="property.epcScore">
+                      ({{ property.epcScore }})</template
+                    >
+                  </span>
+                  <span
+                    v-if="pageState !== 'published'"
+                    class="pps-score-pill pps-score-pill--warn"
+                    >Public data only — unverified</span
+                  >
+                  <span class="pps-score-pill pps-score-pill--plain"
+                    >{{ exploreTiles.length }} sources scored</span
+                  >
+                </div>
+                <button
+                  type="button"
+                  class="pps-score-run-btn"
+                  @click.stop="onScoreCardTap"
+                >
+                  Run a full HomeScore
+                </button>
+              </div>
+            </div>
+
+            <!-- Component-level EPC ratings from the public certificate.
+                 Its own panel, so each bar reads at a sane length. -->
+            <div v-if="epcBars.length > 0" class="pps-score-epc">
+              <div class="pps-epc-header">From the public EPC certificate</div>
+              <div class="pps-epc-rows">
+                <div v-for="bar in epcBars" :key="bar.label" class="pps-epc-row">
+                  <span class="pps-epc-label">{{ bar.label }}</span>
+                  <div class="pps-epc-track">
+                    <div class="pps-bar-fill" :style="{ width: bar.pct + '%', background: bar.color }" />
+                  </div>
+                  <span class="pps-epc-rating">{{ bar.rating }}</span>
+                </div>
+              </div>
+              <div class="pps-epc-attr">
+                EPC Register · component ratings as assessed
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- ─── SECTION 6: Explore Grid ──────────────────────────────── -->
-      <div class="pps-explore-header">
-        <div class="pps-explore-heading">
-          <span class="pps-explore-eyebrow"
-            >Live record</span
+      <!-- ─── SECTION 4: Explore this property ─────────────────────────
+           Four columns at desktop width instead of three, and the last
+           row is closed off by a CTA tile sized to the exact gap that is
+           left over (exploreFillSpan) so the grid never ends ragged. -->
+      <section class="pps-section pps-section--explore">
+        <div class="pps-section-head">
+          <div class="pps-section-heading">
+            <span class="pps-section-eyebrow">
+              <span class="pps-section-eyebrow-dash" />
+              Live record
+            </span>
+            <h2 class="pps-section-title">Explore this property</h2>
+            <p class="pps-section-sub">
+              Every figure below is read from the public record and refreshes
+              on its own — tap any card for the detail behind it.
+            </p>
+          </div>
+          <span class="pps-section-badge"
+            >{{ exploreTiles.length }} live data sources</span
           >
-          <h2 class="pps-explore-title">Explore this property</h2>
         </div>
-        <span class="pps-explore-sources"
-          >{{ exploreTiles.length }} data sources <span aria-hidden="true">↗</span></span
-        >
-      </div>
-      <div class="pps-explore-grid">
-        <div
-          v-for="tile in exploreTiles"
-          :key="tile.key"
-          class="pps-tile"
-          @click="onExploreTileClick(tile.key)"
-        >
-          <div
-            class="pps-tile-icon"
-            :class="{ 'pps-tile-icon--img': tileImage(tile.key) }"
-            :style="
-              tileImage(tile.key)
-                ? {}
-                : { background: tileIcon(tile.key).bg, color: tileIcon(tile.key).color }
-            "
+
+        <div class="pps-explore-grid">
+          <button
+            v-for="tile in exploreTiles"
+            :key="tile.key"
+            type="button"
+            class="pps-tile"
+            @click="onExploreTileClick(tile.key)"
+          >
+            <div class="pps-tile-head">
+              <div
+                class="pps-tile-icon"
+                :class="{ 'pps-tile-icon--img': !!tileArt(tile) }"
+                :style="
+                  tileArt(tile)
+                    ? undefined
+                    : { background: tileIcon(tile.key).bg, color: tileIcon(tile.key).color }
+                "
+              >
+                <img
+                  v-if="tileArt(tile)"
+                  :src="tileArt(tile)"
+                  :alt="tile.title"
+                  class="pps-tile-img"
+                  loading="lazy"
+                />
+                <svg
+                  v-else
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  v-html="tileIcon(tile.key).svg"
+                />
+              </div>
+              <span class="pps-tile-arrow" aria-hidden="true">→</span>
+            </div>
+
+            <div class="pps-tile-body">
+              <div class="pps-tile-title">
+                {{ tile.title }}
+                <span
+                  v-if="tile.pip"
+                  class="pps-tile-new-pip"
+                  :style="tile.pip === '!' ? { background: '#C73E36' } : undefined"
+                  >{{ tile.pip }}</span
+                >
+              </div>
+              <div
+                class="pps-tile-value"
+                :class="{ 'pps-tile-value--warn': /unavailable|tap to retry/i.test(tile.value) }"
+                :style="tile.valueStyle"
+              >
+                {{ tile.value }}
+              </div>
+              <div class="pps-tile-sub">{{ tile.sub }}</div>
+              <div v-if="tile.trend" class="pps-tile-trend">
+                <span class="pps-tile-trend-arrow">↑</span> {{ tile.trend }}
+              </div>
+            </div>
+          </button>
+
+          <!-- Row-closing CTA. Spans whatever the tile count leaves free. -->
+          <button
+            type="button"
+            class="pps-tile pps-tile--cta"
+            :style="{ '--pps-fill-span': exploreFillSpan }"
+            @click="onScoreCardTap"
           >
             <img
-              v-if="tileImage(tile.key)"
-              :src="tileImage(tile.key)"
-              :alt="tile.title"
-              class="pps-tile-img"
+              src="/op-icons/misc/exploreHomescore.png"
+              alt=""
+              class="pps-tile-cta-ic"
               loading="lazy"
             />
-            <svg
-              v-else
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              v-html="tileIcon(tile.key).svg"
-            />
-          </div>
-          <span class="pps-tile-arrow" aria-hidden="true">→</span>
-          <div class="pps-tile-title">
-            {{ tile.title }}
-            <span
-              v-if="tile.pip"
-              class="pps-tile-new-pip"
-              :style="tile.pip === '!' ? { background: '#C73E36' } : undefined"
-              >{{ tile.pip }}</span
-            >
-          </div>
-          <div
-            class="pps-tile-value"
-            :class="{ 'pps-tile-value--warn': /unavailable|tap to retry/i.test(tile.value) }"
-            :style="tile.valueStyle"
-          >
-            {{ tile.value }}
-          </div>
-          <div class="pps-tile-sub">{{ tile.sub }}</div>
-          <div v-if="tile.trend" class="pps-tile-trend">
-            <span class="pps-tile-trend-arrow">↑</span> {{ tile.trend }}
-          </div>
+            <div class="pps-tile-cta-body">
+              <div class="pps-tile-cta-title">Run the full HomeScore</div>
+              <div class="pps-tile-cta-sub">
+                All {{ exploreTiles.length }} sources scored together, with the
+                risks called out.
+              </div>
+            </div>
+            <span class="pps-tile-cta-arrow" aria-hidden="true">→</span>
+          </button>
         </div>
-      </div>
+      </section>
 
-      <!-- ─── SECTION 8: Running Costs ─────────────────────────────── -->
-      <div v-if="costsBoxes.length > 0" class="pps-costs-card">
-        <div class="pps-costs-header">
-          <span class="pps-costs-header-title">Estimated running costs</span>
-          <span class="pps-costs-header-sub">EPC estimate</span>
+      <!-- ─── SECTION 5: Running costs ─────────────────────────────────
+           Four cost boxes across at desktop width instead of a 2×2 block
+           of 68px-tall phone tiles. -->
+      <section v-if="costsBoxes.length > 0" class="pps-section pps-section--costs">
+        <div class="pps-section-head">
+          <div class="pps-section-heading">
+            <span class="pps-section-eyebrow">
+              <span class="pps-section-eyebrow-dash" />
+              Cost to run
+            </span>
+            <h2 class="pps-section-title">Estimated running costs</h2>
+            <p class="pps-section-sub">
+              Taken from the EPC assessor's figures for this address. Hover any
+              box for the monthly equivalent.
+            </p>
+          </div>
+          <span class="pps-section-badge">EPC estimate</span>
         </div>
-        <div class="pps-costs-body">
-          <div class="pps-costs-grid">
-            <div
-              v-for="box in costsBoxes"
-              :key="box.label"
-              class="pps-costs-box"
-              :class="{ 'pps-costs-box--highlight': box.highlight }"
-            >
-              <div class="pps-costs-box-inner">
-                <div class="pps-costs-box-front">
-                  <span class="pps-costs-box-value"
-                    >£{{ box.value.toLocaleString() }}</span
-                  >
-                  <span class="pps-costs-box-label">{{ box.label }}</span>
-                </div>
-                <div class="pps-costs-box-back">
-                  <div class="pps-costs-box-back-label">Per month</div>
-                  <div class="pps-costs-box-back-val">
-                    ~£{{ Math.round(box.value / 12).toLocaleString() }}
+
+        <div class="pps-costs-card">
+          <div class="pps-costs-body">
+            <div class="pps-costs-grid">
+              <div
+                v-for="box in costsBoxes"
+                :key="box.label"
+                class="pps-costs-box"
+                :class="{ 'pps-costs-box--highlight': box.highlight }"
+              >
+                <div class="pps-costs-box-inner">
+                  <div class="pps-costs-box-front">
+                    <span class="pps-costs-box-value"
+                      >£{{ box.value.toLocaleString() }}</span
+                    >
+                    <span class="pps-costs-box-label">{{ box.label }}</span>
+                  </div>
+                  <div class="pps-costs-box-back">
+                    <div class="pps-costs-box-back-label">Per month</div>
+                    <div class="pps-costs-box-back-val">
+                      ~£{{ Math.round(box.value / 12).toLocaleString() }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="pps-costs-attr">
-            Based on EPC assumptions. Costs vary by usage and tariff.
-          </div>
-          <!-- EPC potential rating (restored — surfaces the upside the EPC
-               surveyor noted, e.g. "could reach A 92"). -->
-          <div
-            v-if="
-              epcPotentialRating && epcPotentialRating !== property?.epcRating
-            "
-            class="pps-costs-upside"
-          >
-            <span class="pps-costs-upside-ic">↑</span>
-            <span>
-              Could reach
-              <strong
-                >{{ epcPotentialRating
-                }}<template v-if="epcPotentialScore">
-                  {{ epcPotentialScore }}</template
-                ></strong
+
+            <div class="pps-costs-foot">
+              <div class="pps-costs-attr">
+                Based on EPC assumptions. Costs vary by usage and tariff.
+              </div>
+              <!-- EPC potential rating — the upside the EPC surveyor noted,
+                   e.g. "could reach A 92". -->
+              <div
+                v-if="
+                  epcPotentialRating && epcPotentialRating !== property?.epcRating
+                "
+                class="pps-costs-upside"
               >
-              with the EPC's recommended upgrades
-            </span>
+                <span class="pps-costs-upside-ic">↑</span>
+                <span>
+                  Could reach
+                  <strong
+                    >{{ epcPotentialRating
+                    }}<template v-if="epcPotentialScore">
+                      {{ epcPotentialScore }}</template
+                    ></strong
+                  >
+                  with the EPC's recommended upgrades
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Keep going with umovingu - ported from the reference app. It is the
-           only thing on that page offering a next step once you have read the
-           record; without it this column simply stops. -->
+      <!-- ─── SECTION 6: Keep going with umovingu ──────────────────────
+           The next step once the record has been read. -->
       <div class="pps-keepgoing">
-        <div class="pps-keepgoing-title">Keep going with umovingu</div>
-        <div class="pps-keepgoing-sub">
-          More tools. More insight. More ways to get move-ready.
+        <div class="pps-keepgoing-head">
+          <div class="pps-keepgoing-title">Keep going with umovingu</div>
+          <div class="pps-keepgoing-sub">
+            More tools. More insight. More ways to get move-ready.
+          </div>
         </div>
         <div class="pps-keepgoing-cards">
           <div class="pps-keepgoing-card">
@@ -456,13 +652,12 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="pps-keepgoing-card-btn" @click="goBack">
+            <button type="button" class="pps-keepgoing-card-btn" @click="goToExplore">
               Back to Explore
             </button>
           </div>
         </div>
       </div>
-
 
       </div><!-- /pps-shell -->
 
@@ -595,7 +790,27 @@
           </div>
 
           <!-- ── History (Land Registry) ─────────────────────────── -->
-          <template v-if="activeSheet === 'property-details'">
+          <!-- ── About this estimate ─────────────────────────────── -->
+          <template v-if="activeSheet === 'price-info'">
+            <div class="pps-sheet-icon">
+              <img src="/op-icons/investment/house.png" alt="" loading="lazy" />
+            </div>
+            <div class="pps-sheet-title">About this estimate</div>
+            <div class="pps-sheet-sub">
+              {{ priceSourceLabel }} —
+              {{ property?.city || 'the local area' }}'s House Price Index
+              applied to the property's last known sale price (or, where
+              there's no recorded sale, to comparable local sales) to reflect
+              roughly what it could be worth today.
+            </div>
+            <p class="pps-ds-info-note">
+              This isn't a formal valuation. For an accurate figure, get a
+              surveyor's report or a local estate agent's assessment.
+            </p>
+            <button class="pps-sheet-cancel" @click="closeSheet">Got it</button>
+          </template>
+
+          <template v-else-if="activeSheet === 'property-details'">
             <div class="pps-ds-header" style="background: #e9f6f5">
               <span class="pps-ds-header-icon pps-ds-header-icon--img"><img src="/op-icons/property/type.jpeg" alt="" loading="lazy" /></span>
               <div class="pps-ds-header-text">
@@ -2539,17 +2754,12 @@
               <div class="pps-passport-sheet-badge">
                 <span
                   class="pps-passport-sheet-dot"
-                  :style="
-                    pageState === 'unclaimed'
-                      ? { background: '#9c98ad' }
-                      : pageState === 'progress'
-                        ? { background: '#e6a23c' }
-                        : undefined
-                  "
+                  :style="{ background: heroStatePill.dot }"
                 />
-                <template v-if="pageState === 'unclaimed'">Unclaimed Property</template>
-                <template v-else-if="pageState === 'progress'">Passport in progress</template>
-                <template v-else>Verified Passport</template>
+                <!-- Same computed as the hero pill and the passport-status
+                     card, so this drawer can't drift into a third set of
+                     words for one fact. -->
+                {{ heroStatePill.label }}
               </div>
               <div class="pps-passport-sheet-address">
                 {{ property?.addressLine1 }}
@@ -3121,6 +3331,15 @@ definePageMeta({})
 
 const route = useRoute()
 const router = useRouter()
+// Mirrors WebTopNav: /explore is a pre-login entry point, so the primary nav
+// offers it to guests and offers Dashboard to members instead. Resolved after
+// mount because localStorage does not exist during SSR; false until then,
+// which shows the public link on first paint rather than an auth-gated one.
+const signedIn = ref(false)
+onMounted(() => {
+  signedIn.value =
+    typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
+})
 const propertyId = route.params.id as string
 
 const { getPropertyDetails, formatPrice } = usePropertySearch()
@@ -3132,6 +3351,9 @@ const { recordExplored } = useRecentlyExplored()
 const config = useRuntimeConfig()
 const property = ref<any>(null)
 const passportStatus = ref<any>(null)
+// Set when the passport-status fetch rejects, so the passport-status card
+// can hide rather than assert "unclaimed" off information we never got.
+const passportStatusUnknown = ref(false)
 const enrichment = ref<any>(null)
 const pageLoading = ref(true)
 const loadError = ref('')
@@ -4031,7 +4253,13 @@ const priceSourceLabel = computed<string>(() => {
 })
 
 const floodBadgeLabel = computed<string | null>(() => {
-  const f = (property.value?.floodRisk || '').trim()
+  // Same precedence the "Flood & risk" explore tile uses: the enrichment
+  // value first, then the column. Reading only the column meant the hero
+  // pill hid itself as "Unknown" on properties whose tile was already
+  // showing a real Environment Agency rating.
+  const f = String(
+    (enrichment.value as any)?.floodRisk || property.value?.floodRisk || '',
+  ).trim()
   if (!f || f.toLowerCase() === 'unknown') return null
   return `Flood · ${f}`
 })
@@ -4159,12 +4387,24 @@ const progressPct = computed<number>(() => {
 
 // ── Hero (web) helpers ────────────────────────────────────────
 // State-aware pill shown top-left of the navy hero card.
+// Same vocabulary as the passport-status card below (claimCardState), so the
+// two don't describe one fact in two languages: the pill used to say
+// "Passport in progress" while the card said "claimed · Private" a few
+// hundred pixels further down. Reads claimCardState, which is declared
+// further down this file - fine, because a computed's getter only runs on
+// access, which is after setup has finished.
 const heroStatePill = computed<{ label: string; dot: string }>(() => {
-  if (pageState.value === 'published')
-    return { label: 'Passport available', dot: '#00b6ae' }
-  if (pageState.value === 'progress')
-    return { label: 'Passport in progress', dot: '#e6a23c' }
-  return { label: 'Unclaimed property', dot: '#f0a500' }
+  switch (claimCardState.value) {
+    case 'public':
+      return { label: 'Passport · Public', dot: '#00b6ae' }
+    case 'partiallyPublic':
+      return { label: 'Passport · Partially Public', dot: '#e6a23c' }
+    case 'private':
+      // Claimed, but nothing published yet - neutral rather than a warning.
+      return { label: 'Passport · Private', dot: '#9aa7b8' }
+    default:
+      return { label: 'Passport unclaimed', dot: '#f0a500' }
+  }
 })
 const HERO_SECTIONS_TOTAL = 17
 const heroSectionsStarted = computed<number>(() =>
@@ -4673,6 +4913,22 @@ function tileImage(key: string): string | null {
   return TILE_IMAGE[key] || null
 }
 
+// Artwork for one explore tile. A tile may carry its own `iconImage` (the
+// "Property details" tile does, and it is the one key with no entry in
+// TILE_IMAGE) - honouring that first is what stopped it rendering the flat
+// fallback glyph while every neighbour showed illustrated artwork.
+function tileArt(tile: { key: string; iconImage?: string }): string | null {
+  return tile.iconImage || tileImage(tile.key)
+}
+
+// Columns the explore grid runs at desktop width. The row-closing CTA tile
+// spans exactly the leftover cells so the last row is never ragged; at
+// narrower breakpoints the CSS overrides it to a full row.
+const EXPLORE_COLUMNS = 4
+const exploreFillSpan = computed<number>(
+  () => EXPLORE_COLUMNS - (exploreTiles.value.length % EXPLORE_COLUMNS),
+)
+
 const stampDutyEstimate = computed<number>(() => {
   const price = estimatedPrice.value || 0
   if (price <= 250000) return 0
@@ -4869,6 +5125,7 @@ type SheetKey =
   | 'explain-unclaimed'
   | 'explain-progress'
   | 'explain-published'
+  | 'price-info'
 const activeSheet = ref<SheetKey | null>(null)
 const sheetEl = ref<HTMLElement | null>(null)
 
@@ -5967,6 +6224,7 @@ onMounted(async () => {
     fetchActions(propertyId),
   ]).then(([statusResult]) => {
     if (statusResult.status === 'fulfilled') passportStatus.value = statusResult.value
+    else passportStatusUnknown.value = true
   })
 
   try {
@@ -6101,10 +6359,33 @@ function onClaimCtaClick() {
 // router.back() dead-ends for anyone with no history to pop - a guest opening
 // a shared link, or a new tab - and this page is public, so that is a common
 // arrival. Route explicitly instead.
+// Three buttons on this page used to share one goBack() that sent signed-in
+// users to /dashboard?focusSearch=1 — including one labelled "All passports"
+// and one labelled "Back to Explore", neither of which is the dashboard.
+// Each now goes where its label says.
+
+// "Back to Explore" in the Keep going card. Always /explore: the label names
+// the destination, and /explore is public (no auth middleware, no redirect),
+// so this works signed in or out.
+function goToExplore() {
+  navigateTo('/explore')
+}
+
+// "All passports" in the top nav.
+function goToAllPassports() {
+  navigateTo('/passport/collections')
+}
+
+// The error state's "Go Back". No specific destination is implied, so use real
+// history when there is any, and fall back to the caller's home screen.
 function goBack() {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    router.back()
+    return
+  }
   const isAuthed =
     typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
-  navigateTo(isAuthed ? '/dashboard?focusSearch=1' : '/explore')
+  navigateTo(isAuthed ? '/dashboard' : '/explore')
 }
 
 // The EPC certificate lives on gov.uk, keyed by its LMK. Prefer the key we
@@ -6118,6 +6399,140 @@ const watcherCountLabel = computed<string>(() => {
   if (!Number.isFinite(n) || n <= 0) return ''
   return `${n} ${n === 1 ? 'person' : 'people'} watching`
 })
+
+// ─── Passport status card ─────────────────────────────────────────────────
+// Ported from the reference app's floating claim box: the public-facing
+// answer to "is there a Passport for this home, and can I see it?".
+// Hidden entirely when the status fetch failed - see passportStatusUnknown.
+// `isClaimed` alone isn't enough: the backend sets it true the moment
+// ownership verification succeeds, even if the owner never went on to create
+// a passport. There'd then be nothing to be Private/Partial/Public about, so
+// that still has to read as Unclaimed - hence keying off hasPassport.
+const claimCardState = computed<
+  'unclaimed' | 'private' | 'partiallyPublic' | 'public'
+>(() => {
+  const s = passportStatus.value
+  // `??` is wrong here, and it made this card contradict the hero's state
+  // pill: getPassportStatus() swallows the guest 401 and RESOLVES with
+  // { hasPassport: false }, so `s.hasPassport` is a real `false` rather than
+  // undefined and the chain never reached the /property payload - the only
+  // source a signed-out viewer actually has. Take a truthy signal from
+  // either source, exactly as pageState above already does.
+  const claimed =
+    s?.hasPassport === true || (property.value as any)?.hasPassport === true
+  if (!claimed) return 'unclaimed'
+  const isPublished =
+    s?.isPublished === true ||
+    (property.value as any)?.passportPublished === true ||
+    pageState.value === 'published'
+  if (!isPublished) return 'private'
+  return (s?.milestonePct ?? 0) >= 100 ? 'public' : 'partiallyPublic'
+})
+const claimCardTitle = computed<string>(() => {
+  if (claimCardState.value === 'public')
+    return 'Property Passport claimed · Public'
+  if (claimCardState.value === 'partiallyPublic')
+    return 'Property Passport claimed · Partially Public'
+  if (claimCardState.value === 'private')
+    return 'Property Passport claimed · Private'
+  return ((property.value as any)?.streetClaimedCount ?? 0) > 0
+    ? 'Be one of the first on this street'
+    : 'Be the first on this street'
+})
+const claimCardSub = computed<string>(() => {
+  if (claimCardState.value === 'public')
+    return 'Verified information about this home is ready to explore.'
+  if (claimCardState.value === 'partiallyPublic')
+    return 'Some verified information about this home is available to view.'
+  if (claimCardState.value === 'private')
+    return "There isn't a published Property Passport available for this home right now."
+  return "Create your Property Passport to store and verify your home's information — and choose what you share."
+})
+// Highlighted second line. Unclaimed has none in the reference.
+const claimCardSub2 = computed<string>(() => {
+  if (claimCardState.value === 'public')
+    return 'See more before you view, offer or commit.'
+  if (claimCardState.value === 'partiallyPublic')
+    return 'More may be added as the owner continues building it.'
+  if (claimCardState.value === 'private') return 'Want to know if that changes?'
+  return ''
+})
+// Bold lead-in that only the published state carries.
+const claimCardEmphasis = computed<string>(() =>
+  claimCardState.value === 'public' ? 'Buying blind stops here.' : '',
+)
+// The state name isn't self-explanatory to a first-time viewer, so every
+// claimed state offers an explainer.
+const claimCardExplainerLabel = computed<string>(() => {
+  if (
+    claimCardState.value === 'partiallyPublic' ||
+    claimCardState.value === 'public'
+  )
+    return "What's inside the Passport?"
+  if (claimCardState.value === 'private') return 'What is claimed · Private?'
+  return ''
+})
+const claimCardCta = computed<string>(() => {
+  if (claimCardState.value === 'public')
+    return isPassportOwnerOrCollab.value
+      ? 'View my Passport'
+      : 'View Property Passport'
+  if (claimCardState.value === 'partiallyPublic')
+    return isPassportOwnerOrCollab.value
+      ? 'Continue building'
+      : 'View Property Passport'
+  // Private: this button only explains the state, it doesn't watch or buy
+  // anything, so it must not promise more than it does.
+  if (claimCardState.value === 'private') return 'Learn More'
+  return 'Claim this property'
+})
+const claimCardIcon = computed<string>(() =>
+  claimCardState.value === 'unclaimed'
+    ? '/op-icons/passport-covers/property_passport_navy_tilted_left_on_tile.png'
+    : '/op-icons/passport-covers/property_passport_teal_tilted_left_on_tile.png',
+)
+// "1 of 21 homes on Dulverton Avenue claimed" - only meaningful once at
+// least one other property on the street has been matched (streetTotalCount
+// counts this property too).
+const streetClaimLabel = computed<string | null>(() => {
+  if (claimCardState.value !== 'unclaimed') return null
+  const total = Number((property.value as any)?.streetTotalCount ?? 0)
+  if (!Number.isFinite(total) || total <= 1) return null
+  const claimed = Number((property.value as any)?.streetClaimedCount ?? 0)
+  const street = (property.value as any)?.streetName || 'your street'
+  return `${claimed} of ${total} homes on ${street} claimed`
+})
+// Reuses this page's existing explainer sheets rather than introducing a
+// second drawer system. A claimed-but-unpublished passport is the
+// in-progress explainer.
+function claimExplainerSheetKey(): SheetKey {
+  if (
+    claimCardState.value === 'public' ||
+    claimCardState.value === 'partiallyPublic'
+  )
+    return 'explain-published'
+  if (claimCardState.value === 'private') return 'explain-progress'
+  return 'explain-unclaimed'
+}
+function onClaimCardExplainerClick() {
+  openSheet(claimExplainerSheetKey())
+}
+function onClaimCardCtaClick() {
+  // Published states route to the Passport itself; the other two explain
+  // first, which is what their button copy promises.
+  if (
+    claimCardState.value === 'public' ||
+    claimCardState.value === 'partiallyPublic'
+  ) {
+    onAccessPassport()
+    return
+  }
+  if (claimCardState.value === 'unclaimed') {
+    onClaimClick()
+    return
+  }
+  openSheet('explain-progress')
+}
 
 const passportEcosystemOpen = ref(false)
 const epcDownloading = ref(false)
@@ -6320,9 +6735,10 @@ function formatSaleDate(dateStr: string): string {
 
 /* ─── Shell + two-column grid ─────────────────────────────────── */
 .pps-shell {
-  width: min(1100px, calc(100% - 48px));
+  /* Same measure as the nav and the footer, so the three line up. */
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding-top: 28px;
+  padding-top: 40px;
   padding-bottom: 8px;
 }
 
@@ -6384,15 +6800,21 @@ function formatSaleDate(dateStr: string): string {
   .pps-footer-bottom { width: calc(100% - 32px); }
 }
 
-/* Single-column body. Every top-level section sits directly in .pps-shell
-   and carries its own top margin, so the rhythm is set in one place. */
-.pps-shell > .pps-score-card,
-.pps-shell > .pps-explore-header,
+/* Single-column body. Every top-level band sits directly in .pps-shell
+   and the gap between bands is set once, here - desktop pages need more
+   air between sections than the 16px the phone layout used. */
+.pps-shell > .pps-section,
 .pps-shell > .pps-costs-card,
 .pps-shell > .pps-keepgoing {
-  margin-top: 34px;
+  margin-top: 56px;
 }
-.pps-shell > .pps-explore-grid { margin-top: 18px; }
+@media (max-width: 860px) {
+  .pps-shell > .pps-section,
+  .pps-shell > .pps-costs-card,
+  .pps-shell > .pps-keepgoing {
+    margin-top: 38px;
+  }
+}
 .pps-col-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .pps-col-side {
   display: flex;
@@ -6498,11 +6920,14 @@ function formatSaleDate(dateStr: string): string {
   cursor: pointer;
 }
 
-/* ─── Hero (web card) ───────────────────────────────────────── */
+/* ─── Hero (web) ─────────────────────────────────────────────────
+   Two real columns at desktop width — copy left, photo right — with
+   the Passport preview spanning both underneath. Nothing here is
+   sized for a phone viewport. */
 .pps-herocard {
   position: relative;
   border-radius: var(--r-xl);
-  padding: 34px 36px;
+  padding: 40px 44px 36px;
   overflow: hidden;
   color: #fff;
   background:
@@ -6510,43 +6935,49 @@ function formatSaleDate(dateStr: string): string {
     linear-gradient(135deg, #221b47 0%, #1c1a3e 48%, #141a37 100%);
   box-shadow: var(--sh-lg);
 }
-.pps-herocard-actions {
-  position: absolute;
-  top: 20px;
-  right: 22px;
-  display: flex;
-  gap: 8px;
-  z-index: 3;
-}
-.pps-herocard-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-  transition: background 0.15s, transform 0.15s;
-}
-.pps-herocard-icon:hover {
-  background: rgba(255, 255, 255, 0.16);
-  transform: translateY(-1px);
-}
 .pps-herocard-grid {
   position: relative;
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr) 320px;
-  gap: 34px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.82fr);
+  column-gap: 48px;
+  row-gap: 34px;
+  /* Stretch, so the photo panel is as tall as the copy beside it and the
+     hero reads as two full-height columns rather than a block of text
+     with a thumbnail parked next to it. */
+  align-items: stretch;
+}
+
+/* ── Left column: identity ─────────────────────────────────────── */
+.pps-herocard-lead {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 .pps-herocard-staterow {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+}
+.pps-herocard-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 6px 13px;
+  border-radius: 999px;
+}
+.pps-herocard-state-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 .pps-herocard-explain {
   display: inline-flex;
@@ -6571,115 +7002,80 @@ function formatSaleDate(dateStr: string): string {
   background: rgba(255, 255, 255, 0.14);
   font-size: 10px;
 }
-.pps-herocard-quick {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 18px 0 4px;
+.pps-herocard-title {
+  margin: 20px 0 0;
+  /* Fluid so a long address stays on two lines at most instead of
+     stacking word-per-line the way a fixed 40px did in a narrow column. */
+  font-size: clamp(30px, 3.1vw, 46px);
+  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #fff;
+  text-wrap: balance;
 }
-.pps-herocard-quick-btn {
+.pps-herocard-sub {
+  margin: 10px 0 0;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.62);
+}
+.pps-herocard-pricerow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 16px;
+  row-gap: 4px;
+  margin-top: 24px;
+  padding-top: 24px;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+.pps-herocard-price {
+  font-size: clamp(32px, 2.6vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-feature-settings: 'tnum';
+}
+.pps-herocard-price-src {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.16s ease, border-color 0.16s ease;
-}
-.pps-herocard-quick-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-.pps-herocard-quick-btn svg { width: 16px; height: 16px; }
-.pps-herocard-watchers {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin: 12px 0 0;
+  margin: 0;
   font-size: 12.5px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.62);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.48);
 }
-.pps-herocard-watchers svg { width: 15px; height: 15px; }
-
-.pps-herocard-photo {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  border-radius: 16px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.pps-herocard-photo :deep(img) { width: 100%; height: 100%; object-fit: cover; }
-.pps-herocard-photo-count {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(20, 16, 42, 0.72);
-  backdrop-filter: blur(6px);
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 800;
-}
-.pps-herocard-photo-count svg { width: 13px; height: 11px; }
-
-.pps-herocard-lead {
-  min-width: 0;
-}
-.pps-herocard-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.82);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 6px 13px;
-  border-radius: 999px;
-}
-.pps-herocard-state-dot {
-  width: 7px;
-  height: 7px;
+.pps-herocard-price-info {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
   border-radius: 50%;
-}
-.pps-herocard-title {
-  margin: 18px 0 0;
-  font-size: 40px;
-  line-height: 1.05;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  font-family: inherit;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #fff;
-}
-.pps-herocard-sub {
-  margin: 8px 0 0;
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.66);
-}
-.pps-herocard-price {
-  margin-top: 22px;
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-style: italic;
   line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
 }
-.pps-herocard-price-src {
-  margin: 8px 0 0;
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.5);
+.pps-herocard-price-info:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+/* Illustrated pill artwork (the flood droplet) - kept small enough to read
+   as an icon at pill size. */
+.pps-herocard-pill-img {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  object-fit: contain;
+  display: block;
 }
 .pps-herocard-pills {
   display: flex;
@@ -6688,6 +7084,9 @@ function formatSaleDate(dateStr: string): string {
   margin-top: 20px;
 }
 .pps-herocard-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.86);
@@ -6695,20 +7094,22 @@ function formatSaleDate(dateStr: string): string {
   border: 1px solid rgba(255, 255, 255, 0.13);
   padding: 6px 13px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 .pps-herocard-ctas {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 26px;
+  margin-top: 28px;
 }
 .pps-herocard-btn {
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 14px 22px;
-  border-radius: 13px;
+  padding: 15px 26px;
+  border-radius: 14px;
   cursor: pointer;
+  white-space: nowrap;
   border: 1px solid transparent;
   transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
 }
@@ -6730,31 +7131,153 @@ function formatSaleDate(dateStr: string): string {
 .pps-herocard-btn--ghost:hover {
   background: rgba(255, 255, 255, 0.14);
 }
-.pps-herocard-foot {
-  margin: 18px 0 0;
+/* Secondary actions sit on one line with the watcher count, rather
+   than as a stacked block of chrome above the price. */
+.pps-herocard-quick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.pps-herocard-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+.pps-herocard-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.pps-herocard-quick-btn svg { width: 16px; height: 16px; }
+.pps-herocard-quick-ic {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  object-fit: contain;
+  display: block;
+  /* The askAQuestion artwork is a JPEG on white; the rounding keeps it from
+     reading as a hard white square on the navy hero. */
+  border-radius: 7px;
+}
+.pps-herocard-watchers {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 4px;
   font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+}
+.pps-herocard-watchers svg { width: 15px; height: 15px; }
+.pps-herocard-foot {
+  margin: 22px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.44);
+  max-width: 52ch;
 }
 
-/* Passport preview panel (right of hero) */
+/* ── Right column: photo panel ─────────────────────────────────── */
+.pps-herocard-media {
+  min-width: 0;
+  display: flex;
+}
+.pps-herocard-photo {
+  position: relative;
+  /* A hero photo, not a thumbnail: fills its column and matches the
+     height of the copy block beside it. */
+  height: 100%;
+  min-height: 360px;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 54px rgba(6, 10, 26, 0.42);
+}
+.pps-herocard-photo :deep(img) { width: 100%; height: 100%; object-fit: cover; }
+.pps-herocard-actions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+}
+.pps-herocard-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(16, 14, 38, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.94);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.pps-herocard-icon:hover {
+  background: rgba(16, 14, 38, 0.78);
+  transform: translateY(-1px);
+}
+.pps-herocard-photo-count {
+  position: absolute;
+  /* Right-hand side: PropertyImage puts its own "No photo yet" label
+     bottom-left and the two used to overlap. */
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(20, 16, 42, 0.72);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.pps-herocard-photo-count svg { width: 13px; height: 11px; }
+
+/* ── Passport preview strip (spans the hero's full width) ──────── */
 .pps-preview {
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
-  /* Clear the favourite/share icons (top:20px, 34px tall) so the card
-     sits well below them with room to breathe. */
-  margin-top: 56px;
+  gap: 18px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 22px;
-  padding: 22px 24px 24px;
-  color: var(--ink-1, #0f2440);
+  padding: 24px 28px;
+  color: #0f2440;
   box-shadow:
     0 2px 0 rgba(255, 255, 255, 0.5) inset,
-    0 28px 60px rgba(8, 12, 30, 0.4);
+    0 26px 56px rgba(8, 12, 30, 0.36);
+}
+.pps-preview-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 26px;
+}
+.pps-preview-id {
+  min-width: 0;
 }
 .pps-preview-eyebrow {
   display: inline-flex;
-  align-self: flex-start;
   align-items: center;
   gap: 6px;
   font-size: 10px;
@@ -6768,8 +7291,8 @@ function formatSaleDate(dateStr: string): string {
   border-radius: 999px;
 }
 .pps-preview-addr {
-  margin-top: 14px;
-  font-size: 19px;
+  margin-top: 10px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f2440;
   letter-spacing: -0.02em;
@@ -6777,24 +7300,14 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-preview-sub {
   margin-top: 3px;
-  font-size: 12.5px;
+  font-size: 13px;
   color: #7c8aa0;
   font-weight: 500;
 }
-.pps-preview-divider {
-  height: 1px;
-  background: linear-gradient(90deg, #eef2f7, rgba(238, 242, 247, 0));
-  margin: 18px 0;
-}
-.pps-preview-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
 .pps-preview-ring {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 86px;
+  height: 86px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -6830,7 +7343,7 @@ function formatSaleDate(dateStr: string): string {
   top: 42%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 23px;
+  font-size: 26px;
   font-weight: 900;
   letter-spacing: -0.03em;
   color: #0f2440;
@@ -6838,46 +7351,68 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-preview-ring-denom {
   position: absolute;
-  top: 66%;
+  top: 67%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: #9aa7b8;
 }
-.pps-preview-stats {
-  min-width: 0;
+/* Three real figures, laid out as a stat row with hairline dividers. */
+.pps-preview-metrics {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+.pps-preview-metric {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  padding: 0 22px;
+  border-left: 1px solid #edf1f6;
 }
-.pps-preview-stat-strong {
-  font-size: 13.5px;
+.pps-preview-metric:first-child { border-left: 0; }
+.pps-preview-metric:last-child { padding-right: 4px; }
+.pps-preview-metric-val {
+  font-size: 18px;
   font-weight: 800;
   color: #0f2440;
-  line-height: 1.45;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
 }
-.pps-preview-stat-muted {
-  font-size: 12.5px;
+.pps-preview-metric-of {
+  font-size: 13.5px;
+  font-weight: 700;
   color: #9aa7b8;
-  line-height: 1.45;
-  font-weight: 500;
+}
+.pps-preview-metric-lab {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8a97a9;
+  white-space: nowrap;
+}
+.pps-preview-foot {
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #edf1f6;
 }
 .pps-preview-hint {
-  display: flex;
-  align-items: flex-start;
+  display: inline-flex;
+  align-items: center;
   gap: 9px;
-  margin-top: 18px;
   font-size: 12.5px;
   font-weight: 700;
   color: #1f6f66;
   background: #eafaf8;
   border: 1px solid #cdeee9;
-  border-radius: 13px;
-  padding: 12px 14px;
-  line-height: 1.45;
+  border-radius: 999px;
+  padding: 9px 16px;
+  line-height: 1.3;
 }
 .pps-preview-hint-dot {
   width: 8px;
@@ -6886,7 +7421,35 @@ function formatSaleDate(dateStr: string): string {
   background: #00b6ae;
   box-shadow: 0 0 0 3px rgba(0, 182, 174, 0.16);
   flex-shrink: 0;
-  margin-top: 4px;
+}
+.pps-preview-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #edf1f6;
+  overflow: hidden;
+}
+.pps-preview-track-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2fd0c6, #00857f);
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hero — narrower desktops / tablets */
+@media (max-width: 1180px) {
+  /* Give the copy column back some width so the two CTAs stay on one
+     row instead of stacking. */
+  .pps-herocard-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.66fr);
+    column-gap: 34px;
+  }
+  .pps-herocard-btn { font-size: 14px; padding: 14px 20px; }
+}
+@media (max-width: 1080px) {
+  .pps-herocard { padding: 32px 30px 30px; }
+  .pps-preview-main { grid-template-columns: auto minmax(0, 1fr); row-gap: 20px; }
+  .pps-preview-metrics { grid-column: 1 / -1; }
+  .pps-preview-metric:first-child { padding-left: 0; }
 }
 
 /* Quick actions (two bars under the hero) */
@@ -6963,34 +7526,40 @@ function formatSaleDate(dateStr: string): string {
 
 @media (max-width: 860px) {
   .pps-herocard {
-    padding: 24px 20px;
+    padding: 24px 20px 22px;
   }
   .pps-herocard-grid {
-    grid-template-columns: 1fr;
-    gap: 22px;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 24px;
   }
-  .pps-preview {
-    margin-top: 0;
+  /* Photo above the copy once there is only one column. */
+  .pps-herocard-media { order: -1; }
+  .pps-herocard-photo { aspect-ratio: 16 / 10; border-radius: 16px; }
+  .pps-herocard-btn { flex: 1 1 100%; }
+  .pps-preview { padding: 20px; }
+  .pps-preview-main {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 18px;
   }
-  .pps-herocard-title {
-    font-size: 30px;
+  .pps-preview-metrics {
+    grid-column: 1 / -1;
+    flex-wrap: wrap;
+    row-gap: 14px;
   }
-  .pps-herocard-price {
-    font-size: 32px;
+  .pps-preview-metric {
+    /* 30% basis rather than 40%, so all three figures still fit on one
+       row on a tablet and only wrap on a phone. */
+    flex: 1 1 30%;
+    min-width: 148px;
+    padding: 0 14px;
+  }
+  .pps-preview-metric:first-child { padding-left: 0; }
+  .pps-preview-foot {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
   }
   .pps-actions {
     grid-template-columns: 1fr;
-  }
-  .pps-score-top {
-    flex-wrap: wrap;
-    padding: 24px 20px 22px 26px;
-    gap: 18px;
-  }
-  .pps-score-verdict {
-    font-size: 21px;
-  }
-  .pps-score-run-btn {
-    width: 100%;
   }
   .pps-signal-bar {
     flex-wrap: wrap;
@@ -7372,6 +7941,262 @@ function formatSaleDate(dateStr: string): string {
 }
 
 /* ─── Score card ────────────────────────────────────────────── */
+/* ─── Page sections (shared desktop rhythm) ─────────────────────
+   One header pattern for every band on the page: eyebrow, title,
+   supporting line on the left, an optional action on the right. */
+.pps-section {
+  width: 100%;
+}
+.pps-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 20px;
+  padding: 0 2px;
+}
+.pps-section-heading {
+  min-width: 0;
+}
+.pps-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #00897b;
+}
+.pps-section-eyebrow-dash {
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
+}
+.pps-section-title {
+  margin: 12px 0 0;
+  font-size: clamp(24px, 2.1vw, 32px);
+  font-weight: 800;
+  color: #1a1535;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+.pps-section-sub {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #6b7a90;
+  max-width: 62ch;
+}
+.pps-section-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f2440;
+  background: #fff;
+  border: 1.5px solid #dbe5ef;
+  border-radius: 13px;
+  padding: 13px 22px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--sh-sm);
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.pps-section-cta:hover {
+  transform: translateY(-1px);
+  border-color: #00a19a;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.16);
+}
+/* A count, not a link — no arrow and no hover state, because there is
+   nothing behind it to open. */
+.pps-section-badge {
+  flex-shrink: 0;
+  align-self: flex-end;
+  font-size: 13px;
+  font-weight: 700;
+  color: #178a6e;
+  background: #f1faf8;
+  border: 1px solid #d5e7e2;
+  border-radius: 999px;
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+/* ─── Passport-status card ──────────────────────────────────────────
+   Icon left, the state and its explanation in the middle, the action
+   right — a full-width desktop band rather than the narrow stacked box
+   the phone layout used. */
+.pps-claimcard {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--sh-md);
+  padding: 28px 32px;
+}
+/* State accents: teal once a Passport exists, amber while the address is
+   still unclaimed. */
+.pps-claimcard--private,
+.pps-claimcard--partiallyPublic,
+.pps-claimcard--public {
+  border-color: #cfe9e6;
+  background:
+    radial-gradient(120% 180% at 0% 0%, rgba(0, 182, 174, 0.07) 0%, rgba(0, 182, 174, 0) 58%),
+    #fff;
+}
+.pps-claimcard--unclaimed {
+  border-color: #f0dcb4;
+  background:
+    radial-gradient(120% 180% at 0% 0%, rgba(230, 162, 60, 0.09) 0%, rgba(230, 162, 60, 0) 58%),
+    #fff;
+}
+.pps-claimcard-streetpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a4711a;
+  background: #fdf4e3;
+  border: 1px solid #f3ddb0;
+  border-radius: 999px;
+  padding: 7px 14px;
+}
+.pps-claimcard-streetpill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e6a23c;
+  flex-shrink: 0;
+}
+.pps-claimcard-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 26px;
+}
+.pps-claimcard-ic {
+  width: 92px;
+  height: 92px;
+  flex-shrink: 0;
+  object-fit: contain;
+  display: block;
+}
+.pps-claimcard-body {
+  min-width: 0;
+}
+.pps-claimcard-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  color: #1a1535;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.pps-claimcard-sub {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #6b7a90;
+  max-width: 64ch;
+}
+.pps-claimcard-emphasis {
+  margin: 10px 0 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #1a1535;
+  letter-spacing: -0.01em;
+}
+.pps-claimcard-sub2 {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f857c;
+}
+.pps-claimcard-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 16px;
+}
+.pps-claimcard-explain {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f857c;
+  cursor: pointer;
+  text-align: left;
+}
+.pps-claimcard-explain:hover { color: #00615c; text-decoration: underline; }
+.pps-claimcard-explain-q {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e2f3ec;
+  border: 1px solid #cde9df;
+  font-size: 10px;
+  font-weight: 800;
+}
+.pps-claimcard-watchers {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a94a3;
+}
+.pps-claimcard-watchers svg { width: 15px; height: 15px; }
+.pps-claimcard-cta {
+  flex-shrink: 0;
+}
+.pps-claimcard-btn {
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #fff;
+  background: #231d45;
+  border: 0;
+  border-radius: 999px;
+  padding: 15px 30px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(35, 29, 69, 0.22);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.pps-claimcard-btn:hover {
+  background: #322a5f;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .pps-claimcard { padding: 24px 22px; }
+  .pps-claimcard-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 18px;
+  }
+  .pps-claimcard-ic { width: 68px; height: 68px; }
+  .pps-claimcard-cta { grid-column: 1 / -1; }
+  .pps-claimcard-btn { width: 100%; }
+}
+
+/* ─── HomeScore card ────────────────────────────────────────────── */
 .pps-score-card {
   position: relative;
   margin: 0;
@@ -7391,7 +8216,7 @@ function formatSaleDate(dateStr: string): string {
   bottom: 0;
   width: 6px;
   background: #00a19a;
-  z-index: 1;
+  z-index: 2;
 }
 .pps-score-card--clickable {
   cursor: pointer;
@@ -7401,54 +8226,33 @@ function formatSaleDate(dateStr: string): string {
 }
 .pps-score-card--clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(35, 29, 69, 0.14);
+  box-shadow: 0 14px 34px rgba(35, 29, 69, 0.13);
+}
+/* Score left, EPC breakdown right — the bars get a 340px panel instead
+   of the full width of the shell. */
+.pps-score-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: stretch;
 }
 .pps-score-top {
   background: var(--surface, #fff);
-  padding: 30px 28px 28px 34px;
+  padding: 34px 34px 34px 40px;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 26px;
-}
-.pps-score-blob-tr {
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(
-    circle,
-    rgba(0, 161, 154, 0.15) 0%,
-    transparent 70%
-  );
-  border-radius: 50%;
-  top: -60px;
-  right: -40px;
-  pointer-events: none;
-}
-.pps-score-blob-bl {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(
-    circle,
-    rgba(35, 29, 69, 0.04) 0%,
-    transparent 70%
-  );
-  border-radius: 50%;
-  bottom: -30px;
-  left: -20px;
-  pointer-events: none;
+  gap: 30px;
 }
 .pps-gauge-wrap {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 124px;
+  height: 124px;
   flex-shrink: 0;
   z-index: 1;
 }
 .pps-gauge-svg {
-  width: 100px;
-  height: 100px;
+  width: 124px;
+  height: 124px;
   transform: rotate(-90deg);
 }
 .pps-gauge-bg {
@@ -7474,52 +8278,49 @@ function formatSaleDate(dateStr: string): string {
   line-height: 1;
 }
 .pps-gauge-num {
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 900;
   color: #231d45;
   line-height: 1;
+  letter-spacing: -0.03em;
+  font-feature-settings: 'tnum';
 }
 .pps-gauge-denom {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 700;
   color: #9c98ad;
-  margin-top: 1px;
+  margin-top: 3px;
 }
 .pps-score-info {
   flex: 1;
+  min-width: 0;
   z-index: 1;
 }
-.pps-score-eyebrow {
-  font-size: 11.5px;
-  font-weight: 800;
-  color: #00897b;
-  letter-spacing: 2.4px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
 .pps-score-verdict {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   color: #1a1535;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 .pps-score-desc {
-  font-size: 15px;
-  color: #6b7a90;
-  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #46566f;
+  margin: 0;
   line-height: 1.6;
-  max-width: 54ch;
+  max-width: 46ch;
 }
 .pps-score-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 9px;
+  margin-top: 18px;
 }
 .pps-score-pill {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-  padding: 8px 15px;
+  padding: 7px 14px;
   border-radius: 999px;
   white-space: nowrap;
 }
@@ -7533,9 +8334,16 @@ function formatSaleDate(dateStr: string): string {
   color: #a4711a;
   border: 1px solid #f3ddb0;
 }
+.pps-score-pill--plain {
+  background: #f4f7fa;
+  color: #5b6d89;
+  border: 1px solid #e5ebf3;
+}
+/* In-card button. The section header carries the same action at desktop
+   width, so this one only shows once the header action is hidden. */
 .pps-score-run-btn {
-  flex-shrink: 0;
-  align-self: center;
+  display: none;
+  margin-top: 20px;
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;
@@ -7543,7 +8351,7 @@ function formatSaleDate(dateStr: string): string {
   background: #fff;
   border: 1.5px solid #1e2233;
   border-radius: 14px;
-  padding: 15px 24px;
+  padding: 14px 24px;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, transform 0.15s;
@@ -7559,182 +8367,150 @@ function formatSaleDate(dateStr: string): string {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.pps-score-bottom {
-  background: #fff;
-  padding: 20px 28px 24px 34px;
-  border-top: 1px solid #eceaf3;
+.pps-score-epc {
+  padding: 34px 34px 30px;
+  border-left: 1px solid #eef1f6;
+  background: linear-gradient(180deg, #fbfdfe 0%, #f6f9fc 100%);
+  display: flex;
+  flex-direction: column;
 }
-.pps-epc-rows { display: grid; gap: 10px; margin-top: 12px; }
-.pps-epc-row {
-  display: grid;
-  grid-template-columns: 78px minmax(0, 1fr) 74px;
-  align-items: center;
-  gap: 14px;
-}
-.pps-epc-label { font-size: 13px; font-weight: 700; color: #545a72; }
-.pps-epc-track { height: 8px; border-radius: 999px; background: #eceaf3; overflow: hidden; }
-.pps-epc-track .pps-bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
-.pps-epc-rating { text-align: right; font-size: 12.5px; font-weight: 700; color: #8a90a6; }
 .pps-epc-header {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
-  color: #aaa;
-  letter-spacing: 1.2px;
+  color: #9aa7b8;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 14px;
+  margin: 0 0 16px;
 }
 .pps-epc-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 13px;
 }
 .pps-epc-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) 60px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 .pps-epc-label {
   font-size: 13px;
   font-weight: 700;
-  color: #333;
-  width: 60px;
-  flex-shrink: 0;
+  color: #46566f;
 }
 .pps-epc-track {
-  flex: 1;
   height: 8px;
-  background: #f0f0f2;
-  border-radius: 4px;
+  background: #e7ecf3;
+  border-radius: 999px;
   overflow: hidden;
 }
 .pps-bar-fill {
   height: 100%;
   background: #00a19a;
-  border-radius: 4px;
+  border-radius: 999px;
   width: 0%;
   transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pps-epc-rating {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
-  width: 60px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6b7a90;
   text-align: right;
-  flex-shrink: 0;
+}
+.pps-epc-attr {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9aa7b8;
 }
 
-/* ─── Explore grid ──────────────────────────────────────────── */
-.pps-explore-header {
-  width: 100%;
-  margin: var(--sp-3) 0 var(--sp-1);
-  padding: 0 2px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
+@media (max-width: 1020px) {
+  .pps-score-main { grid-template-columns: minmax(0, 1fr); }
+  .pps-score-epc {
+    border-left: 0;
+    border-top: 1px solid #eef1f6;
+    padding: 24px 30px 26px 40px;
+  }
+  .pps-epc-row { grid-template-columns: 78px minmax(0, 1fr) 60px; }
 }
-.pps-explore-heading {
-  min-width: 0;
+@media (max-width: 860px) {
+  .pps-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  /* Duplicate action collapses to the one inside the card. */
+  .pps-section-cta { display: none; }
+  .pps-score-run-btn { display: inline-flex; }
+  .pps-score-top {
+    flex-direction: column;
+    padding: 24px 22px 24px 26px;
+    gap: 20px;
+  }
+  .pps-score-epc { padding: 22px 22px 24px 26px; }
+  .pps-score-verdict { font-size: 21px; }
+  .pps-score-run-btn { width: 100%; justify-content: center; }
 }
-.pps-explore-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 2.4px;
-  text-transform: uppercase;
-  color: #00897b;
-}
-.pps-explore-eyebrow-dash {
-  width: 26px;
-  height: 2px;
-  border-radius: 2px;
-  background: #00a19a;
-}
-.pps-explore-title {
-  margin: 10px 0 0;
-  font-size: 30px;
-  font-weight: 800;
-  color: #1a1535;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-.pps-explore-sources {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  font-size: 14.5px;
-  color: #178a6e;
-  font-weight: 700;
-  background: #fff;
-  border: 1.5px solid #d5e7e2;
-  border-radius: 999px;
-  padding: 9px 18px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.pps-explore-sources:hover {
-  border-color: #00a19a;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.14);
-}
+
+/* ─── Explore grid ──────────────────────────────────────────────
+   Four columns at desktop width. Tiles are uniform height (the icon
+   row is fixed, the body grows) so the grid reads as a table of the
+   record rather than a stack of phone cards. */
 .pps-explore-grid {
   width: 100%;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sp-2);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
   padding: 0;
 }
-
-@media (max-width: 700px) {
-  .pps-hero {
-    height: 280px;
-    border-radius: var(--r-lg);
-  }
-
-  .pps-hero-overlay {
-    left: var(--sp-4);
-    right: var(--sp-4);
-    bottom: var(--sp-4);
-  }
-
-  .pps-explore-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-2);
-  }
-}
 .pps-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+  font-family: inherit;
   background: var(--surface);
   border-radius: 18px;
-  padding: 22px 22px 44px;
+  padding: 20px;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 12px 26px rgba(15, 36, 62, 0.05);
-  border: 1px solid #eef0ee;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 10px 22px rgba(15, 36, 62, 0.045);
+  border: 1px solid #eaeff5;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
 }
 .pps-tile:hover {
   transform: translateY(-3px);
-  border-color: #d4e6e3;
-  box-shadow: 0 14px 32px rgba(15, 36, 62, 0.1);
+  border-color: #c8e3df;
+  box-shadow: 0 16px 34px rgba(15, 36, 62, 0.1);
 }
 .pps-tile:active {
   transform: translateY(-1px);
 }
+.pps-tile:focus-visible {
+  outline: 2px solid #00a19a;
+  outline-offset: 2px;
+}
+.pps-tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
 .pps-tile-icon {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .pps-tile-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 .pps-tile-icon--img {
   background: transparent;
@@ -7746,27 +8522,33 @@ function formatSaleDate(dateStr: string): string {
   object-fit: contain;
   display: block;
 }
+/* Body pushes to the bottom of the tile, which keeps the value and
+   sub-label on a shared baseline across the whole row. */
+.pps-tile-body {
+  margin-top: auto;
+  min-width: 0;
+}
 .pps-tile-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: #1a1535;
   letter-spacing: -0.01em;
-  margin-top: 18px;
 }
 .pps-tile-value {
   font-size: 19px;
   font-weight: 800;
   color: #0f857c;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   margin-top: 6px;
 }
 .pps-tile-value--warn {
   color: #bf8324;
 }
 .pps-tile-sub {
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: #8a94a3;
-  margin-top: 4px;
+  margin-top: 5px;
 }
 .pps-tile-trend {
   font-size: 11px;
@@ -7784,14 +8566,12 @@ function formatSaleDate(dateStr: string): string {
   border-radius: 4px;
   padding: 1px 5px;
   vertical-align: middle;
-  margin-left: 3px;
+  margin-left: 4px;
 }
 .pps-tile-arrow {
-  position: absolute;
-  top: 22px;
-  right: 22px;
   width: 30px;
   height: 30px;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -7806,6 +8586,77 @@ function formatSaleDate(dateStr: string): string {
   border-color: #00a19a;
   color: #00a19a;
   background: #f0faf8;
+}
+
+/* Row-closing CTA tile — spans the cells the data tiles leave free. */
+.pps-tile--cta {
+  grid-column: span var(--pps-fill-span, 1);
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  border-color: rgba(0, 161, 154, 0.28);
+  background:
+    radial-gradient(120% 160% at 100% 0%, rgba(0, 182, 174, 0.1) 0%, rgba(0, 182, 174, 0) 60%),
+    linear-gradient(180deg, #ffffff 0%, #f5fbfa 100%);
+}
+.pps-tile--cta:hover {
+  border-color: #00a19a;
+  box-shadow: 0 16px 34px rgba(0, 161, 154, 0.16);
+}
+.pps-tile-cta-ic {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  object-fit: contain;
+  display: block;
+}
+.pps-tile-cta-body {
+  min-width: 0;
+  flex: 1;
+}
+.pps-tile-cta-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f2440;
+  letter-spacing: -0.015em;
+}
+.pps-tile-cta-sub {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #6b7a90;
+  margin-top: 4px;
+}
+.pps-tile-cta-arrow {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #00a19a;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(0, 161, 154, 0.3);
+  transition: transform 0.15s;
+}
+.pps-tile--cta:hover .pps-tile-cta-arrow {
+  transform: translateX(2px);
+}
+
+@media (max-width: 1180px) {
+  .pps-explore-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* The span is computed for a 4-column grid, so below that the CTA
+     simply takes the whole row. */
+  .pps-tile--cta { grid-column: 1 / -1; }
+}
+@media (max-width: 820px) {
+  .pps-explore-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .pps-explore-grid { grid-template-columns: minmax(0, 1fr); }
+  .pps-tile--cta { flex-direction: column; align-items: flex-start; }
 }
 
 /* ─── Passport card ─────────────────────────────────────────── */
@@ -8177,50 +9028,86 @@ function formatSaleDate(dateStr: string): string {
 }
 
 /* ─── Costs card ────────────────────────────────────────────── */
+/* ─── Keep going (closing band) ─────────────────────────────────── */
 .pps-keepgoing {
-  padding: 28px 26px 26px;
-  border-radius: 22px;
-  background: #fff;
-  border: 1px solid #eceaf3;
+  padding: 40px 44px 42px;
+  border-radius: 24px;
+  background:
+    radial-gradient(110% 150% at 50% 0%, rgba(0, 182, 174, 0.07) 0%, rgba(0, 182, 174, 0) 62%),
+    #fff;
+  border: 1px solid #e9eef5;
+  box-shadow: var(--sh-md);
 }
-.pps-keepgoing-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; color: #231d45; text-align: center; }
-.pps-keepgoing-sub { margin-top: 5px; font-size: 13.5px; font-weight: 500; color: #8a90a6; text-align: center; }
+.pps-keepgoing-head {
+  max-width: 60ch;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+.pps-keepgoing-title {
+  font-size: clamp(22px, 1.9vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #231d45;
+  line-height: 1.15;
+}
+.pps-keepgoing-sub {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #7c8aa0;
+}
 .pps-keepgoing-cards {
-  margin-top: 22px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
 }
 .pps-keepgoing-card {
   display: flex;
   flex-direction: column;
-  padding: 20px 18px 18px;
-  border-radius: 18px;
-  background: #faf9fd;
-  border: 1px solid #eceaf3;
+  padding: 26px 24px 24px;
+  border-radius: 20px;
+  background: #fafbfd;
+  border: 1px solid #eceff5;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
-.pps-keepgoing-card-top { display: flex; align-items: flex-start; gap: 14px; flex: 1; }
-.pps-keepgoing-card-ic { width: 58px; height: 58px; flex-shrink: 0; object-fit: contain; }
-.pps-keepgoing-card-ic--fan { width: 64px; }
+.pps-keepgoing-card:hover {
+  border-color: #d6e4f0;
+  box-shadow: 0 10px 26px rgba(15, 36, 62, 0.07);
+}
+.pps-keepgoing-card-top { display: flex; align-items: flex-start; gap: 18px; flex: 1; }
+.pps-keepgoing-card-ic { width: 66px; height: 66px; flex-shrink: 0; object-fit: contain; }
+.pps-keepgoing-card-ic--fan { width: 72px; }
 .pps-keepgoing-card-body { min-width: 0; }
-.pps-keepgoing-card-title { font-size: 15px; font-weight: 800; letter-spacing: -0.015em; color: #231d45; margin-bottom: 5px; }
-.pps-keepgoing-card-sub { font-size: 12.5px; font-weight: 500; line-height: 1.55; color: #6b7089; }
+.pps-keepgoing-card-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.018em;
+  color: #231d45;
+  margin-bottom: 7px;
+}
+.pps-keepgoing-card-sub {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #6b7089;
+}
 .pps-keepgoing-card-btn {
-  margin-top: 18px;
-  width: 100%;
-  padding: 12px 18px;
+  margin-top: 22px;
+  align-self: flex-start;
+  padding: 13px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: 13px;
   background: #231d45;
   color: #fff;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   transition: background 0.16s ease, transform 0.16s ease;
 }
 .pps-keepgoing-card-btn:hover { background: #322a5f; transform: translateY(-1px); }
 
+/* ─── Running costs ─────────────────────────────────────────────── */
 .pps-costs-card {
   width: 100%;
   margin: 0;
@@ -8230,45 +9117,28 @@ function formatSaleDate(dateStr: string): string {
   box-shadow: var(--sh-md);
   background: var(--surface);
 }
-.pps-costs-header {
-  background: linear-gradient(135deg, #fbefd9 0%, #f5e0b5 100%);
-  padding: 14px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0dc80;
-}
-.pps-costs-header-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: #7a3a05;
-}
-.pps-costs-header-sub {
-  font-size: 12px;
-  color: #c18a38;
-}
 .pps-costs-body {
-  background: white;
-  padding: 16px 18px;
+  background: #fff;
+  padding: 26px 28px 24px;
 }
+/* All four figures on one row at desktop width. */
 .pps-costs-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 .pps-costs-box {
-  border: 1px solid #ececef;
-  border-radius: 10px;
-  perspective: 600px;
-  height: 68px;
+  border: 1px solid #eceff5;
+  border-radius: 16px;
+  perspective: 700px;
+  height: 108px;
 }
 .pps-costs-box-inner {
   position: relative;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.42s cubic-bezier(0.4, 0.2, 0.2, 1);
-  border-radius: 10px;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pps-costs-box:hover .pps-costs-box-inner {
   transform: rotateY(180deg);
@@ -8277,61 +9147,81 @@ function formatSaleDate(dateStr: string): string {
 .pps-costs-box-back {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 8px;
+  gap: 6px;
+  border-radius: 15px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: #fbfcfe;
 }
 .pps-costs-box-back {
   transform: rotateY(180deg);
-  background: #231d45;
+  background: #f2f6fa;
 }
 .pps-costs-box-back-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  color: #9aa7b8;
 }
 .pps-costs-box-back-val {
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 800;
-  color: white;
+  color: #0f2440;
+  letter-spacing: -0.02em;
 }
 .pps-costs-box--highlight {
-  border-color: #00a19a;
-  border-width: 1.5px;
+  border-color: #bfe6e2;
 }
 .pps-costs-box--highlight .pps-costs-box-front {
-  background: #f2faf8;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #eafaf8 0%, #ddf4f1 100%);
 }
 .pps-costs-box--highlight .pps-costs-box-back {
-  background: #007e78;
+  background: linear-gradient(180deg, #ddf4f1 0%, #cfeeea 100%);
 }
 .pps-costs-box-value {
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 800;
-  color: #231d45;
+  color: #0f2440;
+  letter-spacing: -0.025em;
+  font-feature-settings: 'tnum';
 }
 .pps-costs-box--highlight .pps-costs-box-value {
-  color: #007e78;
+  color: #0f6f68;
 }
 .pps-costs-box-label {
-  font-size: 11px;
-  color: #999;
-  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #7c8aa0;
+}
+.pps-costs-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #eef1f6;
 }
 .pps-costs-attr {
-  font-size: 12px;
-  color: #bbb;
-  font-style: italic;
-  margin-top: 12px;
+  font-size: 12.5px;
+  color: #9aa7b8;
+  font-weight: 500;
+}
+
+@media (max-width: 1020px) {
+  .pps-costs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .pps-keepgoing { padding: 28px 22px 26px; }
+  .pps-keepgoing-cards { grid-template-columns: minmax(0, 1fr); }
+  .pps-keepgoing-card-btn { align-self: stretch; text-align: center; }
+  .pps-costs-body { padding: 20px 20px 18px; }
 }
 
 /* ─── Details card ──────────────────────────────────────────── */

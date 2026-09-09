@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="dsh">
     <!-- Navbar actions. Both are signed-in essentials this dashboard has no
          other route to: notifications had no entry point anywhere in the app
@@ -217,6 +217,48 @@
               </button>
             </section>
 
+            <!-- ── Legislation & news (landlord only) ──────────────
+                 Ported from the reference app, which moved it here off the
+                 landlord passport's compliance screen. Same curated dataset
+                 (utils/landlordNews.ts) so the two never drift apart — see
+                 that file for why it is a snapshot, not a live feed. -->
+            <section v-if="isLandlord && dashNewsItems.length" class="dsh-section">
+              <div class="dsh-sec-head">
+                <img src="/dashboard-art/nextDocuments.png" alt="" class="dsh-sec-ic" loading="lazy" />
+                <div>
+                  <p class="dsh-eyebrow">Legislation &amp; news</p>
+                  <h2 class="dsh-sec-title">What's changing for landlords</h2>
+                </div>
+              </div>
+
+              <div class="dsh-news">
+                <a
+                  v-for="n in dashNewsItems"
+                  :key="n.url"
+                  class="dsh-news-card"
+                  :href="n.url"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="dsh-news-band" :class="`dsh-news-band--${n.tag}`" />
+                  <span class="dsh-news-bd">
+                    <span class="dsh-news-tag" :class="`dsh-news-tag--${n.tag}`">{{ n.tagLabel }}</span>
+                    <strong class="dsh-news-t">{{ n.title }}</strong>
+                    <small class="dsh-news-s">{{ n.summary }}</small>
+                    <small class="dsh-news-src">
+                      {{ n.source }}
+                      <Icon name="i-lucide-external-link" />
+                    </small>
+                  </span>
+                </a>
+              </div>
+
+              <NuxtLink to="/profile/news" class="dsh-news-all">
+                See all updates
+                <Icon name="i-lucide-arrow-right" />
+              </NuxtLink>
+            </section>
+
             <!-- ── Next for you ── -->
             <section v-if="nextActions.length" class="dsh-section">
               <div class="dsh-sec-head">
@@ -320,19 +362,19 @@
                 <div class="dsh-card-head-text">
                   <h3>
                     Watching
-                    <span v-if="savedProperties.length" class="dsh-count">
-                      {{ savedProperties.length }}
+                    <span v-if="watchedProperties.length" class="dsh-count">
+                      {{ watchedProperties.length }}
                     </span>
                   </h3>
-                  <small>Properties you're keeping an eye on</small>
+                  <small>Homes you asked to be kept posted about</small>
                 </div>
               </div>
 
-              <div v-if="loadingSaved" class="dsh-skel dsh-skel--row" />
+              <div v-if="loadingWatched" class="dsh-skel dsh-skel--row" />
 
-              <template v-else-if="savedProperties.length">
+              <template v-else-if="watchedProperties.length">
                 <NuxtLink
-                  v-for="(prop, i) in savedProperties.slice(0, 3)"
+                  v-for="(prop, i) in watchedProperties.slice(0, 3)"
                   :key="prop.id"
                   :to="`/property/${prop.id}`"
                   class="watch-row"
@@ -357,30 +399,36 @@
                   <Icon name="i-lucide-chevron-right" class="watch-chev" />
                 </NuxtLink>
                 <button
-                  v-if="savedProperties.length > 3"
                   type="button"
                   class="dsh-card-more"
-                  @click="navigateTo('/profile/saved-properties')"
+                  @click="navigateTo('/profile/watched-properties')"
                 >
-                  {{ savedProperties.length - 3 }} more
-                  {{ savedProperties.length - 3 === 1 ? 'property' : 'properties' }} watching
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="dsh-card-more"
-                  @click="navigateTo('/profile/saved-properties')"
-                >
-                  View all saved properties
+                  <template v-if="watchedProperties.length > 3">
+                    {{ watchedProperties.length - 3 }} more
+                    {{ watchedProperties.length - 3 === 1 ? 'property' : 'properties' }} watching
+                  </template>
+                  <template v-else>View all watched properties</template>
                 </button>
               </template>
 
               <div v-else class="dsh-card-empty">
-                <p>Nothing saved yet.</p>
+                <p>Nothing watched yet.</p>
                 <button type="button" @click="navigateTo('/marketplace')">
                   Browse properties
                 </button>
               </div>
+
+              <!-- Saved is a separate list from Watching (heart/save toggle vs
+                   the "Watch this" notify flow), so it gets its own honest row
+                   rather than being counted as watching. -->
+              <NuxtLink
+                v-if="!loadingSaved && savedProperties.length"
+                to="/profile/saved-properties"
+                class="dsh-card-more dsh-card-more--link"
+              >
+                {{ savedProperties.length }} saved
+                {{ savedProperties.length === 1 ? 'property' : 'properties' }}
+              </NuxtLink>
             </section>
 
             <!-- Run a HomeScore on any property -->
@@ -424,6 +472,25 @@
                         buyerProfile
                           ? `Finance ${financePercent}% complete`
                           : 'Verify your identity and buying position.'
+                      }}
+                    </small>
+                  </span>
+                  <Icon name="i-lucide-chevron-right" class="watch-chev" />
+                </button>
+                <!-- Second row, matching the reference app: a 'both' user's
+                     buyer side is their Passport AND what they are watching. -->
+                <button
+                  type="button"
+                  class="watch-row watch-row--plain"
+                  @click="navigateTo('/profile/watched-properties')"
+                >
+                  <span class="watch-body">
+                    <strong>Watching</strong>
+                    <small>
+                      {{
+                        watchedProperties.length
+                          ? `${watchedProperties.length} propert${watchedProperties.length === 1 ? 'y' : 'ies'} watched`
+                          : 'Nothing watched yet'
                       }}
                     </small>
                   </span>
@@ -481,6 +548,7 @@ import PropertySearchFiltersModal from '~/components/property/PropertySearchFilt
 import ForYouFeed from '~/components/property/ForYouFeed.vue'
 import RecentlyViewedFeed from '~/components/property/RecentlyViewedFeed.vue'
 import { usePropertyForYou } from '~/composables/usePropertyForYou'
+import { NEWS_ITEMS } from '~/utils/landlordNews'
 
 useHead({
   link: [
@@ -505,6 +573,13 @@ const buyerProfile = ref<any>(null)
 const loadingBuyerProfile = ref(true)
 const savedProperties = ref<any[]>([])
 const loadingSaved = ref(true)
+// The real watch list — PropertyWatch rows from GET /property/watches, which
+// is what the property page's "Watch this" flow creates. Distinct from
+// savedProperties (the heart/save toggle, GET /property/saved): this page
+// used to render the saved list under a "Watching" heading, so a watched
+// property never appeared here at all and the count was the wrong one.
+const watchedProperties = ref<any[]>([])
+const loadingWatched = ref(true)
 // The 'both' role shows a buyer summary beside the owner view. It reuses
 // buyerProfile/savedProperties, which the owner branch never populates
 // otherwise, so it needs its own flag — loadingBuyerProfile/loadingSaved
@@ -590,22 +665,58 @@ const loadingPrimary = computed(() =>
 // Deterministic, never Math.random(): this page server-renders then
 // hydrates, and a random pick would differ between the two and trip a
 // hydration mismatch.
-const LATE_NIGHT_LINES = ['Having a late one', 'Burning the midnight oil', 'Still up']
+// Five dayparts, matching the reference app — it had an "early morning"
+// band and light rotation on the daytime lines, where this page only
+// rotated late-night and used one fixed phrase for the rest.
+//
+// No emoji, deliberately: the reference appends 👋/🌙/☀️ here, but this
+// project's standard is Lucide icons over emoji.
+type Daypart = 'lateNight' | 'earlyMorning' | 'morning' | 'afternoon' | 'evening'
+
+function daypartOf(hour: number): Daypart {
+  if (hour >= 23 || hour < 5) return 'lateNight'
+  if (hour < 8) return 'earlyMorning'
+  if (hour < 12) return 'morning'
+  if (hour < 17) return 'afternoon'
+  return 'evening'
+}
+
+const GREETING_LINES: Record<Daypart, string[]> = {
+  lateNight: ['Having a late one', 'Burning the midnight oil', 'Still up'],
+  earlyMorning: ['Up bright and early', 'Early start', 'Rise and shine'],
+  morning: ['Good morning', 'Morning'],
+  afternoon: ['Good afternoon', 'Afternoon'],
+  evening: ['Good evening', 'Evening'],
+}
+// The two off-hours bands read as a warm question ("Still up, Alex?"); the
+// three daytime ones stay a plain statement.
+const GREETING_IS_QUESTION: Record<Daypart, boolean> = {
+  lateNight: true,
+  earlyMorning: true,
+  morning: false,
+  afternoon: false,
+  evening: false,
+}
 
 const greeting = computed(() => {
   const now = new Date()
-  const h = now.getHours()
+  const daypart = daypartOf(now.getHours())
+  const lines = GREETING_LINES[daypart]
+  // Date-indexed, not random — see the note above about hydration.
+  const line = lines[now.getDate() % lines.length]
   const first = profile.value?.firstName?.trim()
   const emailLocal = profile.value?.email?.split('@')[0]?.trim()
   const name = first || emailLocal || ''
 
-  if (h >= 23 || h < 5) {
-    const line = LATE_NIGHT_LINES[now.getDate() % LATE_NIGHT_LINES.length]
+  if (GREETING_IS_QUESTION[daypart]) {
     return name ? `${line}, ${name}?` : `${line}?`
   }
-  const timeOfDay = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-  return name ? `${timeOfDay}, ${name}` : timeOfDay
+  return name ? `${line}, ${name}` : line
 })
+
+// Legislation & news rail, landlord only — the same 5-item teaser slice the
+// landlord passport screen shows, from the shared curated dataset.
+const dashNewsItems = computed(() => NEWS_ITEMS.slice(0, 5))
 
 // ── Derived numbers ────────────────────────────────────────────────────
 const homeScoreDashoffset = computed(() => {
@@ -800,16 +911,21 @@ async function fetchRecentlyViewed(token: string) {
 }
 
 async function fetchBuyerSide(token: string) {
-  const [buyerResult, savedResult] = await Promise.allSettled([
+  const [buyerResult, savedResult, watchedResult] = await Promise.allSettled([
     $fetch<any>(`${config.public.apiBase}/buyer-profile`, {
       headers: { Authorization: `Bearer ${token}` },
     }),
     $fetch<any[]>(`${config.public.apiBase}/property/saved`, {
       headers: { Authorization: `Bearer ${token}` },
     }),
+    $fetch<any[]>(`${config.public.apiBase}/property/watches`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
   ])
   if (buyerResult.status === 'fulfilled') buyerProfile.value = buyerResult.value ?? null
   if (savedResult.status === 'fulfilled') savedProperties.value = savedResult.value ?? []
+  if (watchedResult.status === 'fulfilled') watchedProperties.value = watchedResult.value ?? []
+  loadingWatched.value = false
 }
 
 onMounted(async () => {
@@ -1382,6 +1498,106 @@ onMounted(async () => {
   cursor: pointer;
 }
 .dsh-card-more:hover { background: #f2faf8; }
+/* Same strip rendered as an anchor for the Saved row. */
+.dsh-card-more--link {
+  text-align: center;
+  text-decoration: none;
+  color: #6b7089;
+}
+.dsh-card-more--link:hover { color: #00a19a; }
+
+/* ── Legislation & news rail (landlord) ───────────────────────────────
+   Horizontal scroller: five teaser cards, each a real outbound link to
+   its source. */
+.dsh-news {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(252px, 1fr);
+  gap: 14px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.dsh-news-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #eceff5;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 8px 20px rgba(15, 36, 62, 0.05);
+  text-decoration: none;
+  scroll-snap-align: start;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.dsh-news-card:hover {
+  transform: translateY(-2px);
+  border-color: #d6e4f0;
+  box-shadow: 0 14px 30px rgba(15, 36, 62, 0.1);
+}
+.dsh-news-band { height: 4px; width: 100%; background: #cbd5e1; }
+.dsh-news-band--law { background: linear-gradient(90deg, #c73e36, #e0796f); }
+.dsh-news-band--update { background: linear-gradient(90deg, #00a19a, #4fd1c5); }
+.dsh-news-band--news { background: linear-gradient(90deg, #3f7fd0, #7aa9e8); }
+.dsh-news-bd {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 15px 16px 16px;
+}
+.dsh-news-tag {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+.dsh-news-tag--law { background: #fbe9ea; color: #a8332b; }
+.dsh-news-tag--update { background: #e2f3ec; color: #14735f; }
+.dsh-news-tag--news { background: #e9f2fb; color: #2c5f9e; }
+.dsh-news-t {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: #231d45;
+}
+.dsh-news-s {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #6b7089;
+  /* Summaries vary a lot in length; clamp so the row stays even. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dsh-news-src {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9aa7b8;
+}
+.dsh-news-src svg { width: 12px; height: 12px; }
+.dsh-news-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #00a19a;
+  text-decoration: none;
+}
+.dsh-news-all:hover { text-decoration: underline; }
+.dsh-news-all svg { width: 15px; height: 15px; }
 .dsh-card-empty { padding: 22px 18px; text-align: center; }
 .dsh-card-empty p {
   margin: 0 0 10px;

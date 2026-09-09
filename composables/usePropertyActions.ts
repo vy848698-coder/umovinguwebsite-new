@@ -1,4 +1,4 @@
-function getAuthHeaders() {
+﻿function getAuthHeaders() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -105,6 +105,33 @@ export function usePropertyActions(propertyId?: string) {
     })
   }
 
+  // The watch list — PropertyWatch rows, created by the property page's
+  // "Watch this" notify flow. A different list from saved/wishlist above,
+  // and the one the dashboard's "Watching" section reads.
+  async function fetchWatchedProperties(): Promise<PropertyListItem[]> {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    if (!token) return []
+    return $fetch<PropertyListItem[]>(`${BASE_URL}/property/watches`, {
+      headers: getAuthHeaders(),
+    })
+  }
+
+  async function unwatchProperty(id: string): Promise<boolean> {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    if (!token) return false
+    try {
+      await $fetch(`${BASE_URL}/property/${id}/watch`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+      return true
+    } catch {
+      return false
+    }
+  }
+
   // Auto-fetch on mount if a propertyId was provided
   if (propertyId) {
     onMounted(() => fetchActions(propertyId))
@@ -119,5 +146,7 @@ export function usePropertyActions(propertyId?: string) {
     toggleSave,
     fetchWishlist,
     fetchSavedProperties,
+    fetchWatchedProperties,
+    unwatchProperty,
   }
 }
