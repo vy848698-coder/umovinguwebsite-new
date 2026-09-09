@@ -131,6 +131,11 @@
               </button>
             </div>
 
+            <p v-if="watcherCountLabel" class="pps-herocard-watchers">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+              {{ watcherCountLabel }}
+            </p>
+
             <div class="pps-herocard-pills">
               <span v-if="property.propertyType" class="pps-herocard-pill">{{
                 property.propertyType
@@ -6105,6 +6110,15 @@ function goBack() {
 // The EPC certificate lives on gov.uk, keyed by its LMK. Prefer the key we
 // already persist; fall back to the backend UPRN lookup for older cache rows
 // that predate that column.
+// Real watcher count from the backend (PropertyWatch rows). Renders nothing
+// at zero rather than showing "0 people watching", which would read as a
+// negative signal on a property nobody has looked at yet.
+const watcherCountLabel = computed<string>(() => {
+  const n = Number((property.value as any)?.watcherCount ?? 0)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  return `${n} ${n === 1 ? 'person' : 'people'} watching`
+})
+
 const passportEcosystemOpen = ref(false)
 const epcDownloading = ref(false)
 async function downloadEpc() {
@@ -6583,6 +6597,16 @@ function formatSaleDate(dateStr: string): string {
   border-color: rgba(255, 255, 255, 0.28);
 }
 .pps-herocard-quick-btn svg { width: 16px; height: 16px; }
+.pps-herocard-watchers {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.62);
+}
+.pps-herocard-watchers svg { width: 15px; height: 15px; }
 
 .pps-herocard-photo {
   position: relative;
