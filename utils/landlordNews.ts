@@ -19,11 +19,15 @@ export interface NewsItem {
   url: string
   date: string // ISO yyyy-mm-dd
   featured?: boolean
+  // 3D illustration specific to this story (public/ path). Pages fall
+  // back to the per-tag icon in public/op-icons/news/ when absent.
+  icon?: string
 }
 
 export const NEWS_ITEMS: NewsItem[] = [
   {
     id: 'rra-roadmap',
+    icon: '/op-icons/landlordPassport/tenancyAgreement.png',
     tag: 'law',
     tagLabel: 'Law change',
     title: "Renters' Rights Act - implementation roadmap published",
@@ -35,6 +39,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'rent-bidding-ban',
+    icon: '/homescore-icon/cashAndCoins.png',
     tag: 'law',
     tagLabel: 'Law change',
     title: 'Rental bidding banned - one fixed asking rent only',
@@ -45,6 +50,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'deposit-s8-gate',
+    icon: '/op-icons/landlordPassport/depositProtection.png',
     tag: 'law',
     tagLabel: 'Deposit rules',
     title: 'Deposit protection now gates your Section 8 grounds',
@@ -55,6 +61,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'epc-2030',
+    icon: '/op-icons/landlordPassport/epc.png',
     tag: 'update',
     tagLabel: 'EPC update',
     title: 'EPC minimum rises to C - but not until 2030',
@@ -65,6 +72,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'electrical-social',
+    icon: '/op-icons/landlordPassport/electricalSafety.png',
     tag: 'update',
     tagLabel: 'Electrical safety',
     title: 'Mandatory electrical checks extend to social housing',
@@ -75,6 +83,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'awaabs-law-prs',
+    icon: '/homescore-icon/waterDroplet.png',
     tag: 'update',
     tagLabel: "Awaab's Law",
     title: "Awaab's Law widens in social housing - private sector still pending",
@@ -85,6 +94,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'hmo-licensing',
+    icon: '/passport-seller-and-buyer-icon/occupiers.png',
     tag: 'news',
     tagLabel: 'HMO licensing',
     title: 'Smaller HMOs face growing licensing scrutiny',
@@ -95,6 +105,7 @@ export const NEWS_ITEMS: NewsItem[] = [
   },
   {
     id: 'right-to-rent-code',
+    icon: '/op-icons/landlordPassport/rightToRent.png',
     tag: 'news',
     tagLabel: 'Right to Rent',
     title: 'New Right to Rent Code of Practice from 1 October 2026',
