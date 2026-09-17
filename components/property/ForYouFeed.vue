@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="fyf">
     <div class="fyf-head" data-tour="foryou-feed">
       <div class="fyf-head-text">
@@ -243,12 +243,24 @@ async function savePostcode() {
   margin-bottom: 18px;
 }
 .fyf-eyebrow {
-  margin: 0 0 4px;
+  /* Accent dash, matching the dashboard's own section headers — this feed
+     only ever renders there. */
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 5px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #00a19a;
+}
+.fyf-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
 }
 .fyf-title {
   margin: 0 0 6px;

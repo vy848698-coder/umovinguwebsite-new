@@ -1,7 +1,10 @@
-<template>
+﻿<template>
   <section v-if="loading || properties.length" class="rvf">
     <div class="rvf-head">
-      <h2 class="rvf-title">Recently viewed</h2>
+      <div class="rvf-head-text">
+        <p class="rvf-eyebrow">Your history</p>
+        <h2 class="rvf-title">Recently viewed</h2>
+      </div>
       <button type="button" class="rvf-all" @click="navigateTo('/profile/saved-properties')">
         Saved properties
         <Icon name="i-lucide-chevron-right" />
@@ -55,16 +58,37 @@ defineProps<{
 }
 .rvf-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
+}
+.rvf-head-text { min-width: 0; }
+/* Accent-dashed eyebrow, matching the dashboard's section headers — this
+   feed only ever renders there. */
+.rvf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #00a19a;
+}
+.rvf-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a19a;
 }
 .rvf-title {
   margin: 0;
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
   color: #231d45;
 }
 .rvf-all {
