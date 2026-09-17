@@ -21,6 +21,7 @@
         <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
       <input
+        ref="inputEl"
         :value="query"
         type="text"
         :placeholder="placeholder"
@@ -183,6 +184,13 @@ interface Props {
    * v-model, so it never fights the user's own typing afterwards.
    */
   initialQuery?: string
+  /**
+   * Enter always emits 'enter' with the typed text, even while suggestions
+   * are showing, instead of opening the first suggestion. For hosts that
+   * turn Enter into a full results view (the dashboard's search mode), where
+   * picking a suggestion is the explicit "open this property" gesture.
+   */
+  enterCommits?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -192,6 +200,7 @@ const props = withDefaults(defineProps<Props>(), {
   showPassportStatus: false,
   postcodeFallback: false,
   initialQuery: '',
+  enterCommits: false,
 })
 
 const emit = defineEmits<{
@@ -355,6 +364,13 @@ function onFocus() {
 }
 
 function onEnter() {
+  if (props.enterCommits) {
+    const q = query.value.trim()
+    if (!q) return
+    closeDropdown()
+    emit('enter', q)
+    return
+  }
   if (results.value.length > 0) {
     select(results.value[0])
   } else {
@@ -433,7 +449,18 @@ function closeDropdown() {
   suppressDropdown.value = true
 }
 
-defineExpose({ clearQuery, closeDropdown })
+const inputEl = ref<HTMLInputElement | null>(null)
+
+function focus() {
+  inputEl.value?.focus()
+}
+
+// The typed text, for hosts with their own Search button beside the field.
+function getQuery(): string {
+  return query.value.trim()
+}
+
+defineExpose({ clearQuery, closeDropdown, focus, getQuery })
 </script>
 
 <style scoped>

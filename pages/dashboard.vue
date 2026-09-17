@@ -25,47 +25,89 @@
     </WebTopNav>
 
     <main class="dsh-shell">
-      <!-- ── Greeting + search ───────────────────────────────────────── -->
-      <section class="dsh-head">
-        <div class="dsh-head-text">
-          <p class="dsh-greeting">{{ greeting }}</p>
-          <h1 class="dsh-title">{{ headline }}</h1>
-          <p class="dsh-lede">{{ lede }}</p>
+      <!-- ── Hero ─────────────────────────────────────────────────────
+           The first thing a signed-in user sees, so it carries the weight:
+           who they are, where their record stands, and the one search that
+           starts everything. Navy card on the flat shell, matching the
+           property page's hero so the two read as one product. -->
+      <section class="dsh-hero">
+        <div class="dsh-hero-top">
+          <div class="dsh-hero-text">
+            <p class="dsh-greeting">
+              <span class="dsh-greeting-dot" />
+              {{ greeting }}
+            </p>
+            <h1 class="dsh-title">{{ headline }}</h1>
+            <p class="dsh-lede">{{ lede }}</p>
+          </div>
+
+          <div class="dsh-head-side">
+            <span class="dsh-role-chip">
+              <img :src="roleArt" alt="" class="dsh-role-art" loading="lazy" />
+              <span>
+                <small>Signed in as</small>
+                <strong>{{ roleLabel }}</strong>
+              </span>
+            </span>
+            <button class="dsh-add" type="button" @click="startClaimFlow">
+              <img src="/dashboard-art/addProperty.png" alt="" class="dsh-add-ic" loading="lazy" />
+              Add a property
+            </button>
+          </div>
         </div>
 
-        <div class="dsh-head-side">
-          <span class="dsh-role-chip">
-            <img :src="roleArt" alt="" class="dsh-role-art" loading="lazy" />
-            <span>
-              <small>Signed in as</small>
-              <strong>{{ roleLabel }}</strong>
-            </span>
-          </span>
-          <button class="dsh-add" type="button" @click="startClaimFlow">
-            <img src="/dashboard-art/addProperty.png" alt="" class="dsh-add-ic" loading="lazy" />
-            Add a property
+        <div class="dsh-search">
+          <div class="dsh-search-field">
+            <PropertySearchInput
+              ref="searchInputEl"
+              placeholder="Search any UK address or postcode"
+              variant="dark"
+              :initial-query="initialSearchQuery"
+              enter-commits
+              @select="onSearchSelect"
+              @enter="onSearchEnter"
+            />
+          </div>
+          <button class="dsh-search-btn" type="button" @click="runSearch">
+            <Icon name="i-lucide-search" />
+            Search
           </button>
+        </div>
+
+        <!-- Only figures we actually hold — see heroStats. Nothing renders
+             until the fetch behind it has landed, so no flash of zeroes. -->
+        <div v-if="heroStats.length && !searchMode" class="dsh-stats">
+          <component
+            :is="stat.to ? 'button' : 'div'"
+            v-for="stat in heroStats"
+            :key="stat.key"
+            :type="stat.to ? 'button' : undefined"
+            class="dsh-stat"
+            :class="{ 'dsh-stat--link': stat.to }"
+            @click="stat.to ? navigateTo(stat.to) : undefined"
+          >
+            <span class="dsh-stat-label">{{ stat.label }}</span>
+            <span class="dsh-stat-value">{{ stat.value }}</span>
+            <span class="dsh-stat-sub">{{ stat.sub }}</span>
+          </component>
         </div>
       </section>
 
-      <div class="dsh-search">
-        <div class="dsh-search-field">
-          <PropertySearchInput
-            placeholder="Search by postcode, address or area"
-            variant="light"
-            @select="onSearchSelect"
-            @enter="onSearchEnter"
-          />
-        </div>
-        <button class="dsh-search-btn" type="button" @click="runSearch">
-          <Icon name="i-lucide-search" />
-          Search
-        </button>
-      </div>
-
       <!-- ── Loading skeleton until the role is known, so the page never
               flashes the wrong role's content ─────────────────────────── -->
-      <div v-if="!roleResolved" class="dsh-boot">
+      <!-- ── In-place search mode ─────────────────────────────────────
+           Committing a search (Enter / Search) swaps every dashboard
+           section below the hero for the results, the way the reference
+           app does; picking a suggestion still opens that property. -->
+      <DashboardSearchResults
+        v-if="searchMode"
+        :query="activeSearchQuery"
+        :saved-ids="savedPropertyIds"
+        :watched-ids="watchedPropertyIds"
+        @close="exitSearch"
+      />
+
+      <div v-else-if="!roleResolved" class="dsh-boot">
         <div class="dsh-boot-card" />
         <div class="dsh-boot-rows">
           <div class="dsh-boot-row" />
@@ -231,7 +273,8 @@
                 </div>
               </div>
 
-              <div class="dsh-news">
+              <div class="dsh-news-wrap">
+                <div class="dsh-news">
                 <a
                   v-for="n in dashNewsItems"
                   :key="n.url"
@@ -250,7 +293,8 @@
                       <Icon name="i-lucide-external-link" />
                     </small>
                   </span>
-                </a>
+                  </a>
+                </div>
               </div>
 
               <NuxtLink to="/profile/news" class="dsh-news-all">
@@ -309,11 +353,20 @@
 
           <!-- ═══ Side column ═══════════════════════════════════════ -->
           <aside class="dsh-side">
-            <!-- Owner HomeScore — only once we have a real score to show -->
-            <section
-              v-if="!isBuyerView && passports.length && primaryPassport.homeScore != null"
-              class="hsc"
-            >
+            <!-- Owner HomeScore. Shown for every owner with a passport, scored
+                 or not: an owner without a score yet is exactly who needs the
+                 route into HomeScore, so the ring reads "–" and says so rather
+                 than the whole card vanishing. -->
+            <section v-if="!isBuyerView && passports.length" class="hsc">
+              <div class="hsc-head">
+                <div class="hsc-info">
+                  <h3 class="hsc-title">Your home today</h3>
+                  <p class="hsc-sub">
+                    How your home performs on energy, running costs and value.
+                  </p>
+                </div>
+                <img src="/dashboard-art/homeScoreCard.png" alt="" class="hsc-house-img" loading="lazy" />
+              </div>
               <div class="hsc-top">
                 <div class="hsc-ring">
                   <svg viewBox="0 0 100 100" class="hsc-ring-svg">
@@ -334,20 +387,24 @@
                     />
                   </svg>
                   <div class="hsc-ring-label">
-                    <span class="hsc-ring-num">{{ primaryPassport.homeScore }}</span>
+                    <span class="hsc-ring-num">{{ primaryPassport.homeScore ?? '–' }}</span>
                     <span class="hsc-ring-den">/100</span>
                   </div>
                 </div>
-                <div class="hsc-info">
-                  <h3 class="hsc-title">Your home today</h3>
-                  <p class="hsc-sub">
-                    How your home performs on energy, running costs and value.
-                  </p>
+                <div class="hsc-status">
+                  <template v-if="primaryPassport.homeScore == null">
+                    <strong>No score yet</strong>
+                    <small>Open HomeScore to see how your home performs.</small>
+                  </template>
+                  <template v-else-if="primaryPassport.homeScorePotential != null">
+                    <small>Potential score</small>
+                    <strong class="hsc-status-accent">{{ primaryPassport.homeScorePotential }}/100</strong>
+                  </template>
+                  <template v-else>
+                    <small>Current score</small>
+                    <strong>{{ primaryPassport.homeScore }}/100</strong>
+                  </template>
                 </div>
-              </div>
-              <div v-if="primaryPassport.homeScorePotential != null" class="hsc-potential">
-                <span>Potential score</span>
-                <strong>{{ primaryPassport.homeScorePotential }}/100</strong>
               </div>
               <button class="hsc-cta" type="button" @click="navigateTo(homeScoreHref)">
                 See my HomeScore
@@ -396,7 +453,13 @@
                       HomeScore <b>{{ prop.homeScore }}/100</b>
                     </small>
                   </span>
-                  <Icon name="i-lucide-chevron-right" class="watch-chev" />
+                  <!-- The reference app's "Updates" affordance. It opens the
+                       same property page as the row itself, so it is a pill
+                       inside the link rather than a nested (invalid) button. -->
+                  <span class="watch-updates">
+                    <Icon name="i-lucide-bell" />
+                    Updates
+                  </span>
                 </NuxtLink>
                 <button
                   type="button"
@@ -411,12 +474,24 @@
                 </button>
               </template>
 
-              <div v-else class="dsh-card-empty">
-                <p>Nothing watched yet.</p>
-                <button type="button" @click="navigateTo('/marketplace')">
-                  Browse properties
-                </button>
-              </div>
+              <button
+                v-else
+                type="button"
+                class="dsh-emptyrow"
+                @click="navigateTo('/marketplace')"
+              >
+                <span class="dsh-emptyrow-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </span>
+                <span class="dsh-emptyrow-bd">
+                  <strong>Nothing watched yet</strong>
+                  <small>Explore properties and watch the ones you like.</small>
+                </span>
+                <Icon name="i-lucide-chevron-right" class="dsh-emptyrow-chev" />
+              </button>
 
               <!-- Saved is a separate list from Watching (heart/save toggle vs
                    the "Watch this" notify flow), so it gets its own honest row
@@ -433,7 +508,23 @@
 
             <!-- Run a HomeScore on any property -->
             <button class="hec" type="button" @click="navigateTo('/homescore')">
-              <img src="/dashboard-art/sectionHomescore.png" alt="" class="hec-art" loading="lazy" />
+              <!-- Sample gauge, matching the reference app: the 82 and its
+                   arc are a fixed illustrative figure, not a live score —
+                   this card is about running a HomeScore on any home, so
+                   there is no real value to bind here. -->
+              <span class="hec-gauge" aria-hidden="true">
+                <svg viewBox="0 0 100 100" class="hec-gauge-svg">
+                  <defs>
+                    <linearGradient id="dshHecGrad" x1="1" y1="0" x2="0" y2="0">
+                      <stop offset="0%" stop-color="#00bb93" />
+                      <stop offset="100%" stop-color="#016f84" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="hec-gauge-bg" cx="50" cy="50" r="44" />
+                  <circle class="hec-gauge-fill" cx="50" cy="50" r="44" />
+                </svg>
+                <span class="hec-gauge-num">82</span>
+              </span>
               <span class="hec-body">
                 <strong>Check any home's HomeScore</strong>
                 <small>
@@ -445,6 +536,12 @@
                   <Icon name="i-lucide-arrow-right" />
                 </span>
               </span>
+              <img
+                src="/dashboard-art/searchHouse.png"
+                alt=""
+                class="hec-house"
+                loading="lazy"
+              />
             </button>
 
             <!-- 'both' role: compact buyer-side summary alongside the owner view -->
@@ -544,6 +641,7 @@ import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import PropertyImage from '~/components/property/PropertyImage.vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
+import DashboardSearchResults from '~/components/property/DashboardSearchResults.vue'
 import PropertySearchFiltersModal from '~/components/property/PropertySearchFiltersModal.vue'
 import ForYouFeed from '~/components/property/ForYouFeed.vue'
 import RecentlyViewedFeed from '~/components/property/RecentlyViewedFeed.vue'
@@ -589,7 +687,20 @@ const loadingBuyerSummary = ref(true)
 const recentlyViewed = ref<any[]>([])
 const loadingRecentlyViewed = ref(true)
 
-const searchQuery = ref('')
+const route = useRoute()
+const searchInputEl = ref<{
+  clearQuery: () => void
+  closeDropdown: () => void
+  focus: () => void
+  getQuery: () => string
+} | null>(null)
+const initialSearchQuery = typeof route.query.q === 'string' ? route.query.q.trim() : ''
+const activeSearchQuery = ref(initialSearchQuery)
+const searchMode = computed(() => activeSearchQuery.value !== '')
+const savedPropertyIds = computed(() => savedProperties.value.map((p: any) => p.id))
+const watchedPropertyIds = computed(() =>
+  watchedProperties.value.map((p: any) => p.propertyId ?? p.id),
+)
 
 const {
   properties,
@@ -646,14 +757,17 @@ const passportSectionTitle = computed(() => {
   return 'Property Passport'
 })
 
-const emptyPassportTitle = computed(() =>
-  isBuyerView.value ? 'Start your Buyer Passport' : 'Start your Property Passport',
-)
-const emptyPassportSub = computed(() =>
-  isBuyerView.value
-    ? 'Verify your identity and buying position.'
-    : 'Verify ownership and build your record.',
-)
+const emptyPassportTitle = computed(() => {
+  if (isBuyerView.value) return 'Start your Buyer Passport'
+  if (isLandlord.value) return 'Start your Rental Passport'
+  return 'Start your Property Passport'
+})
+const emptyPassportSub = computed(() => {
+  if (isBuyerView.value) return 'Verify your identity and buying position.'
+  if (isLandlord.value)
+    return 'Verify ownership, then add compliance documents your tenants can see.'
+  return 'Verify ownership and build your record.'
+})
 
 // The primary card is what the page is "about" for this role, so the
 // section skeleton keys off whichever fetch actually feeds it.
@@ -788,6 +902,79 @@ const stalenessLine = computed(() => {
   return stalenessCopy(primaryPassport.value.createdAt, primaryPassport.value.lastVisitedAt)
 })
 
+// ── Hero stat tiles ────────────────────────────────────────────────────
+// Only figures that come from a real fetch, and only once that fetch has
+// landed — an unloaded stat renders nothing rather than a placeholder 0,
+// which would be a fabricated number on the first screen after login.
+const heroStats = computed(() => {
+  const out: {
+    key: string
+    label: string
+    value: string
+    sub: string
+    to?: string
+  }[] = []
+
+  if (isBuyerView.value) {
+    if (!loadingBuyerProfile.value && buyerProfile.value) {
+      out.push({
+        key: 'finance',
+        label: 'Buying position',
+        value: `${financePercent.value}%`,
+        sub: 'confirmed',
+        to: '/buyer-profile/build',
+      })
+      if (buyerIncompleteCount.value > 0) {
+        out.push({
+          key: 'items',
+          label: 'To complete',
+          value: String(buyerIncompleteCount.value),
+          sub: buyerIncompleteCount.value === 1 ? 'item left' : 'items left',
+          to: '/buyer-profile/build',
+        })
+      }
+    }
+  } else if (!loadingPassport.value && passports.value.length) {
+    out.push({
+      key: 'passport',
+      label: 'Passport',
+      value: `${primaryPassport.value.completionPercentage ?? 0}%`,
+      sub: 'complete',
+      to: `/passportview/${primaryPassport.value.id}`,
+    })
+    if (primaryPassport.value.homeScore != null) {
+      out.push({
+        key: 'score',
+        label: 'HomeScore',
+        value: String(primaryPassport.value.homeScore),
+        sub: 'out of 100',
+        to: homeScoreHref.value,
+      })
+    }
+    if (incompleteItemCount.value > 0) {
+      out.push({
+        key: 'items',
+        label: 'To complete',
+        value: String(incompleteItemCount.value),
+        sub: incompleteItemCount.value === 1 ? 'item left' : 'items left',
+        to: `/passportview/${primaryPassport.value.id}`,
+      })
+    }
+  }
+
+  if (!loadingWatched.value && watchedProperties.value.length) {
+    out.push({
+      key: 'watching',
+      label: 'Watching',
+      value: String(watchedProperties.value.length),
+      sub: watchedProperties.value.length === 1 ? 'property' : 'properties',
+      to: '/profile/watched-properties',
+    })
+  }
+
+  return out
+})
+
 // ── "Next for you" rows, per role ──────────────────────────────────────
 const nextActions = computed(() => {
   const rows: { title: string; sub: string; icon: string; to: string }[] = []
@@ -858,17 +1045,33 @@ const nextActions = computed(() => {
 })
 
 // ── Search ─────────────────────────────────────────────────────────────
-function onSearchSelect(property: { id: string }) {
+// Picking a suggestion opens that property; Enter or the Search button
+// commits the query and the page switches into search mode in place.
+// ?q= mirrors the active query so a refresh or a shared link comes back to
+// the same results, and ?focusSearch=1 lands with the cursor in the field.
+function onSearchSelect(property: { id: string | null; postcode?: string }) {
   if (property?.id) navigateTo(`/property/${property.id}`)
-  else navigateTo('/marketplace')
+  else if (property?.postcode) commitSearch(property.postcode)
 }
 function onSearchEnter(q: string) {
-  searchQuery.value = q
-  runSearch()
+  commitSearch(q)
 }
 function runSearch() {
-  const q = searchQuery.value.trim()
-  navigateTo(q ? `/marketplace?q=${encodeURIComponent(q)}` : '/marketplace')
+  const q = searchInputEl.value?.getQuery() ?? ''
+  if (q) commitSearch(q)
+  else searchInputEl.value?.focus()
+}
+function commitSearch(raw: string) {
+  const q = raw.trim()
+  if (!q) return
+  searchInputEl.value?.closeDropdown()
+  activeSearchQuery.value = q
+  navigateTo({ path: route.path, query: { ...route.query, q, focusSearch: undefined } }, { replace: true })
+}
+function exitSearch() {
+  activeSearchQuery.value = ''
+  searchInputEl.value?.clearQuery()
+  navigateTo({ path: route.path, query: { ...route.query, q: undefined } }, { replace: true })
 }
 
 function startClaimFlow() {
@@ -929,6 +1132,7 @@ async function fetchBuyerSide(token: string) {
 }
 
 onMounted(async () => {
+  if (route.query.focusSearch && !searchMode.value) searchInputEl.value?.focus()
   if (!profile.value) await fetchProfile()
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   if (!token) return
@@ -991,14 +1195,38 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ── Tokens ────────────────────────────────────────────────────────────
+   One scale for the whole page. Before this, every card invented its own
+   radius, border and shadow, so nothing read as part of the same system. */
 .dsh {
+  --ink: #1a1535;
+  --ink-2: #4a5268;
+  --ink-3: #8a90a6;
+  --brand: #00a19a;
+  --brand-deep: #00756f;
+  --brand-wash: #eafaf8;
+  --line: #e7eaf1;
+  --surface: #fff;
+  --shell: #f3f2ef;
+
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 30px;
+
+  /* Layered and low-spread: depth without the page looking heavy. */
+  --sh-sm: 0 1px 2px rgba(26, 21, 53, 0.04), 0 2px 6px rgba(26, 21, 53, 0.04);
+  --sh-md: 0 1px 2px rgba(26, 21, 53, 0.04), 0 10px 24px rgba(26, 21, 53, 0.07);
+  --sh-lg: 0 2px 4px rgba(26, 21, 53, 0.04), 0 20px 44px rgba(26, 21, 53, 0.1);
+
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #f3f2ef;
+  background: var(--shell);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #231d45;
+  text-rendering: optimizeLegibility;
+  color: var(--ink);
 }
 
 .dsh-shell {
@@ -1006,7 +1234,7 @@ onMounted(async () => {
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 30px 24px 64px;
+  padding: 26px 24px 72px;
 }
 
 /* ── Navbar actions ────────────────────────────────────────────────── */
@@ -1017,7 +1245,10 @@ onMounted(async () => {
 .dsh :deep(.nb-btn) {
   width: 40px;
   height: 40px;
-  border: 1px solid #e4e5ed;
+  /* Rounded square, not a circle: WebTopNav's own controls (nav links 10px,
+     the menu toggle 40x40 at 12px) set this radius for the whole bar. */
+  border-radius: 12px;
+  border: 1px solid var(--line);
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -1027,13 +1258,18 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
 }
 
+/* Same 40px height and 12px radius as the bell beside it and WebTopNav's own
+   controls, so the actions read as one set rather than a pill next to a
+   square. */
 .dsh-nav-profile {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  padding: 5px 14px 5px 5px;
-  border-radius: 999px;
-  border: 1px solid #e4e5ed;
+  height: 40px;
+  padding: 0 13px 0 5px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
   background: #fff;
   text-decoration: none;
   color: inherit;
@@ -1043,6 +1279,10 @@ onMounted(async () => {
   border-color: #9fe0d8;
   box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
 }
+/* UserAvatar sets a 50% radius inline; a circle inside a rounded square
+   reads as a mismatch, so follow the container's curve (12px outer minus
+   the 5px inset). */
+.dsh-nav-profile > :first-child { border-radius: 8px !important; }
 .dsh-nav-profile-text {
   display: flex;
   flex-direction: column;
@@ -1051,268 +1291,416 @@ onMounted(async () => {
 .dsh-nav-profile-text strong {
   font-size: 13px;
   font-weight: 800;
-  color: #231d45;
+  color: var(--ink);
 }
 .dsh-nav-profile-text small {
   font-size: 10.5px;
   font-weight: 700;
-  color: #8a90a6;
-}
-/* Below this the name would crowd the bar; the avatar alone still reads. */
-@media (max-width: 1120px) {
-  .dsh-nav-profile-text { display: none; }
-  .dsh-nav-profile { padding: 5px; }
+  color: var(--ink-3);
 }
 
-/* ── Head ──────────────────────────────────────────────────────────── */
-.dsh-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 28px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
+/* ── Hero ──────────────────────────────────────────────────────────────
+   Navy card, matching the property page's hero, so the two pages read as
+   one product. Greeting, identity, the search that starts everything, and
+   the live figures — all above the fold. */
+.dsh-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  padding: 34px 36px 30px;
+  margin-bottom: 34px;
+  color: #fff;
+  background:
+    radial-gradient(120% 150% at 92% 0%, rgba(0, 182, 174, 0.3) 0%, rgba(0, 182, 174, 0) 48%),
+    linear-gradient(135deg, #241d4d 0%, #1c1a3e 48%, #141a37 100%);
+  box-shadow: var(--sh-lg);
 }
+.dsh-hero-top {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+.dsh-hero-text { min-width: 0; flex: 1 1 420px; }
 .dsh-greeting {
-  margin: 0 0 4px;
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: #00a19a;
+  letter-spacing: 0.01em;
+  color: #7ef0e4;
+}
+.dsh-greeting-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2fd0c6;
+  box-shadow: 0 0 0 3px rgba(47, 208, 198, 0.18);
 }
 .dsh-title {
-  margin: 0 0 6px;
-  font-size: 32px;
+  margin: 0 0 10px;
+  font-size: clamp(28px, 2.9vw, 40px);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.1;
+  line-height: 1.06;
+  color: #fff;
 }
 .dsh-lede {
   margin: 0;
-  max-width: 58ch;
-  font-size: 14px;
+  max-width: 54ch;
+  font-size: 14.5px;
   font-weight: 500;
-  line-height: 1.55;
-  color: #6b7089;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.62);
 }
 .dsh-head-side {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .dsh-role-chip {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 16px 8px 10px;
+  padding: 7px 16px 7px 8px;
   border-radius: 999px;
-  background: #fff;
-  border: 1px solid #e4e5ed;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
-.dsh-role-art {
-  width: 26px;
-  height: 34px;
-  object-fit: contain;
-}
+.dsh-role-art { width: 30px; height: 30px; object-fit: contain; }
+.dsh-role-chip span { display: flex; flex-direction: column; line-height: 1.2; }
 .dsh-role-chip small {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #a8a9ad;
-}
-.dsh-role-chip strong {
-  display: block;
-  font-size: 13.5px;
+  font-size: 9.5px;
   font-weight: 800;
-  color: #231d45;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
 }
+.dsh-role-chip strong { font-size: 13px; font-weight: 800; color: #fff; }
 .dsh-add {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px 12px 14px;
+  gap: 9px;
+  padding: 12px 20px 12px 12px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
+  background: var(--brand);
   color: #fff;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.28);
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.34);
+  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
-.dsh-add:hover { filter: brightness(1.06); }
-.dsh-add-ic { width: 22px; height: 22px; object-fit: contain; }
+.dsh-add:hover {
+  transform: translateY(-1px);
+  background: #00b3ab;
+  box-shadow: 0 14px 30px rgba(0, 161, 154, 0.44);
+}
+.dsh-add-ic { width: 28px; height: 28px; object-fit: contain; }
 
-/* ── Search ────────────────────────────────────────────────────────── */
+/* Search — the widest affordance in the hero, because it is the one
+   action every role starts with. */
 .dsh-search {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 10px 10px 6px;
-  background: #fff;
-  border: 1px solid #e4e5ed;
-  border-radius: 18px;
-  box-shadow: 0 10px 26px rgba(31, 61, 98, 0.06);
-  margin-bottom: 26px;
+  margin-top: 28px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
 }
 .dsh-search-field { flex: 1; min-width: 0; }
+/* The dark variant already colours the field for a navy surface; it only
+   needs its pill flattened so the wrapper above is the visible chrome. */
+.dsh-search :deep(.psi-input) {
+  background: transparent;
+  border-color: transparent;
+  font-size: 15px;
+  height: 46px;
+}
+.dsh-search :deep(.psi-input:focus) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
 .dsh-search-btn {
-  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 12px 22px;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 13px 26px;
   border: none;
-  border-radius: 12px;
-  background: #00a19a;
-  color: #fff;
+  border-radius: 999px;
+  background: #fff;
+  color: #141a37;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 800;
   cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
-.dsh-search-btn:hover { background: #008a84; }
+.dsh-search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+.dsh-search-btn svg { width: 17px; height: 17px; }
 
-/* ── Boot skeleton ─────────────────────────────────────────────────── */
-.dsh-boot { display: grid; gap: 16px; }
-.dsh-boot-card, .dsh-boot-row, .dsh-skel {
-  border-radius: 18px;
-  background: linear-gradient(100deg, #eceff4 30%, #e2e6ee 50%, #eceff4 70%);
-  background-size: 250% 100%;
-  animation: dsh-shimmer 1.4s ease-in-out infinite;
+/* Stat row — real figures only, so this is often 1-3 tiles, never a grid
+   of placeholder zeroes. */
+.dsh-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.dsh-boot-card { height: 210px; }
-.dsh-boot-rows { display: grid; gap: 10px; }
-.dsh-boot-row { height: 66px; }
-.dsh-skel--hero { height: 210px; }
-.dsh-skel--row { height: 72px; }
-@keyframes dsh-shimmer {
-  from { background-position: 140% 0; }
-  to { background-position: -40% 0; }
+.dsh-stat {
+  flex: 1 1 150px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 15px 18px;
+  text-align: left;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  font-family: inherit;
+  color: inherit;
 }
-@media (prefers-reduced-motion: reduce) {
-  .dsh-boot-card, .dsh-boot-row, .dsh-skel { animation: none; }
+.dsh-stat--link { cursor: pointer; transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease; }
+.dsh-stat--link:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(127, 240, 228, 0.4);
+}
+.dsh-stat-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.dsh-stat-value {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: #fff;
+  font-feature-settings: 'tnum';
+}
+.dsh-stat-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
 }
 
-/* ── Layout ────────────────────────────────────────────────────────── */
+/* ── Layout ───────────────────────────────────────────────────────── */
 .dsh-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 348px;
-  gap: 26px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 30px;
   align-items: start;
 }
 .dsh-main { min-width: 0; }
 .dsh-side {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   position: sticky;
   top: 20px;
 }
 
-.dsh-section { margin-bottom: 30px; }
+.dsh-section { margin-bottom: 38px; }
+.dsh-section:last-child { margin-bottom: 0; }
+
+/* Section header: art, accent-dashed eyebrow, then the title. The dash
+   ties these back to the property page's section headers. */
 .dsh-sec-head {
   display: flex;
   align-items: center;
-  gap: 13px;
-  margin-bottom: 14px;
+  gap: 15px;
+  margin-bottom: 18px;
 }
-.dsh-sec-ic { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
+.dsh-sec-ic {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 6px 12px rgba(26, 21, 53, 0.12));
+}
 .dsh-eyebrow {
-  margin: 0 0 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 5px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #00a19a;
+  color: var(--brand);
+}
+.dsh-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand);
 }
 .dsh-sec-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
 }
 
-/* ── Active passport card ──────────────────────────────────────────── */
+/* ── Active passport card ──────────────────────────────────────────────
+   The anchor of the page. Given a tinted panel behind the book so the
+   passport art reads as an object on a shelf rather than a clipart pasted
+   on white, and the book itself is half again as large. */
 .apc {
+  position: relative;
   display: flex;
-  gap: 24px;
-  padding: 24px;
-  background: #fff;
-  border: 1px solid #e9ecf2;
-  border-radius: 22px;
+  gap: 30px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   cursor: pointer;
-  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+  box-shadow: var(--sh-md);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .apc:hover {
-  border-color: #d8e4e2;
-  box-shadow: 0 16px 36px rgba(31, 61, 98, 0.1);
+  transform: translateY(-3px);
+  border-color: #c8e3df;
+  box-shadow: var(--sh-lg);
 }
-.apc:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
-.apc-book { flex-shrink: 0; width: 116px; }
-.apc-info { flex: 1; min-width: 0; }
+.apc:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.apc-book {
+  flex-shrink: 0;
+  width: 196px;
+  display: grid;
+  /* align only — NOT place-items. PassportCard sizes itself from its
+     parent's width (.passport-container is width:100% + aspect-ratio), so
+     justify-items:center collapsed it to max-content and the book vanished.
+     The default justify-items:stretch is what gives it a width to measure. */
+  align-items: center;
+  padding: 28px 22px;
+  background:
+    radial-gradient(120% 120% at 30% 20%, rgba(0, 182, 174, 0.16) 0%, rgba(0, 182, 174, 0) 62%),
+    linear-gradient(160deg, #f4f8fb 0%, #eef4f3 100%);
+  border-right: 1px solid var(--line);
+}
+/* The component ships a 32px vertical margin for its standalone uses; the
+   panel here supplies its own padding. */
+.apc-book :deep(.passport-card) { margin: 0; width: 100%; }
+.apc-book :deep(img),
+.apc-book :deep(svg) {
+  filter: drop-shadow(0 14px 26px rgba(26, 21, 53, 0.22));
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.apc:hover .apc-book :deep(img),
+.apc:hover .apc-book :deep(svg) { transform: translateY(-4px) scale(1.03); }
+.apc-info {
+  flex: 1;
+  min-width: 0;
+  padding: 26px 28px 26px 0;
+}
 .apc-pill {
   display: inline-block;
-  padding: 4px 11px;
+  padding: 5px 12px;
   border-radius: 999px;
-  background: #e9f6f5;
-  color: #00756f;
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  border: 1px solid #d3f0ec;
   font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .apc-name {
-  margin: 9px 0 1px;
-  font-size: 21px;
+  margin: 12px 0 2px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
 }
 .apc-postcode {
   margin: 0;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #8a90a6;
+  color: var(--ink-3);
 }
 .apc-verified, .apc-unverified {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  margin: 6px 0 0;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 5px 12px;
+  border-radius: 999px;
   font-size: 12.5px;
   font-weight: 700;
 }
-.apc-verified { color: #00756f; }
-.apc-unverified { color: #b45309; }
+.apc-verified {
+  color: var(--brand-deep);
+  background: var(--brand-wash);
+  border: 1px solid #d3f0ec;
+}
+.apc-unverified {
+  color: #a4711a;
+  background: #fdf4e3;
+  border: 1px solid #f3ddb0;
+}
+.apc-verified svg, .apc-unverified svg { width: 15px; height: 15px; }
 .apc-prog-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin: 14px 0 6px;
+  margin: 20px 0 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #4a5876;
+  color: var(--ink-2);
 }
-.apc-prog-row strong { color: #231d45; font-weight: 800; }
+.apc-prog-row strong {
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  font-feature-settings: 'tnum';
+}
 .apc-live {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--brand-wash);
   font-size: 11.5px;
   font-weight: 800;
-  color: #00756f;
+  color: var(--brand-deep);
 }
 .apc-live-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #00a19a;
+  background: var(--brand);
   box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.16);
 }
 .apc-track {
-  height: 7px;
+  height: 9px;
   border-radius: 999px;
   background: #edf0f5;
   overflow: hidden;
@@ -1321,31 +1709,38 @@ onMounted(async () => {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #2fd0c6, #00a19a);
-  transition: width 0.4s ease;
+  box-shadow: 0 0 10px rgba(0, 161, 154, 0.4);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .apc-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-top: 18px;
+  margin-top: 22px;
 }
 .apc-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 22px;
+  padding: 13px 24px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
+  border-radius: 13px;
+  background: linear-gradient(135deg, #00a19a, #007d77);
   color: #fff;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.26);
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.3);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
 }
-.apc-cta:hover { filter: brightness(1.06); }
+.apc-cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 14px 28px rgba(0, 161, 154, 0.4);
+}
+.apc-cta svg { width: 16px; height: 16px; }
 .apc-link {
   display: inline-flex;
   align-items: center;
@@ -1354,161 +1749,245 @@ onMounted(async () => {
   border: none;
   padding: 0;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: #00a19a;
+  color: var(--brand);
   cursor: pointer;
 }
-.apc-link:hover { color: #00756f; }
+.apc-link:hover { color: var(--brand-deep); }
 
 /* ── Empty CTA ─────────────────────────────────────────────────────── */
+/* A first-run user sees this instead of a passport, so it has to look
+   like an invitation, not a gap where a card failed to load. */
 .dsh-empty-cta {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
-  padding: 22px 24px;
+  padding: 30px 28px;
+  overflow: hidden;
   text-align: left;
-  background: #fff;
-  border: 1px dashed #cfd8e3;
-  border-radius: 20px;
+  background:
+    radial-gradient(110% 150% at 0% 0%, rgba(0, 182, 174, 0.08) 0%, rgba(0, 182, 174, 0) 58%),
+    var(--surface);
+  border: 1.5px dashed #c6d4e0;
+  border-radius: var(--r-lg);
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  box-shadow: var(--sh-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
-.dsh-empty-cta:hover { border-color: #9fe0d8; background: #fbfffe; }
+.dsh-empty-cta:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand);
+  box-shadow: var(--sh-md);
+}
 .dsh-empty-plus {
-  width: 46px; height: 46px;
+  width: 58px; height: 58px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 14px;
-  background: #e9f6f5;
-  color: #00a19a;
-  font-size: 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #00a19a, #007d77);
+  color: #fff;
+  font-size: 28px;
   font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.3);
 }
 .dsh-empty-body { flex: 1; min-width: 0; }
-.dsh-empty-body strong { display: block; font-size: 15.5px; font-weight: 800; }
+.dsh-empty-body strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
 .dsh-empty-body small {
   display: block;
-  margin-top: 2px;
-  font-size: 12.5px;
+  margin-top: 4px;
+  font-size: 13.5px;
   font-weight: 500;
-  color: #6b7089;
+  line-height: 1.55;
+  color: var(--ink-2);
 }
-.dsh-empty-chev { color: #a8a9ad; font-size: 18px; }
+.dsh-empty-chev { width: 22px; height: 22px; color: #b3b7c6; flex-shrink: 0; }
+.dsh-empty-cta:hover .dsh-empty-chev { color: var(--brand); }
 
-/* ── Next for you ──────────────────────────────────────────────────── */
+/* ── Next for you ───────────────────────────────────────────────────────
+   A checklist, so it reads as progress rather than a list of links: each
+   row gets a numbered marker and the art sits on a tinted tile. */
 .nfy {
-  background: #fff;
-  border: 1px solid #e9ecf2;
-  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   overflow: hidden;
+  box-shadow: var(--sh-md);
 }
 .nfy-stale {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   margin: 0;
-  padding: 12px 20px;
-  background: #fff8ed;
+  padding: 13px 22px;
+  background: linear-gradient(90deg, #fff8ed, #fffdf8);
   border-bottom: 1px solid #fbe4bd;
   font-size: 12.5px;
   font-weight: 700;
   color: #92400e;
 }
+.nfy-stale svg { width: 15px; height: 15px; flex-shrink: 0; }
 .nfy-row {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
-  padding: 16px 20px;
+  padding: 18px 22px;
   text-align: left;
   background: none;
   border: none;
   border-top: 1px solid #f0f2f6;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition: background 0.16s ease, padding-left 0.16s ease;
 }
 .nfy-row:first-of-type { border-top: none; }
-.nfy-row:hover { background: #fafbfd; }
-.nfy-ic { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+.nfy-row:hover { background: #fbfdfd; padding-left: 26px; }
+/* Teal rail that grows in on hover — a cheap, quiet affordance. */
+.nfy-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--brand);
+  transform: scaleY(0);
+  transition: transform 0.18s ease;
+}
+.nfy-row:hover::before { transform: scaleY(1); }
+.nfy-ic {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+  padding: 5px;
+  border-radius: 13px;
+  background: linear-gradient(160deg, #f4f8fb, #eef4f3);
+}
 .nfy-body { flex: 1; min-width: 0; }
-.nfy-body strong { display: block; font-size: 14.5px; font-weight: 800; }
+.nfy-body strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+}
 .nfy-body small {
   display: block;
-  margin-top: 2px;
+  margin-top: 3px;
   font-size: 12.5px;
   font-weight: 500;
-  color: #6b7089;
+  line-height: 1.5;
+  color: var(--ink-2);
 }
-.nfy-chev { color: #c3c6d2; font-size: 18px; flex-shrink: 0; }
+.nfy-chev {
+  width: 20px;
+  height: 20px;
+  color: #c3c6d2;
+  flex-shrink: 0;
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+.nfy-row:hover .nfy-chev { color: var(--brand); transform: translateX(3px); }
 
 /* ── Side cards ────────────────────────────────────────────────────── */
 .dsh-card {
-  background: #fff;
-  border: 1px solid #e9ecf2;
-  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   overflow: hidden;
+  box-shadow: var(--sh-md);
 }
 .dsh-card-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 18px;
+  gap: 13px;
+  padding: 18px 20px;
   border-bottom: 1px solid #f0f2f6;
+  background: linear-gradient(180deg, #fcfdfe, #fff);
 }
-.dsh-card-ic { width: 34px; height: 38px; object-fit: contain; flex-shrink: 0; }
+.dsh-card-ic {
+  width: 40px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 5px 10px rgba(26, 21, 53, 0.12));
+}
 .dsh-card-head-text h3 {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 15px;
+  gap: 8px;
+  font-size: 15.5px;
   font-weight: 800;
+  letter-spacing: -0.015em;
 }
 .dsh-card-head-text small {
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
   font-size: 11.5px;
   font-weight: 500;
-  color: #8a90a6;
+  color: var(--ink-3);
 }
 .dsh-count {
-  padding: 1px 8px;
+  padding: 2px 9px;
   border-radius: 999px;
-  background: #e9f6f5;
-  color: #00756f;
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  border: 1px solid #d3f0ec;
   font-size: 11px;
   font-weight: 800;
+  font-feature-settings: 'tnum';
 }
 .dsh-card-more {
   display: block;
   width: 100%;
-  padding: 13px;
+  padding: 14px;
   background: #fafbfd;
   border: none;
   border-top: 1px solid #f0f2f6;
   font-family: inherit;
   font-size: 12.5px;
   font-weight: 700;
-  color: #00a19a;
+  color: var(--brand);
   cursor: pointer;
+  transition: background 0.15s ease;
 }
-.dsh-card-more:hover { background: #f2faf8; }
+.dsh-card-more:hover { background: #f0faf8; }
 /* Same strip rendered as an anchor for the Saved row. */
 .dsh-card-more--link {
   text-align: center;
   text-decoration: none;
-  color: #6b7089;
+  color: var(--ink-2);
 }
-.dsh-card-more--link:hover { color: #00a19a; }
+.dsh-card-more--link:hover { color: var(--brand); }
 
 /* ── Legislation & news rail (landlord) ───────────────────────────────
    Horizontal scroller: five teaser cards, each a real outbound link to
    its source. */
+/* Wrapper exists only to carry the right-hand fade; the scroller itself
+   has to keep its own overflow. */
+.dsh-news-wrap { position: relative; }
+.dsh-news-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 10px;
+  width: 56px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(243, 242, 239, 0), var(--shell));
+}
 .dsh-news {
   display: grid;
   grid-auto-flow: column;
@@ -1518,7 +1997,16 @@ onMounted(async () => {
   padding: 2px 2px 10px;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cfd6e0 transparent;
 }
+.dsh-news::-webkit-scrollbar { height: 7px; }
+.dsh-news::-webkit-scrollbar-track { background: transparent; }
+.dsh-news::-webkit-scrollbar-thumb {
+  background: #d7dde6;
+  border-radius: 999px;
+}
+.dsh-news::-webkit-scrollbar-thumb:hover { background: #c2cad6; }
 .dsh-news-card {
   position: relative;
   display: flex;
@@ -1598,52 +2086,88 @@ onMounted(async () => {
 }
 .dsh-news-all:hover { text-decoration: underline; }
 .dsh-news-all svg { width: 15px; height: 15px; }
-.dsh-card-empty { padding: 22px 18px; text-align: center; }
-.dsh-card-empty p {
-  margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8a90a6;
-}
-.dsh-card-empty button {
-  padding: 9px 18px;
-  border: 1px solid #e4e5ed;
-  border-radius: 10px;
-  background: #fff;
+/* Empty state as an actionable row — icon, copy, chevron — rather than a
+   centred block with a button, matching the reference app. */
+.dsh-emptyrow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 16px 18px;
+  text-align: left;
+  background: none;
+  border: none;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #231d45;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
-.dsh-card-empty button:hover { border-color: #9fe0d8; color: #00756f; }
+.dsh-emptyrow:hover { background: #fbfdfd; }
+.dsh-emptyrow-ic {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #e6f7f4, #d8f0ea);
+  color: var(--brand);
+}
+.dsh-emptyrow-ic svg { width: 19px; height: 19px; }
+.dsh-emptyrow-bd { flex: 1; min-width: 0; }
+.dsh-emptyrow-bd strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+.dsh-emptyrow-bd small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.dsh-emptyrow-chev {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  color: #c3c6d2;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.dsh-emptyrow:hover .dsh-emptyrow-chev {
+  color: var(--brand);
+  transform: translateX(3px);
+}
 
 .watch-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 13px;
   width: 100%;
   text-decoration: none;
   color: inherit;
-  padding: 12px 16px;
+  padding: 14px 18px;
   text-align: left;
   background: none;
   border: none;
   border-top: 1px solid #f5f6f9;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition: background 0.15s ease;
 }
 .watch-row:first-of-type { border-top: none; }
-.watch-row:hover { background: #fafbfd; }
-.watch-row--plain { padding: 14px 16px; }
+.watch-row:hover { background: #fbfdfd; }
+.watch-row--plain { padding: 15px 18px; }
 .watch-media {
-  width: 56px;
-  height: 46px;
+  width: 62px;
+  height: 52px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   background: #eef4f2;
+  box-shadow: 0 3px 10px rgba(26, 21, 53, 0.1);
 }
 .watch-img { width: 100%; height: 100%; }
 .watch-body { flex: 1; min-width: 0; }
@@ -1664,16 +2188,67 @@ onMounted(async () => {
 .watch-hs { color: #00756f !important; }
 .watch-hs b { font-weight: 800; }
 .watch-chev { color: #c3c6d2; font-size: 17px; flex-shrink: 0; }
+.watch-updates {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 6px 11px 6px 9px;
+  border-radius: 999px;
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  font-size: 11.5px;
+  font-weight: 800;
+  transition: background 0.15s ease;
+}
+.watch-updates svg { width: 13px; height: 13px; }
+.watch-row:hover .watch-updates { background: #d6f3ef; }
 
 /* ── HomeScore (owner) ─────────────────────────────────────────────── */
 .hsc {
-  padding: 20px;
-  background: linear-gradient(160deg, #0a0f2c, #131a3a);
-  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+  background:
+    radial-gradient(110% 130% at 85% 0%, rgba(0, 182, 174, 0.26) 0%, rgba(0, 182, 174, 0) 52%),
+    linear-gradient(160deg, #241d4d 0%, #141a37 100%);
+  border-radius: var(--r-lg);
   color: #fff;
+  box-shadow: var(--sh-lg);
 }
-.hsc-top { display: flex; align-items: center; gap: 16px; }
-.hsc-ring { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
+.hsc-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.hsc-house-img {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+.hsc-top { display: flex; align-items: center; gap: 18px; }
+.hsc-status { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hsc-status small {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.62);
+}
+.hsc-status strong { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.hsc-status-accent { color: #5eead4; }
+.hsc-ring { position: relative; width: 104px; height: 104px; flex-shrink: 0; }
+/* Soft bloom behind the ring so the score reads as lit, not printed. */
+.hsc-ring::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 182, 174, 0.22), transparent 70%);
+}
 .hsc-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .hsc-ring-bg {
   fill: none;
@@ -1685,7 +2260,8 @@ onMounted(async () => {
   stroke: url(#dshHsGrad);
   stroke-width: 8;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.6s ease;
+  filter: drop-shadow(0 0 5px rgba(47, 208, 198, 0.5));
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .hsc-ring-label {
   position: absolute;
@@ -1693,12 +2269,26 @@ onMounted(async () => {
   display: flex;
   align-items: baseline;
   justify-content: center;
+  /* wrap makes align-content apply, which centres the baseline-aligned
+     number + "/100" pair vertically; without it the pair sat at the top. */
+  flex-wrap: wrap;
+  align-content: center;
   gap: 1px;
 }
-.hsc-ring-num { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.hsc-ring-num {
+  font-size: 31px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-feature-settings: 'tnum';
+}
 .hsc-ring-den { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.5); }
 .hsc-info { flex: 1; min-width: 0; }
-.hsc-title { margin: 0 0 3px; font-size: 15.5px; font-weight: 800; }
+.hsc-title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
 .hsc-sub {
   margin: 0;
   font-size: 12px;
@@ -1706,65 +2296,114 @@ onMounted(async () => {
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.6);
 }
-.hsc-potential {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 13px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-}
-.hsc-potential strong { color: #5eead4; font-weight: 800; }
 .hsc-cta {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  margin-top: 14px;
-  padding: 12px;
+  margin-top: 16px;
+  padding: 13px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
-  color: #fff;
+  border-radius: 13px;
+  background: #fff;
+  color: #141a37;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
-.hsc-cta:hover { filter: brightness(1.08); }
+.hsc-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
 
 /* ── HomeScore explore entry ───────────────────────────────────────── */
 .hec {
+  position: relative;
+  overflow: hidden;
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 14px;
   text-align: left;
-  background: linear-gradient(160deg, #f0fbf8, #e4f5f1);
-  border: 1px solid #d3ece6;
-  border-radius: 20px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(0, 182, 174, 0.16) 0%, rgba(0, 182, 174, 0) 58%),
+    linear-gradient(160deg, #f2fcf9, #e2f4f0);
+  border: 1px solid #cfe9e3;
+  border-radius: var(--r-lg);
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--sh-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 .hec:hover {
-  border-color: #9fe0d8;
-  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.14);
+  transform: translateY(-2px);
+  border-color: var(--brand);
+  box-shadow: 0 14px 30px rgba(0, 161, 154, 0.18);
 }
-.hec-art { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
+/* Gauge ring, sized and coloured to the reference app. */
+.hec-gauge {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.hec-gauge-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.hec-gauge-bg {
+  fill: none;
+  stroke: #d5efe8;
+  stroke-width: 10;
+}
+.hec-gauge-fill {
+  fill: none;
+  stroke: url(#dshHecGrad);
+  stroke-width: 10;
+  stroke-linecap: round;
+  /* r=44 -> circumference 276.5; 82% leaves 49.8 */
+  stroke-dasharray: 276.5;
+  stroke-dashoffset: 49.8;
+}
+.hec-gauge-num {
+  position: relative;
+  font-size: 13px;
+  font-weight: 800;
+  color: #016f84;
+  font-feature-settings: 'tnum';
+}
+/* House sits at the right edge, cropped by the card's radius the way the
+   reference app's does. */
+.hec-house {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  object-fit: contain;
+  align-self: center;
+  filter: drop-shadow(0 6px 14px rgba(0, 117, 111, 0.2));
+}
 .hec-body { flex: 1; min-width: 0; }
-.hec-body strong { display: block; font-size: 15px; font-weight: 800; }
+.hec-body strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+}
 .hec-body small {
   display: block;
-  margin-top: 4px;
-  font-size: 12.5px;
+  margin-top: 3px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.5;
-  color: #4a5876;
+  line-height: 1.45;
+  color: #6b7089;
 }
 .hec-cta {
   display: inline-flex;
@@ -1780,18 +2419,28 @@ onMounted(async () => {
 .apr {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 15px;
+  padding: 18px 20px;
   text-align: left;
-  background: #fff;
-  border: 1px dashed #cfd8e3;
-  border-radius: 20px;
+  background: var(--surface);
+  border: 1.5px dashed #cfd8e3;
+  border-radius: var(--r-lg);
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
-.apr:hover { border-color: #9fe0d8; background: #fbfffe; }
-.apr-ic { width: 38px; height: 38px; object-fit: contain; flex-shrink: 0; }
+.apr:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand);
+  box-shadow: var(--sh-md);
+}
+.apr-ic {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 5px 10px rgba(26, 21, 53, 0.12));
+}
 .apr-body { flex: 1; min-width: 0; }
 .apr-body strong { display: block; font-size: 14.5px; font-weight: 800; }
 .apr-body small {
@@ -1804,19 +2453,71 @@ onMounted(async () => {
 }
 .apr-chev { color: #c3c6d2; font-size: 17px; flex-shrink: 0; }
 
+/* ── Loading skeletons ──────────────────────────────────────────────
+   Shown until the role resolves, so the page never flashes the wrong
+   role's content. Shimmer rather than a flat block, so a slow API reads
+   as loading rather than broken. */
+.dsh-skel,
+.dsh-boot-card,
+.dsh-boot-row {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: linear-gradient(100deg, #eef1f6 30%, #f7f9fc 48%, #eef1f6 66%);
+  background-size: 300% 100%;
+  animation: dsh-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes dsh-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsh-skel,
+  .dsh-boot-card,
+  .dsh-boot-row { animation: none; }
+}
+.dsh-skel--hero { height: 208px; }
+.dsh-skel--row { height: 104px; border-radius: 0; }
+.dsh-boot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 30px;
+  align-items: start;
+}
+.dsh-boot-card { height: 268px; }
+.dsh-boot-rows { display: flex; flex-direction: column; gap: 18px; }
+.dsh-boot-row { height: 112px; }
+@media (max-width: 1080px) {
+  .dsh-boot { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 1080px) {
   .dsh-grid { grid-template-columns: minmax(0, 1fr); }
   .dsh-side { position: static; }
 }
+@media (max-width: 860px) {
+  .dsh-hero { padding: 26px 22px 24px; border-radius: var(--r-lg); }
+  .dsh-hero-top { flex-direction: column; gap: 20px; }
+  .dsh-head-side { width: 100%; }
+  .dsh-add { flex: 1; justify-content: center; }
+  /* The book panel becomes a full-width band above the copy. */
+  .apc { flex-direction: column; gap: 0; }
+  .apc-book {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 24px;
+  }
+  .apc-info { padding: 22px; }
+}
 @media (max-width: 720px) {
-  .dsh-shell { padding: 22px 16px 48px; }
-  .dsh-title { font-size: 25px; }
-  .dsh-head { align-items: flex-start; }
-  .dsh-head-side { width: 100%; flex-wrap: wrap; }
-  .dsh-search { flex-direction: column; align-items: stretch; padding: 12px; }
+  .dsh-shell { padding: 20px 16px 48px; }
+  .dsh-search { flex-direction: column; align-items: stretch; padding: 12px; border-radius: var(--r-lg); }
   .dsh-search-btn { justify-content: center; }
-  .apc { flex-direction: column; gap: 18px; }
-  .apc-book { width: 96px; }
+  .dsh-stats { gap: 10px; }
+  .dsh-stat { flex: 1 1 100%; }
+  .dsh-sec-ic { width: 42px; height: 42px; }
+  .dsh-sec-title { font-size: 19px; }
 }
 </style>
