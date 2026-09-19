@@ -345,7 +345,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useCaptureEvent } from '~/composables/useCaptureEvent'
 
-type Kind = 'insulation' | 'solarpv' | 'other'
+type Kind = 'insulation' | 'solarpv' | 'gas' | 'electrician' | 'epc' | 'other'
 type StateName =
   | 'routes' | 'elig' | 'result' | 'form' | 'confirm'
   | 'tracker' | 'market' | 'ea-form' | 'ea-confirm'
@@ -438,6 +438,48 @@ const TRADES = {
       t: 'Search MCS yourself',
       s: 'The standard for solar & heat pumps. Opens MCS, filtered near you.',
       href: 'https://mcscertified.com/find-an-installer/',
+    },
+  },
+  gas: {
+    eyebrow: 'Safety certificates',
+    title: 'Find Gas Installers',
+    measure: 'Gas safety check (CP12)',
+    code: 'gas_safety_check',
+    accreditation: 'Gas Safe',
+    grant: false,
+    acc: "<b>Gas safety checks should be carried out by a Gas Safe registered engineer.</b> We'll match you with appropriately registered engineers for this work.",
+    self: {
+      t: 'Search Gas Safe yourself',
+      s: 'Official register for gas engineers. Opens Gas Safe search.',
+      href: 'https://www.gassaferegister.co.uk/find-an-engineer-or-check-the-register/',
+    },
+  },
+  electrician: {
+    eyebrow: 'Safety certificates',
+    title: 'Find Electrical Installers',
+    measure: 'EICR · Electrical safety report',
+    code: 'eicr',
+    accreditation: 'NICEIC',
+    grant: false,
+    acc: "<b>Electrical safety reports should be carried out by a NICEIC-registered electrician.</b> We'll match you with appropriately registered electricians for this work.",
+    self: {
+      t: 'Search NICEIC yourself',
+      s: 'Official register for electricians. Opens NICEIC, filtered near you.',
+      href: 'https://www.niceic.com/find-a-contractor',
+    },
+  },
+  epc: {
+    eyebrow: 'EPC assessment',
+    title: 'Find EPC Installers',
+    measure: 'EPC assessment',
+    code: 'epc_assessment',
+    accreditation: 'Accredited assessor',
+    grant: false,
+    acc: "<b>A new EPC must be carried out by an accredited domestic energy assessor.</b> We'll match you with accredited assessors for this property.",
+    self: {
+      t: 'Arrange it yourself',
+      s: 'GOV.UK - book an accredited assessor directly.',
+      href: 'https://www.gov.uk/get-new-energy-certificate',
     },
   },
   other: {
@@ -691,8 +733,23 @@ watch(() => props.open, (o) => {
   overflow-y: auto;
   padding: 6px 22px 30px;
   flex: 1;
+  /* A slim pill rather than no bar at all, so it stays visible that the
+     sheet scrolls. Matches PassportEcosystemDrawer. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(35, 29, 69, 0.22) transparent;
 }
-.ifs-scroll::-webkit-scrollbar { display: none }
+.ifs-scroll::-webkit-scrollbar { width: 10px }
+.ifs-scroll::-webkit-scrollbar-track { background: transparent; margin: 12px 0 }
+.ifs-scroll::-webkit-scrollbar-thumb {
+  background: rgba(35, 29, 69, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.ifs-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 161, 154, 0.55);
+  background-clip: padding-box;
+}
 
 .ifs-eyebrow {
   font-size: 11px;

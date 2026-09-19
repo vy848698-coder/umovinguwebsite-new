@@ -264,6 +264,31 @@ function onCardClick(card: { key: string; status: string }) {
   max-height: min(88vh, 900px);
   overflow-y: auto;
   padding: 38px 38px 34px;
+  /* The native Windows bar is wide and sat flush against the modal's 28px
+     corner, reading as a seam down the edge of the card. This keeps a
+     visible scroll hint but slims it to a pill, and the track margin holds
+     it clear of the rounded corners at both ends. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(35, 29, 69, 0.22) transparent;
+}
+.pe-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.pe-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 18px 0;
+}
+.pe-scroll::-webkit-scrollbar-thumb {
+  background: rgba(35, 29, 69, 0.22);
+  border-radius: 999px;
+  /* Transparent border + padding-box keeps the thumb a 6px pill inside a
+     10px lane, so it floats rather than filling the gutter. */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.pe-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 161, 154, 0.55);
+  background-clip: padding-box;
 }
 .pe-close {
   position: absolute;
