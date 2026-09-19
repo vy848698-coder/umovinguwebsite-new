@@ -9,7 +9,9 @@
         @click="router.push('/dashboard')"
       >
         <OPIcon name="explore" :class="iconSize" />
-        <span class="text-xs mt-1">Explore</span>
+        <!-- Goes to /dashboard, so it is labelled Dashboard. The `explore`
+             key stays: callers pass active="explore" to highlight this tab. -->
+        <span class="text-xs mt-1">Dashboard</span>
       </button>
 
       <button

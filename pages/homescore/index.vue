@@ -10,17 +10,35 @@
           <span class="brand-beta">BETA</span>
         </button>
 
+        <!-- The Story/Market/Reviews links are sections of the landing page,
+             and `/` carries the guest middleware: a signed-in visitor hitting
+             it is redirected to /dashboard, so those anchors would silently
+             dump them on the dashboard. Signed in, the menu points at the
+             real app pages instead. -->
         <nav class="web-links" aria-label="Primary navigation">
           <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
-          <button type="button" @click="navigateTo('/#passport')">Passport</button>
-          <button type="button" @click="navigateTo('/#story')">Story</button>
-          <button type="button" @click="navigateTo('/#market')">Market</button>
-          <button type="button" @click="navigateTo('/#reviews')">Reviews</button>
+          <template v-if="signedIn">
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </template>
+          <template v-else>
+            <button type="button" @click="navigateTo('/#passport')">Passport</button>
+            <button type="button" @click="navigateTo('/#story')">Story</button>
+            <button type="button" @click="navigateTo('/#market')">Market</button>
+            <button type="button" @click="navigateTo('/#reviews')">Reviews</button>
+          </template>
         </nav>
 
         <div class="web-actions">
-          <button class="web-btn ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
-          <button class="web-btn solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
+          <template v-if="signedIn">
+            <button class="web-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
+            <button class="web-btn solid" type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+          </template>
+          <template v-else>
+            <button class="web-btn ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
+            <button class="web-btn solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
+          </template>
         </div>
 
         <button
@@ -40,12 +58,21 @@
         <div class="web-mobile-backdrop" :class="{ open: mobileNavOpen }" @click="mobileNavOpen = false" />
         <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
           <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
-          <button type="button" @click="goMobile('/#passport')">Passport</button>
-          <button type="button" @click="goMobile('/#story')">Story</button>
-          <button type="button" @click="goMobile('/#market')">Market</button>
-          <button type="button" @click="goMobile('/#reviews')">Reviews</button>
-          <button type="button" @click="goMobile('/onboarding/signin')">Sign in</button>
-          <button type="button" class="claim" @click="goMobile('/onboarding/signup')">Get started</button>
+          <template v-if="signedIn">
+            <button type="button" @click="goMobile('/passport')">Passport</button>
+            <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
+            <button type="button" @click="goMobile('/profile/learn')">Learn</button>
+            <button type="button" @click="goMobile('/profile')">Profile</button>
+            <button type="button" class="claim" @click="goMobile('/dashboard')">Dashboard</button>
+          </template>
+          <template v-else>
+            <button type="button" @click="goMobile('/#passport')">Passport</button>
+            <button type="button" @click="goMobile('/#story')">Story</button>
+            <button type="button" @click="goMobile('/#market')">Market</button>
+            <button type="button" @click="goMobile('/#reviews')">Reviews</button>
+            <button type="button" @click="goMobile('/onboarding/signin')">Sign in</button>
+            <button type="button" class="claim" @click="goMobile('/onboarding/signup')">Get started</button>
+          </template>
         </div>
       </div>
     </header>
@@ -239,6 +266,18 @@ import SiteFooter from '~/components/homescore/SiteFooter.vue'
 const route = useRoute()
 const router = useRouter()
 const mobileNavOpen = ref(false)
+
+// Resolved after mount because localStorage doesn't exist during SSR, so the
+// first paint shows the guest menu and the two swap on hydration — the same
+// approach WebTopNav uses.
+const signedIn = ref(false)
+onMounted(() => {
+  try {
+    signedIn.value = !!localStorage.getItem('token')
+  } catch {
+    /* private mode / blocked storage — stays signed out */
+  }
+})
 
 const heroMeta = ['Free', 'Instant', 'No account needed']
 const stepTones = ['teal', 'purple', 'amber']
