@@ -1295,18 +1295,8 @@ onMounted(() => {
   overflow: hidden;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.dsc-entry::before {
-  content: '';
-  position: absolute;
-  top: -70px; right: -50px;
-  width: 200px; height: 200px;
-  border-radius: 50%;
-  opacity: 0.85;
-  pointer-events: none;
-}
-.dsc-entry--teal::before { background: radial-gradient(circle, rgba(0,161,154,.14) 0%, rgba(0,161,154,0) 70%); }
-.dsc-entry--violet::before { background: radial-gradient(circle, rgba(107,79,216,.13) 0%, rgba(107,79,216,0) 70%); }
-.dsc-entry--soon::before { background: radial-gradient(circle, rgba(35,29,69,.06) 0%, rgba(35,29,69,0) 70%); }
+/* The corner washes are gone here too, so these three cards match the two
+   big ones below them: white card, no tint. */
 .dsc-entry:hover,
 .dsc-entry:focus-visible {
   transform: translateY(-4px);
@@ -1417,15 +1407,12 @@ onMounted(() => {
 }
 .dsc-feature--teal:hover { border-color: rgba(0, 161, 154, 0.4); }
 .dsc-feature--amber:hover { border-color: rgba(224, 164, 58, 0.45); }
+/* The teal and amber washes that used to tint these two cards are gone -
+   the cards sit flat on the page like the rest of the explore look. The
+   element stays so the markup and any future accent hook are unchanged. */
 .dsc-feature-glow {
-  position: absolute;
-  top: -130px; right: -90px;
-  width: 340px; height: 340px;
-  border-radius: 50%;
-  pointer-events: none;
+  display: none;
 }
-.dsc-feature--teal .dsc-feature-glow { background: radial-gradient(circle, rgba(0,161,154,.17) 0%, rgba(0,161,154,0) 70%); }
-.dsc-feature--amber .dsc-feature-glow { background: radial-gradient(circle, rgba(224,164,58,.18) 0%, rgba(224,164,58,0) 70%); }
 
 .dsc-feature-top {
   position: relative;
