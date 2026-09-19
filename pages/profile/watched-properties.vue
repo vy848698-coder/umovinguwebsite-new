@@ -1,61 +1,63 @@
 ﻿<template>
   <div class="sp-page">
-    <WebTopNav />
-    <!-- In-page back row. Kept alongside WebTopNav because this page is
-         reached from the dashboard's Watching card, and "back" means the
-         dashboard rather than a nav destination. -->
-    <div class="sp-nav-bar">
-      <button class="sp-nav-icon-btn" aria-label="Back" @click="goBack">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="sp-nav-title">Watched Properties</div>
-      <button
-        class="sp-nav-icon-btn"
-        aria-label="Search"
-        @click="onToggleSearch"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="21" y2="21" />
-        </svg>
-      </button>
-    </div>
-
-    <!-- Inline expanding search (navbar-style) -->
-    <div v-if="searchOpen" class="sp-nav-search">
-      <input
-        ref="searchInputRef"
-        v-model="search"
-        type="text"
-        class="sp-nav-search-input"
-        placeholder="Search watched properties…"
-        @keyup.escape="searchOpen = false"
-      />
-      <button
-        v-if="search"
-        class="sp-nav-search-clear"
-        aria-label="Clear"
-        @click="search = ''"
-      >
-        ×
-      </button>
-    </div>
+    <!-- Back lives in the nav bar: this page is reached from the dashboard's
+         Watching card, so "back" means the dashboard rather than a nav
+         destination. -->
+    <WebTopNav>
+      <template #actions>
+        <button class="sp-nav-back" type="button" @click="goBack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back
+        </button>
+      </template>
+      <template #mobile-extra="{ closeMenu }">
+        <button type="button" class="sp-mobile-back" @click="closeMenu(); goBack()">
+          Back
+        </button>
+      </template>
+    </WebTopNav>
 
     <main class="sp-body">
       <div class="atm-bg teal" />
 
       <!-- Hero -->
       <div class="sp-hero">
-        <div class="hero-greeting">Homes you're getting alerts for</div>
-        <div class="sp-h1">
-          Watching<span class="sp-h1-count">{{ properties.length }}</span>
+        <div class="sp-hero-copy">
+          <div class="hero-greeting">Homes you're getting alerts for</div>
+          <div class="sp-h1">
+            Watching<span class="sp-h1-count">{{ properties.length }}</span>
+          </div>
+          <div class="hero-stats">
+            <span><span class="stat-num teal">{{ countPassportReady }}</span>passport ready</span>
+            <span class="stat-sep" />
+            <span><span class="stat-num">{{ countHomescoreAlerts }}</span>HomeScore alerts</span>
+          </div>
         </div>
-        <div class="hero-stats">
-          <span><span class="stat-num teal">{{ countPassportReady }}</span>passport ready</span>
-          <span class="stat-sep" />
-          <span><span class="stat-num">{{ countHomescoreAlerts }}</span>HomeScore alerts</span>
+
+        <!-- Search moved out of the old header row; kept inline so it stays
+             reachable now that the row is gone. -->
+        <div v-if="properties.length" class="sp-search">
+          <svg class="sp-search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="16.5" y1="16.5" x2="21" y2="21" />
+          </svg>
+          <input
+            v-model="search"
+            type="text"
+            class="sp-search-input"
+            placeholder="Search watched properties…"
+            @keyup.escape="search = ''"
+          />
+          <button
+            v-if="search"
+            class="sp-search-clear"
+            aria-label="Clear search"
+            @click="search = ''"
+          >
+            ×
+          </button>
         </div>
       </div>
 
@@ -148,8 +150,6 @@ const router = useRouter()
 const search = ref('')
 const loading = ref(true)
 const properties = ref<any[]>([])
-const searchOpen = ref(false)
-const searchInputRef = ref<HTMLInputElement | null>(null)
 
 const { fetchWatchedProperties, unwatchProperty } = usePropertyActions()
 
@@ -163,14 +163,6 @@ onMounted(async () => {
 
 function goBack() {
   router.back()
-}
-
-async function onToggleSearch() {
-  searchOpen.value = !searchOpen.value
-  if (searchOpen.value) {
-    await nextTick()
-    searchInputRef.value?.focus?.()
-  }
 }
 
 async function onUnwatch(item: any) {
@@ -203,73 +195,102 @@ const filteredProperties = computed(() => {
 </script>
 
 <style scoped>
-/* Page surface */
+/* Page surface.
+   Flex column with the body growing: the footer then sits at the bottom of
+   short pages instead of floating mid-screen. The old `padding-bottom` here
+   painted a 32px band of page background *below* the full-bleed footer. */
 .sp-page {
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
-  background: #fafaf8;
+  background: #f3f2ef;
   color: #0e2840;
   position: relative;
-  padding-bottom: 32px;
 }
 
-/* Nav bar */
-.sp-nav-bar {
-  display: flex;
-  align-items: center;
-  padding: 10px 22px 8px;
-  padding-top: calc(10px + env(safe-area-inset-top));
-  gap: 8px;
-  position: relative;
-  z-index: 2;
+/* Centred column — without this the grid spans the full 1440px and a single
+   card stretches to half the screen. */
+.sp-shell,
+.sp-hero,
+.sp-grid,
+.sp-empty {
+  width: min(1180px, calc(100% - 48px));
+  margin-left: auto;
+  margin-right: auto;
 }
-.sp-nav-icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  display: flex;
+
+/* Back button in the nav bar */
+.sp-nav-back {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: 1px solid #00a19a;
+  border-radius: 12px;
+  background: #00a19a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  color: #0e2840;
-  flex-shrink: 0;
-  transition: background 0.2s;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
-.sp-nav-icon-btn:hover { background: #f0f2f1; }
-.sp-nav-icon-btn svg { width: 18px; height: 18px; }
-.sp-nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 800;
-  color: #0e2840;
-  letter-spacing: -0.4px;
+.sp-nav-back:hover {
+  background: #008c86;
+  border-color: #008c86;
+  transform: translateX(-2px);
 }
-.sp-nav-search {
-  margin: 0 22px 8px;
+.sp-nav-back svg { width: 16px; height: 16px; }
+.sp-mobile-back {
+  width: 100%;
+  border: 1px solid #dde8f3;
+  border-radius: 10px;
+  background: #fff;
+  color: #22405f;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Inline search, previously the magnifier toggle in the removed header row */
+.sp-search {
   position: relative;
-  z-index: 2;
+  flex: 0 1 300px;
+  min-width: 220px;
 }
-.sp-nav-search-input {
+.sp-search-ic {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #8a95a0;
+  pointer-events: none;
+}
+.sp-search-input {
   width: 100%;
   background: #fff;
-  border: 1px solid #e8eceb;
+  border: 1px solid #e2e6ec;
   border-radius: 100px;
-  padding: 9px 36px 9px 14px;
+  padding: 11px 36px 11px 38px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #0e2840;
   outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
-.sp-nav-search-input:focus {
+.sp-search-input::placeholder { color: #9aa5b1; font-weight: 500; }
+.sp-search-input:focus {
   border-color: #00a19a;
   box-shadow: 0 0 0 3px rgba(61, 189, 163, 0.18);
 }
-.sp-nav-search-clear {
+.sp-search-clear {
   position: absolute;
-  right: 8px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   width: 22px;
@@ -280,28 +301,34 @@ const filteredProperties = computed(() => {
   color: #4a5868;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1;
   cursor: pointer;
 }
 
-.sp-body { position: relative; }
+.sp-body {
+  position: relative;
+  flex: 1 0 auto;
+  padding-bottom: 56px;
+}
 
-.atm-bg {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 280px;
-  pointer-events: none;
-  z-index: 0;
-}
-.atm-bg.teal {
-  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(0, 161, 154, 0.1), transparent 65%);
-}
+/* The teal ambient wash is gone, in line with the flat explore look used
+   across the app. */
+.atm-bg { display: none; }
 
 /* Hero */
 .sp-hero {
-  padding: 8px 22px 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 34px 0 22px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e6e4de;
   position: relative;
   z-index: 1;
 }
+.sp-hero-copy { min-width: 0; }
 .hero-greeting {
   font-size: 13px;
   font-weight: 500;
@@ -341,9 +368,13 @@ const filteredProperties = computed(() => {
 
 .sp-empty {
   text-align: center;
-  padding: 40px 22px;
+  margin-top: 22px;
+  padding: 56px 24px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px dashed #d9dee6;
   color: #8a95a0;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   position: relative;
   z-index: 1;
@@ -374,28 +405,39 @@ const filteredProperties = computed(() => {
   cursor: pointer;
 }
 
-/* Grid */
+/* Grid.
+   A fixed two-column grid meant one watched property filled half the
+   viewport. Card-sized tracks instead, so one card looks like a card and
+   the row fills out as more are watched. */
 .sp-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  padding: 0 22px;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 22px;
+  padding: 22px 0 0;
   position: relative;
   z-index: 1;
 }
 .sp-tile {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e6e9ee;
+  box-shadow: 0 8px 22px rgba(18, 40, 70, 0.05);
+  overflow: hidden;
   cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.sp-tile:hover {
+  transform: translateY(-4px);
+  border-color: #d6dde6;
+  box-shadow: 0 20px 38px rgba(18, 40, 70, 0.1);
 }
 .sp-photo {
   position: relative;
-  aspect-ratio: 152 / 130;
-  border-radius: 14px;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: linear-gradient(180deg, #c5e4dd, #a8c8b5);
-  box-shadow: 0 4px 12px rgba(14, 40, 64, 0.1);
 }
 
 .sp-unwatch {
@@ -428,9 +470,9 @@ const filteredProperties = computed(() => {
   background: rgba(15, 46, 41, 0.85);
   backdrop-filter: blur(6px);
   color: #f5c44c;
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 3px 7px;
+  padding: 5px 10px;
   border-radius: 100px;
   letter-spacing: 0.3px;
   border: 0.5px solid rgba(245, 196, 76, 0.3);
@@ -443,25 +485,27 @@ const filteredProperties = computed(() => {
 }
 .sp-status svg { width: 8px; height: 8px; }
 
-.sp-info { padding: 0 2px; }
+.sp-info { padding: 15px 16px 17px; }
 .sp-addr {
-  font-size: 13.5px;
+  font-size: 15.5px;
   font-weight: 800;
   color: #0e2840;
   letter-spacing: -0.3px;
-  line-height: 1.15;
-  margin-bottom: 2px;
+  line-height: 1.25;
+  margin-bottom: 3px;
 }
 .sp-locality {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #8a95a0;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 .sp-hs {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #4a5868;
+  padding-top: 10px;
+  border-top: 1px solid #eef1f5;
 }
 .sp-hs strong { color: #008a84; font-feature-settings: 'tnum'; }
 </style>
