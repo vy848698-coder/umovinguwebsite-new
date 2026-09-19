@@ -9,7 +9,7 @@
           <span class="spn-brand-beta">BETA</span>
         </button>
         <nav class="spn-links" aria-label="Primary navigation">
-          <button type="button" @click="navigateTo('/dashboard')">Explore</button>
+          <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
           <button type="button" @click="navigateTo('/homescore')">HomeScore</button>
           <button type="button" class="active" @click="navigateTo('/passport/sample')">Passport</button>
           <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
