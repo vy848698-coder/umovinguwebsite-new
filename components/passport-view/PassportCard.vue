@@ -14,8 +14,8 @@
           class="passport-image"
         />
         <div ref="plateEl" class="passport-address">
-          <div ref="line1El" class="address-line" :style="line1Style">{{ line1 }}</div>
-          <div ref="line2El" class="address-line-small" :style="line2Style">{{ line2 }}</div>
+          <div ref="line1El" class="address-line" :style="line1Style">{{ displayLine1 }}</div>
+          <div ref="line2El" class="address-line-small" :style="line2Style">{{ displayLine2 }}</div>
         </div>
       </div>
     </div>
@@ -47,6 +47,7 @@ import {
   watch,
 } from 'vue'
 import OPIcon from '../ui/OPIcon.vue'
+import { formatAddressLine, formatPostcodeDisplay } from '~/utils/addressDisplay'
 
 const props = defineProps({
   line1: {
@@ -67,6 +68,14 @@ const props = defineProps({
     default: 'SELLER',
   },
 })
+
+// Callers pass the backend's raw record (passport.addressLine1 /
+// passport.postcode), which is why these are tidied here rather than at every
+// call site: the house-number comma in "104, Dulverton Avenue" both widens the
+// line and gives it an early break point, which is what pushed those addresses
+// onto a second row and shrank the whole block. See utils/addressDisplay.ts.
+const displayLine1 = computed(() => formatAddressLine(props.line1))
+const displayLine2 = computed(() => formatPostcodeDisplay(props.line2))
 
 const PASSPORT_COVERS = {
   BUYER: '/dashboard-art/passportBuyer.png',
@@ -129,17 +138,35 @@ const aspectRatio = computed(
 // short of the book's printed edge (~2.3% inset each side) rather than
 // running right up to it. maxHeight takes the ~1.5% of vertical headroom the
 // measurement showed, keeping a margin under the umu mark.
+// `centre` exists because the printable cover FACE is not centred in the
+// frame: the book's spine takes up the left edge of the artwork, so the face
+// starts well right of the book's own left edge. Centring the plate on 50%
+// therefore hung its left edge over the spine, which is what put the first
+// character of an address on the spine's crease line. Measured per cover by
+// scanning each row of the address band for the book's outer edges and the
+// end of the spine's dark crease (all four are stable across the band):
+//
+//              face span        centre    old plate (centred 50%)
+//   SELLER     25.24-78.45%     51.84%      24.00-76.00%  <- 1.24% over the spine
+//   BUYER      23.57-79.66%     51.61%      22.50-77.50%
+//   LANDLORD   24.58-79.28%     51.93%      23.00-77.00%
+//   TENANT     21.51-80.85%     51.18%      21.00-79.00%
+//
+// Widths below are the face width less a 1.2% inset each side, so the text
+// keeps a visible margin inside the printed area rather than running to its
+// edge. Re-measure if the cover artwork is ever redrawn.
 const PLATE = {
-  SELLER: { width: 52, bottom: 28.5, maxHeight: 16 },
-  LANDLORD: { width: 54, bottom: 29, maxHeight: 16 },
-  BUYER: { width: 55, bottom: 28.5, maxHeight: 16.4 },
-  TENANT: { width: 58, bottom: 28.5, maxHeight: 16.6 },
+  SELLER: { width: 51, centre: 51.8, bottom: 28.5, maxHeight: 16 },
+  LANDLORD: { width: 52, centre: 51.9, bottom: 29, maxHeight: 16 },
+  BUYER: { width: 54, centre: 51.6, bottom: 28.5, maxHeight: 16.4 },
+  TENANT: { width: 57, centre: 51.2, bottom: 28.5, maxHeight: 16.6 },
 }
 
 const plate = computed(
   () => PLATE[String(props.type || '').toUpperCase()] ?? PLATE.SELLER,
 )
 const plateWidth = computed(() => `${plate.value.width}%`)
+const plateCentre = computed(() => `${plate.value.centre}%`)
 const plateBottom = computed(() => `${plate.value.bottom}%`)
 const plateMaxHeight = computed(() => `${plate.value.maxHeight}%`)
 
@@ -157,10 +184,29 @@ const plateMaxHeight = computed(() => `${plate.value.maxHeight}%`)
 // Sizes are ratios of the PLATE's width (not the frame's), since the plate is
 // the box the text actually has to live in. Both lines scale together so the
 // hierarchy between street and postcode holds at every size.
-const L1_MAX_RATIO = 0.17
-const L2_MAX_RATIO = 0.108
+// These are CEILINGS, and their job is consistency as much as size. The fitter
+// takes the largest size that fits, so whenever an address is width-bound its
+// size becomes a direct function of how long it is — which is why "100 Lyons
+// Drive" rendered about 40% larger than "104 Dulverton Avenue" on neighbouring
+// cards. Measuring twelve representative UK addresses, the ratio each needs to
+// hold one line spans 0.086 to 0.178; at the old 0.17 ceiling only one of the
+// twelve ever reached it, so eleven were sized by their length alone.
+//
+// 0.095 sits near the low end of that spread, so most addresses now hit the
+// ceiling and render at exactly the same size; only the longest still shrink
+// below it. Short ones no longer balloon. The book was enlarged at the same
+// time (see .prop-book in pages/passport/collections.vue) so this lower
+// ceiling still lands bigger in absolute pixels than the old width-bound size.
+const L1_MAX_RATIO = 0.095
+// Kept at the same 1.57:1 relationship to L1 so the street/postcode hierarchy
+// is unchanged.
+const L2_MAX_RATIO = 0.0605
 const MIN_SCALE = 0.22
 const L1_MAX_LINES = 2
+// How much smaller a one-line street may render before wrapping is preferred.
+// At 0.72 a single line is kept unless it would be more than ~28% smaller than
+// the wrapped version — see the note in refit() for why one line usually wins.
+const SINGLE_LINE_BIAS = 0.72
 
 const frameEl = ref(null)
 const plateEl = ref(null)
@@ -244,38 +290,62 @@ function refit() {
     return Math.max(pl.getBoundingClientRect().height, summed)
   }
 
-  const fits = (k) => {
+  const fits = (k, maxLines) => {
     l1.style.fontSize = `${base1 * k}px`
     l2.style.fontSize = `${base2 * k}px`
     // +0.5 absorbs sub-pixel rounding, which would otherwise reject a line
     // that visually fits perfectly by a hundredth of a pixel.
     if (l1.scrollWidth > l1.clientWidth + 0.5) return false
     if (l2.scrollWidth > l2.clientWidth + 0.5) return false
+    // scrollHeight reports the FULL text height even when -webkit-line-clamp
+    // has visually capped it, so this is also what rejects a wrap when
+    // maxLines is 1.
     const lh = parseFloat(getComputedStyle(l1).lineHeight) || base1 * k * 1.12
-    if (l1.scrollHeight > lh * L1_MAX_LINES + 0.5) return false
+    if (l1.scrollHeight > lh * maxLines + 0.5) return false
     if (blockHeight() > availH) return false
     return true
   }
 
-  let scale
-  if (fits(1)) {
-    scale = 1
-  } else {
+  // Largest scale at which the address fits within `maxLines` rows of street,
+  // or null if even the floor overflows.
+  const largestThatFits = (maxLines) => {
+    if (fits(1, maxLines)) return 1
     let best = null
     let lo = MIN_SCALE
     let hi = 1
     for (let i = 0; i < 18 && hi - lo > 0.002; i += 1) {
       const mid = (lo + hi) / 2
-      if (fits(mid)) {
+      if (fits(mid, maxLines)) {
         best = mid
         lo = mid
       } else {
         hi = mid
       }
     }
-    // Nothing fits (an unbreakable word wider than the plate) — sit at the
-    // floor and let the clamp/ellipsis contain what is left.
-    scale = best ?? MIN_SCALE
+    return best
+  }
+
+  // Prefer the street on ONE line. The plate's height budget is fixed by the
+  // artwork's glyph-free band, so a wrapped street means three rows in the
+  // space two would otherwise share: the type gets markedly smaller AND the
+  // block grows upward toward the umu mark. That is what made some covers read
+  // as cramped and top-heavy beside others with a shorter address. A single
+  // line is kept unless it would be more than SINGLE_LINE_BIAS smaller, at
+  // which point the address is long enough that one line is genuinely too
+  // small to read and wrapping is the better trade.
+  const oneLine = largestThatFits(1)
+  // A street that already holds one line at full size cannot be beaten, so
+  // skip the second search — that is the common case once the address has been
+  // normalised, and this card is rendered once per tile on the collections
+  // grid.
+  const twoLine = oneLine === 1 ? null : largestThatFits(L1_MAX_LINES)
+  let scale
+  if (oneLine != null && (twoLine == null || oneLine >= twoLine * SINGLE_LINE_BIAS)) {
+    scale = oneLine
+  } else {
+    // Nothing fits either way (an unbreakable word wider than the plate) — sit
+    // at the floor and let the clamp/ellipsis contain what is left.
+    scale = twoLine ?? oneLine ?? MIN_SCALE
   }
 
   // Closed-loop check. The binary search above reasons about the state it
@@ -342,10 +412,36 @@ function refit() {
   l2.style.fontSize = `${fitted2.value}px`
 }
 
-function refitWhenReady() {
+// The address is measured against whatever font is rendering at that instant.
+// Plus Jakarta Sans arrives from Google Fonts with `display=swap` via an
+// @import in assets/css/main.css, so the first paint uses the fallback and the
+// real face swaps in later - wider - which left the fitted size too large until
+// something forced a re-fit. A manual refresh did it, which is why the address
+// only ever looked right on the second load.
+//
+// document.fonts.ready alone does NOT cover this: a face is only "pending" once
+// something lays out with it, so with an @import'd stylesheet `ready` can
+// resolve before the face has even been requested. Asking for the exact face we
+// render in is what makes the wait real; `loadingdone` then catches anything
+// that still arrives afterwards.
+const FITTED_FACE = '800 16px "Plus Jakarta Sans"'
+let fontsHooked = false
+
+function refitNow() {
+  retries = 0
   refit()
-  if (typeof document !== 'undefined' && document.fonts?.ready) {
-    document.fonts.ready.then(() => refit()).catch(() => {})
+}
+
+function refitWhenReady() {
+  retries = 0
+  verifyPasses = 0
+  refit()
+  if (typeof document === 'undefined' || !document.fonts) return
+  document.fonts.load(FITTED_FACE).then(refitNow).catch(() => {})
+  document.fonts.ready?.then(refitNow).catch(() => {})
+  if (!fontsHooked) {
+    fontsHooked = true
+    document.fonts.addEventListener?.('loadingdone', refitNow)
   }
 }
 
@@ -362,6 +458,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   ro?.disconnect()
   ro = null
+  if (typeof document !== 'undefined' && fontsHooked) {
+    document.fonts?.removeEventListener?.('loadingdone', refitNow)
+    fontsHooked = false
+  }
   if (retryHandle) cancelAnimationFrame(retryHandle)
   if (verifyHandle) cancelAnimationFrame(verifyHandle)
   retryHandle = 0
@@ -489,7 +589,8 @@ watch(
      drifted off the artwork anywhere it drew at natural proportions. */
   position: absolute;
   bottom: v-bind(plateBottom);
-  left: 50%;
+  /* Centred on the printable cover FACE, not on the frame — see PLATE. */
+  left: v-bind(plateCentre);
   transform: translateX(-50%);
   width: v-bind(plateWidth);
   max-width: v-bind(plateWidth);

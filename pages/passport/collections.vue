@@ -160,7 +160,7 @@
                 </div>
                 <div class="coll-resume-content">
                   <div class="coll-resume-eyebrow">Pick up where you left off</div>
-                  <div class="coll-resume-name">{{ resumeCard.addressLine1 }}</div>
+                  <div class="coll-resume-name">{{ formatAddressLine(resumeCard.addressLine1) }}</div>
                   <div class="coll-resume-meta">
                     <b
                       >{{ resumeCard.sectionsToGo }} section{{
@@ -395,7 +395,7 @@
                     </div>
                     <div class="prop-card-info">
                       <p class="prop-card-name">{{ shortAddress(passport.addressLine1) }}</p>
-                      <p class="prop-card-sub">{{ passport.postcode }}</p>
+                      <p class="prop-card-sub">{{ formatPostcodeDisplay(passport.postcode) }}</p>
                     </div>
                   </div>
 
@@ -529,6 +529,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { formatAddressLine, formatPostcodeDisplay } from '~/utils/addressDisplay'
 import CreateCollectionModal from '@/components/modals/CreateCollectionModal.vue'
 import CollectionDetailModal from '@/components/modals/CollectionDetailModal.vue'
 import UserAvatar from '~/components/ui/UserAvatar.vue'
@@ -837,9 +838,15 @@ const openCollection = (collection) => {
   showDetailModal.value = true
 }
 
+// The label under a book should read the same as the label printed on it, so
+// this runs the address through the same tidy-up the cover uses
+// (utils/addressDisplay.ts) - which is what drops the house-number comma in
+// "104, Dulverton Avenue". Anything past a second comma is still trimmed: a
+// full "Flat 3, 10 Mellowship Road, Coventry" would wrap the card title.
 const shortAddress = (addr) => {
-  const parts = (addr || '').split(',')
-  return parts.length > 1 ? `${parts[0]},${parts[1]}` : addr
+  const tidy = formatAddressLine(addr)
+  const parts = tidy.split(',')
+  return parts.length > 1 ? `${parts[0]},${parts[1]}`.trim() : tidy
 }
 
 const stackStyle = (index) => {
@@ -1238,8 +1245,11 @@ const executeDelete = async () => {
   z-index: 1;
   /* The book is this page's hero object and carries the address on its
      cover, so it is sized for the address to be readable rather than to a
-     tidy round number. */
-  width: 300px;
+     tidy round number. At hero size the address is width-bound by the
+     cover's printable face rather than by PassportCard's ratio cap, so book
+     width is the only lever on it: 300 -> 340px takes a typical street from
+     ~14px to ~15.9px. */
+  width: 340px;
   transform: rotate(-6deg);
   animation: ppw-sway 7s ease-in-out infinite;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1635,7 +1645,7 @@ const executeDelete = async () => {
   /* Wider cells than before: the passport book is the point of this grid, so
      it gets room to render at a readable size rather than a 58px thumbnail. */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 22px;
 }
 
@@ -1671,10 +1681,14 @@ const executeDelete = async () => {
   gap: 12px;
 }
 
+/* The cover's printed address is sized from the book's rendered width, so
+   this number decides whether it is legible. PassportCard caps the address
+   ratio so every card renders at the same size rather than one scaled to each
+   address's length; at 190px that shared size lands near 9.4px. */
 .prop-book {
   position: relative;
-  width: 132px;
-  height: 132px;
+  width: 190px;
+  height: 190px;
   flex-shrink: 0;
   filter: drop-shadow(0 10px 18px rgba(0, 140, 134, 0.2));
 }
@@ -1698,12 +1712,12 @@ const executeDelete = async () => {
    these thumbnails look wrong. */
 
 .prop-book--stack {
-  width: 132px;
+  width: 190px;
 }
 
 .prop-book--stack .prop-book-layer {
-  width: 132px;
-  height: 132px;
+  width: 190px;
+  height: 190px;
 }
 
 .prop-card-info {
