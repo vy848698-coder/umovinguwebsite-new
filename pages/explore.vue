@@ -131,6 +131,19 @@
             </button>
           </div>
 
+          <!-- Opens the same Distance & filters modal the dashboard uses. -->
+          <button
+            class="dsc-filters-btn"
+            :class="{ on: hasAnyFilters }"
+            type="button"
+            aria-label="Distance and filters"
+            @click="filtersOpen = true"
+          >
+            <Icon name="i-lucide-sliders-horizontal" class="dsc-filters-ic" />
+            Filters
+            <span v-if="hasAnyFilters" class="dsc-filters-dot" aria-hidden="true" />
+          </button>
+
           <button class="dsc-search-btn" type="button" @click="runSearch">
             Search
             <Icon name="i-lucide-arrow-right" class="dsc-search-btn-ic" />
@@ -485,6 +498,12 @@
       :body="authGateCopy.body"
       :redirect-target="authGateRedirect"
     />
+
+    <PropertySearchFiltersModal
+      v-model="filtersOpen"
+      :initial-filters="committedFilters"
+      @search="onFiltersSearch"
+    />
   </div>
 </template>
 
@@ -512,6 +531,9 @@ import UserAvatar from '~/components/ui/UserAvatar.vue'
 import AuthGateModal from '~/components/ui/AuthGateModal.vue'
 import PropertyImage from '~/components/property/PropertyImage.vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
+import PropertySearchFiltersModal, {
+  type PropertySearchFilters,
+} from '~/components/property/PropertySearchFiltersModal.vue'
 import { usePropertySearch } from '~/composables/usePropertySearch'
 import {
   useRecentlyExplored,
@@ -652,7 +674,7 @@ async function runQuery(q: string) {
   try {
     const res = await $fetch<{ items: any[] }>(
       `${config.public.apiBase}/property/search`,
-      { query: { q: effective, offset: 0, limit: 24 } },
+      { query: { q: effective, offset: 0, limit: 24, ...searchFilterParams() } },
     )
     results.value = res?.items ?? []
   } catch {
@@ -662,6 +684,65 @@ async function runQuery(q: string) {
   } finally {
     searchLoading.value = false
   }
+}
+
+// ── Distance & filters ────────────────────────────────────────────────────
+// The same modal the dashboard's For You feed uses. Everything it sets is
+// passed to /property/search, which filters on propertyType, bedrooms, EPC,
+// price and passport status.
+//
+// Radius is the exception: the search endpoint ignores it, so rather than
+// show a control that does nothing, it drives the Exact/Nearby scope this
+// page already has - "exact address only" keeps the query as typed, any
+// wider radius widens a full postcode to its outward code.
+const filtersOpen = ref(false)
+const committedFilters = ref<PropertySearchFilters>({
+  radius: null,
+  propertyType: ['any'],
+  minBedrooms: null,
+  maxBedrooms: null,
+  minEpc: null,
+  minPrice: null,
+  maxPrice: null,
+  passportStatus: [],
+})
+
+const hasAnyFilters = computed(() => {
+  const f = committedFilters.value
+  return (
+    !(f.propertyType.length === 1 && f.propertyType[0] === 'any') ||
+    f.minBedrooms != null ||
+    f.maxBedrooms != null ||
+    f.minEpc != null ||
+    f.minPrice != null ||
+    f.maxPrice != null ||
+    f.passportStatus.length > 0
+  )
+})
+
+function searchFilterParams(): Record<string, string> {
+  const f = committedFilters.value
+  const p: Record<string, string> = {}
+  if (f.propertyType.length && !(f.propertyType.length === 1 && f.propertyType[0] === 'any')) {
+    p.propertyType = f.propertyType.join(',')
+  }
+  if (f.minBedrooms != null) p.minBedrooms = String(f.minBedrooms)
+  if (f.maxBedrooms != null) p.maxBedrooms = String(f.maxBedrooms)
+  if (f.minEpc != null) p.minEpc = f.minEpc
+  if (f.minPrice != null) p.minPrice = String(f.minPrice)
+  if (f.maxPrice != null) p.maxPrice = String(f.maxPrice)
+  if (f.passportStatus.length) p.passportStatus = f.passportStatus.join(',')
+  return p
+}
+
+function onFiltersSearch(filters: PropertySearchFilters) {
+  committedFilters.value = filters
+  // radius null or 0 means "exact address only" in the modal.
+  if (scopeAvailable.value) {
+    searchScope.value = !filters.radius ? 'exact' : 'nearby'
+  }
+  const q = lastQuery.value || scopeQuery.value
+  if (q) runQuery(q)
 }
 
 function clearSearch() {
@@ -1118,6 +1199,39 @@ onMounted(() => {
   box-shadow: 0 14px 30px rgba(0, 161, 154, 0.32);
 }
 .dsc-search-btn-ic { width: 17px; height: 17px; }
+
+/* Filters pill — sits between the scope toggle and Search */
+.dsc-filters-btn {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border: 1px solid #e2e6ec;
+  border-radius: 15px;
+  background: #fff;
+  color: #3b4b60;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+.dsc-filters-btn:hover { border-color: #c3cdd9; color: #16283f; }
+.dsc-filters-btn.on {
+  border-color: rgba(0, 161, 154, 0.45);
+  background: rgba(0, 161, 154, 0.08);
+  color: #00857f;
+}
+.dsc-filters-ic { width: 16px; height: 16px; }
+.dsc-filters-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00a19a;
+}
 
 .dsc-search-hint {
   display: flex;
