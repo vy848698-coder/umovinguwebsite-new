@@ -13,6 +13,7 @@ export default <Config>{
   theme: {
     extend: {
       colors: {
+        'brand-aqua-text': '#00726c',
         'brand-aqua': '#00a19a',
         'purple-main': '#7C3AED',
         'purple-light': 'var(--purple-main0)',
