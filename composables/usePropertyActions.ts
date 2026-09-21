@@ -1,4 +1,4 @@
-﻿function getAuthHeaders() {
+function getAuthHeaders() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -16,6 +16,8 @@ export interface PropertyListItem {
   bedrooms?: number | null
   bathrooms?: number | null
   imageUrl?: string | null
+  epcScore?: number | null
+  homeScore?: number | null
   wishlistedAt?: string
   savedAt?: string
 }
@@ -105,9 +107,8 @@ export function usePropertyActions(propertyId?: string) {
     })
   }
 
-  // The watch list — PropertyWatch rows, created by the property page's
-  // "Watch this" notify flow. A different list from saved/wishlist above,
-  // and the one the dashboard's "Watching" section reads.
+  // Real "watch list" — properties with an active PropertyWatch (opted in
+  // via "Watch this property" / WatchPropertyDrawer), distinct from Saved.
   async function fetchWatchedProperties(): Promise<PropertyListItem[]> {
     const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -127,7 +128,8 @@ export function usePropertyActions(propertyId?: string) {
         headers: getAuthHeaders(),
       })
       return true
-    } catch {
+    } catch (e) {
+      console.error('unwatchProperty error', e)
       return false
     }
   }

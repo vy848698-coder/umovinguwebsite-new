@@ -18,9 +18,8 @@
           type="button"
           aria-label="Back"
           @click="prevQ"
-        ><Icon name="i-lucide-chevron-left" /></button>
+        >‹</button>
         <div class="topbar-title-block">
-          <div class="topbar-eyebrow">Estimated HomeScore</div>
           <h1 class="topbar-title">Estimate quiz</h1>
           <div class="topbar-sub">{{ property?.addressLine1 ?? 'Your property' }}</div>
         </div>
@@ -29,7 +28,7 @@
           type="button"
           aria-label="Close"
           @click="$emit('close')"
-        ><Icon name="i-lucide-x" /></button>
+        >×</button>
       </div>
 
       <div class="progress-wrap">
@@ -47,11 +46,7 @@
       </div>
 
       <div class="qbox">
-        <div class="section-chip">
-          <img :src="sectionIcon(QS[idx].s)" alt="" loading="lazy" />{{
-            QS[idx].s
-          }}
-        </div>
+        <div class="section-chip">{{ QS[idx].s }}</div>
         <div class="q-title">{{ QS[idx].t }}</div>
         <div v-if="QS[idx].sub" class="q-sub">{{ QS[idx].sub }}</div>
         <div v-else style="height:12px" />
@@ -76,14 +71,7 @@
           type="button"
           :class="{ disabled: answers[idx] === null }"
           @click="nextQ"
-        >
-          <template v-if="idx === QS.length - 1">
-            See my estimate <Icon name="i-lucide-sparkles" />
-          </template>
-          <template v-else>
-            Next <Icon name="i-lucide-arrow-right" />
-          </template>
-        </button>
+        >{{ idx === QS.length - 1 ? 'See my estimate ✦' : 'Next' }}</button>
       </div>
     </template>
 
@@ -95,9 +83,8 @@
           type="button"
           aria-label="Back"
           @click="screen = 'quiz'"
-        ><Icon name="i-lucide-chevron-left" /></button>
+        >‹</button>
         <div class="topbar-title-block">
-          <div class="topbar-eyebrow">Estimated HomeScore</div>
           <h1 class="topbar-title">Your HomeScore</h1>
           <div class="topbar-sub">Estimated · no EPC required</div>
         </div>
@@ -106,17 +93,17 @@
           type="button"
           aria-label="Close"
           @click="$emit('close')"
-        ><Icon name="i-lucide-x" /></button>
+        >?</button>
       </div>
 
       <div class="result-card">
         <div class="result-brandrow">
           <div class="brandline">HOMESCORE<sup>™</sup></div>
-          <span class="estchip"><Icon name="i-lucide-sparkles" /> Estimated</span>
+          <span class="estchip">✦ Estimated</span>
         </div>
         <div class="result-top">
           <div class="ring">
-            <svg width="118" height="118" viewBox="0 0 118 118">
+            <svg width="118" height="118" viewBox="0 0 118 118" aria-hidden="true">
               <circle cx="59" cy="59" r="50" fill="none" stroke="#e3e6ee" stroke-width="11" />
               <circle
                 cx="59"
@@ -166,7 +153,7 @@
 
         <hr class="divider" />
         <div class="info-row">
-          <div class="i"><Icon name="i-lucide-info" /></div>
+          <div class="i">i</div>
           <div v-html="resultNote" />
         </div>
       </div>
@@ -222,7 +209,7 @@
         </template>
         <template v-else>
           <div class="step">
-            <span class="em"><Icon name="i-lucide-trophy" /></span>
+            <span class="em">🏆</span>
             <div class="txt">
               <b>No obvious quick wins</b>
               <span>Your answers already score near the top of each category.</span>
@@ -232,10 +219,10 @@
       </div>
 
       <button class="btn teal wide" type="button" @click="$emit('book-assessment')">
-        <Icon name="i-lucide-clipboard-check" /> Book a real EPC assessment
+        Book a real EPC assessment
       </button>
       <button class="btn ghost wide" type="button" @click="retake">
-        <Icon name="i-lucide-rotate-ccw" /> Retake the quiz
+        Retake the quiz
       </button>
     </template>
   </div>
@@ -271,27 +258,16 @@ interface Question {
   w: number           // weight
   opts: Opt[]
 }
-// Illustrated icon per question section (public/homescore-icon).
-const SECTION_ICONS: Record<string, string> = {
-  'Property basics': '/homescore-icon/house.png',
-  'Walls, roof & floor': '/homescore-icon/bricks.png',
-  Windows: '/homescore-icon/windows.png',
-  'Heating & hot water': '/homescore-icon/flame.png',
-  'Energy & extras': '/homescore-icon/lightning.png',
-}
-function sectionIcon(s: string): string {
-  return SECTION_ICONS[s] ?? '/homescore-icon/homeScoreCard.png'
-}
-const U = "Not sure — use typical for this home's age"
+const U = "Not sure - use typical for this home's age"
 const QS: Question[] = [
-  { s: 'Property basics', t: 'What type of property is it?', cat: 'structure', w: 1, opts: [
+  { s: '🏠 Property basics', t: 'What type of property is it?', cat: 'structure', w: 1, opts: [
     ['Detached house', '🏡', 0.5],
     ['Semi-detached', '🏘️', 0.6],
     ['Mid-terrace', '🏚️', 0.75],
     ['Bungalow', '🛖', 0.45],
     ['Flat / maisonette', '🏢', 0.85],
   ] },
-  { s: 'Property basics', t: 'Roughly when was it built?', sub: "The age band sets the assumptions for anything you're unsure about.", cat: 'structure', w: 3, opts: [
+  { s: '🏠 Property basics', t: 'Roughly when was it built?', sub: "The age band sets the assumptions for anything you're unsure about.", cat: 'structure', w: 3, opts: [
     ['Before 1900', '🕰️', 0.15],
     ['1900–1929', '', 0.2],
     ['1930–1949', '', 0.3],
@@ -301,33 +277,33 @@ const QS: Question[] = [
     ['1996–2011', '', 0.8],
     ['2012 or later', '✨', 0.95],
   ] },
-  { s: 'Property basics', t: 'How big is it, roughly?', cat: 'efficiency', w: 3, opts: [
+  { s: '🏠 Property basics', t: 'How big is it, roughly?', cat: 'efficiency', w: 3, opts: [
     ['Under 70m² · 1–2 bed', '', 0.8],
     ['70–100m² · 2–3 bed', '', 0.65],
     ['100–150m² · 3–4 bed', '', 0.5],
     ['Over 150m² · 4+ bed', '', 0.35],
     [U, '🤷', 0.55, 1],
   ] },
-  { s: 'Property basics', t: 'Any extensions?', cat: 'structure', w: 1, opts: [
+  { s: '🏠 Property basics', t: 'Any extensions?', cat: 'structure', w: 1, opts: [
     ['No extensions', '', 0.7],
-    ['Yes — built after 2000', '', 0.8],
-    ['Yes — older extension', '', 0.5],
+    ['Yes - built after 2000', '', 0.8],
+    ['Yes - older extension', '', 0.5],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: 'Walls, roof & floor', t: 'What are the external walls?', sub: 'Tip: bricks in an alternating long/short pattern usually means solid walls.', cat: 'structure', w: 5, opts: [
+  { s: '🧱 Walls, roof & floor', t: 'What are the external walls?', sub: 'Tip: bricks in an alternating long/short pattern usually means solid walls.', cat: 'structure', w: 5, opts: [
     ['Cavity (two layers with a gap)', '🧱', 0.7],
     ['Solid brick', '🧱', 0.25],
     ['Stone', '🪨', 0.2],
     ['Timber frame', '🪵', 0.65],
     [U, '🤷', 0.45, 1],
   ] },
-  { s: 'Walls, roof & floor', t: 'Have the walls been insulated?', cat: 'structure', w: 4, opts: [
-    ['Yes — cavity or solid-wall insulation', '✅', 0.9],
+  { s: '🧱 Walls, roof & floor', t: 'Have the walls been insulated?', cat: 'structure', w: 4, opts: [
+    ['Yes - cavity or solid-wall insulation', '✅', 0.9],
     ['No', '❌', 0.3],
     ['No cavity to fill (solid walls)', '', 0.2],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Walls, roof & floor', t: 'How much loft insulation is there?', cat: 'structure', w: 5, opts: [
+  { s: '🧱 Walls, roof & floor', t: 'How much loft insulation is there?', cat: 'structure', w: 5, opts: [
     ['270mm+ (over ankle deep)', '🧤', 0.95],
     ['100–250mm', '', 0.65],
     ['A thin layer (under 100mm)', '', 0.35],
@@ -335,33 +311,33 @@ const QS: Question[] = [
     ['No loft (flat roof / top-floor flat)', '', 0.5],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Walls, roof & floor', t: 'Is there a loft conversion?', cat: 'structure', w: 1, opts: [
+  { s: '🧱 Walls, roof & floor', t: 'Is there a loft conversion?', cat: 'structure', w: 1, opts: [
     ['No conversion', '', 0.7],
-    ['Yes — insulated when converted', '✅', 0.8],
-    ['Yes — not insulated', '❌', 0.3],
+    ['Yes - insulated when converted', '✅', 0.8],
+    ['Yes - not insulated', '❌', 0.3],
     [U, '🤷', 0.55, 1],
   ] },
-  { s: 'Walls, roof & floor', t: "What's under the ground floor?", cat: 'structure', w: 2, opts: [
+  { s: '🧱 Walls, roof & floor', t: "What's under the ground floor?", cat: 'structure', w: 2, opts: [
     ['Solid concrete, insulated', '', 0.9],
     ['Solid concrete, uninsulated', '', 0.55],
     ['Suspended timber, insulated', '', 0.8],
     ['Suspended timber, uninsulated', '', 0.35],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Windows', t: 'What glazing does it have?', cat: 'structure', w: 2, opts: [
+  { s: '🪟 Windows', t: 'What glazing does it have?', cat: 'structure', w: 2, opts: [
     ['Triple glazing', '❄️', 0.95],
     ['Double glazing throughout', '', 0.8],
     ['Mostly double, some single', '', 0.6],
     ['Mostly single glazed', '🥶', 0.2],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: 'Windows', t: 'How old are the windows?', cat: 'structure', w: 1, opts: [
+  { s: '🪟 Windows', t: 'How old are the windows?', cat: 'structure', w: 1, opts: [
     ['Fitted 2002 or later', '', 0.85],
     ['Before 2002', '', 0.5],
     ['A mix', '', 0.65],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: 'Heating & hot water', t: "What's the main heating system?", cat: 'heating', w: 7, opts: [
+  { s: '🔥 Heating & hot water', t: "What's the main heating system?", cat: 'heating', w: 7, opts: [
     ['Gas boiler + radiators', '🔥', 0.75],
     ['Heat pump', '💚', 0.95],
     ['Oil boiler', '🛢️', 0.5],
@@ -369,7 +345,7 @@ const QS: Question[] = [
     ['Plug-in electric heaters', '⚡', 0.15],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Heating & hot water', t: 'How old is the boiler?', cat: 'heating', w: 6, opts: [
+  { s: '🔥 Heating & hot water', t: 'How old is the boiler?', cat: 'heating', w: 6, opts: [
     ['Under 5 years', '✨', 0.95],
     ['5–15 years', '', 0.7],
     ['Over 15 years', '', 0.35],
@@ -377,7 +353,7 @@ const QS: Question[] = [
     ['No boiler', '', 0.5],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Heating & hot water', t: 'What heating controls are there?', cat: 'heating', w: 3, opts: [
+  { s: '🔥 Heating & hot water', t: 'What heating controls are there?', cat: 'heating', w: 3, opts: [
     ['Smart thermostat + radiator valves', '📱', 0.95],
     ['Programmer + thermostat + TRVs', '', 0.8],
     ['Programmer + thermostat', '', 0.6],
@@ -385,41 +361,41 @@ const QS: Question[] = [
     ['None', '❌', 0.1],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Heating & hot water', t: 'How is hot water heated?', cat: 'plumbing', w: 20, opts: [
-    ['Combi boiler — no cylinder', '🚿', 0.85],
+  { s: '🔥 Heating & hot water', t: 'How is hot water heated?', cat: 'plumbing', w: 20, opts: [
+    ['Combi boiler - no cylinder', '🚿', 0.85],
     ['Cylinder with factory foam insulation', '', 0.7],
     ['Cylinder with a loose jacket', '', 0.55],
     ['Cylinder, uninsulated', '❌', 0.25],
     ['Electric immersion only', '⚡', 0.35],
     [U, '🤷', 0.55, 1],
   ] },
-  { s: 'Heating & hot water', t: 'Any secondary heating?', cat: 'heating', w: 2, opts: [
+  { s: '🔥 Heating & hot water', t: 'Any secondary heating?', cat: 'heating', w: 2, opts: [
     ['None', '', 0.8],
     ['Wood-burning stove', '🪵', 0.6],
     ['Open fireplace in use', '🔥', 0.3],
     ['Portable electric heaters', '', 0.4],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: 'Heating & hot water', t: 'Is the property on mains gas?', cat: 'heating', w: 2, opts: [
+  { s: '🔥 Heating & hot water', t: 'Is the property on mains gas?', cat: 'heating', w: 2, opts: [
     ['Yes', '', 0.85],
     ['No', '', 0.35],
     [U, '🤷', 0.6, 1],
   ] },
-  { s: 'Energy & extras', t: 'How much lighting is LED?', cat: 'efficiency', w: 6, opts: [
+  { s: '⚡ Energy & extras', t: 'How much lighting is LED?', cat: 'efficiency', w: 6, opts: [
     ['All of it', '💡', 0.95],
     ['Most of it', '', 0.75],
     ['Some', '', 0.5],
     ['Hardly any', '', 0.2],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Energy & extras', t: 'Any renewables?', cat: 'electrics', w: 20, opts: [
+  { s: '⚡ Energy & extras', t: 'Any renewables?', cat: 'electrics', w: 20, opts: [
     ['Solar panels + battery', '🔋', 0.95],
     ['Solar panels (PV)', '☀️', 0.85],
     ['Solar hot water', '', 0.7],
     ['None', '', 0.5],
     [U, '🤷', 0.5, 1],
   ] },
-  { s: 'Energy & extras', t: 'Smart meter & draught-proofing?', cat: 'efficiency', w: 6, opts: [
+  { s: '⚡ Energy & extras', t: 'Smart meter & draught-proofing?', cat: 'efficiency', w: 6, opts: [
     ['Both', '✅', 0.9],
     ['Smart meter only', '', 0.7],
     ['Draught-proofed only', '', 0.65],
@@ -518,7 +494,7 @@ const livePillText = computed(() => {
   const hi = band(est.lo)
   const rangeTxt = lo === hi ? `likely ${lo}` : `${lo}–${hi}`
   const anyAnswered = answers.value.some((a) => a !== null)
-  if (!anyAnswered) return 'Current estimate: —'
+  if (!anyAnswered) return 'Current estimate: -'
   return `Current estimate: ${est.lo}–${est.hi} · ${rangeTxt}`
 })
 
@@ -599,7 +575,7 @@ const resultNote = computed(() => {
   const unsurePart = unsure
     ? `${unsure} answer${unsure > 1 ? 's' : ''} used age-typical defaults; confirming them tightens the range. `
     : ''
-  return `Estimated from <b>your answers today</b> — no EPC exists for this property. ${unsurePart}Book an accredited assessment to make it official.`
+  return `Estimated from <b>your answers today</b> - no EPC exists for this property. ${unsurePart}Book an accredited assessment to make it official.`
 })
 
 const estBills = computed(() =>
@@ -623,311 +599,235 @@ const splitRows = computed(() =>
 </script>
 
 <style scoped>
-/* ═══════════════════════════════════════════════════════════════════
-   V6NoEpcEstimator — premium desktop redesign.
-   Shares the brand tokens / nd-* language of the score + quiz surfaces
-   so the no-EPC estimator reads as one system with the rest of the site.
-   ═══════════════════════════════════════════════════════════════════ */
+/* Prototype-parity styles. Colour tokens are ported 1:1 (teal /
+   navy / amber / red / green) but font-family is intentionally
+   unset so the wrapper inherits SF Pro Display + system fallback. */
 .v6-noepc-est {
-  --primary: #231d45;
-  --accent: #00a19a;
-  --accent-dark: #008a84;
-  --accent-light: #00b8b0;
-  --teal: #00a19a;
-  --teal-dark: #008a84;
-  --teal-light: #e5f4f2;
-  --navy: #231d45;
+  --teal: #1fa295;
+  --teal-dark: #15837a;
+  --teal-light: #e2f4f2;
+  --navy: #2e2a50;
   --amber: #e8a33d;
   --red: #e4574f;
   --green: #3fae6a;
-  --grey: #6b7089;
-  --ink: #231d45;
-  --border: #e4e5ed;
-  --border-soft: #f0f1f5;
-  --card: #ffffff;
-  --shadow-card: 0 2px 8px rgba(35, 29, 69, 0.05);
-
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 28px 20px 60px;
+  --grey: #8b8fa3;
+  --ink: #2e2a50;
   color: var(--ink);
-  -webkit-font-smoothing: antialiased;
+  padding: 6px 4px 40px;
 }
-.v6-noepc-est *,
-.v6-noepc-est *::before,
-.v6-noepc-est *::after { box-sizing: border-box; }
 
-/* ── Wizard header ──────────────────────────────────────────────── */
 .topbar {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 22px;
+  justify-content: space-between;
+  padding: 4px 12px 14px;
 }
 .circle-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: #fff;
-  border: 1px solid var(--border);
-  color: var(--text-secondary, #6b7089);
-  box-shadow: var(--shadow-card);
+  border: none;
+  font-size: 1.125rem;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(46, 42, 80, 0.08);
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
   flex: none;
-  transition: border-color 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
-.circle-btn:hover { border-color: var(--accent); color: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 8px 18px rgba(35, 29, 69, 0.1); }
-.circle-btn svg { width: 20px; height: 20px; }
 .topbar-title-block {
+  text-align: center;
   flex: 1;
-  min-width: 0;
-  text-align: left;
-}
-.topbar-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--accent-dark);
-  margin-bottom: 3px;
 }
 .topbar-title {
-  font-size: clamp(22px, 3vw, 30px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: var(--ink);
   margin: 0;
-  line-height: 1.1;
 }
 .topbar-sub {
-  font-size: 13px;
+  font-size: 0.7813rem;
   color: var(--grey);
   font-weight: 500;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
-/* ── Progress ───────────────────────────────────────────────────── */
-.progress-wrap { margin: 0 0 18px; }
+.progress-wrap {
+  margin: 4px 20px 14px;
+}
 .progress-track {
   height: 8px;
-  background: #e7e8f0;
+  background: #dde0e8;
   border-radius: 99px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-light), var(--accent-dark));
+  background: var(--teal);
   border-radius: 99px;
-  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.3s ease;
 }
 .progress-meta {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 12.5px;
+  font-size: 0.7813rem;
   color: var(--grey);
-  margin-top: 9px;
+  margin-top: 7px;
   font-weight: 600;
 }
 .live-pill {
   display: flex;
-  justify-content: flex-start;
-  margin: 0 0 18px;
+  justify-content: center;
+  margin: 0 20px 14px;
 }
 .live-pill span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
   background: var(--teal-light);
   color: var(--teal-dark);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
-  padding: 8px 15px;
+  padding: 8px 16px;
   border-radius: 99px;
-  border: 1px solid rgba(0, 161, 154, 0.16);
 }
 
-/* ── Question card ──────────────────────────────────────────────── */
 .qbox {
-  padding: 26px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-card);
+  padding: 0 20px;
 }
 .section-chip {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  letter-spacing: 0.13em;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
   font-weight: 700;
-  color: var(--accent-dark);
+  color: var(--grey);
   text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.section-chip img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
+  margin-bottom: 8px;
 }
 .q-title {
-  font-size: 22px;
+  font-size: 1.3125rem;
   font-weight: 800;
-  line-height: 1.28;
-  letter-spacing: -0.01em;
-  margin-bottom: 5px;
+  line-height: 1.3;
+  margin-bottom: 4px;
   color: var(--ink);
 }
 .q-sub {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--grey);
-  line-height: 1.5;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 .opt {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
   width: 100%;
   background: #fff;
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
+  border: 2px solid transparent;
+  border-radius: 18px;
   padding: 15px 16px;
   margin-bottom: 10px;
-  font-size: 15px;
+  font-size: 0.9688rem;
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s, transform 0.14s, box-shadow 0.14s;
+  box-shadow: 0 2px 8px rgba(46, 42, 80, 0.05);
+  transition: border-color 0.15s, transform 0.1s;
   font-family: inherit;
 }
-.opt:last-child { margin-bottom: 0; }
-.opt:hover { border-color: #cfd2e0; transform: translateY(-1px); box-shadow: 0 8px 18px rgba(35, 29, 69, 0.07); }
-.opt:active { transform: scale(0.99); }
+.opt:active { transform: scale(0.985); }
 .opt.sel {
-  border-color: var(--accent);
+  border-color: var(--teal);
   background: var(--teal-light);
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.16);
 }
 .opt .em {
-  font-size: 20px;
-  line-height: 1;
-  width: 26px;
-  text-align: center;
+  font-size: 1.25rem;
   flex: none;
 }
 .opt.unsure {
-  background: #f6f7fa;
-  border-style: dashed;
+  background: #f2f3f7;
+  box-shadow: none;
   color: #6a6e83;
 }
-.opt.unsure:hover { border-color: #c2c5d4; }
-
-/* ── Buttons ────────────────────────────────────────────────────── */
 .quiz-nav {
   display: flex;
-  gap: 12px;
-  margin: 18px 0 0;
+  gap: 10px;
+  margin: 6px 20px 0;
 }
 .quiz-nav .btn { flex: 1; }
-.quiz-nav .btn.back { flex: 0 0 auto; min-width: 120px; }
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
+  display: block;
   width: 100%;
   border: none;
-  border-radius: 14px;
-  padding: 16px 22px;
-  font-size: 16px;
+  border-radius: 999px;
+  padding: 16px;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
   cursor: pointer;
   text-align: center;
   font-family: inherit;
-  transition: transform 0.16s, filter 0.16s, box-shadow 0.16s, border-color 0.15s;
 }
-.btn svg { width: 18px; height: 18px; }
-.btn.wide { margin: 12px 0 0; width: 100%; }
-.btn.teal {
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  box-shadow: 0 12px 28px rgba(0, 161, 154, 0.32);
-}
-.btn.teal:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: 0 16px 36px rgba(0, 161, 154, 0.42); }
+.btn.wide { margin: 12px 20px 0; width: calc(100% - 40px); }
+.btn.teal { background: var(--teal); color: #fff; }
 .btn.back {
   background: #fff;
   color: var(--ink);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 8px rgba(46, 42, 80, 0.06);
 }
-.btn.back:hover { border-color: #cfd2e0; transform: translateY(-1px); }
 .btn.ghost {
   background: transparent;
-  color: var(--accent-dark);
+  color: var(--teal-dark);
   font-weight: 700;
 }
-.btn.ghost:hover { background: var(--teal-light); }
 .btn.disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   pointer-events: none;
-  box-shadow: none;
 }
 
-/* ═══════════════ RESULTS ═══════════════ */
+/* Results */
 .result-card {
-  border: 1px solid rgba(0, 161, 154, 0.28);
-  background: linear-gradient(180deg, #f2faf8, #ffffff 60%);
-  border-radius: 22px;
-  padding: 26px;
-  margin: 0 0 16px;
-  box-shadow: 0 12px 34px rgba(0, 138, 132, 0.1);
+  border: 2px solid var(--teal);
+  background: #f6fbfa;
+  border-radius: 26px;
+  padding: 22px 20px;
+  margin: 0 20px 14px;
 }
 .result-brandrow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 .brandline {
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
   font-weight: 800;
-  color: var(--accent-dark);
+  color: var(--teal-dark);
 }
-.brandline sup { font-size: 8px; }
+.brandline sup { font-size: 0.5rem; }
 .estchip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--navy);
   color: #fff;
-  font-size: 11px;
+  font-size: 0.7188rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 6px 12px;
+  letter-spacing: 0.06em;
+  padding: 5px 11px;
   border-radius: 99px;
   text-transform: uppercase;
 }
-.estchip svg { width: 13px; height: 13px; }
 .result-top {
   display: flex;
-  gap: 22px;
+  gap: 18px;
   align-items: center;
 }
 .ring {
   position: relative;
-  width: 124px;
-  height: 124px;
+  width: 118px;
+  height: 118px;
   flex: none;
 }
-.ring svg { width: 100%; height: 100%; }
 .ring-val {
   position: absolute;
   inset: 0;
@@ -937,39 +837,39 @@ const splitRows = computed(() =>
   justify-content: center;
 }
 .ring-val b {
-  font-size: 36px;
+  font-size: 2.0625rem;
   font-weight: 800;
   line-height: 1;
-  color: var(--ink);
 }
 .ring-val span {
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: var(--grey);
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 2px;
 }
-.result-side { flex: 1; min-width: 0; }
+.result-side { flex: 1; }
 .result-title {
-  font-size: 22px;
+  font-size: 1.3125rem;
   font-weight: 800;
-  letter-spacing: -0.01em;
-  margin-bottom: 7px;
-  line-height: 1.18;
-  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: 1.2;
 }
 .result-body {
-  font-size: 14px;
-  color: var(--grey);
-  line-height: 1.55;
+  font-size: 0.875rem;
+  color: #5b5f75;
+  line-height: 1.5;
 }
-.result-body :deep(b) { color: var(--accent-dark); font-weight: 700; }
+.result-body :deep(b) {
+  color: var(--teal-dark);
+}
 
-.range-bar { margin-top: 22px; }
+.range-bar { margin-top: 18px; }
 .range-track {
   position: relative;
   height: 10px;
   border-radius: 99px;
   background: linear-gradient(90deg, #e4574f, #e8a33d, #f4d03f, #8dc63f, #3fae6a);
+  opacity: 0.95;
 }
 .range-window {
   position: absolute;
@@ -977,29 +877,28 @@ const splitRows = computed(() =>
   height: 18px;
   border-radius: 99px;
   border: 3px solid var(--navy);
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 2px 8px rgba(35, 29, 69, 0.2);
+  background: rgba(255, 255, 255, 0.35);
 }
 .range-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--grey);
   font-weight: 700;
-  margin-top: 7px;
+  margin-top: 6px;
 }
 
 .conf-row {
   display: flex;
   align-items: center;
-  gap: 11px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 16px;
 }
-.conf-lbl { font-size: 13px; font-weight: 700; color: var(--ink); }
+.conf-lbl { font-size: 0.8125rem; font-weight: 700; }
 .conf-track {
   flex: 1;
   height: 8px;
-  background: #e7e8f0;
+  background: #dde0e8;
   border-radius: 99px;
   overflow: hidden;
 }
@@ -1009,99 +908,123 @@ const splitRows = computed(() =>
   border-radius: 99px;
   transition: width 0.5s ease;
 }
-.conf-pct { font-size: 13px; font-weight: 800; color: var(--navy); }
+.conf-pct {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--navy);
+}
 
 .divider {
   border: none;
-  border-top: 1px solid var(--border-soft);
-  margin: 18px 0;
+  border-top: 1px solid #e3e6ee;
+  margin: 16px 0;
 }
 .info-row {
   display: flex;
-  gap: 11px;
+  gap: 10px;
   align-items: flex-start;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--grey);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 .info-row .i {
   flex: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 9px;
-  background: var(--teal-light);
-  color: var(--accent-dark);
-  display: grid;
-  place-items: center;
-  margin-top: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--grey);
+  font-size: 0.6875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  font-weight: 700;
 }
-.info-row .i svg { width: 16px; height: 16px; }
-.info-row :deep(b) { color: var(--ink); font-weight: 700; }
+.info-row :deep(b) { color: var(--ink); }
 
-/* ── Stat tiles ─────────────────────────────────────────────────── */
 .tiles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin: 0 0 16px;
+  display: flex;
+  gap: 12px;
+  margin: 0 20px 14px;
 }
 .tile {
+  flex: 1;
   background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 20px;
-  text-align: left;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1.5px solid #dfe8e7;
+  border-radius: 20px;
+  padding: 16px;
+  text-align: center;
 }
-.tile:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(35, 29, 69, 0.09); }
 .tile .lbl {
-  font-size: 11px;
+  font-size: 0.7188rem;
   letter-spacing: 0.1em;
   font-weight: 700;
   color: var(--grey);
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
-.tile .big { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
-.tile .big small { font-size: 14px; font-weight: 600; color: var(--grey); }
-.tile .cap { font-size: 12.5px; color: var(--accent-dark); font-weight: 600; margin-top: 6px; }
+.tile .big {
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+.tile .big small {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--grey);
+}
+.tile .cap {
+  font-size: 0.75rem;
+  color: var(--teal-dark);
+  font-weight: 600;
+  margin-top: 5px;
+}
 .tile .cap.red { color: var(--red); }
 
-/* ── Section heads + list cards ─────────────────────────────────── */
 .sect-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  margin: 26px 2px 12px;
+  align-items: center;
+  margin: 20px 24px 12px;
 }
 .sect-head .t {
-  font-size: 12px;
-  letter-spacing: 0.13em;
+  font-size: 0.8438rem;
+  letter-spacing: 0.14em;
   font-weight: 700;
-  color: var(--accent-dark);
+  color: #5b5f75;
   text-transform: uppercase;
 }
-.sect-head .a { font-size: 13.5px; font-weight: 700; color: var(--accent-dark); }
+.sect-head .a {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--teal-dark);
+}
 
 .card {
   background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 6px 18px;
-  box-shadow: var(--shadow-card);
-  margin: 0 0 14px;
+  border-radius: 22px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 10px rgba(46, 42, 80, 0.06);
+  margin: 0 20px 14px;
 }
 .split-row {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 15px 0;
+  gap: 12px;
+  padding: 13px 4px;
 }
-.split-row + .split-row { border-top: 1px solid var(--border-soft); }
-.split-row .em { font-size: 19px; width: 26px; text-align: center; }
-.split-row .name { width: 92px; font-size: 15px; font-weight: 700; color: var(--ink); }
+.split-row + .split-row {
+  border-top: 1px solid #f0f1f6;
+}
+.split-row .em {
+  font-size: 1.1875rem;
+  width: 26px;
+  text-align: center;
+}
+.split-row .name {
+  width: 86px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
 .split-track {
   flex: 1;
   height: 9px;
@@ -1109,46 +1032,53 @@ const splitRows = computed(() =>
   border-radius: 99px;
   overflow: hidden;
 }
-.split-fill { height: 100%; border-radius: 99px; transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
-.split-pts { width: 54px; text-align: right; font-size: 14.5px; font-weight: 800; color: var(--ink); }
-.split-est { font-size: 10.5px; color: var(--grey); font-weight: 600; display: block; }
+.split-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.7s ease;
+}
+.split-pts {
+  width: 52px;
+  text-align: right;
+  font-size: 0.9063rem;
+  font-weight: 800;
+}
+.split-est {
+  font-size: 0.6563rem;
+  color: var(--grey);
+  font-weight: 600;
+  display: block;
+}
 
 .step {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 15px 0;
+  gap: 12px;
+  padding: 13px 4px;
 }
-.step + .step { border-top: 1px solid var(--border-soft); }
+.step + .step {
+  border-top: 1px solid #f0f1f6;
+}
 .step .em {
-  font-size: 18px;
-  width: 38px;
-  height: 38px;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border-radius: 11px;
-  background: var(--teal-light);
+  font-size: 1.1875rem;
+  width: 26px;
+  text-align: center;
 }
-.step .em svg { width: 19px; height: 19px; color: var(--accent-dark); }
-.step .txt { flex: 1; min-width: 0; }
-.step .txt b { font-size: 14.5px; display: block; color: var(--ink); }
-.step .txt span { font-size: 12.5px; color: var(--grey); }
+.step .txt { flex: 1; }
+.step .txt b {
+  font-size: 0.9063rem;
+  display: block;
+}
+.step .txt span {
+  font-size: 0.7813rem;
+  color: var(--grey);
+}
 .step .pts {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 800;
-  color: var(--accent-dark);
+  color: var(--teal-dark);
   background: var(--teal-light);
-  padding: 6px 11px;
+  padding: 5px 10px;
   border-radius: 99px;
-}
-
-/* ── Responsive ─────────────────────────────────────────────────── */
-@media (max-width: 560px) {
-  .v6-noepc-est { padding: 20px 16px 44px; }
-  .result-top { flex-direction: column; align-items: flex-start; }
-  .tiles { grid-template-columns: 1fr; }
-  .quiz-nav { flex-direction: column-reverse; }
-  .quiz-nav .btn.back { min-width: 0; }
 }
 </style>
