@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+useHead({ bodyAttrs: { class: 'hs-parity' } })
 import { computed } from 'vue'
 import { useMarketplaceMock } from '~/composables/useMarketplaceMock'
 
