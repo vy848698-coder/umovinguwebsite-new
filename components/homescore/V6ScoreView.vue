@@ -689,7 +689,8 @@
             <div class="fork-opt-chev">›</div>
           </button>
           <button class="fork-opt" type="button" @click="$emit('refine')">
-            <div class="fork-opt-icon">✅</div>
+            <!-- Checklist + magnifier: the owner quiz that verifies the score. -->
+            <div class="fork-opt-icon"><img src="/homescore-icon/clipboard.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">Get Real HomeScore</div>
               <div class="fork-opt-sub">Answer the owner quiz to lock in your verified score.</div>
