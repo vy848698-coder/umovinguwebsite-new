@@ -13,10 +13,7 @@
       <header class="st-header">
         <div class="st-header-intro">
           <div class="st-header-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
+            <img src="/profile new icon/settings.jpeg" alt="" />
           </div>
           <div>
             <h1 class="st-h1">Settings</h1>
@@ -26,11 +23,7 @@
 
         <div class="st-strength-card">
           <div class="st-strength-shield">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" />
-              <rect x="9" y="11" width="6" height="5" rx="1" />
-              <path d="M10 11V9.5a2 2 0 0 1 4 0V11" />
-            </svg>
+            <img src="/homescore-icon/shield.png" alt="" />
             <span class="st-strength-check">✓</span>
           </div>
           <div class="st-strength-body">
@@ -53,18 +46,14 @@
         <section class="st-card">
           <div class="st-card-head">
             <span class="st-card-chip teal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
-              </svg>
+              <img src="/buyer-profile-icon/idCard.png" alt="" />
             </span>
             <h2 class="st-card-title">Account &amp; Security</h2>
           </div>
           <div class="st-group">
             <button class="st-row" @click="navigateTo('/profile/personal-information')">
               <span class="st-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
-                </svg>
+                <img src="/buyer-profile-icon/buyers.png" alt="" />
               </span>
               <div class="st-row-content">
                 <div class="st-row-label">Personal information</div>
@@ -74,9 +63,7 @@
             </button>
             <button class="st-row" @click="openChangePassword">
               <span class="st-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M7 14a4 4 0 1 1 4-4" /><path d="m11 10 9 9" /><path d="m17 13 2 2" /><path d="m14 16 2 2" />
-                </svg>
+                <img src="/op-icons/investment/key.png" alt="" />
               </span>
               <div class="st-row-content">
                 <div class="st-row-label">Change password</div>
@@ -91,18 +78,14 @@
         <section class="st-card">
           <div class="st-card-head">
             <span class="st-card-chip violet">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
+              <img src="/op-icons/misc/bell.png" alt="" />
             </span>
             <h2 class="st-card-title">Notifications</h2>
           </div>
           <div class="st-group">
             <div class="st-row">
               <span class="st-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" />
-                </svg>
+                <img src="/op-icons/profile/phone.png" alt="" />
               </span>
               <div class="st-row-content">
                 <div class="st-row-label">In-app push</div>
@@ -112,9 +95,7 @@
             </div>
             <div class="st-row">
               <span class="st-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" />
-                </svg>
+                <img src="/op-icons/profile/email.jpeg" alt="" />
               </span>
               <div class="st-row-content">
                 <div class="st-row-label">Email newsletter</div>
@@ -124,9 +105,7 @@
             </div>
             <div class="st-row">
               <span class="st-row-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
+                <img src="/op-icons/matched-buyers/chat-multi.png" alt="" />
               </span>
               <div class="st-row-content">
                 <div class="st-row-label">SMS</div>
@@ -141,9 +120,7 @@
         <section class="st-card">
           <div class="st-card-head">
             <span class="st-card-chip teal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z" />
-              </svg>
+              <img src="/homescore-icon/lightbulb.png" alt="" />
             </span>
             <h2 class="st-card-title">Appearance &amp; Language</h2>
           </div>
@@ -179,9 +156,7 @@
         <section class="st-card">
           <div class="st-card-head">
             <span class="st-card-chip indigo">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+              <img src="/homescore-icon/padlock.png" alt="" />
             </span>
             <h2 class="st-card-title">Privacy &amp; Data</h2>
           </div>
@@ -214,9 +189,7 @@
         <section class="st-card st-legal-card">
           <div class="st-card-head">
             <span class="st-card-chip blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m12 3 8 4-3 7H7L4 7l8-4z" /><path d="M4 7 2 11m18-4 2 4M12 3v18" /><path d="M8 21h8" />
-              </svg>
+              <img src="/buyer-profile-icon/scales.png" alt="" />
             </span>
             <h2 class="st-card-title">Legal</h2>
           </div>
@@ -244,9 +217,7 @@
 
         <aside class="st-promo">
           <div class="st-promo-shield">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" /><path d="m9 12 2 2 4-4" />
-            </svg>
+            <img src="/buyer-profile-icon/verifiedDoc.png" alt="" />
           </div>
           <div class="st-promo-title">Your privacy is our priority</div>
           <div class="st-promo-text">We use bank-grade encryption to protect your data and privacy.</div>
@@ -258,9 +229,7 @@
       <div class="st-trust">
         <div class="st-trust-card">
           <span class="st-trust-icon teal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z" /><path d="m9 12 2 2 4-4" />
-            </svg>
+            <img src="/homescore-icon/padlock.png" alt="" />
           </span>
           <div>
             <div class="st-trust-title">Data Protected</div>
@@ -269,9 +238,7 @@
         </div>
         <div class="st-trust-card">
           <span class="st-trust-icon violet">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-            </svg>
+            <img src="/op-icons/investment/refreshArrows.png" alt="" />
           </span>
           <div>
             <div class="st-trust-title">Always Up to Date</div>
@@ -280,9 +247,7 @@
         </div>
         <div class="st-trust-card st-trust-card--link" role="button" tabindex="0" @click="navigateTo('/profile/support')" @keydown.enter="navigateTo('/profile/support')">
           <span class="st-trust-icon blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+            <img src="/buyer-profile-icon/agent.png" alt="" />
           </span>
           <div>
             <div class="st-trust-title">Need Help?</div>
@@ -966,6 +931,37 @@ const securityLabel = computed(() => {
 .st-trust-icon.teal { background: rgba(0, 161, 154, 0.12); color: var(--fx-aqua); }
 .st-trust-icon.violet { background: rgba(112, 92, 240, 0.12); color: #6c5ce7; }
 .st-trust-icon.blue { background: rgba(47, 155, 223, 0.12); color: var(--fx-blue); }
+
+/* 3D illustrated icons: every icon slot is a white tile with a hairline
+   border and the artwork filling most of it. Overrides the flat-glyph
+   tints and teal gradients above. */
+.st-header-icon,
+.st-strength-shield,
+.st-card-chip,
+.st-row-icon,
+.st-promo-shield,
+.st-trust-icon {
+  background: #fff;
+  border: 1px solid #ebe8e2;
+  box-sizing: border-box;
+}
+.st-header-icon img,
+.st-strength-shield img,
+.st-card-chip img,
+.st-row-icon img,
+.st-promo-shield img,
+.st-trust-icon img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+.st-header-icon { width: 60px; height: 60px; overflow: hidden; }
+.st-header-icon img { width: 100%; height: 100%; }
+.st-strength-shield,
+.st-promo-shield {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.28);
+}
 .st-trust-title {
   font-size: 14px;
   font-weight: 800;
