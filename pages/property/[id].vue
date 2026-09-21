@@ -653,7 +653,7 @@
               </div>
             </div>
             <button type="button" class="pps-keepgoing-card-btn" @click="goToExplore">
-              Back to Explore
+              {{ signedIn ? 'Back to Dashboard' : 'Back to Explore' }}
             </button>
           </div>
         </div>
@@ -6364,11 +6364,12 @@ function onClaimCtaClick() {
 // and one labelled "Back to Explore", neither of which is the dashboard.
 // Each now goes where its label says.
 
-// "Back to Explore" in the Keep going card. Always /explore: the label names
-// the destination, and /explore is public (no auth middleware, no redirect),
-// so this works signed in or out.
+// "Keep going" card. A signed-in user searches from the dashboard, so send
+// them there to look at more properties; /explore is the public browse page
+// and stays the destination for guests, who have no dashboard to go to. The
+// label follows the destination so the button never lies.
 function goToExplore() {
-  navigateTo('/explore')
+  navigateTo(signedIn.value ? '/dashboard' : '/explore')
 }
 
 // "All passports" in the top nav.
