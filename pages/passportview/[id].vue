@@ -116,13 +116,12 @@
                 <OPIcon name="progressMan" class="pp-hero-dash-man" />
               </div>
             </div>
-            <div v-if="isPublished" class="pp-hero-dash-issued">
+            <!-- "Issued" is the first stage of this passport's own timeline
+                 (Issued → Matched → Published → …), so it is true from the
+                 moment the passport exists, published or not. -->
+            <div class="pp-hero-dash-issued">
               <span class="pp-hero-dash-dot" />
               Passport issued
-            </div>
-            <div v-else class="pp-hero-dash-issued pp-hero-dash-issued--draft">
-              <span class="pp-hero-dash-dot" />
-              Draft
             </div>
           </div>
 
@@ -3907,12 +3906,25 @@ function formatStamp(iso) {
 .pp-resume-sub {
   color: rgba(255, 255, 255, 0.6);
 }
+/* A white button on the navy banner, rather than bare teal text, so the
+   action reads as the thing to press. */
 .pp-resume-continue {
-  color: #3fe0d2;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: #fff;
+  color: #231d45;
   font-size: 13px;
   font-weight: 800;
   flex-shrink: 0;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.pp-resume-cta:hover .pp-resume-continue {
+  transform: translateX(2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
 }
 
 /* ── Verified-sections header ──────────────────────────────────────── */
@@ -4026,11 +4038,5 @@ function formatStamp(iso) {
 .pp-hero-main .pp-hero-dash-dot {
   background: #2fd0c6;
   box-shadow: 0 0 0 2.5px rgba(47, 208, 198, 0.18);
-}
-/* Not yet published - amber, so "Draft" never reads as "issued". */
-.pp-hero-main .pp-hero-dash-issued--draft { color: rgba(255, 200, 140, 0.85); }
-.pp-hero-main .pp-hero-dash-issued--draft .pp-hero-dash-dot {
-  background: #ffb066;
-  box-shadow: 0 0 0 2.5px rgba(255, 176, 102, 0.18);
 }
 </style>
