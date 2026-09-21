@@ -4,7 +4,7 @@
          other route to: notifications had no entry point anywhere in the app
          despite the backend serving them, and the profile was only reachable
          from the mobile menu. Neither duplicates anything already on the
-         page (Add a property lives in the page head). -->
+         page (Claim a property lives in the page head). -->
     <WebTopNav>
       <template #actions>
         <NotificationBell />
@@ -49,9 +49,11 @@
                 <strong>{{ roleLabel }}</strong>
               </span>
             </span>
+            <!-- Goes to /claim, so it is labelled for what it does: this is
+                 the claim flow, not a generic "add a listing". -->
             <button class="dsh-add" type="button" @click="startClaimFlow">
               <img src="/dashboard-art/addProperty.png" alt="" class="dsh-add-ic" loading="lazy" />
-              Add a property
+              Claim a property
             </button>
           </div>
         </div>
@@ -1248,14 +1250,24 @@ onMounted(async () => {
   /* Rounded square, not a circle: WebTopNav's own controls (nav links 10px,
      the menu toggle 40x40 at 12px) set this radius for the whole bar. */
   border-radius: 12px;
-  border: 1px solid var(--line);
-  background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid #00a19a;
+  background: #00a19a;
+  color: #fff;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.dsh :deep(.nb-btn svg) { color: #fff; }
 .dsh :deep(.nb-btn:hover) {
-  border-color: #9fe0d8;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
+  background: #018e88;
+  border-color: #018e88;
+  box-shadow: 0 6px 16px rgba(0, 161, 154, 0.3);
+}
+/* The unread dot is red on teal; a ring in the button colour keeps the two
+   from bleeding into each other. */
+.dsh :deep(.nb-badge) {
+  box-shadow: 0 0 0 2px #00a19a;
+}
+.dsh :deep(.nb-btn:hover .nb-badge) {
+  box-shadow: 0 0 0 2px #018e88;
 }
 
 /* Same 40px height and 12px radius as the bell beside it and WebTopNav's own
@@ -1269,20 +1281,29 @@ onMounted(async () => {
   height: 40px;
   padding: 0 13px 0 5px;
   border-radius: 12px;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid #00a19a;
+  background: #00a19a;
   text-decoration: none;
-  color: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  color: #fff;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .dsh-nav-profile:hover {
-  border-color: #9fe0d8;
-  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
+  background: #018e88;
+  border-color: #018e88;
+  box-shadow: 0 6px 16px rgba(0, 161, 154, 0.3);
 }
-/* UserAvatar sets a 50% radius inline; a circle inside a rounded square
-   reads as a mismatch, so follow the container's curve (12px outer minus
-   the 5px inset). */
-.dsh-nav-profile > :first-child { border-radius: 8px !important; }
+/* UserAvatar sets its colours inline: a teal gradient with white initials,
+   which would sink into the teal button. Flipped to a white tile with teal
+   initials so it reads as a badge on the button. !important because those
+   inline styles win over a plain rule. The 8px radius follows the
+   container's curve (12px outer minus the 5px inset) rather than the
+   component's default circle. */
+.dsh-nav-profile > :first-child {
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #00857f !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
 .dsh-nav-profile-text {
   display: flex;
   flex-direction: column;
@@ -1291,12 +1312,12 @@ onMounted(async () => {
 .dsh-nav-profile-text strong {
   font-size: 13px;
   font-weight: 800;
-  color: var(--ink);
+  color: #fff;
 }
 .dsh-nav-profile-text small {
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--ink-3);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 /* ── Hero ──────────────────────────────────────────────────────────────
