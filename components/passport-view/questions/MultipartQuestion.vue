@@ -176,6 +176,7 @@
           :answer="getPartAnswer(part)"
           :display="getPartDisplay(part)"
           :passport-id="part.passportId || ''"
+          :property-facts="propertyFacts"
           :hide-question-display="true"
           @update="(val) => updatePartAnswer(part.partKey, val)"
         />
@@ -284,6 +285,7 @@ const props = defineProps({
   question: { type: Object, required: true },
   answer: { type: [Object, String], default: () => ({}) },
   passportId: { type: String, default: '' },
+  propertyFacts: { type: Object, default: null },
   displayedQuestion: { type: String, default: '' },
   showQuestionCursor: { type: Boolean, default: false },
   displayedDescription: { type: String, default: '' },

@@ -1049,6 +1049,10 @@ const handleViewProfile = () => {
   letter-spacing: 0.02em;
   width: 22px;
 }
+/* Section icons are full-colour illustrations (white pages, navy, teal), so
+   they sit on light tiles at a readable size. A teal/amber fill with a
+   brightness(0) invert(1) filter flattened them into white blobs. Status is
+   carried by the tile's tint and border instead. */
 .task-icon {
   flex-shrink: 0;
   width: 52px;
@@ -1056,19 +1060,22 @@ const handleViewProfile = () => {
   border-radius: 15px;
   display: grid;
   place-items: center;
-  background: #f4f3f7;
+  background: #f7f6fa;
+  border: 1px solid #ebe9f1;
+  box-sizing: border-box;
+}
+.task-icon :deep(img) {
+  width: 34px !important;
+  height: 34px !important;
+  object-fit: contain;
 }
 .task-icon.done {
-  background: linear-gradient(135deg, #00a19a, #05867f);
-}
-.task-icon.done :deep(img) {
-  filter: brightness(0) invert(1);
+  background: #e6f8f7;
+  border-color: #9fdcd8;
 }
 .task-icon.progress {
-  background: linear-gradient(135deg, #f6b63f, #e79a2b);
-}
-.task-icon.progress :deep(img) {
-  filter: brightness(0) invert(1);
+  background: #fff5e3;
+  border-color: #f6cf85;
 }
 .task-info {
   flex: 1;
@@ -1330,12 +1337,16 @@ const handleViewProfile = () => {
   height: 44px;
   flex-shrink: 0;
   border-radius: 13px;
-  background: linear-gradient(135deg, #00a19a, #05867f);
+  background: #e6f8f7;
+  border: 1px solid #9fdcd8;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
 }
 .upnext-ic :deep(img) {
-  filter: brightness(0) invert(1);
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
 }
 .upnext-text {
   flex: 1;

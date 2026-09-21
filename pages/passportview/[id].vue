@@ -70,19 +70,23 @@
           <div class="pp-hero-eyebrow">Property Passport · Live Record</div>
           <div class="pp-hero-addr-row">
             <div class="pp-hero-addr-text">
-              <div class="pp-hero-addr-l1">{{ passportAddress.line1 }}</div>
+              <!-- The switcher belongs to the address line, not the two-line
+                   block — centring it on both lines pushed it below the title. -->
+              <div class="pp-hero-addr-l1-row">
+                <div class="pp-hero-addr-l1">{{ passportAddress.line1 }}</div>
+                <button
+                  class="pp-hero-switch"
+                  aria-label="Switch property"
+                  title="Switch property"
+                  @click="showPropertiesModal = true"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              </div>
               <div class="pp-hero-addr-l2">{{ heroSubline }}</div>
             </div>
-            <button
-              class="pp-hero-switch"
-              aria-label="Switch property"
-              title="Switch property"
-              @click="showPropertiesModal = true"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
           </div>
 
           <div class="pp-hero-stats">
@@ -371,7 +375,7 @@
             }"
             @click="navigateToProperty(sp.id)"
           >
-            <div class="pp-street-icon"><img src="/passport-seller-and-buyer-icon/house-person.png" alt="" loading="lazy" /></div>
+            <div class="pp-street-icon"><img src="/homescore-icon/house.png" alt="" loading="lazy" /></div>
             <div class="pp-street-body">
               <div class="pp-street-addr">{{ sp.addressLine1 }}</div>
               <div class="pp-street-meta">
@@ -3539,14 +3543,28 @@ function formatStamp(iso) {
 .view-toggle {
   margin: 0;
 }
+/* Track hugs the segments: thin even padding, a small gap between them, and
+   one fixed height so the active segment (whose icon sits on a white plate)
+   isn't taller than the inactive one. */
 .view-toggle :deep(.switch-container) {
   background: #fff;
+  padding: 3px;
+  gap: 3px;
+  align-items: stretch;
 }
 .view-toggle :deep(.switch-btn) {
+  box-sizing: border-box;
+  height: 36px;
   font-size: 13.5px;
-  padding: 7px 18px;
+  padding: 0 18px;
   gap: 8px;
   color: #00a19a;
+}
+.view-toggle :deep(.btn-icon) {
+  width: 22px;
+  height: 22px;
+  justify-content: center;
+  box-sizing: border-box;
 }
 .view-toggle :deep(.btn-icon) {
   display: inline-flex;
@@ -3636,11 +3654,20 @@ function formatStamp(iso) {
   font-size: 13.5px;
   margin-top: 5px;
 }
+.pp-hero-addr-l1-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .pp-hero-switch {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
+  /* a V's visual weight is at its wide top, so it reads high when centred
+     exactly; drop it 1px to the optical centre */
+  padding: 2px 0 0;
+  box-sizing: border-box;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -3876,15 +3903,31 @@ function formatStamp(iso) {
 }
 .pp-subtabs {
   display: inline-flex;
+  align-items: stretch;
   width: auto;
   border: 1px solid #e6e3dd;
   border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
   margin-bottom: 0;
 }
+/* Fixed height keeps every tab the same size whether or not it has a badge
+   or the white icon plate, so the gap to the track is even on all sides. */
 .pp-subtab {
   flex: 0 0 auto;
+  box-sizing: border-box;
+  height: 38px;
   border-radius: 999px;
-  padding: 9px 18px;
+  padding: 0 18px;
+}
+.pp-subtab.active {
+  box-shadow: none;
+}
+.pp-subtab-badge {
+  line-height: 16px;
+  min-width: 18px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 /* ── Resume banner — dark ──────────────────────────────────────────── */

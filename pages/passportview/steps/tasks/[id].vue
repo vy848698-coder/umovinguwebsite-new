@@ -210,6 +210,7 @@
                       currentQuestion.display || currentQuestion.type?.toLowerCase()
                     "
                     :passport-id="route.query.propertyId || ''"
+                    :property-facts="propertyFacts"
                     :displayed-question="displayedQuestion"
                     :show-question-cursor="showQuestionCursor"
                     :displayed-description="displayedDescription"
@@ -229,6 +230,7 @@
                     currentQuestion.display || currentQuestion.type?.toLowerCase()
                   "
                   :passport-id="route.query.propertyId || ''"
+                  :property-facts="propertyFacts"
                   :displayed-question="displayedQuestion"
                   :show-question-cursor="showQuestionCursor"
                   :displayed-description="displayedDescription"
@@ -530,7 +532,30 @@ onMounted(async () => {
   // Track this task as the user's last visited so the "Pick up where you
   // left off" CTA on the passport view routes them straight back here.
   recordLastVisited()
+  loadPropertyFacts()
 })
+
+// Address / UPRN / title number we already hold for this passport's
+// property (from OS Places / EPC / HM Land Registry enrichment). Passed
+// down to the question components so the "address of the property"
+// question can pre-fill instead of asking the owner to re-type it.
+const propertyFacts = ref(null)
+async function loadPropertyFacts() {
+  const passportId = route.query.propertyId
+  if (!passportId) return
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) return
+  const cfg = useRuntimeConfig()
+  try {
+    propertyFacts.value = await $fetch(
+      `${cfg.public.apiBase}/passport/${passportId}/property-facts`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+  } catch {
+    // non-critical - the question just won't pre-fill
+  }
+}
 
 async function recordLastVisited() {
   const passportId = route.query.propertyId
@@ -1307,18 +1332,22 @@ const handleContinue = () => {
   background: #2fd0c6;
 }
 
+/* The section illustration sits straight on the dark hero, no tile — a
+   teal tile + white-silhouette filter flattened it, and a white tile boxed
+   it in. A soft drop shadow grounds it instead. */
 .side-icon {
-  width: 84px;
+  width: 96px;
   height: 84px;
-  border-radius: 22px;
   margin: 28px 0 24px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(150deg, #12b3a6, #05867f);
-  box-shadow: 0 18px 34px -12px rgba(0, 161, 154, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 .side-icon :deep(img) {
-  filter: brightness(0) invert(1);
+  width: 84px !important;
+  height: 84px !important;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.35));
 }
 
 .side-title {
