@@ -356,12 +356,20 @@ async function setRole(key) {
   try {
     const token =
       typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    // A 502/503/504 here is the host, not the request: Railway answers 503
+    // with no body while the backend restarts, redeploys or wakes from idle,
+    // which is what surfaced as "503 Service Unavailable" on a role switch.
+    // The write is idempotent (it sets purpose to one value), so retrying it
+    // is safe — a few spaced attempts ride out the gap instead of failing.
     const result = await $fetch(
       `${config.public.apiBase}/profile/preferences`,
       {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: { purpose: [key] },
+        retry: 3,
+        retryDelay: 1500,
+        retryStatusCodes: [408, 502, 503, 504],
       },
     )
     console.log('[setRole] saved:', result)
@@ -372,9 +380,12 @@ async function setRole(key) {
     }, 2500)
   } catch (err) {
     console.error('[setRole] failed:', err)
-    roleError.value =
-      'Failed to save — ' +
-      (err?.data?.message || err?.message || 'unknown error')
+    const status = err?.status ?? err?.statusCode
+    roleError.value = [502, 503, 504].includes(status) || !status
+      ? "Couldn't reach the server just now — please try again in a moment."
+      : status === 401
+        ? 'Your session has expired — please sign in again.'
+        : 'Failed to save — ' + (err?.data?.message || err?.message || 'unknown error')
     currentRole.value = prevRole // revert on error
   } finally {
     savingRole.value = false
