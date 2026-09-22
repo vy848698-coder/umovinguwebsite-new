@@ -261,17 +261,17 @@
               </button>
             </section>
 
-            <!-- ── Legislation & news (landlord only) ──────────────
-                 Ported from the reference app, which moved it here off the
-                 landlord passport's compliance screen. Same curated dataset
-                 (utils/landlordNews.ts) so the two never drift apart — see
-                 that file for why it is a snapshot, not a live feed. -->
-            <section v-if="isLandlord && dashNewsItems.length" class="dsh-section">
+            <!-- ── Legislation & news (landlord + seller) ──────────
+                 Ported from the reference app. Landlords get the rental
+                 dataset (utils/landlordNews.ts), sellers the sales one
+                 (utils/sellerNews.ts) — the same files /profile/news reads,
+                 so the teaser and the full list never drift apart. -->
+            <section v-if="showNewsRail && dashNewsItems.length" class="dsh-section">
               <div class="dsh-sec-head">
                 <img src="/dashboard-art/nextDocuments.png" alt="" class="dsh-sec-ic" loading="lazy" />
                 <div>
                   <p class="dsh-eyebrow">Legislation &amp; news</p>
-                  <h2 class="dsh-sec-title">What's changing for landlords</h2>
+                  <h2 class="dsh-sec-title">{{ isLandlord ? "What's changing for landlords" : "What's changing for sellers" }}</h2>
                 </div>
               </div>
 
@@ -649,6 +649,7 @@ import ForYouFeed from '~/components/property/ForYouFeed.vue'
 import RecentlyViewedFeed from '~/components/property/RecentlyViewedFeed.vue'
 import { usePropertyForYou } from '~/composables/usePropertyForYou'
 import { NEWS_ITEMS } from '~/utils/landlordNews'
+import { SELLER_NEWS_ITEMS } from '~/utils/sellerNews'
 
 useHead({
   link: [
@@ -830,9 +831,12 @@ const greeting = computed(() => {
   return name ? `${line}, ${name}` : line
 })
 
-// Legislation & news rail, landlord only — the same 5-item teaser slice the
-// landlord passport screen shows, from the shared curated dataset.
-const dashNewsItems = computed(() => NEWS_ITEMS.slice(0, 5))
+// Legislation & news rail — landlords and sellers, matching the reference
+// app. 'both' users are buyers too, so they keep the buyer-side card instead.
+const showNewsRail = computed(() => isLandlord.value || role.value === 'sell')
+const dashNewsItems = computed(() =>
+  (role.value === 'sell' ? SELLER_NEWS_ITEMS : NEWS_ITEMS).slice(0, 5),
+)
 
 // ── Derived numbers ────────────────────────────────────────────────────
 const homeScoreDashoffset = computed(() => {
