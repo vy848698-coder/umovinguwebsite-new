@@ -28,7 +28,7 @@
             <div class="nw-stat">
               <span class="nw-stat-ic"><Icon name="i-lucide-files" /></span>
               <span class="nw-stat-bd">
-                <strong>{{ NEWS_ITEMS.length }}</strong>
+                <strong>{{ newsItems.length }}</strong>
                 <small>Curated updates</small>
               </span>
             </div>
@@ -88,7 +88,7 @@
           >
             <Icon :name="f.icon" />
             {{ f.label }}
-            <span class="nw-filter-count">{{ f.key === 'all' ? NEWS_ITEMS.length : countFor(f.key) }}</span>
+            <span class="nw-filter-count">{{ f.key === 'all' ? newsItems.length : countFor(f.key) }}</span>
           </button>
         </div>
       </div>
@@ -256,6 +256,7 @@
 import WebTopNav from '~/components/core/WebTopNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { NEWS_ITEMS, type NewsItem } from '~/utils/landlordNews'
+import { SELLER_NEWS_ITEMS } from '~/utils/sellerNews'
 
 definePageMeta({ title: 'News - UmovingU', middleware: 'auth' })
 
@@ -268,15 +269,29 @@ const filters: { key: FilterKey; label: string; icon: string }[] = [
 ]
 const activeFilter = ref<FilterKey>('all')
 
+// Sellers get the sales-side dataset, everyone else the rental one — the
+// same split the dashboard's teaser rail makes, keyed off the role it
+// caches. Read on the client only: localStorage doesn't exist during SSR,
+// and resolving it there would render the wrong list and mismatch.
+const isSeller = ref(false)
+onMounted(() => {
+  try {
+    isSeller.value = localStorage.getItem('umu_role') === 'sell'
+  } catch {
+    /* storage blocked - keep the default list */
+  }
+})
+const newsItems = computed<NewsItem[]>(() => (isSeller.value ? SELLER_NEWS_ITEMS : NEWS_ITEMS))
+
 const filtered = computed(() =>
-  activeFilter.value === 'all' ? NEWS_ITEMS : NEWS_ITEMS.filter((n) => n.tag === activeFilter.value),
+  activeFilter.value === 'all' ? newsItems.value : newsItems.value.filter((n) => n.tag === activeFilter.value),
 )
 const featured = computed(() => filtered.value.find((n) => n.featured) ?? filtered.value[0])
 const rest = computed(() => filtered.value.filter((n) => n.id !== featured.value?.id))
 
-const countFor = (tag: NewsItem['tag']) => NEWS_ITEMS.filter((n) => n.tag === tag).length
-const sourceCount = new Set(NEWS_ITEMS.map((n) => n.source)).size
-const timeline = [...NEWS_ITEMS].sort((a, b) => a.date.localeCompare(b.date))
+const countFor = (tag: NewsItem['tag']) => newsItems.value.filter((n) => n.tag === tag).length
+const sourceCount = computed(() => new Set(newsItems.value.map((n) => n.source)).size)
+const timeline = computed(() => [...newsItems.value].sort((a, b) => a.date.localeCompare(b.date)))
 
 // "Upcoming" depends on the viewer's clock, so it's only resolved on the
 // client — rendering it during SSR would risk a hydration mismatch.
@@ -285,9 +300,9 @@ onMounted(() => {
   today.value = new Date().toISOString().slice(0, 10)
 })
 const isUpcoming = (n: NewsItem) => !!today.value && n.date > today.value
-const nextDate = computed(() => timeline.find((n) => isUpcoming(n)))
+const nextDate = computed(() => timeline.value.find((n) => isUpcoming(n)))
 // Where the "Today" marker sits in the key-dates list (-1 hides it).
-const todayIndex = computed(() => timeline.findIndex((n) => isUpcoming(n)))
+const todayIndex = computed(() => timeline.value.findIndex((n) => isUpcoming(n)))
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
