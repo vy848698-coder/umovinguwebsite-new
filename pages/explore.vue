@@ -223,6 +223,213 @@
       <!-- Everything below is the browse experience — hidden while results are
            on screen so the page reads as one thing at a time. -->
       <template v-if="!hasSearched">
+        <!-- ── Your space (signed in, role-aware) ─────────────────────────
+             Ported from the reference app's Explore, which switched its whole
+             body on the user's role. Here it is one block above the public
+             browse content, so a guest's page is unchanged and a signed-in
+             visitor gets their own starting point first:
+               sell / landlord / both - passport status, next step, a Pro,
+                                         add another property
+               buy / both             - saved search, For You matches
+               buy                    - Buyer Passport, market pulse
+             Every figure is real (passport, preferences, /market-pulse);
+             cells with no data are hidden rather than shown as 0. -->
+        <section v-if="signedIn && roleResolved" class="dsc-block rx">
+          <div class="dsc-block-head">
+            <div>
+              <h2 class="dsc-h2">{{ rxTitle }}</h2>
+              <p class="dsc-h2-sub">{{ rxSub }}</p>
+            </div>
+            <NuxtLink to="/dashboard" class="dsc-textlink">
+              Open dashboard
+              <Icon name="i-lucide-arrow-right" class="dsc-textlink-ic" />
+            </NuxtLink>
+          </div>
+
+          <!-- Owner, nothing claimed yet: the reference's first-step banner -->
+          <div v-if="isOwnerRole && !loadingPassport && !passports.length" class="rx-claim">
+            <div class="rx-claim-main">
+              <span class="rx-eyebrow rx-eyebrow--light">Your first step</span>
+              <h3 class="rx-claim-title">Start your {{ role === 'landlord' ? 'Rental' : 'Property' }} Passport</h3>
+              <p class="rx-claim-sub">
+                Verify your ownership and build your record, so buyers, tenants and
+                solicitors see a verified home from day one.
+              </p>
+              <button class="rx-claim-btn" type="button" @click="startClaimFlow">
+                Claim your Passport
+                <Icon name="i-lucide-arrow-right" />
+              </button>
+            </div>
+            <ol class="rx-steps">
+              <li><span>1</span>Verify your identity and ownership — takes about 5 minutes</li>
+              <li><span>2</span>Upload or auto-fetch your documents (title deed, EPC, certificates)</li>
+              <li><span>3</span>Publish and share it with your agent, solicitor or buyers directly</li>
+            </ol>
+          </div>
+
+          <div class="rx-grid">
+            <!-- ── Owner side ── -->
+            <template v-if="isOwnerRole">
+              <div v-if="loadingPassport" class="rx-card rx-skel" />
+              <button
+                v-else-if="passports.length"
+                type="button"
+                class="rx-card rx-psc"
+                @click="navigateTo('/passportview/' + primaryPassport.id)"
+              >
+                <span class="rx-psc-book">
+                  <PassportCard
+                    :line1="primaryPassport.addressLine1 || primaryPassport.address || ''"
+                    :line2="primaryPassport.postcode || ''"
+                    :type="primaryPassport.type || (role === 'landlord' ? 'LANDLORD' : 'SELLER')"
+                  />
+                </span>
+                <span class="rx-psc-body">
+                  <span class="rx-eyebrow">{{ role === 'landlord' ? 'Rental Passport' : 'Property Passport' }}</span>
+                  <strong class="rx-psc-addr">{{ formatAddressLine(primaryPassport.addressLine1 || primaryPassport.address || '') }}</strong>
+                  <small class="rx-psc-pc">{{ formatPostcodeDisplay(primaryPassport.postcode) }}</small>
+                  <span class="rx-psc-stats">
+                    <span>Complete <b>{{ primaryPassport.completionPercentage ?? 0 }}%</b></span>
+                    <span v-if="passportDaysActive">Day <b>{{ passportDaysActive }}</b></span>
+                  </span>
+                </span>
+                <span
+                  class="rx-ring"
+                  role="img"
+                  :aria-label="passportScore != null ? `HomeScore ${passportScore} out of 100` : 'HomeScore not yet available'"
+                >
+                  <svg viewBox="0 0 58 58" aria-hidden="true">
+                    <circle cx="29" cy="29" r="24" class="rx-ring-bg" />
+                    <circle cx="29" cy="29" r="24" class="rx-ring-fill" :stroke-dashoffset="passportDashoffset" />
+                  </svg>
+                  <span class="rx-ring-num">{{ passportScore ?? '–' }}</span>
+                  <span class="rx-ring-lbl">HomeScore</span>
+                </span>
+              </button>
+
+              <button
+                v-if="passports.length"
+                type="button"
+                class="rx-card rx-row"
+                @click="navigateTo('/passportview/' + primaryPassport.id)"
+              >
+                <img src="/homescore-icon/lightning.png" alt="" class="rx-row-ic" loading="lazy" />
+                <span class="rx-row-body">
+                  <strong>{{ nextActionLabel }}</strong>
+                  <small>{{ nextActionSub }}</small>
+                </span>
+                <span class="rx-row-cta">Continue</span>
+              </button>
+
+              <button
+                v-if="role !== 'both'"
+                type="button"
+                class="rx-card rx-row rx-row--dark"
+                @click="installerSheetOpen = true"
+              >
+                <img src="/homescore-icon/wrench.png" alt="" class="rx-row-ic" loading="lazy" />
+                <span class="rx-row-body">
+                  <strong>{{ proTitle }}</strong>
+                  <small>{{ proSub }}</small>
+                </span>
+                <span class="rx-row-cta">Book</span>
+              </button>
+
+              <button v-if="passports.length" type="button" class="rx-card rx-row" @click="startClaimFlow">
+                <img src="/dashboard-art/addProperty.png" alt="" class="rx-row-ic" loading="lazy" />
+                <span class="rx-row-body">
+                  <strong>Add another property</strong>
+                  <small>Verify ownership, then choose a Rental or Seller Passport.</small>
+                </span>
+                <span class="rx-row-cta">Add</span>
+              </button>
+            </template>
+
+            <!-- ── Buyer side ── -->
+            <template v-if="isBuyerSide">
+              <button type="button" class="rx-card rx-search" @click="navigateTo('/onboarding/preferences')">
+                <span class="rx-search-top">
+                  <img
+                    :src="hasSavedSearch ? '/op-icons/homescore/magnifier.png' : '/op-icons/misc/addressPin.png'"
+                    alt=""
+                    class="rx-row-ic"
+                    loading="lazy"
+                  />
+                  <strong>{{ hasSavedSearch ? 'Your saved search' : 'Set up your search' }}</strong>
+                  <span class="rx-row-cta">{{ hasSavedSearch ? 'Edit' : 'Add' }}</span>
+                </span>
+                <span v-if="hasSavedSearch" class="rx-pills">
+                  <span v-for="pill in savedSearchPills" :key="pill" class="rx-pill">{{ pill }}</span>
+                </span>
+                <small v-else class="rx-search-sub">
+                  Tell us your area, budget and must-haves. We'll match you to homes that fit.
+                </small>
+                <small v-if="hasSavedSearch && !loadingProperties && properties.length" class="rx-search-sub">
+                  <b>{{ properties.length }} {{ properties.length === 1 ? 'match' : 'matches' }}</b>
+                  for your preferences
+                </small>
+              </button>
+
+              <button
+                v-if="role === 'buy'"
+                type="button"
+                class="rx-card rx-row"
+                @click="navigateTo(buyerProfilePublished ? '/buyer-profile/view' : '/buyer-profile/build')"
+              >
+                <img
+                  src="/op-icons/passport-covers/buyer_front_no_tile_no_tilt.png"
+                  alt=""
+                  class="rx-row-ic"
+                  loading="lazy"
+                />
+                <span class="rx-row-body">
+                  <strong>{{ buyerProfilePublished ? 'Buyer Passport · Published' : 'My Buyer Passport' }}</strong>
+                  <small>
+                    {{
+                      buyerProfilePublished
+                        ? 'View it or share it with sellers.'
+                        : "Prove you're a verified buyer — share it with any agent or seller."
+                    }}
+                  </small>
+                </span>
+                <Icon name="i-lucide-chevron-right" class="rx-row-chev" />
+              </button>
+
+              <div v-if="role === 'buy' && (pulseHasAny || marketPulseLoading)" class="rx-card rx-pulse">
+                <span class="rx-eyebrow">
+                  Market pulse<template v-if="pulseArea"> · {{ pulseArea }}</template>
+                </span>
+                <div v-if="marketPulseLoading && !pulseHasAny" class="rx-skel rx-skel--thin" />
+                <div v-else class="rx-pulse-grid">
+                  <div v-if="pulseDays !== null">
+                    <strong>{{ pulseDays }}</strong>
+                    <small>avg days to sell</small>
+                  </div>
+                  <div v-if="pulseYoY !== null">
+                    <strong :class="pulseYoYUp ? 'rx-up' : 'rx-down'">{{ pulseYoY }}</strong>
+                    <small>price change YoY</small>
+                  </div>
+                  <div v-if="pulseListings !== null">
+                    <strong>{{ pulseListings }}</strong>
+                    <small>passport listings</small>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <ForYouFeed
+            v-if="isBuyerSide"
+            class="rx-foryou"
+            :properties="properties"
+            :loading="loadingProperties"
+            :needs-postcode="needsPostcode"
+            :has-filters="hasAnyForYouFilters"
+            @open-filters="openForYouFilters"
+            @postcode-saved="refreshForYou"
+          />
+        </section>
+
         <!-- ── Three entry points ─────────────────────────────────────── -->
         <section class="dsc-block">
           <div class="dsc-entry-grid">
@@ -330,7 +537,15 @@
               </span>
             </button>
 
-            <button type="button" class="dsc-feature dsc-feature--amber" @click="navigateTo('/passport/sample')">
+            <!-- Opens the passport ecosystem popup. The sample Passport it used
+                 to link to straight away is one click further in, as that
+                 popup's primary action. -->
+            <button
+              type="button"
+              class="dsc-feature dsc-feature--amber"
+              aria-haspopup="dialog"
+              @click="openEco"
+            >
               <span class="dsc-feature-glow" aria-hidden="true" />
 
               <div class="dsc-feature-top">
@@ -343,149 +558,168 @@
                 </span>
               </div>
 
+              <!-- Same copy as the app's Property Passport card. -->
               <h3 class="dsc-feature-title">Build your home's<br />verified record</h3>
               <p class="dsc-feature-sub">
                 Store, verify and share documents, answers and history in one place.
               </p>
 
+              <span class="dsc-feature-roles" aria-hidden="true">
+                <span v-for="c in passportCards" :key="c.key" class="dsc-feature-role">
+                  <i :style="{ background: c.color }" />{{ c.title.replace(' Passport', '') }}
+                </span>
+              </span>
+
               <span class="dsc-feature-go dsc-feature-go--amber">
-                See a sample Passport
+                Explore the passports
                 <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
               </span>
             </button>
           </div>
         </section>
 
-        <!-- ── Passport ecosystem ─────────────────────────────────────────
-             The reference app hides all of this behind a bottom sheet on the
-             Property Passport card. On a desktop page a drawer buries it, so
-             it's a full section here - same hero copy, same blurb, same four
-             passports, same "power of the ecosystem" rail and footer strip. -->
-        <section class="dsc-block dsc-eco">
-          <span class="dsc-eco-glow" aria-hidden="true" />
-
-          <div class="dsc-eco-head">
-            <div class="dsc-eco-head-text">
-              <p class="dsc-eco-eyebrow">The passport ecosystem</p>
-              <h2 class="dsc-eco-title">One home.<br />Many passports<span class="dsc-dot">.</span></h2>
-              <p class="dsc-eco-sub">One permanent record.<br />Built for every journey.</p>
-              <p class="dsc-eco-lede">
-                Your Property Passport is the foundation. When life changes, unlock new
-                roles with the right passport for the next chapter.
-              </p>
-            </div>
-            <img
-              src="/op-icons/misc/passportGroupOnTile.png"
-              alt="Seller, Landlord, Buyer and Tenant Passport covers"
-              class="dsc-eco-art"
-              loading="lazy"
-            />
-          </div>
-
-          <div class="dsc-eco-blurb">
-            <img src="/homescore-icon/house.png" alt="" class="dsc-eco-blurb-ic" loading="lazy" />
+        <!-- ── Verified passport properties ─────────────────────────────
+             The reference app's "see how other sellers prepared theirs" rail.
+             Public endpoint, so guests get it too. Real passport completion and
+             EPC per home; nothing is shown until the fetch lands. -->
+        <section class="dsc-block">
+          <div class="dsc-block-head">
             <div>
-              <p class="dsc-eco-blurb-title">A passport ecosystem that moves with you</p>
-              <p class="dsc-eco-blurb-desc">
-                Built once. Reuse always. Your verified information flows seamlessly
-                between passports, saving you time, effort and money on every step you
-                buy, sell, live or rent.
+              <h2 class="dsc-h2">Verified passport properties</h2>
+              <p class="dsc-h2-sub">
+                Homes whose owners have already verified them — full records, fewer surprises.
               </p>
             </div>
           </div>
 
-          <div class="dsc-eco-grid">
-            <button
-              v-for="c in passportCards"
-              :key="c.key"
-              type="button"
-              class="dsc-eco-card"
-              :class="{ 'dsc-eco-card--soon': c.status === 'soon' }"
-              :disabled="c.status === 'soon'"
-              @click="onPassportCardClick(c)"
+          <div v-if="loadingVerified" class="dsc-grid">
+            <div v-for="n in 4" :key="`vsk-${n}`" class="dsc-skeleton" />
+          </div>
+
+          <div v-else-if="verifiedDisplay.length" class="dsc-grid">
+            <article
+              v-for="p in verifiedDisplay"
+              :key="p.id"
+              class="dsc-card"
+              role="link"
+              tabindex="0"
+              @click="openProperty(p.id)"
+              @keydown.enter="openProperty(p.id)"
             >
-              <img :src="c.img" :alt="`${c.title} cover`" class="dsc-eco-book" loading="lazy" />
-              <h3 class="dsc-eco-card-title" :style="{ color: c.color }">{{ c.title }}</h3>
-              <p class="dsc-eco-card-desc">{{ c.desc }}</p>
-              <span class="dsc-eco-pill" :class="`dsc-eco-pill--${c.status}`">{{ c.statusLabel }}</span>
-            </button>
-          </div>
-
-          <!-- ── The power of the ecosystem ── -->
-          <div class="dsc-power">
-            <p class="dsc-power-title">The power of the ecosystem</p>
-            <div class="dsc-power-list">
-              <template v-for="(item, i) in powerItems" :key="item.title">
-                <div class="dsc-power-col">
-                  <span class="dsc-power-plate">
-                    <img :src="item.img" alt="" class="dsc-power-ic" loading="lazy" />
-                  </span>
-                  <p class="dsc-power-item-title">{{ item.title }}</p>
-                  <p class="dsc-power-item-desc">{{ item.desc }}</p>
+              <div class="dsc-card-photo">
+                <PropertyImage :src="p.imageUrl" :alt="p.addressLine1" :show-caption="false" />
+                <span class="dsc-card-flag">
+                  <Icon name="i-lucide-badge-check" class="dsc-card-flag-ic" />
+                  Passport · {{ p.passportCompletion ?? 0 }}%
+                </span>
+              </div>
+              <div class="dsc-card-body">
+                <h3 class="dsc-card-addr">{{ formatAddressLine(p.addressLine1) }}</h3>
+                <p class="dsc-card-meta">
+                  <template v-if="p.city">{{ p.city }} · </template>{{ p.postcode }}
+                </p>
+                <div class="dsc-card-foot">
+                  <p class="dsc-card-price">{{ formatPrice(p.estimatedPrice) }}</p>
+                  <div class="dsc-card-tags">
+                    <span v-if="p.propertyType" class="dsc-tag">{{ p.propertyType }}</span>
+                    <span v-if="p.tenure" class="dsc-tag">{{ p.tenure }}</span>
+                    <span v-if="p.epcRating" class="dsc-tag">EPC {{ p.epcRating }}</span>
+                  </div>
                 </div>
-                <span v-if="i < powerItems.length - 1" class="dsc-power-connector" aria-hidden="true" />
-              </template>
-            </div>
+              </div>
+            </article>
           </div>
 
-          <div class="dsc-eco-foot">
-            <p class="dsc-eco-foot-tag">Your journey. <span>Our ecosystem.</span></p>
-            <div class="dsc-eco-foot-links">
-              <span><Icon name="i-lucide-shield-check" class="dsc-eco-foot-ic" />Secure by design</span>
-              <span>umovingu.com</span>
-              <span>legal@umu.com</span>
-              <NuxtLink to="/legal/terms">Terms &amp; conditions</NuxtLink>
-            </div>
+          <div v-else class="dsc-empty">
+            <span class="dsc-empty-ring"><Icon name="i-lucide-badge-check" class="dsc-empty-ic" /></span>
+            <p class="dsc-empty-title">Be among the first</p>
+            <p class="dsc-empty-sub">
+              No verified passports yet — claim yours and help shape a more transparent market.
+            </p>
           </div>
         </section>
 
-        <!-- ── Recently explored ──────────────────────────────────────── -->
+
+        <!-- ── Recently explored ──────────────────────────────────────────
+             One fixed-height rail rather than a row per home: however long the
+             history gets, it costs the page a single card's height, and the
+             rest is a sideways scroll (arrows, trackpad or swipe). Every field
+             the old list showed is still on the card. -->
         <section v-if="recentlyExplored.length" class="dsc-block">
           <div class="dsc-block-head">
             <div>
-              <h2 class="dsc-h2">Recently explored</h2>
+              <h2 class="dsc-h2">
+                Recently explored
+                <span class="dsc-recent-count">{{ recentlyExplored.length }}</span>
+              </h2>
               <p class="dsc-h2-sub">Saved in this browser — no account involved</p>
             </div>
-            <button class="dsc-textlink" type="button" @click="clearHistory">
-              <Icon name="i-lucide-trash-2" class="dsc-textlink-ic" />
-              Clear
-            </button>
+            <div class="dsc-recent-tools">
+              <button class="dsc-textlink" type="button" @click="clearHistory">
+                <Icon name="i-lucide-trash-2" class="dsc-textlink-ic" />
+                Clear
+              </button>
+              <button
+                class="dsc-recent-arrow"
+                type="button"
+                aria-label="Scroll back"
+                :disabled="!recentCanPrev"
+                @click="scrollRecent(-1)"
+              >
+                <Icon name="i-lucide-chevron-left" />
+              </button>
+              <button
+                class="dsc-recent-arrow"
+                type="button"
+                aria-label="Scroll forward"
+                :disabled="!recentCanNext"
+                @click="scrollRecent(1)"
+              >
+                <Icon name="i-lucide-chevron-right" />
+              </button>
+            </div>
           </div>
-          <ul class="dsc-recent">
-            <li
-              v-for="item in recentlyExplored"
-              :key="item.id"
-              class="dsc-recent-row"
-              role="link"
-              tabindex="0"
-              @click="openProperty(item.id)"
-              @keydown.enter="openProperty(item.id)"
-            >
-              <div class="dsc-recent-photo">
-                <PropertyImage
-                  :src="item.image"
-                  :alt="item.addressLine1"
-                  :show-caption="false"
-                />
-              </div>
-              <div class="dsc-recent-body">
-                <p class="dsc-recent-addr">{{ item.addressLine1 }}</p>
-                <p class="dsc-recent-meta">
-                  <template v-if="item.city">{{ item.city }}, </template>{{ item.postcode }}
-                </p>
-              </div>
-              <div class="dsc-recent-mid">
-                <p class="dsc-recent-price">{{ formatPrice(item.estimatedPrice) }}</p>
-                <p v-if="item.lastSoldDate" class="dsc-recent-sold">
-                  Last sold {{ lastSoldLabel(item.lastSoldDate) }}
-                </p>
-              </div>
-              <div class="dsc-recent-right">
-                <span class="dsc-recent-when">{{ relativeTimeLabel(item.viewedAt) }}</span>
-                <span class="dsc-recent-chev"><Icon name="i-lucide-chevron-right" /></span>
-              </div>
-            </li>
-          </ul>
+
+          <div class="dsc-recent-wrap" :class="{ 'is-start': !recentCanPrev, 'is-end': !recentCanNext }">
+            <ul ref="recentRailEl" class="dsc-recent" @scroll.passive="updateRecentArrows">
+              <li
+                v-for="item in recentlyExplored"
+                :key="item.id"
+                class="dsc-recent-card"
+                role="link"
+                tabindex="0"
+                @click="openProperty(item.id)"
+                @keydown.enter="openProperty(item.id)"
+              >
+                <div class="dsc-recent-photo">
+                  <PropertyImage
+                    :src="item.image"
+                    :alt="item.addressLine1"
+                    :show-caption="false"
+                  />
+                  <span class="dsc-recent-when">
+                    <Icon name="i-lucide-clock-3" />
+                    {{ relativeTimeLabel(item.viewedAt) }}
+                  </span>
+                </div>
+                <div class="dsc-recent-body">
+                  <p class="dsc-recent-addr">{{ item.addressLine1 }}</p>
+                  <p class="dsc-recent-meta">
+                    <template v-if="item.city">{{ item.city }}, </template>{{ item.postcode }}
+                  </p>
+                  <div class="dsc-recent-foot">
+                    <div>
+                      <p class="dsc-recent-price">{{ formatPrice(item.estimatedPrice) }}</p>
+                      <p class="dsc-recent-sold">
+                        {{ item.lastSoldDate ? `Last sold ${lastSoldLabel(item.lastSoldDate)}` : 'Estimated value' }}
+                      </p>
+                    </div>
+                    <span class="dsc-recent-go"><Icon name="i-lucide-arrow-up-right" /></span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
         </section>
       </template>
     </main>
@@ -503,6 +737,146 @@
       v-model="filtersOpen"
       :initial-filters="committedFilters"
       @search="onFiltersSearch"
+    />
+
+    <PropertySearchFiltersModal
+      v-model="forYouFiltersModalOpen"
+      :initial-filters="forYouPendingFilters"
+      @search="onForYouFiltersSearch"
+    />
+
+    <!-- ── Passport ecosystem popup ─────────────────────────────────────
+         Opened from the Property Passport card. Same content that used to
+         sit on the page (hero, blurb, the four passports and the power rail,
+         matching the app's PassportEcosystemDrawer) - moved into a dialog so
+         the page stays short.
+         Esc, the close button or a click on the backdrop dismisses it; the
+         page behind stops scrolling while it is open. -->
+    <Teleport to="body">
+      <Transition name="dsc-eco-pop">
+        <div
+          v-if="ecoOpen"
+          class="dsc-eco-overlay"
+          @click.self="closeEco"
+        >
+          <section
+            ref="ecoDialogEl"
+            class="dsc-eco dsc-eco--dialog"
+            :class="{ 'is-scrolled': ecoScrolled, 'is-end': ecoAtEnd }"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dsc-eco-heading"
+            tabindex="-1"
+          >
+            <button
+              ref="ecoCloseEl"
+              type="button"
+              class="dsc-eco-close"
+              aria-label="Close"
+              @click="closeEco"
+            >
+              <Icon name="i-lucide-x" />
+            </button>
+
+            <div ref="ecoScrollEl" class="dsc-eco-scroll" @scroll.passive="updateEcoScroll">
+                <span class="dsc-eco-glow" aria-hidden="true" />
+
+                <div class="dsc-eco-head">
+                  <div class="dsc-eco-head-text">
+                    <p class="dsc-eco-eyebrow">The passport ecosystem</p>
+                    <h2 id="dsc-eco-heading" class="dsc-eco-title">One home.<br />Many passports<span class="dsc-dot">.</span></h2>
+                    <p class="dsc-eco-sub">One permanent record.<br />Built for every journey.</p>
+                    <p class="dsc-eco-lede">
+                      Your Property Passport is the foundation. When life changes, unlock new
+                      roles with the right passport for the next chapter.
+                    </p>
+                  </div>
+                  <img
+                    src="/op-icons/misc/passportGroupOnTile.png"
+                    alt="Seller, Landlord, Buyer and Tenant Passport covers"
+                    class="dsc-eco-art"
+                    loading="lazy"
+                  />
+                </div>
+
+                <div class="dsc-eco-blurb">
+                  <img src="/homescore-icon/house.png" alt="" class="dsc-eco-blurb-ic" loading="lazy" />
+                  <div>
+                    <p class="dsc-eco-blurb-title">A passport ecosystem that moves with you</p>
+                    <p class="dsc-eco-blurb-desc">
+                      Built once. Reuse always. Your verified information flows seamlessly
+                      between passports, saving you time, effort and money on every step you
+                      buy, sell, live or rent.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="dsc-eco-grid">
+                  <button
+                    v-for="c in passportCards"
+                    :key="c.key"
+                    type="button"
+                    class="dsc-eco-card"
+                    :class="{ 'dsc-eco-card--soon': c.status === 'soon' }"
+                    :disabled="c.status === 'soon'"
+                    @click="onPassportCardClick(c)"
+                  >
+                    <img :src="c.img" :alt="`${c.title} cover`" class="dsc-eco-book" loading="lazy" />
+                    <h3 class="dsc-eco-card-title" :style="{ color: c.color }">{{ c.title }}</h3>
+                    <p class="dsc-eco-card-desc">{{ c.desc }}</p>
+                    <span class="dsc-eco-pill" :class="`dsc-eco-pill--${c.status}`">{{ c.statusLabel }}</span>
+                  </button>
+                </div>
+
+                <!-- ── The power of the ecosystem ── -->
+                <div class="dsc-power">
+                  <p class="dsc-power-title">The power of the ecosystem</p>
+                  <div class="dsc-power-list">
+                    <template v-for="(item, i) in powerItems" :key="item.title">
+                      <div class="dsc-power-col">
+                        <span class="dsc-power-plate">
+                          <img :src="item.img" alt="" class="dsc-power-ic" loading="lazy" />
+                        </span>
+                        <p class="dsc-power-item-title">{{ item.title }}</p>
+                        <p class="dsc-power-item-desc">{{ item.desc }}</p>
+                      </div>
+                      <span v-if="i < powerItems.length - 1" class="dsc-power-connector" aria-hidden="true" />
+                    </template>
+                  </div>
+                </div>
+
+            </div>
+
+            <!-- Sticky action bar: the sample Passport the card used to open
+                 directly, plus the way in to starting one. -->
+            <div class="dsc-eco-actions">
+              <p class="dsc-eco-actions-note">
+                <Icon name="i-lucide-sparkles" />
+                See exactly what buyers, agents and solicitors get.
+              </p>
+              <div class="dsc-eco-actions-btns">
+                <button type="button" class="dsc-eco-btn" @click="goToSamplePassport">
+                  See a sample Passport
+                  <Icon name="i-lucide-arrow-right" />
+                </button>
+                <button type="button" class="dsc-eco-btn dsc-eco-btn--ghost" @click="startPassportFromEco">
+                  {{ signedIn ? 'Start my Passport' : 'Create a free account' }}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <InstallerFlowSheet
+      v-model:open="installerSheetOpen"
+      kind="gas"
+      measure-title="Gas safety check (CP12)"
+      :property-id="primaryPassport.propertyId || null"
+      :postcode="primaryPassport.postcode || profile?.postcode || ''"
+      :address="primaryPassport.addressLine1 || primaryPassport.address || ''"
+      initial-state="routes"
     />
   </div>
 </template>
@@ -524,7 +898,7 @@
 // keep working.
 definePageMeta({ title: 'Explore homes - UmovingU' })
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import WebTopNav from '~/components/core/WebTopNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import UserAvatar from '~/components/ui/UserAvatar.vue'
@@ -535,6 +909,11 @@ import PropertySearchFiltersModal, {
   type PropertySearchFilters,
 } from '~/components/property/PropertySearchFiltersModal.vue'
 import { usePropertySearch } from '~/composables/usePropertySearch'
+import PassportCard from '~/components/passport-view/PassportCard.vue'
+import ForYouFeed from '~/components/property/ForYouFeed.vue'
+import InstallerFlowSheet from '~/components/homescore/InstallerFlowSheet.vue'
+import { usePropertyForYou } from '~/composables/usePropertyForYou'
+import { formatAddressLine, formatPostcodeDisplay } from '~/utils/addressDisplay'
 import {
   useRecentlyExplored,
   type RecentlyExploredEntry,
@@ -876,8 +1255,74 @@ const ECO_COPY: Record<string, { title: string; body: string }> = {
   },
 }
 
+// ── Passport ecosystem popup ──────────────────────────────────────────────
+const ecoOpen = ref(false)
+const ecoCloseEl = ref<HTMLElement | null>(null)
+// Scroll position of the popup body: drives the hairline shadows under the
+// top edge and above the action bar, which only show while there is more
+// content hidden on that side.
+const ecoScrollEl = ref<HTMLElement | null>(null)
+const ecoScrolled = ref(false)
+const ecoAtEnd = ref(false)
+function updateEcoScroll() {
+  const el = ecoScrollEl.value
+  if (!el) return
+  ecoScrolled.value = el.scrollTop > 4
+  ecoAtEnd.value = el.scrollTop + el.clientHeight >= el.scrollHeight - 4
+}
+let ecoReturnFocus: HTMLElement | null = null
+
+function openEco() {
+  ecoReturnFocus = (document.activeElement as HTMLElement) ?? null
+  ecoOpen.value = true
+}
+function closeEco() {
+  ecoOpen.value = false
+}
+function onEcoKey(e: KeyboardEvent) {
+  if (e.key === 'Escape' && ecoOpen.value) closeEco()
+}
+watch(ecoOpen, (open) => {
+  if (typeof document === 'undefined') return
+  // Lock the page behind the dialog, and hand focus in and back out again.
+  document.documentElement.style.overflow = open ? 'hidden' : ''
+  if (open) {
+    nextTick(() => {
+      ecoCloseEl.value?.focus({ preventScroll: true })
+      if (ecoScrollEl.value) ecoScrollEl.value.scrollTop = 0
+      updateEcoScroll()
+    })
+  } else {
+    ecoReturnFocus?.focus?.()
+    ecoReturnFocus = null
+  }
+})
+
+function goToSamplePassport() {
+  closeEco()
+  navigateTo('/passport/sample')
+}
+
+function startPassportFromEco() {
+  if (hasToken()) {
+    closeEco()
+    navigateTo('/claim')
+    return
+  }
+  closeEco()
+  authGateCopy.value = {
+    title: 'Create a free account to start your Passport',
+    body: 'Verify your home once and reuse it as a seller, landlord or buyer.',
+  }
+  authGateRedirect.value = '/claim'
+  authGateOpen.value = true
+}
+
 function onPassportCardClick(card: { key: string; status: string }) {
   if (card.status === 'soon') return
+  // The cards now live inside the popup - close it before navigating or
+  // handing over to the sign-in modal, so the two never stack.
+  closeEco()
   if (hasToken()) {
     navigateTo('/dashboard')
     return
@@ -890,7 +1335,266 @@ function onPassportCardClick(card: { key: string; status: string }) {
   authGateOpen.value = true
 }
 
+
+// ── Your space (signed in, role-aware) ───────────────────────────────────
+// Ported from the reference app's Explore, which rendered a different body
+// per role. Same sources as there and as /dashboard: role from
+// /profile/preferences (cached as umu_role), passports from
+// /profile/passports, buyer side from /buyer-profile and /property/for-you.
+const role = ref<string>('buy')
+const roleResolved = ref(false)
+const preferences = ref<any>(null)
+const passports = ref<any[]>([])
+const loadingPassport = ref(true)
+const buyerProfilePublished = ref(false)
+const installerSheetOpen = ref(false)
+
+const isOwnerRole = computed(() => ['sell', 'landlord', 'both'].includes(role.value))
+const isBuyerSide = computed(() => role.value === 'buy' || role.value === 'both')
+
+function normalizeRole(r: unknown): string {
+  const allowed = ['sell', 'buy', 'both', 'landlord']
+  return typeof r === 'string' && allowed.includes(r) ? r : 'buy'
+}
+
+const rxTitle = computed(() => {
+  if (role.value === 'landlord') return 'Your rental at a glance'
+  if (role.value === 'both') return 'Your move at a glance'
+  if (role.value === 'sell') return 'Your home at a glance'
+  return 'Your search at a glance'
+})
+const rxSub = computed(() => {
+  if (role.value === 'landlord') return 'Your Rental Passport, what to do next and certified pros.'
+  if (role.value === 'both') return 'The home you are selling and the one you are looking for.'
+  if (role.value === 'sell') return 'Your Property Passport, what to do next and certified pros.'
+  return 'Your saved search, your Buyer Passport and fresh matches.'
+})
+
+// Seller-first for sell/both and landlord-first for landlord, falling back to
+// whatever is first - the same pick /dashboard makes.
+const primaryPassport = computed<any>(() => passports.value[0] ?? {})
+
+// null = nobody has run a HomeScore yet, so the ring reads "–".
+const passportScore = computed(() => {
+  const hs = primaryPassport.value?.homeScore
+  return typeof hs === 'number' ? hs : null
+})
+// r=24 circle -> circumference 150.8
+const passportDashoffset = computed(() => {
+  const sc = passportScore.value
+  if (sc == null) return '150.8'
+  return (150.8 * (1 - Math.min(Math.max(sc, 0), 100) / 100)).toFixed(1)
+})
+
+const passportDaysActive = computed(() => {
+  const createdAt = primaryPassport.value?.createdAt
+  if (!createdAt) return null
+  const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000)
+  return days > 0 ? days : 1
+})
+
+const nextActionLabel = computed(() => {
+  const pct = primaryPassport.value?.completionPercentage ?? 0
+  if (pct >= 100) return 'Publish your passport'
+  if (pct >= 80) return 'Almost there — finish your passport'
+  if (pct >= 40) return 'Continue your passport'
+  return 'Pick up where you left off'
+})
+const nextActionSub = computed(
+  () => `Passport ${primaryPassport.value?.completionPercentage ?? 0}% complete`,
+)
+
+const proTitle = computed(() => {
+  if (!passports.value.length) return 'Need certificates? Find a Pro'
+  return role.value === 'landlord' ? 'Book a gas safety engineer' : 'Book a gas safety check'
+})
+const proSub = computed(() =>
+  passports.value.length
+    ? 'The certificate lands in your Passport automatically.'
+    : 'Gas, EICR, EPC — certificates land in your Passport automatically.',
+)
+
+// ── Saved search (buyer) ──
+function formatBudget(n?: number | null): string {
+  if (!n) return ''
+  if (n >= 1_000_000) return '£' + (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'm'
+  if (n >= 1_000) return '£' + Math.round(n / 1000) + 'k'
+  return '£' + n
+}
+
+const userPostcode = computed(() => profile.value?.postcode?.trim() || '')
+
+const savedSearchPills = computed(() => {
+  const pr = preferences.value
+  if (!pr) return []
+  const pills: string[] = []
+  if (userPostcode.value) pills.push(`${userPostcode.value} area`)
+  const types: string[] = Array.isArray(pr.propertyTypes) ? pr.propertyTypes : []
+  if (types.length) pills.push(types.slice(0, 2).join(' / '))
+  if (pr.budgetMin && pr.budgetMax) {
+    pills.push(`${formatBudget(pr.budgetMin)} – ${formatBudget(pr.budgetMax)}`)
+  } else if (pr.budgetMax) {
+    pills.push(`Up to ${formatBudget(pr.budgetMax)}`)
+  } else if (pr.budgetMin) {
+    pills.push(`From ${formatBudget(pr.budgetMin)}`)
+  }
+  const features: string[] = Array.isArray(pr.importantFeatures) ? pr.importantFeatures : []
+  if (features.some((f) => /passport/i.test(f))) pills.push('Has Passport')
+  return pills
+})
+const hasSavedSearch = computed(() => savedSearchPills.value.length > 0)
+
+// ── Market pulse (buyer) ──
+// Aggregate stats for the user's postcode sector. The backend returns null
+// for any figure it can't derive, and the template hides those cells.
+interface MarketPulse {
+  area: string | null
+  priceChangeYoY: number | null
+  avgDaysToSell: number | null
+  passportListings: number
+}
+const marketPulse = ref<MarketPulse | null>(null)
+const marketPulseLoading = ref(false)
+
+async function fetchMarketPulse() {
+  const pc = userPostcode.value
+  if (!pc) {
+    marketPulse.value = null
+    return
+  }
+  marketPulseLoading.value = true
+  try {
+    marketPulse.value = await $fetch<MarketPulse>(`${config.public.apiBase}/property/market-pulse`, {
+      query: { postcode: pc },
+    })
+  } catch {
+    marketPulse.value = null
+  } finally {
+    marketPulseLoading.value = false
+  }
+}
+watch(userPostcode, (pc) => {
+  if (pc && signedIn.value && role.value === 'buy') fetchMarketPulse()
+})
+
+const pulseArea = computed(() => marketPulse.value?.area || userPostcode.value || '')
+const pulseYoY = computed<string | null>(() => {
+  const v = marketPulse.value?.priceChangeYoY
+  if (typeof v !== 'number') return null
+  return `${v > 0 ? '+' : ''}${v.toFixed(1)}%`
+})
+const pulseYoYUp = computed(() => (marketPulse.value?.priceChangeYoY ?? 0) >= 0)
+// A zero-listing count on its own is not a market signal, just an empty
+// sector, so it only counts once another figure is present too.
+const pulseListings = computed<number | null>(() => {
+  const n = marketPulse.value?.passportListings
+  return typeof n === 'number' ? n : null
+})
+const pulseDays = computed<number | null>(() => marketPulse.value?.avgDaysToSell ?? null)
+const pulseHasAny = computed(
+  () =>
+    pulseYoY.value !== null ||
+    pulseDays.value !== null ||
+    (pulseListings.value !== null && pulseListings.value > 0),
+)
+
+// ── For You (buyer side) ──
+const {
+  properties,
+  loadingProperties,
+  needsPostcode,
+  forYouFiltersModalOpen,
+  forYouPendingFilters,
+  hasAnyForYouFilters,
+  openForYouFilters,
+  onForYouFiltersSearch,
+  refreshForYou,
+} = usePropertyForYou()
+
+function startClaimFlow() {
+  navigateTo('/claim')
+}
+
+async function loadYourSpace(token: string) {
+  const auth = { headers: { Authorization: `Bearer ${token}` } }
+
+  const cached = localStorage.getItem('umu_role')
+  if (cached) role.value = normalizeRole(cached)
+
+  const prefs = await $fetch<any>(`${config.public.apiBase}/profile/preferences`, auth).catch(
+    () => null,
+  )
+  preferences.value = prefs
+  role.value = normalizeRole((prefs?.purpose as string[])?.[0] ?? cached)
+  localStorage.setItem('umu_role', role.value)
+  roleResolved.value = true
+
+  if (isBuyerSide.value) {
+    refreshForYou().finally(() => {
+      loadingProperties.value = false
+    })
+  }
+  if (role.value === 'buy') {
+    $fetch<any>(`${config.public.apiBase}/buyer-profile`, auth)
+      .then((bp) => {
+        buyerProfilePublished.value = !!bp?.published
+      })
+      .catch(() => {})
+    if (userPostcode.value) fetchMarketPulse()
+  }
+
+  if (isOwnerRole.value) {
+    const all = await $fetch<any[]>(`${config.public.apiBase}/profile/passports`, auth).catch(
+      () => null,
+    )
+    if (all) {
+      const wanted = role.value === 'landlord' ? 'LANDLORD' : 'SELLER'
+      const matching = all.filter((x: any) => x.type === wanted)
+      passports.value = matching.length ? matching : all
+    }
+  }
+  loadingPassport.value = false
+}
+
+// ── Verified passport properties (public) ──
+const verifiedProperties = ref<any[]>([])
+const loadingVerified = ref(true)
+const verifiedDisplay = computed(() => verifiedProperties.value.slice(0, 8))
+
+async function loadVerified() {
+  try {
+    const res = await $fetch<{ items: any[] }>(
+      `${config.public.apiBase}/property/verified-passports`,
+      { query: { limit: 12 } },
+    )
+    verifiedProperties.value = res?.items ?? []
+  } catch {
+    verifiedProperties.value = []
+  } finally {
+    loadingVerified.value = false
+  }
+}
+
 // ── Recently explored ─────────────────────────────────────────────────────
+// The rail scrolls sideways; the arrows page it by roughly one screen of cards
+// and grey out at either end.
+const recentRailEl = ref<HTMLElement | null>(null)
+const recentCanPrev = ref(false)
+const recentCanNext = ref(false)
+
+function updateRecentArrows() {
+  const el = recentRailEl.value
+  if (!el) return
+  recentCanPrev.value = el.scrollLeft > 4
+  recentCanNext.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 4
+}
+
+function scrollRecent(dir: 1 | -1) {
+  const el = recentRailEl.value
+  if (!el) return
+  el.scrollBy({ left: dir * Math.max(el.clientWidth * 0.85, 260), behavior: 'smooth' })
+}
+
 function clearHistory() {
   clearRecentlyExplored()
   recentlyExplored.value = []
@@ -917,10 +1621,25 @@ function lastSoldLabel(dateStr: string): string {
   return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
 }
 
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateRecentArrows)
+  window.removeEventListener('keydown', onEcoKey)
+  document.documentElement.style.overflow = ''
+})
+
 onMounted(() => {
   signedIn.value = hasToken()
   if (signedIn.value && !profile.value) fetchProfile()
   recentlyExplored.value = getRecentlyExplored()
+  nextTick(updateRecentArrows)
+  window.addEventListener('resize', updateRecentArrows, { passive: true })
+  window.addEventListener('keydown', onEcoKey)
+
+  loadVerified()
+  if (signedIn.value) {
+    const token = localStorage.getItem('token')
+    if (token) loadYourSpace(token)
+  }
 
   // ?q=… arrives from the landing page, so the visitor lands here with results
   // already loading rather than an empty second search box.
@@ -1861,102 +2580,159 @@ onMounted(() => {
 }
 
 /* ── Ecosystem footer strip ── */
-.dsc-eco-foot {
-  position: relative;
-  margin-top: 30px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(35, 29, 69, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.dsc-eco-foot-tag {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #231d45;
-}
-.dsc-eco-foot-tag span { color: #00a19a; }
-.dsc-eco-foot-links {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  flex-wrap: wrap;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #8a90a6;
-}
-.dsc-eco-foot-links span,
-.dsc-eco-foot-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: inherit;
-  text-decoration: none;
-}
-.dsc-eco-foot-links a:hover { color: #00a19a; }
-.dsc-eco-foot-ic { width: 14px; height: 14px; color: #00a19a; }
 
 /* ── Recently explored ────────────────────────────────────────────────── */
+.dsc-recent-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #eafaf8;
+  color: #00756f;
+  font-size: 13px;
+  font-weight: 800;
+  vertical-align: 4px;
+  letter-spacing: 0;
+}
+.dsc-recent-tools { display: flex; align-items: center; gap: 8px; }
+.dsc-recent-arrow {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid #e3e1ea;
+  background: #fff;
+  color: #231d45;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.dsc-recent-arrow :deep(svg) { width: 18px; height: 18px; }
+.dsc-recent-arrow:hover:not(:disabled) { background: #231d45; border-color: #231d45; color: #fff; }
+.dsc-recent-arrow:disabled { opacity: 0.35; cursor: default; }
+
+/* Soft fade at whichever edge still has cards beyond it. */
+.dsc-recent-wrap { position: relative; }
+.dsc-recent-wrap::before,
+.dsc-recent-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 12px;
+  width: 44px;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.dsc-recent-wrap::before { left: 0; background: linear-gradient(90deg, #f3f2ef, rgba(243, 242, 239, 0)); }
+.dsc-recent-wrap::after { right: 0; background: linear-gradient(270deg, #f3f2ef, rgba(243, 242, 239, 0)); }
+.dsc-recent-wrap.is-start::before,
+.dsc-recent-wrap.is-end::after { opacity: 0; }
+
 .dsc-recent {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 4px 2px 12px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 262px;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 2px;
+  scrollbar-width: none;
+}
+.dsc-recent::-webkit-scrollbar { display: none; }
+
+.dsc-recent-card {
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
   background: #fff;
   border: 1px solid rgba(35, 29, 69, 0.07);
-  border-radius: 22px;
+  box-shadow: 0 1px 2px rgba(26, 21, 53, 0.04), 0 8px 20px rgba(26, 21, 53, 0.05);
   overflow: hidden;
-}
-.dsc-recent-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(35, 29, 69, 0.05);
   cursor: pointer;
-  transition: background 0.16s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.dsc-recent-row:last-child { border-bottom: none; }
-.dsc-recent-row:hover,
-.dsc-recent-row:focus-visible { background: #fafafd; outline: none; }
+.dsc-recent-card:hover,
+.dsc-recent-card:focus-visible {
+  outline: none;
+  transform: translateY(-3px);
+  border-color: rgba(0, 161, 154, 0.28);
+  box-shadow: 0 2px 4px rgba(26, 21, 53, 0.05), 0 18px 36px rgba(26, 21, 53, 0.11);
+}
 .dsc-recent-photo {
-  width: 84px;
-  height: 64px;
-  flex-shrink: 0;
-  border-radius: 13px;
-  overflow: hidden;
+  position: relative;
+  height: 138px;
   background: #eceaf3;
+  overflow: hidden;
 }
-.dsc-recent-photo :deep(img) { width: 100%; height: 100%; object-fit: cover; }
-.dsc-recent-body { flex: 1; min-width: 0; }
+.dsc-recent-photo :deep(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.dsc-recent-card:hover .dsc-recent-photo :deep(img) { transform: scale(1.05); }
+.dsc-recent-when {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(20, 16, 47, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dsc-recent-when :deep(svg) { width: 12px; height: 12px; }
+.dsc-recent-body { padding: 14px 16px 16px; display: flex; flex-direction: column; flex: 1; }
 .dsc-recent-addr {
   margin: 0 0 3px;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.015em;
+  color: #231d45;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .dsc-recent-meta { margin: 0; font-size: 12.5px; font-weight: 600; color: #8a90a6; }
-.dsc-recent-mid { flex-shrink: 0; text-align: right; }
-.dsc-recent-price { margin: 0; font-size: 15px; font-weight: 800; color: #00776f; letter-spacing: -0.02em; }
-.dsc-recent-sold { margin: 3px 0 0; font-size: 11.5px; font-weight: 600; color: #a3a7b8; }
-.dsc-recent-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.dsc-recent-when {
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: #f3f2f7;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #8a90a6;
-  white-space: nowrap;
+.dsc-recent-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(35, 29, 69, 0.06);
 }
-.dsc-recent-chev { display: grid; place-items: center; color: #b9bcca; }
-.dsc-recent-chev :deep(svg) { width: 18px; height: 18px; }
+.dsc-recent-price { margin: 0; font-size: 17px; font-weight: 800; color: #00776f; letter-spacing: -0.02em; }
+.dsc-recent-sold { margin: 2px 0 0; font-size: 11.5px; font-weight: 600; color: #a3a7b8; }
+.dsc-recent-go {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #f3f2f7;
+  color: #231d45;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.dsc-recent-go :deep(svg) { width: 16px; height: 16px; }
+.dsc-recent-card:hover .dsc-recent-go { background: #00a19a; color: #fff; }
 
 /* ── Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 980px) {
@@ -1980,9 +2756,367 @@ onMounted(() => {
   .dsc-title { font-size: 31px; }
   .dsc-lede { font-size: 15px; }
   .dsc-eco { padding: 30px 22px 26px; }
-  .dsc-recent-row { flex-wrap: wrap; gap: 12px; }
-  .dsc-recent-mid { text-align: left; }
+  .dsc-recent { grid-auto-columns: 78%; }
+  .dsc-recent-arrow { display: none; }
   .dsc-eco-blurb { flex-direction: column; gap: 12px; }
-  .dsc-eco-foot { flex-direction: column; align-items: flex-start; }
+  }
+
+/* ── Your space (signed in, role-aware) ─────────────────────────────────── */
+.rx .dsc-textlink { text-decoration: none; }
+.rx-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #00a19a;
+}
+.rx-eyebrow--light { color: #5eead4; }
+
+.rx-claim {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 28px;
+  padding: 28px 30px;
+  margin-bottom: 18px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #241e4c, #14102f 72%);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(20, 16, 47, 0.22);
+}
+.rx-claim-title { margin: 8px 0 8px; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.rx-claim-sub { margin: 0 0 18px; font-size: 14px; line-height: 1.55; color: #c9c5e6; }
+.rx-claim-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: #00a19a;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.rx-claim-btn:hover { background: #018e88; }
+.rx-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; align-content: center; }
+.rx-steps li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.5; color: #e4e1f5; }
+.rx-steps li span {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(94, 234, 212, 0.16);
+  color: #5eead4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rx-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.rx-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid #e7e4dd;
+  border-radius: 18px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  color: #231d45;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(26, 21, 53, 0.04), 0 6px 16px rgba(26, 21, 53, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+button.rx-card:hover {
+  transform: translateY(-2px);
+  border-color: #cfe9e6;
+  box-shadow: 0 2px 4px rgba(26, 21, 53, 0.05), 0 14px 30px rgba(26, 21, 53, 0.09);
+}
+
+/* Passport status spans the row: it is the owner's main object. */
+.rx-psc { grid-column: 1 / -1; gap: 20px; padding: 18px 22px; }
+.rx-psc-book { flex-shrink: 0; width: 132px; height: 132px; }
+.rx-psc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.rx-psc-addr { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+.rx-psc-pc { font-size: 13px; color: #6b7089; }
+.rx-psc-stats { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; color: #4a5268; }
+.rx-psc-stats b { color: #231d45; }
+
+.rx-ring { position: relative; flex-shrink: 0; width: 76px; height: 76px; display: grid; place-items: center; }
+.rx-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.rx-ring-bg { fill: none; stroke: #e5f4f2; stroke-width: 4; }
+.rx-ring-fill {
+  fill: none;
+  stroke: #00a19a;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 150.8;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.rx-ring-num { position: relative; font-size: 20px; font-weight: 800; line-height: 1; margin-top: -8px; }
+.rx-ring-lbl {
+  position: absolute;
+  bottom: 17px;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a90a6;
+}
+
+.rx-row-ic { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+.rx-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rx-row-body strong { font-size: 14.5px; font-weight: 800; }
+.rx-row-body small { font-size: 12.5px; color: #6b7089; line-height: 1.45; }
+.rx-row-cta {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eafaf8;
+  color: #00756f;
+  font-size: 12px;
+  font-weight: 800;
+}
+.rx-row-chev { flex-shrink: 0; width: 18px; height: 18px; color: #8a90a6; }
+.rx-row--dark { background: linear-gradient(135deg, #241e4c, #14102f 72%); border-color: transparent; color: #fff; }
+.rx-row--dark .rx-row-body small { color: #c9c5e6; }
+.rx-row--dark .rx-row-cta { background: #00a19a; color: #fff; }
+
+.rx-search { flex-direction: column; align-items: stretch; gap: 10px; }
+.rx-search-top { display: flex; align-items: center; gap: 12px; }
+.rx-search-top strong { flex: 1; font-size: 14.5px; font-weight: 800; }
+.rx-search-top .rx-row-ic { width: 32px; height: 32px; }
+.rx-search-sub { font-size: 12.5px; color: #6b7089; line-height: 1.5; }
+.rx-search-sub b { color: #231d45; }
+.rx-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.rx-pill {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #eafaf8;
+  border: 1px solid #cfe9e6;
+  color: #00756f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rx-pulse { flex-direction: column; align-items: stretch; gap: 10px; cursor: default; }
+.rx-pulse-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+.rx-pulse-grid div { padding: 10px 12px; border-radius: 12px; background: #f7f6f2; }
+.rx-pulse-grid strong { display: block; font-size: 20px; font-weight: 800; }
+.rx-pulse-grid small { font-size: 11.5px; color: #6b7089; }
+.rx-up { color: #008a84; }
+.rx-down { color: #c73e36; }
+
+.rx-foryou { margin-top: 22px; }
+
+.rx-skel {
+  min-height: 132px;
+  background: linear-gradient(90deg, #efeee9 0%, #f7f6f2 50%, #efeee9 100%);
+  background-size: 200% 100%;
+  animation: rx-shimmer 1.3s ease-in-out infinite;
+  cursor: default;
+}
+.rx-card.rx-skel { grid-column: 1 / -1; }
+.rx-skel--thin { min-height: 54px; border-radius: 12px; }
+@keyframes rx-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (max-width: 860px) {
+  .rx-claim { grid-template-columns: 1fr; padding: 22px; }
+  .rx-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .rx-psc { flex-wrap: wrap; }
+  .rx-psc-book { width: 104px; height: 104px; }
+}
+
+/* ── Property Passport card: the four roles it opens onto ───────────────── */
+.dsc-feature-roles { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 18px; }
+.dsc-feature-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.08);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #4a5268;
+}
+.dsc-feature-role i { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── Passport ecosystem popup ──────────────────────────────────────────── */
+.dsc-eco-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 28px 20px;
+  background: rgba(20, 16, 47, 0.46);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.dsc-eco--dialog {
+  width: min(1040px, 100%);
+  max-height: min(860px, calc(100dvh - 64px));
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-shadow: 0 40px 90px rgba(20, 16, 47, 0.35);
+  outline: none;
+}
+.dsc-eco-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  /* The decorative glow is wider than the panel; without clipping the x axis
+     it made the whole body scroll sideways and cut the right edge off. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 40px 38px 28px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  /* Slim, rounded scrollbar instead of the platform default. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(35, 29, 69, 0.22) transparent;
+}
+.dsc-eco-scroll::-webkit-scrollbar { width: 12px; }
+.dsc-eco-scroll::-webkit-scrollbar-track { background: transparent; margin: 72px 0 12px; }
+.dsc-eco-scroll::-webkit-scrollbar-thumb {
+  background: rgba(35, 29, 69, 0.2);
+  border-radius: 999px;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+.dsc-eco-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(35, 29, 69, 0.34); }
+
+/* Edge shadows: a hairline under the top once scrolled, and above the
+   action bar while there is still content below. */
+.dsc-eco--dialog::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 18px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(26, 21, 53, 0.08), rgba(26, 21, 53, 0));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.dsc-eco--dialog.is-scrolled::before { opacity: 1; }
+.dsc-eco--dialog:not(.is-end) .dsc-eco-actions { box-shadow: 0 -12px 24px -14px rgba(26, 21, 53, 0.22); }
+.dsc-eco-close {
+  position: absolute;
+  top: 18px;
+  /* Clear of the scrollbar gutter on the right. */
+  right: 26px;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(35, 29, 69, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(26, 21, 53, 0.08);
+  color: #231d45;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.2s ease;
+}
+.dsc-eco-close :deep(svg) { width: 18px; height: 18px; }
+.dsc-eco-close:hover { background: #231d45; color: #fff; transform: rotate(90deg); }
+/* Focus lands here when the popup opens; a soft brand ring rather than the
+   browser's hard black outline. */
+.dsc-eco-close:focus { outline: none; }
+.dsc-eco-close:focus-visible { box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.35); border-color: #00a19a; }
+
+.dsc-eco-actions {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  transition: box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 38px;
+  border-top: 1px solid rgba(35, 29, 69, 0.07);
+  background: #fbfaf7;
+  border-radius: 0 0 28px 28px;
+}
+.dsc-eco-actions-note {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7089;
+}
+.dsc-eco-actions-note :deep(svg) { width: 15px; height: 15px; color: #c98a1a; }
+.dsc-eco-actions-btns { display: flex; gap: 10px; }
+.dsc-eco-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 12px;
+  border: 1px solid #00a19a;
+  background: #00a19a;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.dsc-eco-btn :deep(svg) { width: 16px; height: 16px; }
+.dsc-eco-btn:hover { background: #018e88; box-shadow: 0 8px 18px rgba(0, 161, 154, 0.28); }
+.dsc-eco-btn--ghost { background: #fff; color: #231d45; border-color: #dcd9e4; }
+.dsc-eco-btn--ghost:hover { background: #f3f2f7; box-shadow: none; }
+
+.dsc-eco-pop-enter-active,
+.dsc-eco-pop-leave-active { transition: opacity 0.22s ease; }
+.dsc-eco-pop-enter-active .dsc-eco--dialog,
+.dsc-eco-pop-leave-active .dsc-eco--dialog { transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+.dsc-eco-pop-enter-from,
+.dsc-eco-pop-leave-to { opacity: 0; }
+.dsc-eco-pop-enter-from .dsc-eco--dialog,
+.dsc-eco-pop-leave-to .dsc-eco--dialog { transform: translateY(18px) scale(0.98); }
+
+@media (max-width: 760px) {
+  .dsc-eco-overlay { padding: 0; place-items: end center; }
+  .dsc-eco--dialog { max-height: 92dvh; border-radius: 24px 24px 0 0; }
+  .dsc-eco-scroll { padding: 30px 20px 20px; }
+  .dsc-eco-actions { flex-direction: column; align-items: stretch; padding: 14px 20px 18px; border-radius: 0; }
+  .dsc-eco-close { right: 18px; top: 14px; }
+  .dsc-eco-actions-note { display: none; }
+  .dsc-eco-actions-btns { flex-direction: column; }
+  .dsc-eco-btn { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsc-eco-pop-enter-active,
+  .dsc-eco-pop-leave-active,
+  .dsc-eco-pop-enter-active .dsc-eco--dialog,
+  .dsc-eco-pop-leave-active .dsc-eco--dialog { transition: none; }
 }
 </style>
