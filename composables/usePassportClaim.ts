@@ -52,6 +52,21 @@ export const usePassportClaim = () => {
     })
   }
 
+  // Owner-claim payment - KYC+HMLR or HMLR-only, depending on whether the
+  // user already had approved KYC before this claim. Amount is decided
+  // server-side; returned here purely for display. Required before
+  // activatePassport() will seed a property-claim passport's sections -
+  // see the "Before we verify your ownership" step in pages/claim/[id].vue.
+  const createClaimPaymentIntent = async (
+    passportId: string,
+  ): Promise<{ clientSecret: string; paymentId: string; amount: number }> => {
+    return $fetch(`${base}/payment/create-claim-intent`, {
+      method: 'POST',
+      headers: headers(),
+      body: { passportId },
+    })
+  }
+
   // Sets the seller/landlord choice on a passport after creation. We pass
   // `type` to /passport/create already, so the claim flow below doesn't need
   // this - it exists for callers that create first and choose later.
@@ -130,6 +145,7 @@ export const usePassportClaim = () => {
   return {
     getPassportStatus,
     claimPassport,
+    createClaimPaymentIntent,
     setPassportType,
     activatePassport,
     unlockPassport,
