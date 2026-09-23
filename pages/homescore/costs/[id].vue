@@ -649,7 +649,7 @@
             <div class="br-card-body-inner">
               <template v-if="schools.length">
                 <div v-for="(s, i) in schools" :key="i" class="school-row">
-                  <div class="school-ofsted nodata"><big>-</big></div>
+                  <div class="school-ofsted nodata"><span>-</span></div>
                   <div class="school-info">
                     <div class="school-name">{{ s.name }}</div>
                     <div class="school-meta">{{ s.meta }}</div>
@@ -3407,7 +3407,7 @@ function onBuyPassport() {
   background: var(--bg);
   color: var(--text-faint);
 }
-.school-ofsted big {
+.school-ofsted span {
   font-size: 1rem;
   font-weight: 800;
   line-height: 1;
