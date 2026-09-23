@@ -27,64 +27,13 @@
       <div class="pcb-arrow">→</div>
     </button>
 
-    <button
-      v-else-if="state === 'inProgress' && !headless"
-      class="pcb-box"
-      type="button"
-      style="
-        background: linear-gradient(
-          135deg,
-          #4dd4ce 0%,
-          #00a19a 45%,
-          #006e68 100%
-        );
-      "
-      @click="openSheet = 'progress'"
-    >
-      <div class="pcb-left">
-        <div class="pcb-main">A Passport is being built for this home</div>
-        <div class="pcb-sub">
-          The owner is preparing a verified record — be ready before it goes
-          live.
-        </div>
-        <span class="pcb-explain" @click.stop="openSheet = 'progress'">
-          What is a Passport in progress? <span class="pcb-q">?</span>
-        </span>
-      </div>
-      <div class="pcb-ring">
-        <svg viewBox="0 0 50 50">
-          <circle
-            cx="25"
-            cy="25"
-            r="20"
-            stroke="rgba(255,255,255,0.30)"
-            stroke-width="4.5"
-            fill="none"
-          />
-          <circle
-            cx="25"
-            cy="25"
-            r="20"
-            stroke="#fff"
-            stroke-width="4.5"
-            fill="none"
-            stroke-dasharray="125.66"
-            :stroke-dashoffset="125.66 - (pct / 100) * 125.66"
-            stroke-linecap="round"
-            transform="rotate(-90 25 25)"
-          />
-        </svg>
-        <span>{{ pct }}<small>%</small></span>
-      </div>
-    </button>
-
     <!-- Published-passport "champagne band" — animated gold conic-gradient
          border + sheen sweep, ported from prisma/published-band-standalone.html.
          The card itself is white so the verified record feels premium /
          document-like, distinct from the dark unclaimed and in-progress
          bands. -->
     <button
-      v-else-if="!headless"
+      v-else-if="state === 'published' && !headless"
       class="pcb-pubwrap"
       type="button"
       @click="openSheet = 'published'"
@@ -211,93 +160,6 @@
                   @click="onPrimary('claim-passport')"
                 >
                   Claim it →
-                </button>
-              </div>
-              <div class="cx-foot">
-                The way people buy homes is changing — we're building that
-                future with government.
-              </div>
-            </template>
-
-            <!-- IN PROGRESS -->
-            <template v-else-if="openSheet === 'progress'">
-              <div class="cx-hero teal">
-                <div class="cx-hero-eyebrow">
-                  Property Passport™ · In Progress
-                </div>
-                <div class="cx-hero-title">
-                  This owner is building something that removes 150 days of
-                  uncertainty.
-                </div>
-                <div class="cx-hero-sub">
-                  A permanent verified record for this property. When it
-                  publishes, you get instant access to everything — before you
-                  even make an offer.
-                </div>
-              </div>
-              <div class="cx-callout">
-                <div class="cx-callout-h">Why this matters</div>
-                <div class="cx-callout-v">
-                  People fall for a house in 20 minutes, then spend ~150 days
-                  chasing solicitors and documents that already exist somewhere.
-                  This Passport collects it all upfront.
-                  <b
-                    >👁 Watch this property to be first in the door the moment
-                    it publishes.</b
-                  >
-                </div>
-              </div>
-              <div class="cx-section-h">Build progress</div>
-              <div class="cx-progress-row">
-                <span>{{ pct }}% complete</span
-                ><span>{{ sectionsDone }} of {{ sectionsTotal }} verified</span>
-              </div>
-              <div class="cx-progress-track">
-                <div class="cx-progress-fill" :style="{ width: pct + '%' }" />
-              </div>
-              <div class="cx-section-h">Already verified</div>
-              <div class="cx-item">
-                <div class="cx-item-ico">⚡</div>
-                <div class="cx-item-body">
-                  <div class="cx-item-title">EPC Certificate</div>
-                  <div class="cx-item-sub">
-                    Energy rating · lodged on the public register
-                  </div>
-                </div>
-                <div class="cx-item-tick">✓</div>
-              </div>
-              <div class="cx-item">
-                <div class="cx-item-ico">🏛️</div>
-                <div class="cx-item-body">
-                  <div class="cx-item-title">
-                    Land Registry Title &amp; Plan
-                  </div>
-                  <div class="cx-item-sub">Ownership confirmed</div>
-                </div>
-                <div class="cx-item-tick">✓</div>
-              </div>
-              <div class="cx-item">
-                <div class="cx-item-ico">📋</div>
-                <div class="cx-item-body">
-                  <div class="cx-item-title">TA6 — Property Information</div>
-                  <div class="cx-item-sub">Boundaries, disputes, utilities</div>
-                </div>
-                <div class="cx-item-tick">✓</div>
-              </div>
-              <div class="cxd-cta-row">
-                <button
-                  class="cxd-btn secondary"
-                  type="button"
-                  @click="openSheet = null"
-                >
-                  Close
-                </button>
-                <button
-                  class="cxd-btn primary"
-                  type="button"
-                  @click="onPrimary('watch')"
-                >
-                  👁 Watch this property
                 </button>
               </div>
               <div class="cx-foot">
@@ -493,9 +355,9 @@ const props = withDefaults(
      *  to control the drawer programmatically. */
     headless?: boolean
     /** External control of which sheet is open. Used in headless mode so
-     *  the parent can open `'unclaimed'` / `'progress'` / `'published'`
+     *  the parent can open `'unclaimed'` / `'published'`
      *  from its own button. Two-way bound via `update:openSheet`. */
-    openSheet?: 'unclaimed' | 'progress' | 'published' | null
+    openSheet?: 'unclaimed' | 'published' | null
   }>(),
   {
     progressPct: 60,
@@ -513,7 +375,7 @@ const emit = defineEmits<{
   (e: 'claim-passport'): void
   (e: 'watch'): void
   (e: 'buy'): void
-  (e: 'update:openSheet', v: 'unclaimed' | 'progress' | 'published' | null): void
+  (e: 'update:openSheet', v: 'unclaimed' | 'published' | null): void
 }>()
 
 const pct = computed(() =>
@@ -523,8 +385,8 @@ const pct = computed(() =>
 // In standard (non-headless) mode the component owns `openSheet` locally —
 // tapping the colored box flips it. In headless mode the parent drives it
 // via v-model so the colored box can be replaced by the parent's own CTA.
-const localOpenSheet = ref<'unclaimed' | 'progress' | 'published' | null>(null)
-const openSheet = computed<'unclaimed' | 'progress' | 'published' | null>({
+const localOpenSheet = ref<'unclaimed' | 'published' | null>(null)
+const openSheet = computed<'unclaimed' | 'published' | null>({
   get: () => (props.headless ? props.openSheet : localOpenSheet.value),
   set: (v) => {
     if (props.headless) emit('update:openSheet', v)

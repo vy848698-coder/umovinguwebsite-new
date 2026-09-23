@@ -46,13 +46,13 @@
             </span>
           </button>
           <button
-            v-else
+            v-else-if="passportState === 'published'"
             class="nd-claim"
             type="button"
             @click="openClaimSheet"
           >
             <div class="nd-claim-text">
-              <div class="nd-claim-title">{{ passportState === 'published' ? 'Passport published' : 'Passport in progress' }}</div>
+              <div class="nd-claim-title">Passport published</div>
               <div class="nd-claim-sub">View the verified Property Passport for this home.</div>
               <div class="nd-claim-link">Open the Passport</div>
             </div>
@@ -659,14 +659,10 @@ const OPT_ICON: Record<OptKey, string> = {
 
 // ── Claim / passport drawer (headless PassportClaimBox, driven from the
 //    styled claim card in the hero — mirrors V6ScoreView). ──────────────
-const claimSheet = ref<'unclaimed' | 'progress' | 'published' | null>(null)
+const claimSheet = ref<'unclaimed' | 'published' | null>(null)
 function openClaimSheet() {
   claimSheet.value =
-    props.passportState === 'published'
-      ? 'published'
-      : props.passportState === 'inProgress'
-        ? 'progress'
-        : 'unclaimed'
+    props.passportState === 'published' ? 'published' : 'unclaimed'
 }
 
 const questState = ref<Record<string, OptKey>>({})

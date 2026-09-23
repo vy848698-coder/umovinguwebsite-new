@@ -225,11 +225,24 @@ function onSubmit() {
   box-shadow: 0 -8px 30px rgba(35, 29, 69, 0.25);
   max-height: 90dvh;
   overflow-y: auto;
-  scrollbar-width: none;
+  /* Thin, low-key scrollbar: enough to hint there's more below. */
+  scrollbar-width: thin;
+  scrollbar-color: #c9ccd8 transparent;
   padding-bottom: env(safe-area-inset-bottom);
 }
 .watch-sheet::-webkit-scrollbar {
-  display: none;
+  width: 5px;
+}
+.watch-sheet::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 22px 0;
+}
+.watch-sheet::-webkit-scrollbar-thumb {
+  background: #c9ccd8;
+  border-radius: 999px;
+}
+.watch-sheet::-webkit-scrollbar-thumb:hover {
+  background: #a9adbf;
 }
 .watch-grip {
   width: 42px;

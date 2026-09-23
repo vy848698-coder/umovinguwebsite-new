@@ -86,8 +86,8 @@
 
     <!-- Claim / Passport-state box + explainer drawers. Driven by the real
          passport state: unclaimed → navy "This property is unclaimed" card;
-         in progress / published → the teal "Passport is being built" card,
-         shown in the same place. -->
+         published → the gold published-Passport card. In progress shows no
+         card, matching the mobile app. -->
     <PassportClaimBox
       :state="passportState"
       :progress-pct="passportProgressPct"
