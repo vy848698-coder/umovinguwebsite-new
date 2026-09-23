@@ -1,64 +1,9 @@
 <template>
-  <div class="hs-page">
+  <div class="hs-page" :class="{ 'hs-page--web': screen === 'landing' || screen === 'loading' || screen === 'results' || screen === 'publish' || screen === 'kyc' || screen === 'kyc-pending' || screen === 'published' || screen === 'quick-wins' || screen === 'move-ready' || screen === 'buyer-results' || screen === 'passport' || screen === 'questions' || screen === 'no-epc-estimator' || screen === 'boost' || screen === 'level-up' }">
     <!-- Global header — hidden during quiz + post-quiz funnel screens, which
          each render their own top nav and amber address card. -->
-    <div
-      v-if="
-        screen !== 'results' &&
-        screen !== 'publish' &&
-        screen !== 'kyc' &&
-        screen !== 'kyc-pending' &&
-        screen !== 'published' &&
-        screen !== 'quick-wins' &&
-        screen !== 'level-up' &&
-        screen !== 'boost'
-      "
-      class="hs-header"
-    >
-      <button class="hs-back-btn" @click="goBack" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-          <path
-            d="M15 18l-6-6 6-6"
-            stroke="#475569"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <div class="hs-header-center">
-        <p class="hs-header-title">
-          {{
-            screen === 'landing'
-              ? 'Your HomeScore'
-              : screen === 'questions'
-                ? 'Owner quiz'
-                : screen === 'level-up'
-                  ? 'Level up!'
-                  : screen === 'results'
-                    ? 'Your HomeScore'
-                    : screen === 'passport'
-                      ? 'Property Passport'
-                      : screen === 'buyer-results'
-                        ? 'Property Report'
-                        : screen === 'quick-wins'
-                          ? 'Boost your score'
-                          : screen === 'move-ready'
-                            ? 'Get move ready'
-                            : 'HomeScore'
-          }}
-        </p>
-        <p class="hs-header-sub">{{ headerSub }}</p>
-      </div>
-      <!-- Tour "?" removed: the resultTour steps below target
-           `data-tour` attributes that live inside V6ScoreView /
-           V6BoostView children, and those children haven't been
-           tagged yet. Without matching targets the tour ends
-           silently, so the button did nothing on tap. Re-enable
-           by tagging the target elements inside those child
-           components AND restoring this button. -->
-      <div class="hs-beta-pill">BETA</div>
-    </div>
+    <!-- Global mobile header removed — every screen now renders its own web
+         nav (or, for `loading`, just the spinner on the web canvas). -->
 
     <!-- Tour overlay (renders only when active) -->
     <TourCoach :tour="resultTour" />
@@ -86,8 +31,43 @@
       </div>
     </template>
 
-    <!-- ── LANDING / AUTO SCORE — homescore-v6 prototype port ─── -->
+    <!-- ── LANDING / AUTO SCORE — prototype-aligned (3a/3b/3c) ──── -->
     <template v-else-if="screen === 'landing'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button
+              class="hsw-tour"
+              type="button"
+              title="How does this work?"
+              aria-label="How does this work?"
+              data-tour="tour-btn"
+              @click="resultTour.restart()"
+            >
+              ?
+            </button>
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              New search
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <V6ScoreView
         :property="property"
         :score="autoScoreVal"
@@ -101,7 +81,7 @@
         :street-rank="streetEnergyRank?.rank ?? null"
         :street-total="streetEnergyRank?.total ?? null"
         :searches-today="searchStats?.today ?? 0"
-        :watchers-count="searchStats?.watchers ?? 0"
+        :watchers-count="(searchStats as any)?.watchers ?? 0"
         :passport-state="resolvedPassportState"
         :passport-progress-pct="passportProgressPct"
         :passport-sections-done="passportSectionsDone"
@@ -111,74 +91,55 @@
         :is-property-owner="isPropertyOwner"
         @back="goBack"
         @claim="startQuestions"
-        @refine="startQuestions"
-        @interested="goToRunningCosts"
+        @refine="onRefineScore"
+        @interested="goToBuyerView"
         @open-pathway="goToPathway"
-        @open-dashboard="goToDashboard"
+        @open-dashboard="claimOrAccessPassport"
         @open-boost="goToBoost"
         @see-running-costs="goToRunningCosts"
         @see-street="goToStreetCompare"
         @view-passport="goToPassport"
-        @buy-passport="goToBuyPassport"
+        @buy-passport="goToBuyerView"
         @claim-passport="goToClaimPassport"
         @claim-modal-closed="autoOpenClaim = false"
       />
     </template>
 
-    <!-- ── BOOST YOUR SCORE — homescore-v6-2 prototype port ────── -->
-    <template v-else-if="screen === 'boost'">
-      <V6BoostView
-        :home-score="autoScoreVal"
-        :property-id="propertyId"
-        :public-epc-rating="property?.epcRating ?? null"
-        :public-epc-score="(property as any)?.epcScore ?? (property as any)?.epcCert?.currentEnergyEfficiency ?? null"
-        :public-epc-year="simEpcYear"
-        @back="goBack"
-        @open-marketplace="goToRunningCosts"
-        @start-passport="onBoostStartPassport"
-      />
-    </template>
-
-    <!-- ── LEVEL UP — homescore-v6 prototype port ──────────────── -->
-    <template v-else-if="screen === 'level-up'">
-      <V6LevelUpView
-        :from-score="autoScoreVal"
-        :to-score="v6QuizFinal?.finalScore ?? autoScoreVal"
-        :delta="v6QuizFinal?.delta ?? 0"
-        :property="property"
-        :stat-gains="v6QuizFinal?.statGains ?? {}"
-        :est-savings="v6QuizFinal?.answeredSavings ?? resolvedPotentialSaving"
-        :co2-now="resolvedCo2Now"
-        :co2-potential="resolvedCo2Potential"
-        @back="goBack"
-        @open-pathway="goToPathway"
-        @open-boost="goToBoost"
-        @build-passport="goToPassportDashboard"
-      />
-    </template>
-
-    <!-- ── NO-EPC ESTIMATOR — self-contained visitor quiz.
-             Fires when the property has no EPC on file; ports
-             prisma/homescore-no-epc-prototype.html 1:1 for questions,
-             scoring, ring / range / confidence display, and category
-             breakdown. Emits 'close' when the user backs out. -->
-    <template v-else-if="screen === 'no-epc-estimator'">
-      <V6NoEpcEstimator
-        :property="property"
-        @close="goBack"
-        @book-assessment="onBookAssessment"
-      />
-    </template>
-
-    <!-- ── QUESTIONS — homescore-v6 prototype owner-quiz port ───── -->
+    <!-- ── QUESTIONS — prototype-style: teal address card + live gauge ── -->
+    <!-- ── OWNER QUIZ — exact clone V6QuizView ──────────────────── -->
     <template v-else-if="screen === 'questions'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
       <V6QuizView
         :property="property"
         :initial-score="autoScoreVal"
         :epc-rating="property?.epcRating ?? null"
         :epc-year="resolvedEpcYear"
         :searches-today="searchStats?.today ?? 0"
-        :watchers-count="searchStats?.watchers ?? 0"
+        :watchers-count="(searchStats as any)?.watchers ?? 0"
         :passport-state="resolvedPassportState"
         :passport-progress-pct="passportProgressPct"
         :passport-sections-done="passportSectionsDone"
@@ -186,37 +147,164 @@
         @back="goBack"
         @finish="onQuizFinish"
         @upload-bill="onUploadBill"
-        @claim-passport="goToClaimPassport"
-        @watch-property="goToBuyPassport"
-        @buy-passport="goToBuyPassport"
+        @claim-passport="claimOrAccessPassport"
+        @watch-property="goToBuyerView"
+        @buy-passport="goToBuyerView"
       />
     </template>
 
-    <!-- ── LEGACY QUESTIONS (kept for fallback) ─────────────────── -->
-    <template v-else-if="screen === 'questions-legacy'">
-      <div class="sim-root">
-        <!-- Top nav -->
-        <div class="sim-topnav">
-          <button
-            class="sim-back-btn"
-            @click="screen = 'landing'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+    <!-- ── BOOST YOUR SCORE — exact clone V6BoostView ───────────── -->
+    <template v-else-if="screen === 'boost'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
           </button>
-          <div class="sim-eyebrow-pill"><span class="dot" />HomeScore</div>
-          <div style="width: 32px" />
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
         </div>
+      </header>
 
+      <V6BoostView
+        :home-score="autoScoreVal"
+        :public-epc-rating="property?.epcRating ?? null"
+        :public-epc-score="(property as any)?.epcScore ?? null"
+        :public-epc-year="resolvedEpcYear"
+        :hide-back="true"
+        @back="goBack"
+        @open-marketplace="goToRunningCosts"
+        @view-report="goToBuyerView"
+        @start-passport="onBoostStartPassport"
+      />
+    </template>
+
+    <!-- ── LEVEL UP — exact clone V6LevelUpView ─────────────────── -->
+    <template v-else-if="screen === 'level-up'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
+      <V6LevelUpView
+        :from-score="autoScoreVal"
+        :to-score="v6QuizFinal?.finalScore ?? autoScoreVal"
+        :delta="v6QuizFinal?.delta ?? 0"
+        :hide-back="true"
+        @back="goBack"
+        @open-pathway="goToPathway"
+        @open-boost="goToBoost"
+      />
+    </template>
+
+    <!-- ── NO-EPC ESTIMATOR — exact clone V6NoEpcEstimator ──────── -->
+    <template v-else-if="screen === 'no-epc-estimator'">
+      <header class="hsw-nav">
+        <div class="hsw-shell hsw-nav-inner">
+          <button class="hsw-brand" type="button" @click="navigateTo('/')">
+            <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+            <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+          </button>
+          <nav class="hsw-links" aria-label="Primary navigation">
+            <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+            <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+            <button type="button" @click="navigateTo('/passport')">Passport</button>
+            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+          </nav>
+          <div class="hsw-actions">
+            <button class="hsw-back" type="button" @click="goBack">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back to score
+            </button>
+            <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+          </div>
+        </div>
+      </header>
+
+      <V6NoEpcEstimator
+        :property="property"
+        @close="goBack"
+        @book-assessment="onBookAssessment"
+      />
+    </template>
+
+    <!-- ── legacy sim quiz (disabled — replaced by V6QuizView) ──── -->
+    <template v-else-if="false">
+      <div class="sim-root sim-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'landing'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="hsw-shell simw-main">
+          <div class="simw-head">
+            <p class="simw-kicker"><span class="simw-kicker-dot" />Accuracy check</p>
+            <h1>Refine your HomeScore</h1>
+            <p class="simw-lede">
+              Tell us what's been done since the EPC — we'll score your home on reality, not old assumptions.
+            </p>
+          </div>
+
+          <div class="simw-layout">
+            <aside class="simw-aside">
         <!-- Amber address card — consistent with ResultDetail -->
         <div v-if="property" class="sim-addr-card">
           <div class="sim-addr-top">
@@ -237,10 +325,13 @@
 
         <!-- Hero -->
         <div class="sim-hero">
-          <div class="sim-hero-eyebrow"><img src="/op-icons/investment/target.png" alt="" class="inline-ic" loading="lazy" /> Your HomeScore accuracy check</div>
+          <div class="sim-hero-eyebrow">
+            <span class="sim-live-dot" />HomeScore™ · Live
+            <span class="sim-pts-badge">+{{ Math.max(0, Math.round(simScoreDeltaTotal)) }} pts</span>
+          </div>
           <div class="sim-hero-body">
             Your EPC is from <b>{{ simEpcYear }}</b
-            >. A lot may have changed. Tell us what's been done - we'll give you
+            >. A lot may have changed. Tell us what's been done — we'll give you
             a score based on reality, not old assumptions. This also makes your
             street comparison more accurate.
           </div>
@@ -276,11 +367,17 @@
             </div>
             <div class="sim-score-info">
               <div class="sim-score-band">{{ simScoreBand }}</div>
+              <div v-if="simScore < 55" class="sim-score-aim">
+                Aim for Level C (55+) to unlock the upgrade marketplace
+              </div>
+              <div v-else class="sim-score-aim sim-score-aim--hit">
+                ✓ Level C reached — upgrade marketplace unlocked
+              </div>
               <div class="sim-score-grade">
                 {{
                   simAnsweredCount === 0
-                    ? 'Answer the questions below to update'
-                    : `${simAnsweredCount} of ${simSteps.length} answered`
+                    ? 'Answer below to update · earn XP for every question'
+                    : `${simAnsweredCount} of ${simSteps.length} answered · earn XP`
                 }}
               </div>
             </div>
@@ -333,6 +430,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="simw-content">
         <!-- Two paths — quiz vs bill upload -->
         <div class="sim-paths">
           <div class="sim-paths-eyebrow">Two ways to update your score</div>
@@ -341,8 +441,8 @@
               class="sim-path"
               :class="{ active: simPath === 'quiz' }"
               @click="simSelectPath('quiz')"
-             role="button" tabindex="0" @keydown.enter="simSelectPath('quiz')" @keydown.space.prevent="simSelectPath('quiz')">
-              <div class="sim-path-icon"><img src="/op-icons/homescore/clipboard.png" alt="" loading="lazy" /></div>
+            >
+              <img class="sim-path-icon" src="/homescore-icon/clipboardChecklist.png" alt="" loading="lazy" />
               <div class="sim-path-title">Answer questions</div>
               <div class="sim-path-sub">Work through the list below</div>
             </div>
@@ -351,8 +451,8 @@
               class="sim-path bill"
               :class="{ active: simPath === 'bill' }"
               @click="simSelectPath('bill')"
-             role="button" tabindex="0" @keydown.enter="simSelectPath('bill')" @keydown.space.prevent="simSelectPath('bill')">
-              <div class="sim-path-icon"><img src="/op-icons/homescore/bulb.png" alt="" loading="lazy" /></div>
+            >
+              <img class="sim-path-icon" src="/homescore-icon/utilityBills.png" alt="" loading="lazy" />
               <div class="sim-path-title">Upload a bill</div>
               <div class="sim-path-sub">Skip the questions</div>
             </div>
@@ -383,14 +483,14 @@
               class="sim-step"
               :class="[s.status, { open: openStepId === s.id }]"
               @click="simToggleStep(s.id)"
-             role="button" tabindex="0" @keydown.enter="simToggleStep(s.id)" @keydown.space.prevent="simToggleStep(s.id)">
+            >
               <div class="sim-step-top">
                 <div class="sim-step-num">{{ idx + 1 }}</div>
                 <div class="sim-step-body">
                   <div class="sim-step-title">{{ s.title }}</div>
                   <div class="sim-step-meta">{{ s.meta }}</div>
                 </div>
-                <div class="sim-step-badge">{{ simBadge(s.status) }}</div>
+                <div class="sim-step-badge"><Icon v-if="simBadge(s.status)" :name="simBadge(s.status)" /></div>
               </div>
               <div class="sim-step-expand">
                 <div class="sim-step-desc">{{ s.desc }}</div>
@@ -402,21 +502,21 @@
                     class="sim-step-btn done"
                     @click.stop="simAnswer(s.id, 'done')"
                   >
-                    ✅ {{ s.doneLabel || 'Yes - done' }}
+                    <Icon name="i-lucide-check" />{{ s.doneLabel || 'Yes — done' }}
                   </button>
                   <button
                     type="button"
                     class="sim-step-btn diff"
                     @click.stop="simOpenDiff(s.id)"
                   >
-                    <img src="/op-icons/investment/refreshArrows.png" alt="" class="inline-ic" loading="lazy" /> Done something different
+                    <Icon name="i-lucide-refresh-cw" />Done something different
                   </button>
                   <button
                     type="button"
                     class="sim-step-btn todo"
                     @click.stop="simAnswer(s.id, 'todo')"
                   >
-                    <img src="/op-icons/homescore/clipboard.png" alt="" class="inline-ic" loading="lazy" /> Not yet
+                    <Icon name="i-lucide-list" />Not yet
                   </button>
                   <button
                     type="button"
@@ -444,9 +544,9 @@
                   simParsedBill?.annualSpend && simParsedBill.annualSpend > 0
                 "
               >
-                Bill read - £{{ simParsedBill.annualSpend.toLocaleString() }}/yr
+                Bill read — £{{ simParsedBill.annualSpend.toLocaleString() }}/yr
               </template>
-              <template v-else>Bill uploaded - score updated</template>
+              <template v-else>Bill uploaded — score updated</template>
             </div>
             <div class="sim-bill-sub">
               <template v-if="simParsedBill?.supplier">
@@ -467,8 +567,8 @@
           v-else-if="simPath === 'bill'"
           class="sim-bill-picker"
           @click="openSimBillDrawer"
-         role="button" tabindex="0" @keydown.enter="openSimBillDrawer" @keydown.space.prevent="openSimBillDrawer">
-          <div class="sim-bill-emoji"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" /></div>
+        >
+          <div class="sim-bill-emoji">📄</div>
           <div>
             <div class="sim-bill-title">Tap to upload a recent energy bill</div>
             <div class="sim-bill-sub">
@@ -480,7 +580,7 @@
 
         <!-- Publish prompt — shown after enough answers -->
         <div v-if="simShowPublishPrompt" class="sim-publish">
-          <div class="sim-publish-title"><img src="/op-icons/homescore/house.png" alt="" class="inline-ic" loading="lazy" /> Ready to publish this data?</div>
+          <div class="sim-publish-title"><img class="sim-publish-ic" src="/homescore-icon/house.png" alt="" loading="lazy" />Ready to publish this data?</div>
           <div class="sim-publish-sub">
             Publishing updates your property's data and makes energy cost
             estimates more accurate for everyone nearby. You'll need to verify
@@ -488,7 +588,7 @@
           </div>
           <div class="sim-publish-btns">
             <button type="button" class="sim-publish-go" @click="simSubmit">
-              <img src="/op-icons/homescore/house.png" alt="" class="inline-ic" loading="lazy" /> Claim &amp; publish →
+              <Icon name="i-lucide-house" />Claim &amp; publish →
             </button>
             <button
               type="button"
@@ -505,7 +605,7 @@
           class="sim-epc-nudge"
           :class="`sim-epc-nudge--${simEpcNudge.variant}`"
         >
-          <div class="sim-epc-nudge-icon">{{ simEpcNudge.icon }}</div>
+          <img class="sim-epc-nudge-icon" :src="simEpcNudge.icon" alt="" loading="lazy" />
           <div style="flex: 1">
             <div class="sim-epc-nudge-title">{{ simEpcNudge.title }}</div>
             <div class="sim-epc-nudge-body">{{ simEpcNudge.body }}</div>
@@ -520,12 +620,18 @@
         <!-- CTA + reset -->
         <div class="sim-cta">
           <button type="button" class="sim-cta-btn" @click="simSubmit">
-            <img src="/op-icons/homescore/house.png" alt="" class="inline-ic" loading="lazy" /> Get my real HomeScore
+            <Icon name="i-lucide-house" />Get my real HomeScore
           </button>
           <button type="button" class="sim-reset-btn" @click="simReset">
             ↺ Start again
           </button>
         </div>
+
+            </div>
+            <!-- /simw-content -->
+          </div>
+          <!-- /simw-layout -->
+        </main>
 
         <div style="height: 24px" />
       </div>
@@ -537,7 +643,7 @@
             <div class="sim-diff-handle" />
             <div class="sim-diff-title">What did you do instead?</div>
             <div class="sim-diff-body">
-              Tell us what improvement you made - even if it's not on the EPC
+              Tell us what improvement you made — even if it's not on the EPC
               list. This updates your score and helps your neighbours compare
               their options.
             </div>
@@ -545,13 +651,13 @@
               v-model="simDiffText"
               class="sim-diff-textarea"
               placeholder="e.g. Replaced hot water cylinder completely, installed underfloor heating, added a heat pump..."
-             aria-label="e.g. Replaced hot water cylinder completely, installed underfloor heating, added a heat pump..." />
+            />
             <div class="sim-diff-tip">
-              <span class="sim-diff-tip-icon"><img src="/op-icons/homescore/bulb.png" alt="" loading="lazy" /></span>
+              <img class="sim-diff-tip-icon" src="/homescore-icon/lightbulb.png" alt="" loading="lazy" />
               <div class="sim-diff-tip-text">
                 <b>This won't show on your EPC</b> until it's reassessed. A new
                 EPC costs around <b>£50</b> and could move your rating from F to
-                C - improving your score, your property's value, and your
+                C — improving your score, your property's value, and your
                 street's data for everyone.
               </div>
             </div>
@@ -578,34 +684,53 @@
 
     <!-- ── POST-QUIZ (refined results) ───────────────────────────── -->
     <template v-else-if="screen === 'results'">
-      <div class="pq-root">
-        <!-- Top nav -->
-        <div class="pq-topnav">
-          <button
-            class="pq-back-btn"
-            @click="screen = 'landing'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="pq-topnav-centre">
-            <div class="pq-topnav-title">Your HomeScore</div>
-            <div class="pq-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="pq-root pq-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button
+                class="hsw-tour"
+                type="button"
+                title="How does this work?"
+                aria-label="How does this work?"
+                @click="resultTour.restart()"
+              >
+                ?
+              </button>
+              <button class="hsw-back" type="button" @click="screen = 'landing'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                HomeScore
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell pqw-main">
+          <div class="pqw-head">
+            <p class="pqw-kicker"><span class="pqw-kicker-dot" />Refined HomeScore</p>
+            <h1>Your refined HomeScore</h1>
+            <p class="pqw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="pqw-layout">
+            <aside class="pqw-aside">
         <!-- Amber address card with ✓ Quiz complete pill + 1 stat row -->
         <div v-if="property" class="pq-addr-card">
           <div class="pq-addr-top">
@@ -664,7 +789,7 @@
             }}<span class="unit"> / year</span>
           </div>
           <div class="pq-overpay-sub">
-            Based on your quiz answers - a more accurate picture than public EPC
+            Based on your quiz answers — a more accurate picture than public EPC
             data alone.
           </div>
           <button
@@ -672,7 +797,7 @@
             class="pq-hero-btn pq-hero-btn--primary"
             @click="goToRunningCosts"
           >
-            <span class="pq-hero-btn-emoji"><img src="/op-icons/investment/growthChart.png" alt="" loading="lazy" /></span>
+            <span class="pq-hero-btn-emoji"><Icon name="i-lucide-chart-column" /></span>
             <span class="pq-hero-btn-label">See full running costs</span>
             <svg
               class="pq-hero-btn-arrow"
@@ -687,38 +812,13 @@
               <polyline points="12 5 19 12 12 19" />
             </svg>
           </button>
-          <!-- Owners with a passport already on file see a direct link
-               into it instead of the legacy "Publish to your street" flow,
-               which was the pre-passport marketing pitch. -->
           <button
-            v-if="ownedPassportId"
             type="button"
             class="pq-hero-btn pq-hero-btn--ghost"
-            @click="goToOwnedPassport"
+            @click="goToPublish"
           >
-            <span class="pq-hero-btn-emoji"><img src="/op-icons/misc/book.png" alt="" loading="lazy" /></span>
-            <span class="pq-hero-btn-label">Open my Property Passport</span>
-            <svg
-              class="pq-hero-btn-arrow"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </button>
-          <button
-            v-else
-            type="button"
-            class="pq-hero-btn pq-hero-btn--ghost"
-            @click="goToClaim"
-          >
-            <span class="pq-hero-btn-emoji"><img src="/op-icons/homescore/house.png" alt="" loading="lazy" /></span>
-            <span class="pq-hero-btn-label">Build my Property Passport</span>
+            <span class="pq-hero-btn-emoji"><Icon name="i-lucide-house" /></span>
+            <span class="pq-hero-btn-label">Publish to your street</span>
             <svg
               class="pq-hero-btn-arrow"
               viewBox="0 0 24 24"
@@ -734,6 +834,9 @@
           </button>
         </div>
 
+            </aside>
+
+            <div class="pqw-content">
         <!-- Refined score card -->
         <div class="pq-score-card" :class="`tone-${pqScoreTone}`">
           <div class="pq-score-eyebrow">
@@ -743,12 +846,6 @@
           <div class="pq-score-gauge-wrap">
             <div class="pq-gauge">
               <svg viewBox="0 0 120 120">
-                <defs>
-                  <linearGradient id="pqGrad" x1="1" y1="0" x2="0" y2="0">
-                    <stop offset="0%" stop-color="#00BB93" />
-                    <stop offset="100%" stop-color="#016F84" />
-                  </linearGradient>
-                </defs>
                 <circle
                   class="g-bg"
                   cx="60"
@@ -763,7 +860,7 @@
                   cy="60"
                   r="50"
                   fill="none"
-                  stroke="url(#pqGrad)"
+                  :stroke="pqScoreColor"
                   stroke-width="9"
                   stroke-linecap="round"
                   stroke-dasharray="314.16"
@@ -841,7 +938,7 @@
               type="button"
               @click="onBoostScore"
             >
-              <span class="pq-interest-opt-icon"><img src="/op-icons/misc/paperClip.png" alt="" loading="lazy" /></span>
+              <span class="pq-interest-opt-icon"><Icon name="i-lucide-paperclip" /></span>
               <span class="pq-interest-opt-body">
                 <span class="pq-interest-opt-title">Boost your score</span>
                 <span class="pq-interest-opt-sub"
@@ -879,40 +976,54 @@
           </div>
         </div>
 
-        <div style="height: 24px" />
+            </div>
+            <!-- /pqw-content -->
+          </div>
+          <!-- /pqw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── PUBLISH (publish HomeScore to street) ─────────────────── -->
     <template v-else-if="screen === 'publish'">
-      <div class="pub-root">
-        <!-- Top nav with back to results -->
-        <div class="pub-topnav">
-          <button
-            class="pub-back-btn"
-            @click="screen = 'results'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="pub-topnav-centre">
-            <div class="pub-topnav-title">Publish to your street</div>
-            <div class="pub-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="pub-root pub-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to results
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell pubw-main">
+          <div class="pubw-head">
+            <p class="pubw-kicker"><span class="pubw-kicker-dot" />Publish to your street</p>
+            <h1>Make energy costs more accurate for everyone nearby</h1>
+            <p class="pubw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="pubw-layout">
+            <aside class="pubw-aside">
         <!-- Address card -->
         <div v-if="property" class="pub-addr-card">
           <div class="pub-addr-top">
@@ -967,6 +1078,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="pubw-content">
         <!-- What you're contributing -->
         <div class="pub-contrib-card">
           <div class="pub-contrib-eyebrow">What you're adding to the data</div>
@@ -974,7 +1088,7 @@
             <div class="pub-contrib-row">
               <div class="pub-contrib-head">
                 <div class="pub-contrib-label">
-                  <span class="pub-contrib-icon"><img src="/op-icons/investment/moneyBagPound.png" alt="" loading="lazy" /></span>
+                  <img class="pub-contrib-icon" src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />
                   <span>Annual energy saving</span>
                 </div>
                 <span class="pub-contrib-val">~£{{ pubSavingAmount }}/yr</span>
@@ -992,7 +1106,7 @@
             <div class="pub-contrib-row">
               <div class="pub-contrib-head">
                 <div class="pub-contrib-label">
-                  <span class="pub-contrib-icon"><img src="/op-icons/investment/plantSprout.png" alt="" loading="lazy" /></span>
+                  <img class="pub-contrib-icon" src="/homescore-icon/environmental.png" alt="" loading="lazy" />
                   <span>Carbon saved</span>
                 </div>
                 <span class="pub-contrib-val"
@@ -1012,7 +1126,7 @@
             <div class="pub-contrib-row">
               <div class="pub-contrib-head">
                 <div class="pub-contrib-label">
-                  <span class="pub-contrib-icon"><img src="/op-icons/homescore/house.png" alt="" loading="lazy" /></span>
+                  <img class="pub-contrib-icon" src="/homescore-icon/house.png" alt="" loading="lazy" />
                   <span>HomeScore accuracy</span>
                 </div>
                 <span class="pub-contrib-val">{{ simScore }} / 100</span>
@@ -1032,9 +1146,9 @@
 
         <!-- Anonymous notice -->
         <div class="pub-anon">
-          <div class="pub-anon-icon"><img src="/op-icons/investment/padlock.png" alt="" loading="lazy" /></div>
+          <img class="pub-anon-icon" src="/homescore-icon/padlock.png" alt="" loading="lazy" />
           <div>
-            <b>Published anonymously</b> - only the data above is shared, never
+            <b>Published anonymously</b> — only the data above is shared, never
             your name or personal details.
           </div>
         </div>
@@ -1081,51 +1195,65 @@
         <!-- Publish CTA -->
         <div class="pub-cta">
           <button type="button" class="pub-cta-btn" @click="onPublishToStreet">
-            <img src="/op-icons/investment/housesCluster.png" alt="" class="inline-ic" loading="lazy" /> Publish to {{ pubStreetName }}
+            <Icon name="i-lucide-house" />Publish to {{ pubStreetName }}
           </button>
           <button
             type="button"
             class="pub-cta-skip"
             @click="screen = 'results'"
           >
-            Not now - maybe later
+            Not now — maybe later
           </button>
         </div>
 
-        <div style="height: 24px" />
+            </div>
+            <!-- /pubw-content -->
+          </div>
+          <!-- /pubw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── KYC (verify ownership: choose method) ─────────────────── -->
     <template v-else-if="screen === 'kyc'">
-      <div class="kyc-root">
-        <!-- Top nav -->
-        <div class="kyc-topnav">
-          <button
-            class="kyc-back-btn"
-            @click="goBack"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="kyc-topnav-centre">
-            <div class="kyc-topnav-title">Verify ownership</div>
-            <div class="kyc-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="kyc-root kyc-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'publish'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell kycw-main">
+          <div class="kycw-head">
+            <p class="kycw-kicker"><span class="kycw-kicker-dot" />Verify ownership</p>
+            <h1>Prove you own this property</h1>
+            <p class="kycw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="kycw-layout">
+            <aside class="kycw-aside">
         <!-- 3-step progress -->
         <div class="kyc-steps">
           <div class="kyc-step active">
@@ -1146,7 +1274,7 @@
 
         <!-- Navy gradient hero -->
         <div class="kyc-hero">
-          <div class="kyc-hero-emoji"><img src="/op-icons/investment/padlock.png" alt="" loading="lazy" /></div>
+          <img class="kyc-hero-emoji" src="/homescore-icon/trustPadlock.png" alt="" loading="lazy" />
           <div class="kyc-hero-title">Prove you own this property</div>
           <div class="kyc-hero-sub">
             We use a quick identity check so only the real owner can publish and
@@ -1154,14 +1282,17 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="kycw-content">
         <!-- 3 verification method choices -->
         <div class="kyc-methods">
-          <div class="kyc-method" @click="verifyWith('photo-id')" role="button" tabindex="0" @keydown.enter="verifyWith('photo-id')" @keydown.space.prevent="verifyWith('photo-id')">
+          <div class="kyc-method" @click="verifyWith('photo-id')">
             <div
               class="kyc-method-icon"
               :style="{ background: 'var(--kyc-teal-paler)' }"
             >
-              <img src="/op-icons/buyer-profile-build/idCard.png" alt="" loading="lazy" />
+              <img src="/homescore-icon/idCard.png" alt="" loading="lazy" />
             </div>
             <div class="kyc-method-body">
               <div class="kyc-method-title">Photo ID</div>
@@ -1171,9 +1302,9 @@
             </div>
             <div class="kyc-method-chev">›</div>
           </div>
-          <div class="kyc-method" @click="verifyWith('mortgage')" role="button" tabindex="0" @keydown.enter="verifyWith('mortgage')" @keydown.space.prevent="verifyWith('mortgage')">
+          <div class="kyc-method" @click="verifyWith('mortgage')">
             <div class="kyc-method-icon" :style="{ background: '#FFFBEB' }">
-              <img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" />
+              <img src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
             </div>
             <div class="kyc-method-body">
               <div class="kyc-method-title">Mortgage or title document</div>
@@ -1181,9 +1312,9 @@
             </div>
             <div class="kyc-method-chev">›</div>
           </div>
-          <div class="kyc-method" @click="verifyWith('open-banking')" role="button" tabindex="0" @keydown.enter="verifyWith('open-banking')" @keydown.space.prevent="verifyWith('open-banking')">
+          <div class="kyc-method" @click="verifyWith('open-banking')">
             <div class="kyc-method-icon" :style="{ background: '#F0F9FF' }">
-              <img src="/op-icons/investment/bank.png" alt="" loading="lazy" />
+              <img src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />
             </div>
             <div class="kyc-method-body">
               <div class="kyc-method-title">Open Banking</div>
@@ -1197,43 +1328,58 @@
 
         <!-- Privacy note -->
         <div class="kyc-privacy">
-          <img src="/op-icons/investment/padlock.png" alt="" class="inline-ic" loading="lazy" /> Your documents are verified by our KYC partner and never stored by
+          <Icon name="i-lucide-lock" />Your documents are verified by our KYC partner and never stored by
           UMU HomeScore.
         </div>
-        <div style="height: 32px" />
+
+            </div>
+            <!-- /kycw-content -->
+          </div>
+          <!-- /kycw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── KYC PENDING (verified, ready to publish) ──────────────── -->
     <template v-else-if="screen === 'kyc-pending'">
-      <div class="kyc-root">
-        <!-- Top nav -->
-        <div class="kyc-topnav">
-          <button
-            class="kyc-back-btn"
-            @click="goBack"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="kyc-topnav-centre">
-            <div class="kyc-topnav-title">Verifying ownership</div>
-            <div class="kyc-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="kyc-root kyc-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'kyc'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell kycw-main">
+          <div class="kycw-head">
+            <p class="kycw-kicker"><span class="kycw-kicker-dot" />Verifying ownership</p>
+            <h1>Ownership verified</h1>
+            <p class="kycw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="kycw-layout">
+            <aside class="kycw-aside">
         <!-- 3-step progress — step 1 done, step 2 active -->
         <div class="kyc-steps">
           <div class="kyc-step verified">
@@ -1254,7 +1400,7 @@
 
         <!-- Success hero (green gradient) -->
         <div class="kyc-hero kyc-hero--success">
-          <div class="kyc-hero-emoji" style="font-size: 2.75rem">✅</div>
+          <div class="kyc-hero-emoji" style="font-size: 44px">✅</div>
           <div class="kyc-hero-title">Ownership verified</div>
           <div class="kyc-hero-sub">
             {{ property?.addressLine1 || 'Your property' }} is now linked to
@@ -1263,20 +1409,23 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="kycw-content">
         <!-- Now unlocked -->
         <div class="kyc-unlocked">
           <div class="kyc-unlocked-eyebrow">Now unlocked for you</div>
           <div class="kyc-unlocked-list">
             <div class="kyc-unlocked-row">
-              <span class="kyc-unlocked-icon">📡</span>
+              <img class="kyc-unlocked-icon" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
               <div>Publish your score to {{ pubStreetName }}</div>
             </div>
             <div class="kyc-unlocked-row">
-              <span class="kyc-unlocked-icon">📎</span>
+              <img class="kyc-unlocked-icon" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
               <div>Upload documents to improve accuracy</div>
             </div>
             <div class="kyc-unlocked-row">
-              <span class="kyc-unlocked-icon">🏠</span>
+              <img class="kyc-unlocked-icon" src="/homescore-icon/house.png" alt="" loading="lazy" />
               <div>Start your Property Passport</div>
             </div>
           </div>
@@ -1285,50 +1434,65 @@
         <!-- CTAs -->
         <div class="kyc-ctas">
           <button type="button" class="kyc-cta-primary" @click="confirmPublish">
-            📡 Publish to {{ pubStreetName }}
+            <Icon name="i-lucide-radio" />Publish to {{ pubStreetName }}
           </button>
           <button
             type="button"
             class="kyc-cta-outline"
             @click="claimOrAccessPassport"
           >
-            <img src="/op-icons/homescore/house.png" alt="" class="inline-ic" loading="lazy" /> Start my Property Passport
+            <Icon name="i-lucide-house" />Start my Property Passport
           </button>
         </div>
-        <div style="height: 32px" />
+
+            </div>
+            <!-- /kycw-content -->
+          </div>
+          <!-- /kycw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── PUBLISHED (success confirmation) ──────────────────────── -->
     <template v-else-if="screen === 'published'">
-      <div class="kyc-root">
-        <!-- Top nav -->
-        <div class="kyc-topnav">
-          <button
-            class="kyc-back-btn"
-            @click="screen = 'results'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="kyc-topnav-centre">
-            <div class="kyc-topnav-title">Published</div>
-            <div class="kyc-topnav-sub">
-              {{ property?.addressLine1 || 'Your property' }}
+      <div class="kyc-root kyc-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                My HomeScore
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell kycw-main">
+          <div class="kycw-head">
+            <p class="kycw-kicker"><span class="kycw-kicker-dot" />Published</p>
+            <h1>Published to {{ pubStreetName }}</h1>
+            <p class="kycw-lede">
+              {{ property?.addressLine1 || 'Your property' }}<template v-if="property?.postcode"> · {{ property.postcode }}</template>
+            </p>
+          </div>
+
+          <div class="kycw-layout">
+            <aside class="kycw-aside">
         <!-- Amber address card -->
         <div v-if="property" class="pub-addr-card">
           <div class="pub-addr-top">
@@ -1358,6 +1522,9 @@
           </div>
         </div>
 
+            </aside>
+
+            <div class="kycw-content">
         <!-- What's now updated for your street -->
         <div class="kyc-updates-card">
           <div class="kyc-updates-eyebrow">
@@ -1365,23 +1532,23 @@
           </div>
           <div class="kyc-updates-list">
             <div class="kyc-updates-row">
-              <span class="kyc-updates-icon"><img src="/op-icons/investment/growthChart.png" alt="" loading="lazy" /></span>
+              <img class="kyc-updates-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
               <div>
-                <b>Your HomeScore</b> - reflects actual property data, not EPC
+                <b>Your HomeScore</b> — reflects actual property data, not EPC
                 estimates
               </div>
             </div>
             <div class="kyc-updates-row">
-              <span class="kyc-updates-icon"><img src="/op-icons/homescore/bulb.png" alt="" loading="lazy" /></span>
+              <img class="kyc-updates-icon" src="/homescore-icon/lightbulb.png" alt="" loading="lazy" />
               <div>
-                <b>Energy cost benchmarks</b> - more accurate for similar homes
+                <b>Energy cost benchmarks</b> — more accurate for similar homes
                 nearby
               </div>
             </div>
             <div class="kyc-updates-row">
-              <span class="kyc-updates-icon"><img src="/op-icons/investment/housesCluster.png" alt="" loading="lazy" /></span>
+              <img class="kyc-updates-icon" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
               <div>
-                <b>Street-level data pool</b> - every owner who publishes
+                <b>Street-level data pool</b> — every owner who publishes
                 improves it further
               </div>
             </div>
@@ -1390,7 +1557,7 @@
 
         <!-- Street impact pill -->
         <div class="kyc-street-impact">
-          <div class="kyc-street-impact-icon">🏘️</div>
+          <img class="kyc-street-impact-icon" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
           <div>
             <template v-if="pubStreetPublished <= 1">
               You're the first owner to publish on {{ pubStreetName }}. The more
@@ -1408,7 +1575,7 @@
         <div class="kyc-next-step">
           <div class="kyc-next-step-eyebrow">Your next step</div>
           <button type="button" class="kyc-cta-primary" @click="onBoostScore">
-            <img src="/op-icons/misc/paperClip.png" alt="" loading="lazy" /> Boost your score with documents
+            <Icon name="i-lucide-paperclip" />Boost your score with documents
           </button>
           <button
             type="button"
@@ -1418,13 +1585,49 @@
             ← Back to my HomeScore
           </button>
         </div>
-        <div style="height: 40px" />
+
+            </div>
+            <!-- /kycw-content -->
+          </div>
+          <!-- /kycw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── PASSPORT ──────────────────────────────────────────────── -->
     <template v-else-if="screen === 'passport'">
-      <div class="hs-scroll" style="padding: 0">
+      <div class="hs-scroll hs-scroll--web pp-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="ppw-main">
+          <div class="ppw-head">
+            <p class="ppw-kicker"><span class="ppw-kicker-dot" />Property Passport</p>
+            <h1>Your Property Passport</h1>
+          </div>
         <!-- Tab bar -->
         <div class="hs-vault-tabs">
           <button
@@ -1434,19 +1637,19 @@
             ]"
             @click="setPassportTab('sections')"
           >
-            <img src="/op-icons/homescore/clipboard.png" alt="" class="inline-ic" loading="lazy" /> Sections
+            <Icon name="i-lucide-list" />Sections
           </button>
           <button
             :class="['hs-vault-tab', passportTab === 'street' ? 'active' : '']"
             @click="setPassportTab('street')"
           >
-            <img src="/op-icons/passportview3d/map.png" alt="" class="inline-ic" loading="lazy" /> Street
+            <Icon name="i-lucide-map" />Street
           </button>
           <button
             :class="['hs-vault-tab', passportTab === 'buyers' ? 'active' : '']"
             @click="setPassportTab('buyers')"
           >
-            <img src="/op-icons/passportview3d/buyers.png" alt="" class="inline-ic" loading="lazy" /> Buyers<span v-if="matchedBuyers.length" class="hs-tab-badge">{{
+            <Icon name="i-lucide-users" />Buyers<span v-if="matchedBuyers.length" class="hs-tab-badge">{{
               matchedBuyers.length
             }}</span>
           </button>
@@ -1495,19 +1698,19 @@
             </div>
             <div class="hs-pp-docs">
               <div class="hs-pp-doc-row">
-                <div class="hs-pp-doc-ic"><img src="/op-icons/homescore/flame.png" alt="" loading="lazy" /></div>
+                <img class="hs-pp-doc-ic" src="/homescore-icon/flame.png" alt="" loading="lazy" />
                 <div class="hs-pp-doc-name">
                   Last boiler service certificate
                 </div>
                 <div class="hs-pp-doc-gain">+15% conf</div>
               </div>
               <div class="hs-pp-doc-row">
-                <div class="hs-pp-doc-ic"><img src="/op-icons/homescore/lightning.png" alt="" loading="lazy" /></div>
+                <img class="hs-pp-doc-ic" src="/homescore-icon/lightning.png" alt="" loading="lazy" />
                 <div class="hs-pp-doc-name">Last 12 months energy bills</div>
                 <div class="hs-pp-doc-gain">+20% conf</div>
               </div>
               <div class="hs-pp-doc-row">
-                <div class="hs-pp-doc-ic"><img src="/op-icons/homescore/lightning.png" alt="" loading="lazy" /></div>
+                <img class="hs-pp-doc-ic" src="/homescore-icon/electrician.png" alt="" loading="lazy" />
                 <div class="hs-pp-doc-name">EICR (electrical report)</div>
                 <div class="hs-pp-doc-gain">+10% conf</div>
               </div>
@@ -1531,26 +1734,26 @@
             <p class="hs-pp-unlocks-title">What a Passport unlocks</p>
             <div class="hs-pp-unlocks-list">
               <div class="hs-pp-unlock-row">
-                <span class="hs-pp-unlock-icon"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" /></span>
+                <img class="hs-pp-unlock-icon" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
                 <div>
                   <div class="hs-pp-unlock-name">Document vault</div>
                   <div class="hs-pp-unlock-sub">
-                    EPC, gas safety, EICR, warranties - all in one place.
+                    EPC, gas safety, EICR, warranties — all in one place.
                   </div>
                 </div>
               </div>
               <div class="hs-pp-unlock-row">
-                <span class="hs-pp-unlock-icon"><img src="/op-icons/homescore/lightning.png" alt="" loading="lazy" /></span>
+                <img class="hs-pp-unlock-icon" src="/homescore-icon/lightning.png" alt="" loading="lazy" />
                 <div>
                   <div class="hs-pp-unlock-name">14-day completion</div>
                   <div class="hs-pp-unlock-sub">
-                    vs the UK average of 179 days - verified sellers close
+                    vs the UK average of 179 days — verified sellers close
                     faster.
                   </div>
                 </div>
               </div>
               <div class="hs-pp-unlock-row">
-                <span class="hs-pp-unlock-icon"><img src="/op-icons/investment/growthChart.png" alt="" loading="lazy" /></span>
+                <img class="hs-pp-unlock-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
                 <div>
                   <div class="hs-pp-unlock-name">
                     Live running cost tracking
@@ -1561,7 +1764,7 @@
                 </div>
               </div>
               <div class="hs-pp-unlock-row">
-                <span class="hs-pp-unlock-icon"><img src="/op-icons/calendar/shield.png" alt="" loading="lazy" /></span>
+                <img class="hs-pp-unlock-icon" src="/homescore-icon/shield.png" alt="" loading="lazy" />
                 <div>
                   <div class="hs-pp-unlock-name">TA6-ready when you sell</div>
                   <div class="hs-pp-unlock-sub">
@@ -1573,7 +1776,7 @@
             </div>
           </div>
           <button class="hs-btn-ghost" @click="screen = 'results'">
-            Maybe later - keep my score
+            Maybe later — keep my score
           </button>
           <div style="height: 40px" />
         </div>
@@ -1592,9 +1795,18 @@
               :key="sp.id"
               class="hs-street-row"
               @click="router.push(`/property/${sp.id}`)"
-             role="button" tabindex="0" @keydown.enter="router.push(`/property/${sp.id}`)" @keydown.space.prevent="router.push(`/property/${sp.id}`)">
-              <div class="hs-street-house-icon">
-                <img src="/op-icons/homescore/house.png" alt="" loading="lazy" />
+            >
+              <div
+                class="hs-street-house-icon"
+                :style="{
+                  color: sp.isPublished
+                    ? '#1f7a66'
+                    : sp.hasPassport
+                      ? '#f59e0b'
+                      : '#94a3b8',
+                }"
+              >
+                <Icon name="i-lucide-house" />
               </div>
               <div style="flex: 1; min-width: 0">
                 <div class="hs-street-addr">{{ sp.addressLine1 }}</div>
@@ -1622,8 +1834,8 @@
             </div>
           </div>
           <div v-else class="hs-street-empty">
-            <div style="width: 40px; height: 40px; margin: 0 auto 8px"><img src="/op-icons/investment/housesCluster.png" alt="" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block" /></div>
-            <p style="font-size: 0.9375rem; color: #64748b; text-align: center">
+            <img class="hs-empty-ic" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
+            <p style="font-size: 15px; color: #64748b; text-align: center">
               No other properties found on this street yet. Be the first to
               start your Passport!
             </p>
@@ -1632,7 +1844,7 @@
           <!-- Street stats -->
           <div v-if="streetStats" class="hs-street-stats">
             <div class="hs-street-stats-title">
-              {{ property?.postcode }} - Street Overview
+              {{ property?.postcode }} — Street Overview
             </div>
             <div class="hs-street-stats-grid">
               <div class="hs-stat-box brand">
@@ -1655,7 +1867,7 @@
               </div>
             </div>
             <div class="hs-street-tip">
-              <img src="/op-icons/homescore/bulb.png" alt="" class="inline-ic" loading="lazy" /> <strong>You're ahead of your street.</strong> Most neighbours
+              <Icon name="i-lucide-lightbulb" /> <strong>You're ahead of your street.</strong> Most neighbours
               haven't started their passport. Sellers with a passport typically
               accept offers <strong>18 days faster</strong>.
             </div>
@@ -1668,7 +1880,7 @@
           <div class="hs-buyers-intro">
             <div
               style="
-                font-size: 0.9375rem;
+                font-size: 15px;
                 color: #0f172a;
                 font-weight: 600;
                 margin-bottom: 2px;
@@ -1677,7 +1889,7 @@
               {{ buyersTotal || matchedBuyers.length }} buyers searching in your
               area
             </div>
-            <div style="font-size: 0.8125rem; color: #64748b">
+            <div style="font-size: 13px; color: #64748b">
               Tap any buyer to see how well they match your property.
             </div>
           </div>
@@ -1699,7 +1911,7 @@
                         : '#f1f5f9',
                   color:
                     buyer.matchScore >= 75
-                      ? '#008a84'
+                      ? '#16a34a'
                       : buyer.matchScore >= 55
                         ? '#92400e'
                         : '#64748b',
@@ -1733,7 +1945,7 @@
                 :style="{
                   color:
                     buyer.matchScore >= 75
-                      ? '#008a84'
+                      ? '#16a34a'
                       : buyer.matchScore >= 55
                         ? '#92400e'
                         : '#94a3b8',
@@ -1744,8 +1956,8 @@
             </div>
           </div>
           <div v-else class="hs-buyers-loading">
-            <div style="width: 40px; height: 40px; margin: 0 auto 8px"><img src="/op-icons/passportview3d/buyers.png" alt="" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block" /></div>
-            <p style="font-size: 0.9375rem; color: #64748b; text-align: center">
+            <img class="hs-empty-ic" src="/homescore-icon/people.png" alt="" loading="lazy" />
+            <p style="font-size: 15px; color: #64748b; text-align: center">
               Loading matched buyers…
             </p>
           </div>
@@ -1763,209 +1975,275 @@
           </div>
           <div style="height: 80px" />
         </div>
+        </main>
       </div>
     </template>
 
     <!-- ── BUYER RESULTS ─────────────────────────────────────────── -->
     <template v-else-if="screen === 'buyer-results'">
-      <div class="hs-scroll bv-root">
-        <!-- ── Address card (consistent with ResultDetail) ─────── -->
-        <div v-if="property" class="bv-addr-card">
-          <img
-            src="/op-icons/landing/homeScoreCard.png"
-            alt=""
-            class="bv-addr-house-illus"
-            loading="lazy"
-          />
-          <div class="bv-addr-top">
-            <div class="bv-addr-pin" />
-            <div class="bv-addr-block">
-              <div class="bv-addr-line">
-                {{ bvAddressTyped
-                }}<span
-                  v-if="!bvAddressTypingDone"
-                  class="bv-typewriter-caret"
-                  aria-hidden="true"
-                  >|</span
+      <div class="hs-scroll hs-scroll--web bv-root bv-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button
+                class="hsw-tour"
+                type="button"
+                title="How does this work?"
+                aria-label="How does this work?"
+                @click="resultTour.restart()"
+              >
+                ?
+              </button>
+              <button class="hsw-back" type="button" @click="screen = 'landing'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                HomeScore
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="hsw-shell bvw-main">
+          <div class="bvw-head">
+            <p class="bvw-kicker"><span class="bvw-kicker-dot" />Property report</p>
+            <h1>Buyer report</h1>
+            <p class="bvw-lede">Everything public EPC data can tell you before you view or make an offer.</p>
+          </div>
+
+          <div class="bvw-layout">
+            <aside class="bvw-aside">
+        <!-- ── Address hero (dark card + isometric house) ──────── -->
+        <div v-if="property" class="bv-hero-card">
+          <div class="bv-hero-top">
+            <div class="bv-hero-text">
+              <div class="bv-hero-addr">
+                <span class="bv-hero-pin" aria-hidden="true"
+                  ><Icon name="i-lucide-map-pin"
+                /></span>
+                <span class="bv-hero-addr-line"
+                  >{{ bvAddressTyped
+                  }}<span
+                    v-if="!bvAddressTypingDone"
+                    class="bv-typewriter-caret"
+                    aria-hidden="true"
+                    >|</span
+                  ></span
                 >
               </div>
-              <div class="bv-addr-meta">
-                {{ property.postcode || '' }}
+              <div class="bv-hero-meta">
+                <span v-if="property.postcode">{{ property.postcode }}</span>
                 <template v-if="property.propertyType">
-                  · {{ property.propertyType }}</template
-                >
+                  <span class="bv-hero-dot" aria-hidden="true">·</span>
+                  <span>{{ property.propertyType }}</span>
+                </template>
+                <template v-if="bvFloorArea">
+                  <span class="bv-hero-dot" aria-hidden="true">·</span>
+                  <span>{{ bvFloorArea }}m²</span>
+                </template>
+              </div>
+            </div>
+            <img
+              src="/homescore-icon/house.png"
+              alt=""
+              class="bv-hero-house"
+              loading="lazy"
+            />
+          </div>
+
+          <div v-if="property.epcRating" class="bv-hero-epc">
+            <span class="bv-hero-epc-letter" :style="{ background: bvEpcColor }">{{
+              String(property.epcRating).toUpperCase()
+            }}</span>
+            <div class="bv-hero-epc-text">
+              <div class="bv-hero-epc-title">
+                EPC rating {{ String(property.epcRating).toUpperCase() }}
+              </div>
+              <div v-if="bvEpcCostHint" class="bv-hero-epc-sub">
+                {{ bvEpcCostHint }}
               </div>
             </div>
           </div>
-          <div class="bv-addr-pills">
-            <span v-if="property.epcRating" class="bv-addr-pill epc">
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                width="11"
-                height="11"
-              >
-                <path d="M13 2 L4 14 L11 14 L9 22 L20 9 L13 9 Z" />
-              </svg>
-              <span class="bv-epc-letter" :style="{ background: bvEpcColor }">{{
-                property.epcRating
-              }}</span>
-              EPC
-            </span>
+
+          <div class="bv-hero-state" :class="`is-${bvPassportState}`">
+            <span>{{ bvPassportStateLabel }}</span>
             <span
-              v-if="bvPassportState === 'unclaimed'"
-              class="bv-addr-pill bv-state-unclaimed"
-              >📋 No Passport yet</span
-            >
-            <span
-              v-else-if="bvPassportState === 'inProgress'"
-              class="bv-addr-pill bv-state-progress"
-              >In progress</span
-            >
-            <span v-else class="bv-addr-pill bv-state-published"
-              >✓ Published</span
-            >
+              class="bv-hero-state-ic"
+              :title="bvPassportStateHint"
+              aria-hidden="true"
+              ><Icon name="i-lucide-info"
+            /></span>
           </div>
-          <div
-            v-if="bvSearches > 0 || bvMonthSearches > 0"
-            class="bv-addr-stats"
-          >
-            <div v-if="bvPassportState === 'unclaimed'" class="bv-stat-row">
-              <span class="bv-pulse-dot" />
-              <span class="bv-stat-count"
-                >{{ bvSearches }}
-                {{ bvSearches === 1 ? 'search' : 'searches' }} today</span
+
+          <div v-if="bvSearches > 0 || bvWatchers > 0" class="bv-hero-live">
+            <div v-if="bvSearches > 0" class="bv-hero-live-row">
+              <Icon name="i-lucide-search" class="bv-hero-live-ic" />
+              <span
+                ><b>{{ bvSearches }}</b>
+                {{ bvSearches === 1 ? 'person' : 'people' }} checked this
+                HomeScore today</span
               >
-              <span class="bv-sep">·</span>
-              <span>No verified Passport yet</span>
             </div>
-            <div
-              v-else-if="bvPassportState === 'inProgress'"
-              class="bv-stat-row"
-            >
-              <span class="bv-pulse-dot" />
-              <span class="bv-stat-count"
-                >{{ bvSearches }}
-                {{ bvSearches === 1 ? 'search' : 'searches' }} today</span
+            <div v-if="bvWatchers > 0" class="bv-hero-live-row">
+              <Icon name="i-lucide-eye" class="bv-hero-live-ic" />
+              <span
+                ><b>{{ bvWatchers }}</b>
+                {{ bvWatchers === 1 ? 'person is' : 'people are' }} watching this
+                property</span
               >
-              <span class="bv-sep">·</span>
-              <span>Passport in progress</span>
-            </div>
-            <div v-else class="bv-stat-row">
-              <span class="bv-pulse-dot bv-pulse-green" />
-              <span class="bv-stat-count"
-                >{{ bvMonthSearches }}
-                {{ bvMonthSearches === 1 ? 'search' : 'searches' }} this
-                month</span
-              >
-              <span class="bv-sep">·</span>
-              <span>Verified Passport live</span>
             </div>
           </div>
         </div>
 
-        <!-- ── Buyer snapshot (HomeScore gauge + running-cost stats) ── -->
-        <div class="bv-snapshot-card">
-          <div class="bv-snapshot-top">
-            <div class="bv-snapshot-body">
-              <div class="bv-snapshot-eyebrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
-                  <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" />
-                </svg>
-                BUYER SNAPSHOT
-              </div>
-              <div class="bv-snapshot-title">
-                HomeScore {{ result.total }} · <span>Based on public data</span>
-              </div>
-              <div class="bv-snapshot-desc">
-                This gives you a quick view of this home's likely running
-                costs, risks and potential.
-              </div>
+        <!-- ── This property is unclaimed (navy CTA) ───────────── -->
+        <div
+          v-if="bvPassportState === 'unclaimed'"
+          class="bv-claim-banner"
+          @click="goToClaimPassport"
+        >
+          <div class="bv-claim-body">
+            <div class="bv-claim-title">This property is unclaimed</div>
+            <div class="bv-claim-sub">
+              Is it yours? Build your verified Passport in minutes.
             </div>
-            <div class="bv-snapshot-gauge-wrap" aria-hidden="true">
-              <svg class="bv-snapshot-gauge-svg" viewBox="0 0 100 100">
-                <defs>
-                  <linearGradient id="bvGrad" x1="1" y1="0" x2="0" y2="0">
-                    <stop offset="0%" stop-color="#00BB93" />
-                    <stop offset="100%" stop-color="#016F84" />
-                  </linearGradient>
-                </defs>
-                <circle class="bv-snapshot-gauge-bg" cx="50" cy="50" r="40" />
+          </div>
+          <div class="bv-claim-arrow" aria-hidden="true">→</div>
+        </div>
+
+        <!-- ── Buyer snapshot (score + running cost + area read) ── -->
+        <div class="bv-snap-card">
+          <div class="bv-snap-eyebrow">
+            <span class="bv-snap-dot" aria-hidden="true" />Buyer snapshot
+          </div>
+          <div class="bv-snap-head">
+            <div class="bv-snap-head-text">
+              <div class="bv-snap-title">
+                HomeScore {{ buyerConfidence.score }}
+                <span class="bv-snap-title-sep" aria-hidden="true">·</span>
+                <span class="bv-snap-title-soft">Based on public data</span>
+              </div>
+              <div class="bv-snap-sub">{{ buyerConfidence.label }}</div>
+            </div>
+            <div class="bv-snap-ring">
+              <svg viewBox="0 0 80 80" aria-hidden="true">
+                <circle class="bv-snap-ring-bg" cx="40" cy="40" r="32" stroke-width="7" />
                 <circle
-                  class="bv-snapshot-gauge-fill"
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="url(#bvGrad)"
-                  :stroke-dashoffset="251.33 - (result.total / 100) * 251.33"
+                  class="bv-snap-ring-fill"
+                  cx="40"
+                  cy="40"
+                  r="32"
+                  stroke-width="7"
+                  :stroke="buyerConfidence.color"
+                  :stroke-dasharray="buyerConfidence.ringLen"
+                  :stroke-dashoffset="buyerConfidence.ringOffset"
                 />
               </svg>
-              <div class="bv-snapshot-gauge-center">
-                <span class="bv-snapshot-gauge-num">{{ result.total }}</span>
-                <span class="bv-snapshot-gauge-denom">/100</span>
+              <div class="bv-snap-ring-num">{{ buyerConfidence.score }}</div>
+            </div>
+          </div>
+
+          <div class="bv-snap-stats">
+            <div v-if="bvAnnualCostDisplay != null" class="bv-snap-stat">
+              <img
+                src="/homescore-icon/wallet.png"
+                alt=""
+                class="bv-snap-ic"
+                loading="lazy"
+              />
+              <div class="bv-snap-stat-label">Est. running cost</div>
+              <div class="bv-snap-stat-val">
+                £{{ bvAnnualCostDisplay.toLocaleString()
+                }}<span>/year</span>
+              </div>
+              <div v-if="bvStreetDiff != null" class="bv-snap-stat-note">
+                £{{ Math.abs(bvStreetDiff).toLocaleString() }}
+                {{ bvStreetDiff >= 0 ? 'above' : 'below' }} street average
+              </div>
+              <div v-else-if="bvStreetBest != null" class="bv-snap-stat-note">
+                Best on this street £{{ bvStreetBest.toLocaleString() }}/yr
+              </div>
+            </div>
+
+            <div v-if="bvAreaCompare" class="bv-snap-stat">
+              <img
+                src="/homescore-icon/growthChart.png"
+                alt=""
+                class="bv-snap-ic"
+                loading="lazy"
+              />
+              <div class="bv-snap-stat-label">Compared to area</div>
+              <div
+                class="bv-snap-stat-val"
+                :class="`tone-${bvAreaCompare.tone}`"
+              >
+                {{ bvAreaCompare.label }}
+              </div>
+              <div class="bv-snap-stat-note">{{ bvAreaCompare.sub }}</div>
+            </div>
+
+            <div class="bv-snap-stat">
+              <img
+                src="/homescore-icon/magnifier.png"
+                alt=""
+                class="bv-snap-ic"
+                loading="lazy"
+              />
+              <div class="bv-snap-stat-label">Areas worth checking</div>
+              <div class="bv-snap-stat-val">{{ buyerConfidence.flags }}</div>
+              <div class="bv-snap-stat-note">
+                {{
+                  buyerConfidence.flags
+                    ? 'See key risks and questions below'
+                    : 'No major flags on the public EPC'
+                }}
               </div>
             </div>
           </div>
 
-          <div class="bv-snapshot-stats">
-            <div class="bv-snapshot-stat">
-              <img src="/op-icons/investment/moneyBagPound.png" alt="" class="bv-snapshot-stat-ic" loading="lazy" />
-              <div class="bv-snapshot-stat-label">Est. running cost</div>
-              <div class="bv-snapshot-stat-val">
-                £{{ bvAnnualCostDisplay.toLocaleString() }}<span>/year</span>
-              </div>
-            </div>
-            <div class="bv-snapshot-stat">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bv-snapshot-stat-ic bv-snapshot-stat-ic--svg">
-                <line x1="6" y1="20" x2="6" y2="12" />
-                <line x1="12" y1="20" x2="12" y2="8" />
-                <line x1="18" y1="20" x2="18" y2="14" />
-              </svg>
-              <div class="bv-snapshot-stat-label">Compared to area</div>
-              <div class="bv-snapshot-stat-val">
-                {{ bvAreaComparisonLabel ?? '-' }}
-              </div>
-            </div>
-            <div class="bv-snapshot-stat">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bv-snapshot-stat-ic bv-snapshot-stat-ic--svg">
-                <circle cx="11" cy="11" r="7" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <div class="bv-snapshot-stat-label">Areas worth checking</div>
-              <div class="bv-snapshot-stat-val">{{ bvAreasWorthCheckingCount }}</div>
-            </div>
+          <div v-if="bvSnapFoot" class="bv-snap-foot">
+            <Icon name="i-lucide-info" class="bv-snap-foot-ic" />
+            <span>{{ bvSnapFoot }}</span>
           </div>
         </div>
 
-        <!-- ── Report tabs (jump to the section below) ─────────── -->
-        <div class="bv-tabs">
+            </aside>
+
+            <div class="bvw-content">
+        <!-- ── Tab bar (Energy / Costs / Sold / Risks / Area) ───── -->
+        <div class="bv-tabs" role="tablist">
           <button
-            v-for="t in bvTabs"
-            :key="t.key"
+            v-for="t in buyerTabs"
+            :key="t.id"
             type="button"
             class="bv-tab"
-            :class="{ active: bvActiveTab === t.key }"
-            @click="bvActiveTab = t.key"
+            :class="{ active: buyerTab === t.id }"
+            role="tab"
+            :aria-selected="buyerTab === t.id"
+            @click="buyerTab = t.id"
           >
-            <span class="bv-tab-emoji">{{ t.emoji }}</span>{{ t.label }}
+            <img class="bv-tab-ic" :src="t.icon" alt="" loading="lazy" />{{ t.label }}
           </button>
         </div>
 
-        <!-- ── Buyer risk summary (Risks tab) ──────────────────── -->
-        <template v-if="bvActiveTab === 'risks'">
+        <!-- ═══ RISKS tab ═══ -->
+        <div v-show="buyerTab === 'risks'" class="bv-tabpanel">
+        <!-- ── Buyer risk summary ──────────────────────────────── -->
         <div class="bv-section-h">
-          <div class="bv-section-h-icon warn">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <line x1="12" y1="8" x2="12" y2="13" />
-              <circle cx="12" cy="16.5" r="0.9" fill="currentColor" />
-            </svg>
+          <div class="bv-section-h-icon img">
+            <img src="/homescore-icon/shield.png" alt="" loading="lazy" />
           </div>
           <div class="bv-section-h-text">
             <div class="bv-section-h-title">Buyer risk summary</div>
@@ -1981,28 +2259,47 @@
             class="bv-risk-row"
             :class="r.tone === 'ok' ? 'green' : 'amber'"
           >
-            <span class="bv-risk-icon">
-              <img v-if="r.icon && r.icon.startsWith('/')" :src="r.icon" alt="" loading="lazy" />
-              <template v-else>{{ r.icon }}</template>
-            </span>
+            <img class="bv-risk-icon" :src="r.icon" alt="" loading="lazy" />
             <div class="bv-risk-body">
               <div class="bv-risk-title">{{ r.title }}</div>
               <div class="bv-risk-sub">{{ r.body }}</div>
             </div>
           </div>
+          <!-- Public-record risks from the backend (flood / mining / planning) -->
+          <template v-if="buyerPublicRisks.length">
+            <div
+              v-for="r in buyerPublicRisks"
+              :key="r.key"
+              class="bv-risk-row"
+              :class="r.tone === 'ok' ? 'green' : 'amber'"
+            >
+              <img class="bv-risk-icon" :src="r.icon" alt="" loading="lazy" />
+              <div class="bv-risk-body">
+                <div class="bv-risk-title">{{ r.title }}</div>
+                <div class="bv-risk-sub">{{ r.body }}</div>
+              </div>
+            </div>
+          </template>
+          <!-- Fallback flood row from the property record if running-costs unavailable -->
+          <div v-else-if="buyerFlood" class="bv-risk-row" :class="/low|very low/i.test(buyerFlood) ? 'green' : 'amber'">
+            <img class="bv-risk-icon" src="/homescore-icon/environmental.png" alt="" loading="lazy" />
+            <div class="bv-risk-body">
+              <div class="bv-risk-title">Flood risk — {{ buyerFlood }}</div>
+              <div class="bv-risk-sub">Environment Agency surface & river data for this postcode.</div>
+            </div>
+          </div>
         </div>
-        </template>
+        </div><!-- /risks tab -->
 
-        <!-- ── Score breakdown (Energy tab) ────────────────────── -->
-        <template v-if="bvActiveTab === 'energy'">
+        <!-- ═══ ENERGY tab ═══ -->
+        <div v-show="buyerTab === 'energy'" class="bv-tabpanel">
+        <!-- ── Score breakdown ─────────────────────────────────── -->
         <div class="bv-section-h">
-          <div class="bv-section-h-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-              <path d="M12 2l2 6 6 1-4.5 4 1.5 7-5-3-5 3 1.5-7L4 9l6-1z" />
-            </svg>
+          <div class="bv-section-h-icon img">
+            <img src="/homescore-icon/homeScoreCard.png" alt="" loading="lazy" />
           </div>
           <div class="bv-section-h-text">
-            <div class="bv-section-h-title">What the public EPC tells you</div>
+            <div class="bv-section-h-title">Score breakdown</div>
             <div class="bv-section-h-sub">Based on public EPC data only</div>
           </div>
         </div>
@@ -2016,7 +2313,14 @@
               :key="bar.key"
               class="bv-breakdown-row"
             >
-              <div class="bv-bd-label">{{ bar.label }}</div>
+              <div class="bv-bd-label">
+                <img
+                  class="bv-bd-ic"
+                  :src="pillarIcon(bar.key)"
+                  alt=""
+                  loading="lazy"
+                />{{ bar.label }}
+              </div>
               <div class="bv-bd-bar-wrap">
                 <div
                   class="bv-bd-bar"
@@ -2039,160 +2343,431 @@
             HomeScore to get a verified picture.
           </div>
         </div>
+        </div><!-- /energy tab -->
+
+        <!-- ═══ COSTS tab ═══ -->
+        <div v-show="buyerTab === 'costs'" class="bv-tabpanel">
+          <template v-if="buyerCosts.hasAny">
+            <div class="bv-costs-hero">
+              <div class="bv-costs-eyebrow">Estimated total per year</div>
+              <div class="bv-costs-num">
+                £{{ buyerCosts.total.toLocaleString() }}<span>/yr</span>
+              </div>
+              <div class="bv-costs-sub">
+                Energy from EPC data, plus water and council tax for this address.
+              </div>
+            </div>
+            <div class="bv-costs-rows">
+              <div class="bv-costs-row">
+                <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/lightning.png" alt="" loading="lazy" />Energy <small>· heating, hot water & lighting</small></span>
+                <b>{{ buyerCosts.energy != null ? '£' + buyerCosts.energy.toLocaleString() + '/yr' : '—' }}</b>
+              </div>
+              <div v-if="buyerCosts.water != null" class="bv-costs-row">
+                <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/tap.png" alt="" loading="lazy" />Water &amp; sewerage<template v-if="buyerCosts.waterLabel"> <small>· {{ buyerCosts.waterLabel }}</small></template></span>
+                <b>£{{ buyerCosts.water.toLocaleString() }}/yr</b>
+              </div>
+              <div class="bv-costs-row">
+                <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/utilityBills.png" alt="" loading="lazy" />Council tax<template v-if="buyerCosts.councilTaxBand"> <small>· Band {{ buyerCosts.councilTaxBand }}<template v-if="buyerCosts.council"> · {{ buyerCosts.council }}</template></small></template></span>
+                <b>{{ buyerCosts.councilTax != null ? '£' + buyerCosts.councilTax.toLocaleString() + '/yr' : '—' }}</b>
+              </div>
+            </div>
+            <div class="bv-bd-note">
+              Energy is modelled from the EPC; water is the region's published
+              average and council tax is the VOA band. Upload a bill to replace
+              these with your real figures.
+            </div>
+          </template>
+          <div v-else class="bv-area-note">
+            <div class="bv-area-note-title">
+              <img src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />No
+              published costs yet
+            </div>
+            <div class="bv-area-note-body">
+              This property has no EPC energy cost or council tax band on the public
+              record yet. They'll show here once the data is available.
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SOLD tab ═══ -->
+        <div v-show="buyerTab === 'sold'" class="bv-tabpanel">
+          <div class="bv-costs-hero sold">
+            <div class="bv-costs-eyebrow">Estimated value</div>
+            <div class="bv-costs-num">
+              {{ buyerSold.estimated != null ? '£' + buyerSold.estimated.toLocaleString() : '—' }}
+            </div>
+            <div class="bv-costs-sub">Modelled from local sold prices (HPI-adjusted).</div>
+          </div>
+          <div class="bv-costs-rows">
+            <div v-if="buyerSold.lastPrice" class="bv-costs-row">
+              <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />Last sold<template v-if="buyerSold.lastDate"> <small>· {{ formatSoldDate(buyerSold.lastDate) }}</small></template></span>
+              <b>£{{ buyerSold.lastPrice.toLocaleString() }}</b>
+            </div>
+            <div v-else class="bv-bd-note" style="margin:0">
+              No Land Registry sale on record for this address yet.
+            </div>
+          </div>
+
+          <!-- ── Sale history for this exact address ─────────────── -->
+          <div class="bv-section-h" style="margin-top:16px">
+            <div class="bv-section-h-icon img">
+              <img src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />
+            </div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Sale history</div>
+              <div class="bv-section-h-sub">
+                <template v-if="buyerSold.history.length">
+                  {{ buyerSold.history.length }} recorded
+                  {{ buyerSold.history.length === 1 ? 'sale' : 'sales' }} · HM Land Registry
+                </template>
+                <template v-else>No recorded sales of this property</template>
+              </div>
+            </div>
+          </div>
+          <div v-if="buyerSold.history.length" class="bv-costs-rows">
+            <div
+              v-for="(s, i) in buyerSold.history"
+              :key="'own' + i"
+              class="bv-costs-row"
+            >
+              <span class="bv-costs-row-label">{{ formatSoldDate(s.date) }}<template v-if="s.tenure"> <small>· {{ s.tenure }}</small></template></span>
+              <b>£{{ Number(s.price).toLocaleString() }}</b>
+            </div>
+          </div>
+          <div v-else class="bv-bd-note" style="margin:0">
+            No Land Registry Price Paid record exists for this exact address —
+            it may be new-build, last sold before 1995, or transferred without a
+            recorded price.
+          </div>
+
+          <!-- ── Comparable sales nearby ─────────────────────────── -->
+          <template v-if="buyerSold.comparables.length">
+            <div class="bv-section-h" style="margin-top:16px">
+              <div class="bv-section-h-icon img">
+                <img src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
+              </div>
+              <div class="bv-section-h-text">
+                <div class="bv-section-h-title">Comparable sales nearby</div>
+                <div class="bv-section-h-sub">
+                  {{ buyerSold.comparables.length }} similar
+                  {{ buyerSold.comparables.length === 1 ? 'home' : 'homes' }} ·
+                  {{ property?.postcode || 'this postcode' }} · HM Land Registry
+                </div>
+              </div>
+            </div>
+            <div class="bv-costs-rows">
+              <div
+                v-for="(c, i) in buyerSold.comparables"
+                :key="'cmp' + i"
+                class="bv-costs-row"
+              >
+                <span class="bv-costs-row-label">{{ titleCaseAddress(c.address) }}<br /><small>{{ formatSoldDate(c.date) }}<template v-if="c.propertyType"> · {{ c.propertyType }}</template><template v-if="c.tenure"> · {{ c.tenure }}</template></small></span>
+                <b>£{{ Number(c.price).toLocaleString() }}</b>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- ═══ AREA tab — real data.police.uk crime data ═══ -->
+        <div v-show="buyerTab === 'area'" class="bv-tabpanel">
+          <div
+            v-if="!areaCrime || areaCrime.status === 'loading'"
+            class="bv-area-note"
+          >
+            <div class="bv-area-note-title">
+              <img src="/homescore-icon/environmental.png" alt="" loading="lazy" />Loading area crime…
+            </div>
+            <div class="bv-area-note-body">
+              Fetching street-level crime within 1 mile from data.police.uk.
+            </div>
+          </div>
+
+          <div v-else-if="areaCrime.status === 'error'" class="bv-area-note">
+            <div class="bv-area-note-title">
+              <img src="/homescore-icon/environmental.png" alt="" loading="lazy" />Area data unavailable
+            </div>
+            <div class="bv-area-note-body">
+              Couldn't reach data.police.uk right now. Try again shortly.
+            </div>
+          </div>
+
+          <div v-else-if="areaCrime.status === 'empty'" class="bv-area-note">
+            <div class="bv-area-note-title">
+              <img src="/homescore-icon/environmental.png" alt="" loading="lazy" />No crime recorded
+            </div>
+            <div class="bv-area-note-body">
+              data.police.uk has no street-level crime within 1 mile of this
+              property for the latest published month.
+            </div>
+          </div>
+
+          <template v-else>
+            <div class="bv-costs-hero sold">
+              <div class="bv-costs-eyebrow">Crimes within 1 mile</div>
+              <div class="bv-costs-num">
+                {{ areaCrime.total.toLocaleString() }}<span>/mo</span>
+              </div>
+              <div class="bv-costs-sub">
+                Street-level crime for {{ formatCrimeMonth(areaCrime.month || '') }} ·
+                data.police.uk
+              </div>
+            </div>
+            <div class="bv-crime-card">
+              <div class="bv-crime-head">Crime breakdown</div>
+              <div
+                v-for="c in areaCrime.categories"
+                :key="c.key"
+                class="bv-crime-row"
+              >
+                <div class="bv-crime-label">{{ c.label }}</div>
+                <div class="bv-crime-bar-wrap">
+                  <div
+                    class="bv-crime-bar"
+                    :style="{
+                      width: `${Math.max(4, (c.count / areaCrime.categories[0].count) * 100)}%`,
+                    }"
+                  />
+                </div>
+                <div class="bv-crime-val">{{ c.count.toLocaleString() }}</div>
+              </div>
+            </div>
+            <div class="bv-bd-note">
+              Counts are street-level crimes reported within a 1-mile radius for
+              the latest month published by police forces (data lags ~2 months).
+            </div>
+          </template>
+        </div>
+
+        <!-- ── Questions to ask the owner (real EPC recommendations) ── -->
+        <template v-if="bvQuestions.length">
+          <div class="bv-section-h">
+            <div class="bv-section-h-icon img">
+              <img src="/homescore-icon/clipboardChecklist.png" alt="" loading="lazy" />
+            </div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Questions to ask the owner</div>
+              <div class="bv-section-h-sub">
+                {{
+                  property?.epcRecommendations?.length
+                    ? "Based on this property's EPC recommendations"
+                    : 'Key documents to request before you offer'
+                }}
+              </div>
+            </div>
+          </div>
+          <div class="bv-questions-card">
+            <div v-for="q in bvQuestions" :key="q.title" class="bv-q-row">
+              <img class="bv-q-icon" :src="q.icon" alt="" loading="lazy" />
+              <div class="bv-q-body">
+                <div class="bv-q-title">{{ q.title }}</div>
+                <div class="bv-q-sub">{{ q.sub }}</div>
+              </div>
+            </div>
+          </div>
         </template>
 
-        <!-- ── Costs tab — real numbers already loaded for this screen,
-             just not fabricated beyond what street-energy-rank gives us. -->
-        <template v-if="bvActiveTab === 'costs'">
-        <div class="bv-section-h">
-          <div class="bv-section-h-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+        <!-- ── Passport build · live (owner claimed, not published) ─────── -->
+        <template v-if="bvPassportState === 'inProgress'">
+          <div class="bv-pp-banner">
+            <img
+              class="bv-pp-banner-ic"
+              src="/homescore-icon/clipboardChecklist.png"
+              alt=""
+              loading="lazy"
+            />
+            <div class="bv-pp-banner-body">
+              <div class="bv-pp-banner-title">
+                Passport in progress
+                <span class="bv-pp-banner-pill">Owner verified</span>
+              </div>
+              <div class="bv-pp-banner-sub">
+                The owner has claimed this home and is building a verified
+                Passport<template v-if="passportSectionsTotal">
+                  —
+                  <b
+                    >{{ passportSectionsDone }} of
+                    {{ passportSectionsTotal }} sections</b
+                  >
+                  done</template
+                >.
+              </div>
+            </div>
           </div>
-          <div class="bv-section-h-text">
-            <div class="bv-section-h-title">Running costs</div>
-            <div class="bv-section-h-sub">Estimated from public EPC data</div>
+
+          <div v-if="passportSectionsTotal" class="bv-pp-hero">
+            <div class="bv-pp-eyebrow">
+              <img
+                src="/homescore-icon/clipboardChecklist.png"
+                alt=""
+                loading="lazy"
+              />Passport build · live
+            </div>
+            <div class="bv-pp-pct-row">
+              <span class="bv-pp-pct">{{ passportProgressPct }}%</span>
+              <span class="bv-pp-frac"
+                >{{ passportSectionsDone }} of
+                {{ passportSectionsTotal }} sections complete</span
+              >
+            </div>
+            <div class="bv-pp-bar">
+              <div
+                class="bv-pp-fill"
+                :style="{ width: passportProgressPct + '%' }"
+              />
+            </div>
+            <div class="bv-pp-sub">
+              The owner is gathering verified documents.
+              <b
+                >Register your interest to be first in line when it
+                publishes.</b
+              >
+            </div>
           </div>
-        </div>
-        <div class="bv-costs-card">
-          <div class="bv-costs-row">
-            <span>This property (estimated)</span>
-            <b>£{{ bvAnnualCostDisplay.toLocaleString() }}/yr</b>
-          </div>
-          <div class="bv-costs-row">
-            <span>Best on this street</span>
-            <b>£{{ bvStreetBest.toLocaleString() }}/yr</b>
-          </div>
-          <div v-if="streetEnergyRank?.averageCost" class="bv-costs-row">
-            <span>Street average</span>
-            <b>£{{ Math.round(streetEnergyRank?.averageCost ?? 0).toLocaleString() }}/yr</b>
-          </div>
-        </div>
         </template>
 
-        <!-- ── Sold tab — no price-history data loaded on this screen yet;
-             honest empty state rather than a fabricated figure. -->
-        <template v-if="bvActiveTab === 'sold'">
-        <div class="bv-empty-tab">
-          <div class="bv-empty-tab-title">Sale history not available here</div>
-          <div class="bv-empty-tab-sub">
-            Full sold-price history for this property isn't part of this
-            quick report yet.
+        <!-- ── Register your interest (ported from reference clone) ─────── -->
+        <div class="bv-watch-card">
+          <div class="bv-watch-eyebrow">
+            <img src="/homescore-icon/trophy.png" alt="" loading="lazy" />Register
+            your interest
           </div>
+          <div class="bv-watch-title">Get in the queue before it goes live.</div>
+          <div class="bv-watch-lede">
+            Registering interest tells the owner a real buyer is waiting — and
+            puts you <b>first in line</b> for a viewing the moment the Passport
+            publishes.
+          </div>
+          <div class="bv-watch-rows">
+            <div v-for="t in bvWatchTriggers" :key="t.title" class="bv-watch-row">
+              <img class="bv-watch-ic" :src="t.icon" alt="" loading="lazy" />
+              <div class="bv-watch-body">
+                <div class="bv-watch-row-title">{{ t.title }}</div>
+                <div class="bv-watch-row-sub">{{ t.sub }}</div>
+              </div>
+            </div>
+          </div>
+          <button
+            class="bv-watch-btn"
+            type="button"
+            @click="openWatchDrawer"
+          >
+            <template v-if="notifiedOfPublish">
+              <Icon name="i-lucide-check" class="bv-watch-btn-ic" />Interest
+              registered — edit alerts
+            </template>
+            <template v-else>
+              <img
+                src="/homescore-icon/trophy.png"
+                alt=""
+                class="bv-watch-btn-img"
+                loading="lazy"
+              />Register my interest →
+            </template>
+          </button>
         </div>
-        </template>
 
-        <!-- ── Area tab — real street-rank data already loaded here. -->
-        <template v-if="bvActiveTab === 'area'">
-        <div class="bv-section-h">
-          <div class="bv-section-h-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
+        <!-- ── Verified buyer upsell (£35 one-off) ─────────────── -->
+        <div class="bv-verified-card">
+          <div class="bv-verified-eyebrow">
+            <img src="/homescore-icon/trustPadlock.png" alt="" loading="lazy" />Verified
+            buyer · £35 one-off
           </div>
-          <div class="bv-section-h-text">
-            <div class="bv-section-h-title">This street</div>
-            <div class="bv-section-h-sub">How this property compares nearby</div>
+          <div class="bv-verified-title">Be viewing-ready before anyone else.</div>
+          <div class="bv-verified-lede">
+            Owners building a Passport are choosing who to sell to. Get verified
+            and here's what you unlock.
           </div>
+          <div class="bv-verified-rows">
+            <div v-for="p in bvVerifiedPerks" :key="p.title" class="bv-verified-row">
+              <img class="bv-verified-ic" :src="p.icon" alt="" loading="lazy" />
+              <div class="bv-verified-body">
+                <div class="bv-verified-row-title">{{ p.title }}</div>
+                <div class="bv-verified-row-sub">{{ p.sub }}</div>
+              </div>
+            </div>
+          </div>
+          <button class="bv-verified-btn" type="button" @click="saveToBuyerProfile">
+            <Icon name="i-lucide-shield-check" class="bv-verified-btn-ic" />See
+            what verification gets you →
+          </button>
         </div>
-        <div v-if="bvStreetRankLabel" class="bv-costs-card">
-          <div class="bv-costs-row">
-            <span>Running-cost rank on this street</span>
-            <b>{{ bvStreetRankLabel }} of {{ streetEnergyRank?.total }}</b>
-          </div>
-        </div>
-        <div v-else class="bv-empty-tab">
-          <div class="bv-empty-tab-title">Not enough nearby data yet</div>
-          <div class="bv-empty-tab-sub">
-            We need a few more enriched neighbours on this street to rank
-            this property.
-          </div>
-        </div>
-        </template>
 
-        <!-- ── Questions to ask the owner ──────────────────────── -->
-        <div class="bv-section-h">
-          <div class="bv-section-h-icon save">
+        <!-- ── Save to Buyer Profile CTA ───────────────────────── -->
+        <div class="bv-save-card" @click="saveToBuyerProfile">
+          <div class="bv-save-icon">
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="2.2"
               stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <circle cx="12" cy="12" r="9" />
-              <line x1="12" y1="11" x2="12" y2="17" />
-              <circle cx="12" cy="7.5" r="0.9" fill="currentColor" />
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <div class="bv-section-h-text">
-            <div class="bv-section-h-title">Questions worth asking</div>
-            <div class="bv-section-h-sub">
-              A Property Passport could answer these for you automatically
+          <div class="bv-save-body">
+            <div class="bv-save-title">Save to your Buyer Profile</div>
+            <div class="bv-save-sub">
+              Track this property, compare with others, share with your
+              solicitor.
             </div>
           </div>
+          <div class="bv-save-cta">Save →</div>
         </div>
-        <div class="bv-questions-card">
-          <div v-for="q in bvQuestions" :key="q.title" class="bv-q-row">
-            <span class="bv-q-icon"><img :src="q.icon" alt="" loading="lazy" /></span>
-            <div class="bv-q-body">
-              <div class="bv-q-title">{{ q.title }}</div>
-              <div class="bv-q-sub">{{ q.sub }}</div>
-            </div>
-            <span class="bv-q-chev">›</span>
-          </div>
-        </div>
-
-        <!-- ── Verified Buyer card — three states driven by the
-             buyer-profile API on mount (see BuyerVerifyCard.vue):
-               • guest → unverified with sign-in CTA
-               • logged in, no profile / not published → unverified
-               • logged in, published profile → verified ("Welcome back") -->
-        <BuyerVerifyCard
-          :first-name="userProfile?.firstName ?? null"
-          @start-verification="onBuyerStartVerification"
-          @view-profile="onBuyerViewProfile"
-          @edit-profile="onBuyerEditProfile"
-        />
 
         <button class="bv-back" @click="screen = 'landing'">
           ← Back to HomeScore
         </button>
-        <div style="height: 24px" />
+
+            </div>
+            <!-- /bvw-content -->
+          </div>
+          <!-- /bvw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── BOOST YOUR SCORE — matches prototype `boost` screen ───── -->
     <template v-else-if="screen === 'quick-wins'">
-      <div class="boost-root">
-        <!-- Top nav -->
-        <div class="boost-topnav">
-          <button
-            class="boost-back-btn"
-            @click="screen = 'results'"
-            aria-label="Back"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div class="boost-topnav-centre">
-            <div class="boost-topnav-title">Boost your score</div>
-            <div class="boost-topnav-sub">Every document adds real value</div>
+      <div class="boost-root boost-root--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'results'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back to score
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
           </div>
-          <div style="width: 32px" />
-        </div>
+        </header>
 
+        <main class="hsw-shell boostw-main">
+          <div class="boostw-head">
+            <p class="boostw-kicker"><span class="boostw-kicker-dot" />Boost your score</p>
+            <h1>Every document adds real value</h1>
+            <p class="boostw-lede">
+              Add certificates and book trusted pros to verify your home and grow your Move Ready score.
+            </p>
+          </div>
+
+          <div class="boostw-layout">
+            <aside class="boostw-aside">
         <!-- Property Journey card -->
         <div class="boost-journey-card">
           <div class="boost-journey-header">
@@ -2201,61 +2776,27 @@
           </div>
           <div class="boost-journey-stats">
             <div class="boost-stat">
-              <div class="boost-ring" :style="{ '--ring-color': scoreColor(qwScore) }">
-                <svg viewBox="0 0 60 60" aria-hidden="true">
-                  <circle cx="30" cy="30" r="26" class="boost-ring-track" />
-                  <circle
-                    cx="30"
-                    cy="30"
-                    r="26"
-                    class="boost-ring-fill"
-                    :stroke-dashoffset="ringOffset(qwScore)"
-                  />
-                </svg>
-                <div
-                  class="boost-stat-num"
-                  :class="{ amber: qwScore < 40 }"
-                  :style="{ color: scoreColor(qwScore) }"
-                >
-                  {{ qwScore }}
-                </div>
+              <div
+                class="boost-stat-num"
+                :class="{ amber: qwScore < 40 }"
+                :style="{ color: scoreColor(qwScore) }"
+              >
+                {{ qwScore }}
               </div>
               <div class="boost-stat-label">HOMESCORE</div>
               <div class="boost-stat-sub">Energy score</div>
             </div>
+            <div class="boost-stat-div" />
             <div class="boost-stat">
-              <div class="boost-ring" :style="{ '--ring-color': qwMoveReady > 0 ? '#00a19a' : '#cbd5e1' }">
-                <svg viewBox="0 0 60 60" aria-hidden="true">
-                  <circle cx="30" cy="30" r="26" class="boost-ring-track" />
-                  <circle
-                    cx="30"
-                    cy="30"
-                    r="26"
-                    class="boost-ring-fill"
-                    :stroke-dashoffset="ringOffset(qwMoveReady)"
-                  />
-                </svg>
-                <div class="boost-stat-num" :class="{ muted: qwMoveReady === 0 }">
-                  {{ qwMoveReady }}%
-                </div>
+              <div class="boost-stat-num" :class="{ muted: qwMoveReady === 0 }">
+                {{ qwMoveReady }}%
               </div>
               <div class="boost-stat-label">MOVE READY</div>
               <div class="boost-stat-sub">Docs &amp; certs</div>
             </div>
+            <div class="boost-stat-div" />
             <div class="boost-stat">
-              <div class="boost-ring" :style="{ '--ring-color': '#cbd5e1' }">
-                <svg viewBox="0 0 60 60" aria-hidden="true">
-                  <circle cx="30" cy="30" r="26" class="boost-ring-track" />
-                  <circle
-                    cx="30"
-                    cy="30"
-                    r="26"
-                    class="boost-ring-fill"
-                    :stroke-dashoffset="ringOffset(0)"
-                  />
-                </svg>
-                <div class="boost-stat-num muted">0%</div>
-              </div>
+              <div class="boost-stat-num muted">0%</div>
               <div class="boost-stat-label">PASSPORT</div>
               <div class="boost-stat-sub">Ownership verified</div>
             </div>
@@ -2268,64 +2809,67 @@
           </div>
         </div>
 
-        <!-- Upload a document section. One question at a time: only the
-             current unanswered card renders. After upload, the congrats
-             overlay celebrates the impact, then the next card slides in. -->
-        <div class="boost-section-label">
-          <img src="/op-icons/misc/paperClip.png" alt="" loading="lazy" /> UPLOAD A DOCUMENT
-          <span v-if="boostStepLabel" class="boost-step-pill">{{ boostStepLabel }}</span>
-        </div>
+            </aside>
+
+            <div class="boostw-content">
+        <!-- Upload a document section -->
+        <div class="boost-section-label"><Icon name="i-lucide-paperclip" />Upload a document</div>
         <div class="boost-cards">
           <div
-            v-if="currentBoostDoc"
-            :key="currentBoostDoc.key"
-            class="boost-doc-card boost-doc-card--unlocking"
-            @click="triggerDocUpload(currentBoostDoc.key)"
-           role="button" tabindex="0" @keydown.enter="triggerDocUpload(currentBoostDoc.key)" @keydown.space.prevent="triggerDocUpload(currentBoostDoc.key)">
-            <div class="boost-doc-icon" :style="{ background: currentBoostDoc.bg }">
+            v-for="(doc, idx) in qwDocs"
+            v-show="idx === 0 || boostUnlocked >= idx"
+            :key="doc.key"
+            class="boost-doc-card"
+            :class="{
+              uploaded: !!uploadedDocs[doc.key],
+              'boost-doc-card--unlocking':
+                idx === boostUnlocked && !uploadedDocs[doc.key],
+            }"
+            @click="triggerDocUpload(doc.key)"
+          >
+            <div class="boost-doc-icon" :style="{ background: doc.bg }">
               <img
-                v-if="currentBoostDoc.icon.startsWith('/')"
-                :src="currentBoostDoc.icon"
-                alt=""
-                loading="lazy"
+                v-if="doc.img"
+                :src="doc.img"
+                :alt="doc.label"
+                class="boost-doc-icon-img"
               />
-              <template v-else>{{ currentBoostDoc.icon }}</template>
+              <template v-else>{{ doc.icon }}</template>
             </div>
             <div class="boost-doc-body">
-              <div class="boost-doc-title">{{ currentBoostDoc.label }}</div>
-              <div class="boost-doc-sub">{{ currentBoostDoc.sub }}</div>
+              <div class="boost-doc-title">{{ doc.label }}</div>
+              <div class="boost-doc-sub">{{ doc.sub }}</div>
+            </div>
+            <div v-if="!!uploadedDocs[doc.key]" class="boost-pts">
+              ✓ +{{ doc.pts }} pts
             </div>
             <button
+              v-else
               class="boost-add-btn"
               type="button"
               aria-label="Upload"
-              @click.stop="triggerDocUpload(currentBoostDoc.key)"
+              @click.stop="triggerDocUpload(doc.key)"
             >
               +
             </button>
           </div>
-          <div v-else class="boost-all-done">
-            <div class="boost-all-done-ic">✓</div>
-            <div class="boost-all-done-title">All documents uploaded</div>
-            <div class="boost-all-done-sub">Your Property Passport is ready to publish.</div>
-          </div>
         </div>
 
         <!-- Book a professional section -->
-        <div class="boost-section-label"><img src="/op-icons/misc/wrench.png" alt="" loading="lazy" /> BOOK A PROFESSIONAL</div>
+        <div class="boost-section-label"><Icon name="i-lucide-wrench" />Book a professional</div>
         <div class="boost-cards">
           <div
             v-for="pro in qwPros"
             :key="pro.key"
             class="boost-doc-card"
-            @click="openBookPro(pro)"
-           role="button" tabindex="0" @keydown.enter="openBookPro(pro)" @keydown.space.prevent="openBookPro(pro)">
+            @click="openMarketplace"
+          >
             <div class="boost-doc-icon" :style="{ background: pro.bg }">
               <img
-                v-if="pro.icon.startsWith('/')"
-                :src="pro.icon"
-                alt=""
-                loading="lazy"
+                v-if="pro.img"
+                :src="pro.img"
+                :alt="pro.label"
+                class="boost-doc-icon-img"
               />
               <template v-else>{{ pro.icon }}</template>
             </div>
@@ -2337,50 +2881,24 @@
           </div>
         </div>
 
-        <!-- Now make it count CTA. Teal hero card with two ring gauges
-             (Move Ready, Passport) on a unified background — same design
-             language as the "Your Property" hero so users recognise it
-             as the same kind of progress signal. -->
+        <!-- Now make it count CTA -->
         <div class="pj-cta-card">
-          <div class="pj-cta-eyebrow">✦ Next step on your journey</div>
-          <div class="pj-cta-rings">
-            <div class="pj-cta-ring">
-              <svg viewBox="0 0 80 80" aria-hidden="true">
-                <circle cx="40" cy="40" r="34" class="pj-cta-ring-track" />
-                <circle
-                  cx="40" cy="40" r="34"
-                  class="pj-cta-ring-fill"
-                  :stroke-dashoffset="pjRingOffset(qwMoveReady)"
-                />
-              </svg>
-              <div class="pj-cta-ring-num">{{ qwMoveReady }}%</div>
-              <div class="pj-cta-ring-label">Upfront Ready</div>
-            </div>
-            <div class="pj-cta-ring">
-              <svg viewBox="0 0 80 80" aria-hidden="true">
-                <circle cx="40" cy="40" r="34" class="pj-cta-ring-track" />
-                <circle
-                  cx="40" cy="40" r="34"
-                  class="pj-cta-ring-fill"
-                  :stroke-dashoffset="pjRingOffset(qwPassportPct)"
-                />
-              </svg>
-              <div class="pj-cta-ring-num">{{ qwPassportPct }}%</div>
-              <div class="pj-cta-ring-label">Passport</div>
-            </div>
+          <div class="pj-cta-eyebrow">Next step on your journey</div>
+          <div class="pj-cta-title">
+            Score: <span>{{ qwScore }}</span
+            >. Your Passport is taking shape.
           </div>
-          <div class="pj-cta-title">Your Passport is taking shape.</div>
           <div class="pj-cta-sub">
-            Each document you add lifts both scores. Reach Upfront Ready status
-            and publish your Passport - lock in everything you've built.
+            Each document you add is a verified layer of your Property Passport.
+            Keep uploading to reach Move Ready status and lock in everything
+            you've built.
           </div>
           <button
             class="pj-cta-btn"
             type="button"
             @click="claimOrAccessPassport"
           >
-            <img class="pj-cta-btn-ic" src="/op-icons/misc/rocket.png" alt="" loading="lazy" />
-            Start my Passport →
+            Start my Property Passport →
           </button>
         </div>
 
@@ -2391,13 +2909,48 @@
         >
           ← Back to my score
         </button>
-        <div style="height: 24px" />
+
+            </div>
+            <!-- /boostw-content -->
+          </div>
+          <!-- /boostw-layout -->
+        </main>
       </div>
     </template>
 
     <!-- ── MOVE READY ────────────────────────────────────────────── -->
     <template v-else-if="screen === 'move-ready'">
-      <div class="hs-scroll">
+      <div class="hs-scroll hs-scroll--web">
+        <!-- ── Web nav ──────────────────────────────────────────── -->
+        <header class="hsw-nav">
+          <div class="hsw-shell hsw-nav-inner">
+            <button class="hsw-brand" type="button" @click="navigateTo('/')">
+              <img src="/op-icons/logo.png" alt="" class="hsw-brand-logo" />
+              <span>umovingu</span><span class="hsw-brand-beta">BETA</span>
+            </button>
+            <nav class="hsw-links" aria-label="Primary navigation">
+              <button type="button" @click="navigateTo('/dashboard')">Dashboard</button>
+              <button type="button" class="active" @click="navigateTo('/homescore')">HomeScore</button>
+              <button type="button" @click="navigateTo('/passport')">Passport</button>
+              <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
+              <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
+            </nav>
+            <div class="hsw-actions">
+              <button class="hsw-back" type="button" @click="screen = 'quick-wins'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Back
+              </button>
+              <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="hsw-shell mrw-main">
+          <div class="mrw-headline">
+            <p class="mrw-kicker"><span class="mrw-kicker-dot" />Move-ready status</p>
+          </div>
         <!-- Hero -->
         <div class="hs-mr-hero">
           <div class="hs-mr-hero-glow" />
@@ -2434,8 +2987,10 @@
           </div>
         </div>
 
+          <div class="mrw-grid">
+            <div class="mrw-col">
         <!-- Steps -->
-        <div class="hs-qw-section-label">What happens next - 3 steps</div>
+        <div class="hs-qw-section-label">What happens next — 3 steps</div>
         <div class="hs-mr-steps">
           <div class="hs-mr-step">
             <div class="hs-mr-step-ic">1</div>
@@ -2452,7 +3007,7 @@
             <div>
               <div class="hs-mr-step-title">Confirm your identity</div>
               <div class="hs-mr-step-body">
-                Quick ID check - photo of your passport or driving licence plus
+                Quick ID check — photo of your passport or driving licence plus
                 a selfie. Powered by Onfido.
               </div>
             </div>
@@ -2474,13 +3029,15 @@
             <div>
               <div class="hs-mr-step-title">Your score becomes verified</div>
               <div class="hs-mr-step-body">
-                Your HomeScore is upgraded from estimated to verified - and your
+                Your HomeScore is upgraded from estimated to verified — and your
                 Property Passport is live.
               </div>
             </div>
           </div>
         </div>
 
+            </div>
+            <div class="mrw-col">
         <!-- Stats grid -->
         <div class="hs-mr-stats">
           <div class="hs-mr-stat">
@@ -2519,83 +3076,43 @@
         <button class="hs-btn-ghost" @click="screen = 'quick-wins'">
           ← Back
         </button>
-        <div style="height: 40px" />
+            </div>
+            <!-- /mrw-col -->
+          </div>
+          <!-- /mrw-grid -->
+        </main>
       </div>
     </template>
 
-    <!-- Boost-doc congratulations overlay. Fires after each upload in the
-         boost flow. Celebrates the specific document's impact (points,
-         what it verifies) before the next question is revealed. The
-         fireworks loop infinitely but the user dismisses the overlay
-         to continue, so they don't linger. -->
-    <Teleport to="body">
-      <div v-if="boostCongrats" class="bc-overlay" @click.self="dismissBoostCongrats">
-        <div class="bc-firework-host">
-          <div
-            v-for="(fw, i) in boostCongratsFireworks"
-            :key="i"
-            class="bc-firework"
-            :style="{ left: fw.left + '%', top: fw.top + '%' }"
-          >
-            <span
-              v-for="(p, j) in fw.particles"
-              :key="j"
-              class="bc-fw-particle"
-              :style="{
-                background: fw.color,
-                boxShadow: `0 0 12px 2px ${fw.color}`,
-                '--tx': p.tx + 'px',
-                '--ty': p.ty + 'px',
-                animationDelay: fw.delay + 'ms',
-              }"
-            />
-          </div>
-        </div>
-        <div class="bc-card">
-          <div class="bc-icon" :style="{ background: boostCongrats.bg }">
-            {{ boostCongrats.icon }}
-          </div>
-          <div class="bc-eyebrow">DOCUMENT VERIFIED</div>
-          <div class="bc-title">+{{ boostCongrats.pts }} points</div>
-          <div class="bc-doc-label">{{ boostCongrats.label }}</div>
-          <div class="bc-impact">{{ boostCongrats.impact }}</div>
-          <div class="bc-score-row">
-            <div class="bc-score-cell">
-              <div class="bc-score-eyebrow">HomeScore</div>
-              <div class="bc-score-val">
-                <span class="bc-score-was">{{ boostCongrats.scoreBefore }}</span>
-                <span class="bc-score-arrow">→</span>
-                <span class="bc-score-now">{{ boostCongrats.scoreAfter }}</span>
-              </div>
-            </div>
-          </div>
-          <button class="bc-continue" type="button" @click="dismissBoostCongrats">
-            {{ boostCongrats.isLast ? 'See my Passport →' : 'Next document →' }}
-          </button>
-        </div>
-      </div>
-    </Teleport>
+    <!-- Shared site footer (all web screens; hidden during the brief loader) -->
+    <SiteFooter v-if="screen !== 'loading'" />
 
-    <!-- Auth gate modal — shown when a guest taps any auth-required CTA
-         (Boost, Publish, Watch, Save to Buyer Profile, etc.). Copy adapts
-         to the specific action; the two CTAs mirror the Claim drawer
-         pattern (create-account + sign-in + dismiss). -->
+    <!-- Watch this property drawer (buyer notification preferences) -->
+    <WatchPropertyDrawer
+      :open="watchDrawerOpen"
+      :address-label="property?.addressLine1 || ''"
+      @close="watchDrawerOpen = false"
+      @submit="onWatchSubmit"
+    />
+
+    <!-- Auth gate modal — shown when a guest taps "I'm interested in buying"
+         or "Save to Buyer Profile". Returns user to this property after login. -->
     <div
-      v-if="authGateIntent"
+      v-if="showAuthGate"
       class="hs-authgate-overlay"
-      @click.self="closeAuthGate"
+      @click.self="showAuthGate = false"
     >
       <div class="hs-authgate-card">
-        <div class="hs-authgate-ic"><img src="/op-icons/claim/padlock.png" alt="" loading="lazy" /></div>
-        <div class="hs-authgate-title">{{ authGateCopy.title }}</div>
-        <div class="hs-authgate-sub">{{ authGateCopy.body }}</div>
-        <button class="hs-authgate-primary" @click="goAuthGate('signup')">
-          Create free account
+        <img class="hs-authgate-ic" src="/homescore-icon/padlock.png" alt="" loading="lazy" />
+        <div class="hs-authgate-title">Log in to continue</div>
+        <div class="hs-authgate-sub">
+          Save this property, see your full Buyer Report and build your Buyer
+          Profile to share with sellers.
+        </div>
+        <button class="hs-authgate-primary" @click="goToSignIn">
+          Log in or Create account
         </button>
-        <button class="hs-authgate-secondary" @click="goAuthGate('signin')">
-          I already have an account
-        </button>
-        <button class="hs-authgate-ghost" @click="closeAuthGate">
+        <button class="hs-authgate-ghost" @click="showAuthGate = false">
           Not now
         </button>
       </div>
@@ -2608,14 +3125,7 @@
          is rendering. Driven by `qwDrawerOpen` / `qwDrawerDocKey`.       -->
     <Teleport to="body">
       <div v-if="qwDrawerOpen" class="qw-overlay" @click.self="closeDrawer">
-        <div
-          class="qw-modal"
-          :style="qwDragStyle"
-          @touchstart.passive="onQwTouchStart"
-          @touchmove="onQwTouchMove"
-          @touchend="onQwTouchEnd"
-          @touchcancel="onQwTouchEnd"
-        >
+        <div class="qw-modal">
           <div class="qw-modal-handle" />
           <div class="qw-modal-header">
             <div class="qw-modal-title">
@@ -2636,7 +3146,7 @@
 
             <!-- Already-saved file preview -->
             <div v-if="qwDrawerExistingEntry" class="qw-doc-preview">
-              <div class="qw-doc-preview-icon"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" /></div>
+              <img class="qw-doc-preview-icon" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
               <div class="qw-doc-preview-info">
                 <div class="qw-doc-preview-name">
                   {{ qwDrawerExistingEntry.fileName }}
@@ -2659,7 +3169,7 @@
               v-if="qwDrawerFile"
               class="qw-doc-preview qw-doc-preview--pending"
             >
-              <div class="qw-doc-preview-icon"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" /></div>
+              <img class="qw-doc-preview-icon" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
               <div class="qw-doc-preview-info">
                 <div class="qw-doc-preview-name">{{ qwDrawerFile.name }}</div>
                 <div class="qw-doc-preview-meta">
@@ -2676,13 +3186,13 @@
             </div>
 
             <!-- File picker (only shown when nothing pending) -->
-            <label v-if="!qwDrawerFile" class="qw-upload-row" for="a11y-field-id-7">
+            <label v-if="!qwDrawerFile" class="qw-upload-row">
               <input
                 type="file"
                 accept=".pdf,image/*"
                 class="qw-upload-input"
                 @change="onDrawerFilePicked"
-               id="a11y-field-id-7"/>
+              />
               <span class="qw-upload-icon">
                 <svg
                   viewBox="0 0 24 24"
@@ -2738,14 +3248,7 @@
         class="qw-overlay"
         @click.self="closeSimBillDrawer"
       >
-        <div
-          class="qw-modal"
-          :style="simBillDragStyle"
-          @touchstart.passive="onSimBillTouchStart"
-          @touchmove="onSimBillTouchMove"
-          @touchend="onSimBillTouchEnd"
-          @touchcancel="onSimBillTouchEnd"
-        >
+        <div class="qw-modal">
           <div class="qw-modal-handle" />
           <div class="qw-modal-header">
             <div class="qw-modal-title">Upload an energy bill</div>
@@ -2762,7 +3265,7 @@
           <div class="qw-modal-body">
             <p class="qw-modal-intro">
               We'll read the total spend from your bill and refine your
-              HomeScore - more accurate than EPC estimates alone.
+              HomeScore — more accurate than EPC estimates alone.
             </p>
 
             <!-- Pending file preview -->
@@ -2770,7 +3273,7 @@
               v-if="simBillFile"
               class="qw-doc-preview qw-doc-preview--pending"
             >
-              <div class="qw-doc-preview-icon"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" /></div>
+              <img class="qw-doc-preview-icon" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
               <div class="qw-doc-preview-info">
                 <div class="qw-doc-preview-name">{{ simBillFile.name }}</div>
                 <div class="qw-doc-preview-meta">
@@ -2787,13 +3290,13 @@
             </div>
 
             <!-- File picker -->
-            <label v-if="!simBillFile" class="qw-upload-row" for="a11y-field-id-8">
+            <label v-if="!simBillFile" class="qw-upload-row">
               <input
                 type="file"
                 accept=".pdf,image/*"
                 class="qw-upload-input"
                 @change="onSimBillFilePicked"
-               id="a11y-field-id-8"/>
+              />
               <span class="qw-upload-icon">
                 <svg
                   viewBox="0 0 24 24"
@@ -2839,38 +3342,26 @@
         </div>
       </div>
     </Teleport>
-
-    <!-- "How Book-a-Pro works" drawer — opens when a user taps any
-         qwPros row (Gas Safe / EICR / EPC). 3 illustrated steps + a
-         "Notify me when live" primary CTA. Marketplace-ready flag
-         stays false until Phase 2 ships the real booking flow. -->
-    <BookProDrawer
-      :pro="bookProActive"
-      :marketplace-ready="false"
-      @close="bookProActive = null"
-      @notify-me="onNotifyMePro"
-      @find-pro="onFindPro"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-useHead({ bodyAttrs: { class: 'hs-parity' } })
 import { ref, computed, onMounted, watch, nextTick, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHomeScore } from '~/composables/useHomeScore'
+import { refreshEpcIfMissing } from '~/utils/epcSelfHeal'
 import { usePassportClaim } from '~/composables/usePassportClaim'
 import { usePropertyActions } from '~/composables/usePropertyActions'
 import { useAppToast } from '~/composables/useCustomToast'
 import ResultDetail from '~/components/homescore/ResultDetail.vue'
 import V6ScoreView from '~/components/homescore/V6ScoreView.vue'
 import V6QuizView from '~/components/homescore/V6QuizView.vue'
-import V6NoEpcEstimator from '~/components/homescore/V6NoEpcEstimator.vue'
-import BuyerVerifyCard from '~/components/property/BuyerVerifyCard.vue'
-import V6LevelUpView from '~/components/homescore/V6LevelUpView.vue'
 import V6BoostView from '~/components/homescore/V6BoostView.vue'
-import BookProDrawer from '~/components/homescore/BookProDrawer.vue'
+import V6LevelUpView from '~/components/homescore/V6LevelUpView.vue'
+import V6NoEpcEstimator from '~/components/homescore/V6NoEpcEstimator.vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
 import type { TopWin, Opportunity } from '~/types/homescore'
 import { QUESTIONS } from '~/utils/homescoreScoring'
@@ -2881,6 +3372,18 @@ const config = useRuntimeConfig()
 const propertyId = route.params.id as string
 
 const property = ref<any>(null)
+// Full running-costs breakdown from the backend (energy + water + council tax
+// + flood/mining/planning risks + environmental). The buyer report Costs and
+// Risks tabs read from this so they match the deployed app. Fetched in
+// onMounted alongside the property record; stays null until it resolves.
+const runningCosts = ref<any>(null)
+// Land Registry sold history from the backend: { thisProperty: [...],
+// nearbySales: [...] }. Powers the buyer report Sold tab (sale history +
+// comparable sales nearby). Fetched in onMounted; stays null until it lands.
+const soldHistory = ref<{
+  thisProperty: any[]
+  nearbySales: any[]
+} | null>(null)
 
 // ── Coach-mark tour for the detail screens (auto-starts on first visit) ──
 const resultTour = useHomescoreTour({
@@ -2905,7 +3408,7 @@ const resultTour = useHomescoreTour({
     {
       sel: '[data-tour="breakdown"]',
       title: 'Score breakdown',
-      body: 'Each category contributes to the overall score. Shorter bars mean more room to improve - and more potential savings.',
+      body: 'Each category contributes to the overall score. Shorter bars mean more room to improve — and more potential savings.',
     },
     {
       sel: '[data-tour="intent"]',
@@ -2919,7 +3422,6 @@ type Screen =
   | 'loading'
   | 'landing'
   | 'questions'
-  | 'questions-legacy'
   | 'no-epc-estimator'
   | 'level-up'
   | 'boost'
@@ -2934,20 +3436,17 @@ type Screen =
   | 'move-ready'
 const screen = ref<Screen>('loading')
 
-// ── Screen history ────────────────────────────────────────────────
-// Back buttons should retrace the exact forward path, not jump to a
-// hardcoded screen that may never have been visited. We record every screen
-// transition after mount and pop it on back. `navigatingBack` stops a pop
-// from being re-recorded; `historyReady` keeps the noisy initial-load
-// transitions (loading → landing/results/boost) out of the stack.
+// ── Screen history ────────────────────────────────────────────
+// Back buttons retrace the actual forward path instead of jumping to a
+// hardcoded screen the user may never have visited (matches the deployed
+// app). `navigatingBack` stops a pop being re-recorded; `historyReady`
+// keeps the noisy initial-load transitions out of the stack.
 const screenHistory = ref<Screen[]>([])
 
-// When the page mounts on a deep-link (?screen=level-up etc.) the natural
-// forward path (landing → questions → level-up …) didn't actually run, so
-// `screenHistory` is empty and goBack falls straight out of the page —
-// skipping every intermediate screen the user would expect to retrace.
-// This map reconstructs the path each deep-link should be treated as
-// having come from, so back-navigation lands on the right predecessor.
+// A deep link (?screen=quick-wins etc.) never ran the natural forward path,
+// so the stack is empty and back would fall straight out of the page. This
+// map reconstructs the path each deep link should be treated as having come
+// from, so back lands on the screen the user would expect.
 const SCREEN_PATH: Partial<Record<Screen, Screen[]>> = {
   questions: ['landing'],
   results: ['landing'],
@@ -2955,79 +3454,34 @@ const SCREEN_PATH: Partial<Record<Screen, Screen[]>> = {
   passport: ['landing'],
   'level-up': ['landing', 'questions'],
   boost: ['landing', 'questions', 'level-up'],
-  'move-ready': ['landing', 'questions', 'level-up', 'boost'],
+  'quick-wins': ['landing', 'results'],
+  'move-ready': ['landing', 'results', 'quick-wins'],
+  publish: ['landing', 'results'],
+  kyc: ['landing', 'results', 'publish'],
+  'kyc-pending': ['landing', 'results', 'publish', 'kyc'],
+  published: ['landing', 'results', 'publish'],
 }
 function seedScreenHistory(target: Screen) {
   const path = SCREEN_PATH[target]
   if (!path || path.length === 0) return
-  // Replace, not append — the previous mount's history (if any) isn't
-  // meaningful after a fresh deep-link.
+  // Replace, not append — a previous mount's history isn't meaningful
+  // after a fresh deep link.
   screenHistory.value = [...path]
 }
 let navigatingBack = false
 let historyReady = false
 watch(screen, (next, prev) => {
-  // Screen switches render entirely different content in place on the
-  // same route (no real navigation happens), so the browser has no
-  // reason to reset scroll on its own — without this the new screen
-  // can render already scrolled to wherever the previous one was left.
-  if (next !== prev && import.meta.client) window.scrollTo(0, 0)
   if (!historyReady || navigatingBack) {
     navigatingBack = false
     return
   }
   if (prev && prev !== next && prev !== 'loading') {
-    // Dedupe — handler functions (e.g. onQuizFinish) may have already
-    // pushed this same prev value to guarantee correct retracing when
-    // the watcher might miss the change.
+    // Dedupe — handlers (e.g. onQuizFinish) may already have pushed this
+    // same value to guarantee correct retracing.
     const last = screenHistory.value[screenHistory.value.length - 1]
     if (last !== prev) screenHistory.value.push(prev)
   }
 })
-
-// `useState` (not a plain ref) — navigating to the pathway page is a real
-// route change to a different component, which unmounts this page. A
-// plain ref would reset to null on remount, wiping the just-finished
-// quiz result and making the level-up screen fall back to defaults
-// (public EPC score, £0 delta, total potential saving instead of the
-// answered-only figure) when the user comes back via the back button.
-const v6QuizFinal = useState<{ finalScore: number; delta: number; answers: Record<string, string>; statGains: Record<string, number>; answeredSavings: number } | null>(
-  `hs-quiz-final-${propertyId}`,
-  () => null,
-)
-
-function onQuizFinish(payload: { finalScore: number; delta: number; answers: Record<string, string>; statGains: Record<string, number>; answeredSavings: number }) {
-  v6QuizFinal.value = payload
-  // Explicitly push 'questions' onto the history stack — relying on the
-  // screen watcher to do it can miss in two scenarios:
-  //   1. `historyReady` is still false because mount is mid-flight
-  //   2. `navigatingBack` is still true from a recent goBack call
-  // Pushing here directly makes "back from level-up" reliably retrace
-  // to the owner quiz regardless.
-  if (screen.value && screen.value !== 'loading') {
-    const last = screenHistory.value[screenHistory.value.length - 1]
-    if (last !== screen.value) screenHistory.value.push(screen.value)
-  }
-  screen.value = 'level-up'
-}
-
-function onUploadBill(_file: File) {
-  // Bill-extraction endpoint is not wired up server-side yet. Once the
-  // backend exposes a parser for kWh / tariff / supplier we'll POST the
-  // file here and refine `liveScore` from the returned annual cost.
-}
-
-function onBookAssessment() {
-  // Handoff to a real accredited-assessor booking is out of scope for
-  // v1 — for now we open the government "find an assessor" page in a
-  // new tab which is what the prototype's placeholder alert directed
-  // people towards.
-  window.open(
-    'https://www.gov.uk/find-energy-certificate/find-an-assessor',
-    '_blank',
-    'noopener,noreferrer',
-  )
-}
 
 type PassportTab = 'sections' | 'street' | 'buyers'
 const passportTab = ref<PassportTab>('sections')
@@ -3038,11 +3492,6 @@ const matchedBuyers = ref<any[]>([])
 const buyersTotal = ref(0)
 const passportClaimLoading = ref(false)
 const isPropertyOwner = ref(false)
-// Populated alongside isPropertyOwner — the user's own passport id for this
-// property when they're the owner or a collaborator. Lets us redirect to
-// /passportview/<id> instead of dumping returning-from-claim users back onto
-// the stale "publish to your street" marketing screen.
-const ownedPassportId = ref<string | null>(null)
 
 // Read-only mode: property has a passport claimed by someone else.
 // The current user can't run the quiz or modify the score — they see
@@ -3050,72 +3499,11 @@ const ownedPassportId = ref<string | null>(null)
 const hasOtherOwnerPassport = ref(false)
 const isPassportCollaborator = ref(false)
 const isOtherPassportPublished = ref(false)
-// Only meaningful once isOtherPassportPublished is true — distinguishes
-// Partially Public (<100) from fully Public, same field/threshold every
-// other passport-state computed in the app already uses.
-const otherPassportMilestonePct = ref(0)
 const publicOwnerScore = ref<any>(null)
 const notifiedOfPublish = ref(false)
 
-// Auth gate (shown when guest taps a CTA that needs an account). The intent
-// drives the copy + the post-login redirect; null = modal closed.
-type AuthGateIntent =
-  | 'boost'
-  | 'publish'
-  | 'quick-wins'
-  | 'watch'
-  | 'save-buyer'
-  | 'buyer-profile'
-const authGateIntent = ref<AuthGateIntent | null>(null)
-
-// Per-intent copy. Title + body mirror what the user is about to do so
-// the modal feels like a step in that specific flow, not a generic
-// "log in" wall.
-const authGateCopy = computed<{ title: string; body: string }>(() => {
-  switch (authGateIntent.value) {
-    case 'boost':
-    case 'quick-wins':
-      return {
-        title: 'Sign in to boost your HomeScore',
-        body: 'Create a free account to upload bills, certificates and answers - each one verifies your score and starts building your Property Passport.',
-      }
-    case 'publish':
-      return {
-        title: 'Sign in to publish your HomeScore',
-        body: "Create a free account to verify ownership and publish this property's verified HomeScore for your street to see.",
-      }
-    case 'watch':
-      return {
-        title: 'Sign in to watch this property',
-        body: "Create a free account and we'll notify you the moment this Passport publishes or anything material changes.",
-      }
-    case 'save-buyer':
-    case 'buyer-profile':
-      return {
-        title: 'Sign in to save to your Buyer Passport',
-        body: 'Create a free account to save this property, see the full Buyer Report and share a verified Buyer Passport with sellers.',
-      }
-    default:
-      return {
-        title: 'Sign in to continue',
-        body: 'Create a free account to keep building your record. Takes about a minute.',
-      }
-  }
-})
-
-function closeAuthGate() {
-  authGateIntent.value = null
-}
-
-// Either button on the auth gate. `redirectAfterLogin` is already set by
-// the caller that triggered the modal, so we just navigate to the right
-// auth screen. Signup falls back to signin's redirect logic (the signup
-// page reads the same key and bounces back after account creation).
-function goAuthGate(mode: 'signin' | 'signup') {
-  authGateIntent.value = null
-  const path = mode === 'signup' ? '/onboarding/signup' : '/onboarding/signin'
-  router.push(path)
-}
+// Auth gate (shown when guest taps "I'm interested in buying" or "Save")
+const showAuthGate = ref(false)
 
 // Search-stats card ("People searched this address this month")
 const searchStats = ref<{
@@ -3123,7 +3511,6 @@ const searchStats = ref<{
   thisMonth: number
   allTime: number
   distinctVisitors: number
-  watchers: number
 } | null>(null)
 
 // Deterministic fallback so the card still renders for properties with no
@@ -3175,38 +3562,27 @@ const passportState = computed<'published' | 'inProgress' | null>(() => {
   return isOtherPassportPublished.value ? 'published' : 'inProgress'
 })
 
-// Passport build progress (feeds the claim box's in-progress ring + drawer).
-const passportProgress = ref<{
-  completionPct?: number
-  completedSections?: number
-  totalSections?: number
-} | null>(null)
-const passportProgressPct = computed(() => passportProgress.value?.completionPct ?? 0)
-const passportSectionsDone = computed(() => passportProgress.value?.completedSections ?? 0)
-const passportSectionsTotal = computed(() => passportProgress.value?.totalSections ?? 0)
-
 // ── ResultDetail (prototype-aligned 3a/3b/3c view) props ──
 // Reflect the property's TRUE Passport state — independent of who is viewing.
 // `passportState` (above) gates on `readOnlyMode` and is `null` for the owner;
 // for the result UI we want the real status (published / in-progress / unclaimed)
 // no matter whether the viewer is the owner, a buyer, or a guest.
 const resolvedPassportState = computed<
-  'unclaimed' | 'private' | 'partiallyPublic' | 'public'
+  'unclaimed' | 'inProgress' | 'published'
 >(() => {
   const p: any = property.value
   // Server payload may expose these directly OR via the loaded score-state.
-  const published = !!p?.passportPublished || isOtherPassportPublished.value
-  if (published) {
-    const pct = p?.milestonePct ?? otherPassportMilestonePct.value ?? 0
-    return pct >= 100 ? 'public' : 'partiallyPublic'
-  }
-  if (p?.hasPassport || hasOtherOwnerPassport.value) return 'private'
+  if (p?.passportPublished) return 'published'
+  if (isOtherPassportPublished.value) return 'published'
+  if (p?.hasPassport) return 'inProgress'
+  if (hasOtherOwnerPassport.value) return 'inProgress'
   return 'unclaimed'
 })
 
-// EPC fields can live either on the top-level Property row OR on the
-// nested `epcCert` sub-object (legacy + new shape). This helper reads
-// from both so we don't lose data when only one side is populated.
+// Read an EPC field from BOTH the top-level Property row and the nested
+// `epcCert` sub-object (the backend exposes both shapes). Ported from the
+// Updated Application so running-cost / CO₂ figures use real EPC data
+// wherever it lives instead of falling back to the rating map.
 function epcField(name: string): any {
   const p: any = property.value
   if (!p) return null
@@ -3227,7 +3603,13 @@ const resolvedAnnualCost = computed<number>(() => {
       Number(epcField('lightingCostCurrent') ?? 0))
   if (summed > 0) return Math.round(summed)
   const map: Record<string, number> = {
-    A: 980, B: 1100, C: 1300, D: 1592, E: 1823, F: 2200, G: 2600,
+    A: 980,
+    B: 1100,
+    C: 1300,
+    D: 1592,
+    E: 1823,
+    F: 2200,
+    G: 2600,
   }
   const r = (property.value?.epcRating || '').toUpperCase()
   if (map[r]) return map[r]
@@ -3241,7 +3623,25 @@ const resolvedEpcYear = computed<number | null>(() => {
   return Number.isFinite(y) ? y : null
 })
 
-// ── Real-data computeds for V6ScoreView ─────────────────────────
+// ── Real-data computeds for V6ScoreView (ported from Updated Application) ──
+const autoOpenClaim = ref(false)
+// Raw /property/:id/passport-status payload (JWT-only, so null for guests).
+// Its passportProgress block is the only real source of build progress — the
+// cards that use it stay hidden when it isn't there rather than guessing.
+const passportStatus = ref<any>(null)
+const passportProgressPct = computed<number>(() => {
+  const pct = passportStatus.value?.passportProgress?.completionPct
+  return typeof pct === 'number' ? Math.round(pct) : 0
+})
+const passportSectionsDone = computed<number>(() => {
+  const n = passportStatus.value?.passportProgress?.completedSections
+  return typeof n === 'number' ? n : 0
+})
+const passportSectionsTotal = computed<number>(() => {
+  const n = passportStatus.value?.passportProgress?.totalSections
+  return typeof n === 'number' ? n : 0
+})
+
 const resolvedCo2Now = computed<number | null>(() => {
   const v = epcField('co2Emissions') ?? epcField('co2EmissionsCurrent')
   if (v == null) return null
@@ -3254,8 +3654,9 @@ const resolvedCo2Potential = computed<number | null>(() => {
   const n = Number(v)
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : null
 })
-
-const resolvedBillsSplit = computed<{ heating: number; hotWater: number; lighting: number } | null>(() => {
+const resolvedBillsSplit = computed<
+  { heating: number; hotWater: number; lighting: number } | null
+>(() => {
   const h = Number(epcField('heatingCostCurrent') ?? 0)
   const w = Number(epcField('hotWaterCostCurrent') ?? 0)
   const l = Number(epcField('lightingCostCurrent') ?? 0)
@@ -3267,9 +3668,9 @@ const resolvedBillsSplit = computed<{ heating: number; hotWater: number; lightin
     lighting: Math.round((l / total) * 100),
   }
 })
-
 const resolvedPotentialSaving = computed<number>(() => {
-  const recs: any = (property.value as any)?.epcRecommendations
+  const p: any = property.value
+  const recs: any = p?.epcRecommendations
   if (Array.isArray(recs) && recs.length) {
     const sum = recs.reduce((acc: number, r: any) => {
       const v = Number(r?.typicalSaving ?? r?.indicativeCost ?? 0)
@@ -3277,12 +3678,56 @@ const resolvedPotentialSaving = computed<number>(() => {
     }, 0)
     if (sum > 0) return Math.round(sum)
   }
-  const cert: any = (property.value as any)?.epcCert
+  const cert: any = p?.epcCert
   const curr = Number(cert?.energyCostCurrent ?? resolvedAnnualCost.value)
   const pot = Number(cert?.energyCostPotential ?? 0)
   if (curr > 0 && pot > 0 && pot < curr) return Math.round(curr - pot)
   return 445
 })
+
+// ── V6 flow handlers (quiz → level-up → boost) ──────────────────────
+const v6QuizFinal = ref<{
+  finalScore: number
+  delta: number
+  answers: Record<string, string>
+} | null>(null)
+function onQuizFinish(payload: {
+  finalScore: number
+  delta: number
+  answers: Record<string, string>
+}) {
+  v6QuizFinal.value = payload
+  // Push 'questions' explicitly — the watcher can miss this transition when
+  // mount is still in flight or a goBack just ran, and back-from-level-up
+  // must always retrace to the quiz.
+  if (screen.value && screen.value !== 'loading') {
+    const last = screenHistory.value[screenHistory.value.length - 1]
+    if (last !== screen.value) screenHistory.value.push(screen.value)
+  }
+  screen.value = 'level-up'
+}
+function onUploadBill(_file: File) {
+  // Bill-parsing endpoint not wired server-side yet (matches clone behaviour).
+}
+function onBookAssessment() {
+  window.open(
+    'https://www.gov.uk/find-energy-certificate/find-an-assessor',
+    '_blank',
+    'noopener,noreferrer',
+  )
+}
+function goToBoost() {
+  screen.value = 'boost'
+}
+function goToPathway() {
+  const from = screen.value
+  router.push(
+    `/homescore/pathway/${propertyId}?from=${encodeURIComponent(from)}`,
+  )
+}
+function onBoostStartPassport() {
+  claimOrAccessPassport()
+}
 
 function goToBuyerView() {
   // "I'm interested in buying" — let guests through to the buyer view so
@@ -3301,42 +3746,13 @@ function goToRunningCosts() {
   router.push(`/homescore/costs/${propertyId}`)
 }
 
-// New in v6 — sends the user to the 6-step EPC pathway (Phase 2 route).
-function goToPathway() {
-  // Preserve which screen the user is currently on so the pathway page's
-  // back button can return them to that screen rather than the homescore
-  // landing search. Default to 'level-up' when triggered from anywhere
-  // (level-up is the natural caller; other origins are rare).
-  const from = screen.value === 'level-up' ? 'level-up' : screen.value
-  router.push(`/homescore/pathway/${propertyId}?from=${encodeURIComponent(from)}`)
-}
-
-// "Boost your score" — this is where we finally require an account. Guests
-// take the owner quiz and see their real HomeScore for free; only when they
-// choose to boost it do we gate on sign-in, then land them back on the boost
-// screen for this property (?screen=boost is honoured on mount).
-function goToBoost() {
-  if (readOnlyMode.value) {
-    router.push(`/property/${propertyId}`)
-    return
-  }
-  if (isGuest.value) {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('redirectAfterLogin', `/homescore/${propertyId}?screen=boost`)
-    }
-    authGateIntent.value = 'boost'
-    return
-  }
-  screen.value = 'boost'
-}
-
 function notifyWhenPublished() {
   // Guests need to sign in before we can notify them — gate it.
   if (isGuest.value) {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('redirectAfterLogin', `/homescore/${propertyId}`)
     }
-    authGateIntent.value = 'watch'
+    showAuthGate.value = true
     return
   }
   // Record locally so the button shows "already notified" across reloads.
@@ -3354,17 +3770,31 @@ function notifyWhenPublished() {
 // Tap handler for "Boost your score" CTA — gate guests up-front before they
 // invest time in the quick-wins flow.
 function onBoostScore() {
-  // Route to the V6BoostView (screen='boost') with the same auth gating
-  // as goToBoost. The legacy 'quick-wins' inline template predates
-  // V6BoostView and we don't want to surface it any more.
-  goToBoost()
+  gateOwnerAction('quick-wins')
+}
+
+/**
+ * HomeScore claim card / the "Claim it →" button inside the passport
+ * explainer drawer → the dedicated claim flow at /claim/<id>, which opens
+ * the "Choose your passport" (Seller / Landlord) type drawer on mount.
+ * Guests are auth-gated first and bounced back to /claim/<id> after login.
+ */
+function goToClaimPassport() {
+  if (isGuest.value) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('redirectAfterLogin', `/claim/${propertyId}`)
+    }
+    showAuthGate.value = true
+    return
+  }
+  router.push(`/claim/${propertyId}`)
 }
 
 /**
  * Funnel any "owner-only" action through the right chain:
  *
  *   guest        → save redirect, show auth gate (signin → bounces back)
- *   not-owner    → /claim/<id>?next=<homescore screen=…>  - runs the standard
+ *   not-owner    → /claim/<id>?next=<homescore screen=…>  — runs the standard
  *                  claim flow (login → KYC → Land Registry → Passport claim)
  *                  and on completion lands the user back here on the
  *                  originally requested screen
@@ -3387,10 +3817,7 @@ function gateOwnerAction(target: 'publish' | 'quick-wins') {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('redirectAfterLogin', targetPath)
     }
-    // Two distinct copy variants — publish vs. boost-score (quick-wins) —
-    // come from the same gate, so map the requested screen back to its
-    // intent.
-    authGateIntent.value = target === 'publish' ? 'publish' : 'quick-wins'
+    showAuthGate.value = true
     return
   }
 
@@ -3517,11 +3944,12 @@ function handleAnswer(qId: string, val: string) {
 
 // ── Computed ──────────────────────────────────────────────────
 
-// Prefer the property's real EPC SAP score from the gov register over the
-// heuristic-based homescore engine. The engine was seeded from a handful of
-// EPC rating buckets and produced a score close to BASE_SCORE (≈50) for
-// most properties even when the real SAP was much higher. When we have
-// a real `epcScore` on the row, use that as the headline number.
+// The heuristic scoring engine was seeded from a handful of EPC rating
+// buckets and produces a score close to BASE_SCORE (≈50) for most
+// properties even when the real SAP was much higher. When we have a real
+// `epcScore` on the property row (the actual gov SAP number), use that as
+// the headline instead of the heuristic — mirrors the deployed app so the
+// card shows the true score (e.g. 69 · C) rather than an under-scored ~36.
 const autoScoreVal = computed(() => {
   const real = Number((property.value as any)?.epcScore)
   if (Number.isFinite(real) && real > 0) return real
@@ -3548,7 +3976,7 @@ const epcExplain = computed(() => {
   if (s >= 92) {
     label = 'Exceptional'
     body =
-      'Among the <b>most efficient homes</b> in the UK - less than 3% of properties achieve this rating. Modern construction, low running costs.'
+      'Among the <b>most efficient homes</b> in the UK — less than 3% of properties achieve this rating. Modern construction, low running costs.'
     confTone = 'good'
   } else if (s >= 81) {
     label = 'Highly efficient'
@@ -3558,12 +3986,12 @@ const epcExplain = computed(() => {
   } else if (s >= 69) {
     label = 'Above average'
     body =
-      'Better than most UK homes - the UK average is around <b>60–65</b>. Small upgrades could lift this to a B.'
+      'Better than most UK homes — the UK average is around <b>60–65</b>. Small upgrades could lift this to a B.'
     confTone = 'ok'
   } else if (s >= 55) {
     label = 'Typical UK home'
     body =
-      'In line with the <b>average British home</b>. Real upside available - cavity wall, glazing or boiler upgrades can lift this to a C or B.'
+      'In line with the <b>average British home</b>. Real upside available — cavity wall, glazing or boiler upgrades can lift this to a C or B.'
     confTone = 'ok'
   } else if (s >= 39) {
     label = 'Period property'
@@ -3635,19 +4063,19 @@ const DEFAULT_WINS: TopWin[] = [
 ]
 const DEFAULT_OPPS: Opportunity[] = [
   {
-    icon: '/op-icons/homescore/house.png',
+    icon: '🏠',
     title: 'Improve loft insulation',
     sub: 'Topping up to 270mm is one of the most cost-effective fixes.',
   },
   {
-    icon: '/op-icons/homescore/boiler.png',
+    icon: '🔥',
     title: 'Book a boiler service',
     sub: 'An annual service keeps your boiler running at peak efficiency.',
   },
   {
-    icon: '/op-icons/homescore/heatingControls.png',
+    icon: '🌡️',
     title: 'Fit a smart thermostat',
-    sub: 'Could save ~£130/yr - low cost, high impact.',
+    sub: 'Could save ~£130/yr — low cost, high impact.',
   },
 ]
 
@@ -3677,11 +4105,11 @@ const pillarCarbonDrivers = computed(() => {
     const value = (result.value.breakdown as any)?.[d.key] ?? 0
     const pct = Math.round(100 - (value / d.max) * 100)
     const iconMap: Record<string, string> = {
-      heating: '/op-icons/homescore/flame.png',
-      structure: '/op-icons/homescore/bricks.png',
-      efficiency: '/op-icons/homescore/bulb.png',
-      electrics: '/op-icons/homescore/lightning.png',
-      plumbing: '/op-icons/homescore/tap.png',
+      heating: '🔥',
+      structure: '🧱',
+      efficiency: '💡',
+      electrics: '⚡',
+      plumbing: '🚰',
     }
     return {
       key: d.key,
@@ -3699,18 +4127,18 @@ const pillarCarbonDrivers = computed(() => {
 
 function pillarBarColor(value: number, max: number): string {
   const pct = (value / max) * 100
-  if (pct >= 60) return '#008a84'
+  if (pct >= 60) return '#16a34a'
   if (pct >= 40) return '#f59e0b'
   return '#dc2626'
 }
 
 const headerSub = computed(() => {
-  if (screen.value === 'landing') return "Your home's energy snapshot"
-  if (screen.value === 'questions') return 'Refine your HomeScore'
-  if (screen.value === 'level-up') return 'Your HomeScore has been refined'
+  if (screen.value === 'questions')
+    return `Question ${step.value + 1} of ${QUESTIONS.length}`
+  if (screen.value === 'landing') return 'Based on public records'
   if (screen.value === 'results') return 'Refined with your answers'
   if (screen.value === 'passport') return 'Continue your journey'
-  if (screen.value === 'buyer-results') return 'What we know about this property today'
+  if (screen.value === 'buyer-results') return 'Based on public EPC data'
   if (screen.value === 'quick-wins') return 'Every document adds real value'
   if (screen.value === 'move-ready') return 'What it means for you'
   return ''
@@ -3728,7 +4156,7 @@ const liveHint = computed(() => {
   if (deltaInfo.value.show) {
     if (deltaInfo.value.val > 0) return "You're boosting your energy score!"
     if (deltaInfo.value.val < 0)
-      return 'Your score dipped - try another option.'
+      return 'Your score dipped — try another option.'
   }
   if (selectedNarr.value) return selectedNarr.value
   if (!currentAnswer.value)
@@ -3739,45 +4167,21 @@ const liveHint = computed(() => {
 
 const scoreBand = computed(() => {
   const s = liveScore.value
-  if (s >= 80) return 'Excellent - top of the market'
-  if (s >= 65) return 'Strong - better than most'
-  if (s >= 50) return 'Average - room to improve'
-  if (s >= 35) return 'Below average - fixable'
+  if (s >= 80) return 'Excellent — top of the market'
+  if (s >= 65) return 'Strong — better than most'
+  if (s >= 50) return 'Average — room to improve'
+  if (s >= 35) return 'Below average — fixable'
   return 'Plenty of opportunities'
 })
 
 // ── Score helpers ─────────────────────────────────────────────
 
 function scoreColor(score: number): string {
-  if (score >= 75) return '#008a84'
-  if (score >= 60) return '#008a84'
+  if (score >= 75) return '#1f7a66'
+  if (score >= 60) return '#16a34a'
   if (score >= 40) return '#f59e0b'
   return '#dc2626'
 }
-
-// Circumference of the boost-stat ring (r=26 → 2πr ≈ 163.36). Used to
-// drive `stroke-dashoffset` so the ring fills from 0% to N% based on the
-// stat value. Clamped to [0,100] so out-of-band values stay safe.
-const BOOST_RING_CIRC = 2 * Math.PI * 26
-function ringOffset(pct: number): number {
-  const safe = Math.max(0, Math.min(100, pct))
-  return BOOST_RING_CIRC * (1 - safe / 100)
-}
-// Larger gauges in the bottom "next step" CTA card (r=34). Kept as a
-// separate helper so the two ring sizes can evolve independently.
-const PJ_RING_CIRC = 2 * Math.PI * 34
-function pjRingOffset(pct: number): number {
-  const safe = Math.max(0, Math.min(100, pct))
-  return PJ_RING_CIRC * (1 - safe / 100)
-}
-// Passport % shown in the pj-cta-card. Falls back to the move-ready
-// number when the backend hasn't yet exposed a real passport-completion
-// signal so the ring stays meaningful instead of stuck at 0%.
-const qwPassportPct = computed(() => {
-  const real = passportProgress.value?.completionPct
-  if (typeof real === 'number' && real >= 0) return Math.min(100, Math.round(real))
-  return qwMoveReady.value
-})
 
 function epcColor(rating: string): string {
   const map: Record<string, string> = {
@@ -3802,6 +4206,25 @@ const PILLAR_DEFS = [
   { key: 'plumbing', label: 'Plumbing', max: 20, color: '#3b82f6' },
 ]
 
+// ── Illustrated icon set (public/homescore-icon) ──────────────
+// The buyer report uses the same 3D icon family as the rest of HomeScore,
+// so every tab, row and section header points at one of these files.
+const HS_ICON: Record<string, string> = {
+  heating: '/homescore-icon/flame.png',
+  structure: '/homescore-icon/bricks.png',
+  efficiency: '/homescore-icon/bulb.png',
+  electrics: '/homescore-icon/lightning.png',
+  plumbing: '/homescore-icon/tap.png',
+  other: '/homescore-icon/shield.png',
+  flood: '/homescore-icon/environmental.png',
+  mining: '/homescore-icon/floor.png',
+  planning: '/homescore-icon/clipboard.png',
+}
+// Icon for one of the five HomeScore pillars (heating, structure, …).
+function pillarIcon(key: string): string {
+  return HS_ICON[key] ?? '/homescore-icon/homeScoreCard.png'
+}
+
 function pillarBars(breakdown: any) {
   return PILLAR_DEFS.map((d) => ({
     ...d,
@@ -3815,7 +4238,7 @@ const CARBON_BASELINE = 2900
 
 const carbonGradeInfo = computed(() => {
   const kg = carbonKg.value
-  if (kg < 800) return { grade: 'A', label: 'Excellent', col: '#008a84' }
+  if (kg < 800) return { grade: 'A', label: 'Excellent', col: '#16a34a' }
   if (kg < 1400) return { grade: 'B', label: 'Good', col: '#65a30d' }
   if (kg < 2000) return { grade: 'C', label: 'Average', col: '#ca8a04' }
   if (kg < 2800) return { grade: 'D', label: 'Below avg', col: '#92400e' }
@@ -3827,7 +4250,7 @@ const carbonGradeInfo = computed(() => {
 const carbonGradient = computed(() => {
   const g = carbonGradeInfo.value.grade
   const map: Record<string, string> = {
-    A: 'linear-gradient(135deg,#14532d,#008a84)',
+    A: 'linear-gradient(135deg,#14532d,#166534)',
     B: 'linear-gradient(135deg,#365314,#3f6212)',
     C: 'linear-gradient(135deg,#713f12,#854d0e)',
     D: 'linear-gradient(135deg,#78350f,#92400e)',
@@ -3842,14 +4265,14 @@ const carbonVsAvg = computed(() => {
   const diff = carbonKg.value - CARBON_BASELINE
   if (Math.abs(diff) < 100) return 'Roughly the same as the UK average'
   if (diff < 0)
-    return `${Math.abs(diff).toLocaleString()} kg below the UK average - great work`
+    return `${Math.abs(diff).toLocaleString()} kg below the UK average — great work`
   return `${diff.toLocaleString()} kg above the UK average of ${CARBON_BASELINE.toLocaleString()} kg`
 })
 
 const carbonBarChart = computed(() => {
   const grade = carbonGradeInfo.value.grade
   return [
-    { letter: 'A', color: '#008a84', h: 8 },
+    { letter: 'A', color: '#16a34a', h: 8 },
     { letter: 'B', color: '#65a30d', h: 12 },
     { letter: 'C', color: '#ca8a04', h: 16 },
     { letter: 'D', color: '#92400e', h: 20 },
@@ -3935,7 +4358,7 @@ const neighbourhood = computed(() => {
       detail: 'Double glazed · EPC C',
     },
     {
-      label: `${addr} - you`,
+      label: `${addr} — you`,
       score: s,
       isYou: true,
       detail: 'Your current status',
@@ -3953,7 +4376,7 @@ const neighbourhood = computed(() => {
       rank: i + 1,
       cost: scoreToCost(r.score),
       costColor:
-        r.score >= 70 ? '#008a84' : r.score >= 55 ? '#92400e' : '#dc2626',
+        r.score >= 70 ? '#16a34a' : r.score >= 55 ? '#92400e' : '#dc2626',
     }))
 })
 
@@ -4001,31 +4424,14 @@ const nbGapReasons = computed(() => {
 // ── Actions ───────────────────────────────────────────────────
 
 function startQuestions() {
-  // No-EPC path: run the self-contained visitor estimator (prototype
-  // port). Everyone — signed-in or not, owner or not — gets the same
-  // 20-question flow when the property has no certificate on file.
-  // The owner-quiz below is only for properties that DO have an EPC
-  // and need refinement; without one, there's no anchor score for
-  // the owner quiz's live-refine to sit against.
+  // No-EPC path: run the self-contained visitor estimator (exact clone).
+  // Without an EPC there's no anchor score for the owner quiz to refine.
   if (!property.value?.epcRating) {
-    if (screen.value && screen.value !== 'loading' && screen.value !== 'no-epc-estimator') {
-      const last = screenHistory.value[screenHistory.value.length - 1]
-      if (last !== screen.value) screenHistory.value.push(screen.value)
-    }
     screen.value = 'no-epc-estimator'
     return
   }
-
-  // Read-only mode: don't let a signed-in non-owner run the owner quiz on
-  // EPC properties (that flow claims ownership as a side effect) — we
-  // know for a fact they're not the owner once they're logged in.
-  // Guests are a different case: hasOtherOwnerPassport just means SOME
-  // account has claimed it, not that this particular visitor isn't the
-  // real owner — they just haven't signed in yet. Blocking them here
-  // entirely would strand the actual owner with no way in, so let guests
-  // through; auth (and the real ownership conflict, if any) is gated
-  // later in the funnel at claim/KYC, same as the rest of this flow.
-  if (readOnlyMode.value && !isGuest.value) {
+  // Read-only mode: don't let non-owners run the quiz
+  if (readOnlyMode.value) {
     router.push(`/property/${propertyId}`)
     return
   }
@@ -4035,12 +4441,6 @@ function startQuestions() {
     (q) => !(answers.value as Record<string, string>)[q.id],
   )
   step.value = firstUnanswered >= 0 ? firstUnanswered : 0
-  // Push the current screen (landing / results) so back from the quiz
-  // returns there reliably. Watcher dedupes if it also fires.
-  if (screen.value && screen.value !== 'loading' && screen.value !== 'questions') {
-    const last = screenHistory.value[screenHistory.value.length - 1]
-    if (last !== screen.value) screenHistory.value.push(screen.value)
-  }
   screen.value = 'questions'
 }
 
@@ -4071,7 +4471,7 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'loft',
     title: 'Increase loft insulation to 270mm',
     meta: 'Currently 75mm · EPC: Average',
-    desc: 'Your EPC records 75mm of loft insulation - the recommended level is 270mm. Topping this up is one of the cheapest and most effective improvements available.',
+    desc: 'Your EPC records 75mm of loft insulation — the recommended level is 270mm. Topping this up is one of the cheapest and most effective improvements available.',
     impact: 'Score +2 pts · saves ~£40/yr · cost £100–£350',
     question: 'Has this been done since the last EPC?',
     scoreDelta: 2,
@@ -4082,7 +4482,7 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'cavity',
     title: 'Cavity wall insulation',
     meta: 'Uninsulated cavity · EPC: Poor',
-    desc: 'The biggest single saving available. Part of the cavity wall is uninsulated - filling it stops heat escaping through the walls. ECO4 or Warm Homes grants may cover the full cost.',
+    desc: 'The biggest single saving available. Part of the cavity wall is uninsulated — filling it stops heat escaping through the walls. ECO4 or Warm Homes grants may cover the full cost.',
     impact:
       'Score +7 pts · saves ~£224/yr · cost £500–£1,500 · ECO4 grant may apply',
     question: 'Has cavity wall insulation been filled since the last EPC?',
@@ -4094,7 +4494,7 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'floor',
     title: 'Floor insulation',
     meta: 'Suspended floor, no insulation · EPC: N/A',
-    desc: 'The suspended timber floor has no insulation - cold air from below makes rooms harder to heat. Insulating this improves both comfort and efficiency.',
+    desc: 'The suspended timber floor has no insulation — cold air from below makes rooms harder to heat. Insulating this improves both comfort and efficiency.',
     impact: 'Score +3 pts · saves ~£97/yr · cost £800–£1,200',
     question: 'Has floor insulation been added since the last EPC?',
     scoreDelta: 3,
@@ -4105,10 +4505,10 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'led',
     title: 'Low energy lighting throughout',
     meta: '15% low energy lighting · EPC: Poor',
-    desc: 'Only 15% of fixed lighting outlets use low energy bulbs. Switching all to LED is quick, cheap and immediate - no installer required.',
+    desc: 'Only 15% of fixed lighting outlets use low energy bulbs. Switching all to LED is quick, cheap and immediate — no installer required.',
     impact: 'Score +2 pts · saves ~£45/yr · cost just £110',
     question: 'Have you switched to LED lighting since the last EPC?',
-    doneLabel: 'Yes - mostly LED now',
+    doneLabel: 'Yes — mostly LED now',
     scoreDelta: 2,
     costSaving: 45,
     co2Delta: 0.1,
@@ -4120,7 +4520,7 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     desc: 'Solar thermal panels use the sun to heat your water, reducing how hard your boiler works.',
     impact: 'Score +1 pt · saves ~£40/yr · cost £4,000–£6,000',
     question: 'Has solar water heating been installed since the last EPC?',
-    doneLabel: 'Yes - fitted',
+    doneLabel: 'Yes — fitted',
     scoreDelta: 1,
     costSaving: 40,
     co2Delta: 0.1,
@@ -4129,11 +4529,11 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'solar-pv',
     title: 'Solar photovoltaic panels',
     meta: 'No solar PV on EPC · recommended',
-    desc: 'Solar PV generates electricity from sunlight - cutting your electricity bill and earning Smart Export Guarantee payments for surplus energy.',
+    desc: 'Solar PV generates electricity from sunlight — cutting your electricity bill and earning Smart Export Guarantee payments for surplus energy.',
     impact:
       'Score +8 pts · saves ~£248/yr · Smart Export Guarantee payments too',
     question: 'Have solar panels been installed since the last EPC?',
-    doneLabel: 'Yes - panels fitted',
+    doneLabel: 'Yes — panels fitted',
     scoreDelta: 8,
     costSaving: 248,
     co2Delta: 1.0,
@@ -4263,7 +4663,7 @@ const simSteps = computed<SimStep[]>(() => {
  * Convert one EPC recommendation row → the static fields a SimStep needs.
  * The `typicalSaving` is real £/yr from EPC; cost ranges are real strings.
  * The `scoreDelta` is heuristically derived from the saving (anchored so a
- * £40/yr save ≈ +2pts, £200 ≈ +5pts, £400+ ≈ +8pts) - the EPC
+ * £40/yr save ≈ +2pts, £200 ≈ +5pts, £400+ ≈ +8pts) — the EPC
  * "resulting SAP" isn't a per-recommendation delta, so this is the cleanest
  * way to feed the gauge without misleading numbers.
  */
@@ -4327,15 +4727,6 @@ function closeSimBillDrawer() {
   simBillError.value = ''
   simBillFile.value = null
 }
-const {
-  dragStyle: simBillDragStyle,
-  onTouchStart: onSimBillTouchStart,
-  onTouchMove: onSimBillTouchMove,
-  onTouchEnd: onSimBillTouchEnd,
-} = useSwipeToDismiss({
-  onDismiss: closeSimBillDrawer,
-  handleSelector: '.qw-modal-handle, .qw-modal-header',
-})
 function onSimBillFilePicked(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
@@ -4409,7 +4800,7 @@ async function saveSimBill() {
     showToast({ message: msg, iconEmoji: '✓' })
     closeSimBillDrawer()
   } catch (e) {
-    simBillError.value = 'Upload failed - please try again.'
+    simBillError.value = 'Upload failed — please try again.'
   } finally {
     simBillUploading.value = false
   }
@@ -4481,17 +4872,13 @@ function makeAnimRef(source: () => number, durMs = 700, decimals = 0) {
   const out = ref(0)
   let raf = 0
   function animateTo(to: number) {
-    // SSR safety — `watch(..., { immediate: true })` fires this during
-    // <script setup>, which runs on the server too. Bail before touching
-    // any browser-only globals (cancelAnimationFrame / requestAnimationFrame
-    // / performance.now). The onMounted run on the client will animate.
-    if (typeof window === 'undefined') {
-      out.value = to
-      return
-    }
+    // On the server (SSR) there is no rAF — just set the final value so the
+    // initial render is correct and we don't throw during setup.
     const reduce =
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      typeof window === 'undefined' ||
+      typeof requestAnimationFrame === 'undefined' ||
+      (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     if (reduce) {
       out.value = to
       return
@@ -4536,16 +4923,13 @@ function makeTypewriterRef(source: () => string, msPerChar = 32) {
       clearInterval(timer)
       timer = null
     }
-    const full = text || ''
-    // setInterval isn't allowed during SSR — render the full string
-    // server-side and let the client take over the animation on mount.
-    if (typeof window === 'undefined') {
-      out.value = full
-      return
-    }
+    // On the server (SSR) there is no timer loop — render the full text so the
+    // initial markup is complete and we don't call setInterval during setup.
     const reduce =
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      typeof window === 'undefined' ||
+      (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    const full = text || ''
     if (reduce || !full) {
       out.value = full
       return
@@ -4612,41 +4996,41 @@ const simEpcNudge = computed<{
   if (simBillUploaded.value) {
     return {
       variant: 'bill',
-      icon: '💡',
+      icon: '/homescore-icon/utilityBills.png',
       title: 'Your actual spend is feeding your score',
-      body: `Your utility bill is more accurate than any EPC estimate. Your HomeScore, bills figure and carbon footprint now reflect what you're really paying - not what a ${simEpcYear.value} survey guessed.`,
+      body: `Your utility bill is more accurate than any EPC estimate. Your HomeScore, bills figure and carbon footprint now reflect what you're really paying — not what a ${simEpcYear.value} survey guessed.`,
     }
   }
   if (simScore.value >= 69) {
     return {
       variant: 'good',
-      icon: '✅',
+      icon: '/homescore-icon/shield.png',
       title: 'Your home is already performing well',
-      body: "Your updated score reflects the improvements you've made. You're in a strong position - no urgent action needed on your EPC right now.",
+      body: "Your updated score reflects the improvements you've made. You're in a strong position — no urgent action needed on your EPC right now.",
     }
   }
   if (simAnsweredCount.value >= 3 && simBillsDelta.value >= 60) {
     return {
       variant: 'improved',
-      icon: '📋',
-      title: "Your HomeScore is updated - your official EPC isn't",
-      body: "The changes you've added are now reflected in your HomeScore, bills estimate and carbon footprint. Your official EPC won't change until you commission a new assessment - worth considering if you're thinking of selling.",
-      ctaLabel: 'Get a new EPC - from £50 →',
+      icon: '/homescore-icon/clipboardChecklist.png',
+      title: "Your HomeScore is updated — your official EPC isn't",
+      body: "The changes you've added are now reflected in your HomeScore, bills estimate and carbon footprint. Your official EPC won't change until you commission a new assessment — worth considering if you're thinking of selling.",
+      ctaLabel: 'Get a new EPC — from £50 →',
     }
   }
   return {
     variant: 'neutral',
-    icon: '🏷️',
+    icon: '/homescore-icon/target.png',
     title: 'Every improvement counts',
-    body: `As you answer the questions above, your bills estimate, carbon footprint and HomeScore update in real time - based on what's actually been done, not just your ${simEpcYear.value} EPC.`,
+    body: `As you answer the questions above, your bills estimate, carbon footprint and HomeScore update in real time — based on what's actually been done, not just your ${simEpcYear.value} EPC.`,
   }
 })
 
 function simBadge(status: SimStatus): string {
-  if (status === 'done') return '✅'
-  if (status === 'diff') return '🔄'
-  if (status === 'todo') return '📋'
-  if (status === 'skip') return '⊘'
+  if (status === 'done') return 'i-lucide-circle-check'
+  if (status === 'diff') return 'i-lucide-refresh-cw'
+  if (status === 'todo') return 'i-lucide-circle-dashed'
+  if (status === 'skip') return 'i-lucide-circle-slash'
   return ''
 }
 
@@ -4777,7 +5161,7 @@ const pqScoreExplainer = computed<string>(() => {
 // Refined per-pillar breakdown: take the EPC-derived baseline and credit
 // each accepted simulator improvement to the pillar it belongs to.
 const refinedBreakdownBars = computed(() => {
-  const base = (autoBreakdown.value ?? {}) as Record<string, number>
+  const base = (autoBreakdown.value ?? {}) as unknown as Record<string, number>
   const pillar: Record<string, number> = {
     heating: base.heating ?? 0,
     structure: base.structure ?? 0,
@@ -4838,74 +5222,8 @@ const refinedBreakdownBars = computed(() => {
 // Move to the publish funnel — gated so only verified owners reach the
 // publish preview. See `gateOwnerAction()` for the chain.
 function goToPublish() {
-  // Owners with a passport already on file should never see the legacy
-  // "Publish to your street" flow — route them to their passport.
-  if (ownedPassportId.value) {
-    router.push(`/passportview/${ownedPassportId.value}`)
-    return
-  }
   gateOwnerAction('publish')
 }
-
-function goToOwnedPassport() {
-  if (ownedPassportId.value) {
-    router.push(`/passportview/${ownedPassportId.value}`)
-  } else {
-    router.push(`/claim/${propertyId}`)
-  }
-}
-
-// Boost view's "🚀 Start my Passport →" button. Replaces the legacy
-// `screen = 'kyc'` toggle (which dropped users into the dead inline
-// verify-ownership/publish loop). Owners → their passport view;
-// everyone else → the real /claim flow which does KYC + Land Registry.
-function onBoostStartPassport() {
-  if (ownedPassportId.value) {
-    router.push(`/passportview/${ownedPassportId.value}`)
-  } else {
-    router.push(`/claim/${propertyId}`)
-  }
-}
-
-// Catch-all: the legacy in-page surfaces ('publish' / 'kyc' /
-// 'kyc-pending' / 'published') predate the real /claim and /passportview
-// flows and shouldn't be reachable any more. Whatever sets screen to
-// one of those values, bounce the user out of it before the template
-// renders the stale UI. Passport-owners → their passport view; everyone
-// else → the canonical /claim/<id> flow which does KYC + Land Registry
-// against the real backend.
-watch(
-  () => screen.value,
-  (s) => {
-    // 'quick-wins' is the pre-V6BoostView inline boost screen — same
-    // intent but the new V6BoostView (screen='boost') is the only
-    // surface we maintain now. Redirect in-page so anyone landing there
-    // sees the supported design.
-    if (s === 'quick-wins') {
-      screen.value = 'boost'
-      return
-    }
-    if (s !== 'publish' && s !== 'kyc' && s !== 'kyc-pending' && s !== 'published') return
-    if (ownedPassportId.value) {
-      router.replace(`/passportview/${ownedPassportId.value}`)
-    } else {
-      router.replace(`/claim/${propertyId}?next=${encodeURIComponent(`/homescore/${propertyId}?screen=boost`)}`)
-    }
-  },
-)
-// When a passport id arrives late (right after the claim chain finishes)
-// and the page is still parked on a stale screen, redirect again so the
-// user lands cleanly on their new passport view.
-watch(
-  () => ownedPassportId.value,
-  (id) => {
-    if (!id) return
-    const s = screen.value
-    if (s === 'publish' || s === 'kyc' || s === 'kyc-pending' || s === 'published') {
-      router.replace(`/passportview/${id}`)
-    }
-  },
-)
 
 // ── Publish screen helpers ───────────────────────────────────
 // Annual energy saving the owner is contributing.
@@ -4972,12 +5290,10 @@ async function loadStreetPublishStats() {
 // (e.g. after the user just published — the count should now include them).
 watch(screen, (s) => {
   if (s === 'publish' || s === 'published') void loadStreetPublishStats()
-  // V6ScoreView's street panel and the buyer-results view both consume
-  // streetEnergyRank, so hydrate it on either screen.
-  if (s === 'buyer-results' || s === 'landing') void loadStreetEnergyRank()
+  if (s === 'buyer-results') void loadStreetEnergyRank()
 })
 const pubMilestones = [
-  { target: 1, label: 'Pioneer 🏅' },
+  { target: 1, label: 'Pioneer' },
   { target: 5, label: 'Homes' },
   { target: 10, label: 'Homes' },
   { target: 25, label: 'Homes' },
@@ -4988,7 +5304,7 @@ const pubMilestones = [
  *
  * By the time the user is on this screen we've already routed them through
  * `gateOwnerAction('publish')`, so in the happy path they're a verified
- * owner with a claimed passport. We can publish directly - no KYC sub-flow,
+ * owner with a claimed passport. We can publish directly — no KYC sub-flow,
  * just call `confirmPublish()` and land on the published screen.
  *
  * Defensive: if the user somehow arrived here without going through the gate
@@ -5004,7 +5320,9 @@ async function onPublishToStreet() {
     gateOwnerAction('publish')
     return
   }
-  await confirmPublish()
+  // Verified owner — step through the ownership-verification screen first
+  // (Verify → Publish → Passport), which then confirms the publish.
+  screen.value = 'kyc'
 }
 
 // User picked a KYC verification method. Records the intent via
@@ -5103,13 +5421,7 @@ async function claimOrAccessPassport() {
     const { getPassportStatus } = usePassportClaim()
     const status = await getPassportStatus(propertyId)
 
-    if (!status) {
-      // Status genuinely unknown (fetch failed) — don't guess "no
-      // passport" and risk sending an already-claimed owner back through
-      // claim/KYC. Land them on the property page instead, same as any
-      // other failure here.
-      router.push(`/property/${propertyId}`)
-    } else if (status.hasPassport && status.passportId) {
+    if (status.hasPassport && status.passportId) {
       if (
         status.isOwner ||
         status.isBuyer ||
@@ -5170,75 +5482,19 @@ function goToPassport() {
   router.push(`/property/${propertyId}`)
 }
 
-// "Go to your dashboard" on the owner fork — takes the user straight to
-// their own passport view (the canonical owner-dashboard surface).
-// `ownedPassportId` is populated from the passport-status fetch on
-// mount; if it isn't ready yet (race), fall back to the property page
-// which itself routes through to the passport based on state.
-function goToDashboard() {
-  if (ownedPassportId.value) {
-    router.push(`/passportview/${ownedPassportId.value}`)
-    return
-  }
-  router.push(`/property/${propertyId}`)
-}
-
-// Watch this (in-progress) property — route to the property page with
-// ?watched=1, which runs the full watch flow (saves it to the buyer's
-// profile + registers interest + toast). Guests are auth-gated en route.
-function goToWatch() {
-  router.push(`/property/${propertyId}?watched=1`)
-}
-
-// "Build my Property Passport" from the level-up / pathway screens →
-// the pre-claim dashboard (progress, EPC age, locked doc tiles, real
-// claim CTA), not straight into the claim wizard.
-function goToPassportDashboard() {
-  router.push(`/homescore/passport/${propertyId}`)
-}
-
-// Unclaimed claim CTA → property page with the "Choose your Passport"
-// drawer auto-opened. Guests sign in first and resume there.
-function goToClaimPassport() {
-  const target = `/property/${propertyId}?claim=1`
-  const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
-  if (!token) {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('redirectAfterLogin', target)
-    }
-    router.push('/onboarding/signin')
-    return
-  }
-  router.push(target)
-}
-
-// In-progress / published "buy the Passport" CTA → property page with the
-// £99 unlock drawer auto-opened. Guests sign in first and resume there.
-function goToBuyPassport() {
-  const target = `/property/${propertyId}?unlock=1`
-  const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
-  if (!token) {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('redirectAfterLogin', target)
-    }
-    router.push('/onboarding/signin')
-    return
-  }
-  router.push(target)
-}
-
 // ── Buyer results helpers ─────────────────────────────────────
 
-const buyerAnnualCost = computed(() => {
-  const cert = property.value?.epcCert
-  const heating = Number(cert?.heatingCostCurrent ?? 0)
-  const hotWater = Number(cert?.hotWaterCostCurrent ?? 0)
-  const lighting = Number(cert?.lightingCostCurrent ?? 0)
+// Real per-property EPC running cost. The backend exposes these three
+// figures directly on the property row (heating / hot water / lighting
+// current cost). If none are on file yet we return null so the UI can show
+// an honest "no verified figure" state rather than an invented number.
+const buyerAnnualCost = computed<number | null>(() => {
+  const p: any = property.value
+  const heating = Number(p?.heatingCostCurrent ?? 0)
+  const hotWater = Number(p?.hotWaterCostCurrent ?? 0)
+  const lighting = Number(p?.lightingCostCurrent ?? 0)
   const sum = Math.round(heating + hotWater + lighting)
-  if (sum > 0) return sum
-  return 1347
+  return sum > 0 ? sum : null
 })
 
 // Buyer-results screen: address typewriter + £ count-up. Same pattern as
@@ -5250,9 +5506,10 @@ const bvAddressTyped = makeTypewriterRef(() => bvAddressFull.value, 32)
 const bvAddressTypingDone = computed(
   () => bvAddressTyped.value.length >= bvAddressFull.value.length,
 )
-const bvAnnualCostAnimated = makeAnimRef(() => buyerAnnualCost.value, 900)
-const bvAnnualCostDisplay = computed(() =>
-  Math.round(bvAnnualCostAnimated.value),
+const bvAnnualCostAnimated = makeAnimRef(() => buyerAnnualCost.value ?? 0, 900)
+// null when the backend has no verified running-cost figure on file.
+const bvAnnualCostDisplay = computed<number | null>(() =>
+  buyerAnnualCost.value == null ? null : Math.round(bvAnnualCostAnimated.value),
 )
 
 // ── Buyer-results (watch screen) helpers ─────────────────────
@@ -5276,17 +5533,16 @@ async function loadStreetEnergyRank() {
     const data = await res.json()
     streetEnergyRank.value = data
   } catch {
-    /* keep null - UI falls back gracefully */
+    /* keep null — UI falls back gracefully */
   }
 }
 
-// Real cheapest-on-street figure when ≥3 neighbours are enriched, else
-// falls back to a heuristic so the line still renders.
-const bvStreetBest = computed(() => {
+// Real cheapest-on-street figure from the backend street-energy-rank
+// endpoint. null when fewer than 3 neighbours are enriched — the template
+// hides the comparison line rather than showing an invented number.
+const bvStreetBest = computed<number | null>(() => {
   const real = streetEnergyRank.value?.bestCost
-  if (typeof real === 'number' && real > 0) return real
-  const own = buyerAnnualCost.value
-  return Math.max(680, Math.round(own * 0.78))
+  return typeof real === 'number' && real > 0 ? real : null
 })
 
 // "Nth" label (1st, 2nd, 3rd, 4th, …) for the cost-hero stats row.
@@ -5309,37 +5565,94 @@ const bvStreetRankLabel = computed<string | null>(() => {
   }
 })
 
-// ── Report tabs — jump between sections of the buyer-results screen.
-// "Sold" has no backing data on this screen yet (would need a fresh
-// price-paid fetch) — shown as an honest empty state rather than a
-// fabricated panel. Energy/Risks reuse the two sections that already
-// existed; Costs/Area are small new panels built from data already
-// loaded here (street-energy-rank), not invented numbers.
-const bvTabs = [
-  { key: 'energy', emoji: '⚡', label: 'Energy' },
-  { key: 'costs', emoji: '💰', label: 'Costs' },
-  { key: 'sold', emoji: '📈', label: 'Sold' },
-  { key: 'risks', emoji: '⚠️', label: 'Risks' },
-  { key: 'area', emoji: '📍', label: 'Area' },
-] as const
-const bvActiveTab = ref<(typeof bvTabs)[number]['key']>('energy')
-
-// "Compared to area" stat on the Buyer Snapshot card — real comparison
-// against the street's average running cost (same source as bvStreetBest),
-// not a guess. Null when we don't have enough neighbours enriched yet, so
-// the template can hide the stat rather than show a made-up value.
-const bvAreaComparisonLabel = computed<string | null>(() => {
-  const avg = streetEnergyRank.value?.averageCost
-  if (typeof avg !== 'number' || avg <= 0) return null
-  return bvAnnualCostDisplay.value <= avg ? 'Below average' : 'Above average'
+// ── Address hero + buyer snapshot helpers ─────────────────────
+// Floor area straight off the EPC record (null when the register has none,
+// so the meta line just drops the "· 73m²" segment).
+const bvFloorArea = computed<number | null>(() => {
+  const p: any = property.value
+  const a = Number(p?.floorAreaSqm ?? p?.sqm ?? 0)
+  return a > 0 ? Math.round(a) : null
 })
 
-// "Areas worth checking" stat — count of the 5 EPC pillars (heating,
-// structure, electrics, plumbing, efficiency) that buyerRisks below flags
-// as a real concern, not a fixed/decorative number.
-const bvAreasWorthCheckingCount = computed(
-  () => buyerRisks.value.filter((r) => r.tone === 'warn').length,
+// Plain-English read on what the EPC band means for running costs.
+const bvEpcCostHint = computed(() => {
+  const g = String(property.value?.epcRating || '').toUpperCase()
+  if (g === 'A' || g === 'B') return 'Very low running costs'
+  if (g === 'C') return 'Lower running costs'
+  if (g === 'D') return 'Average running costs'
+  if (g) return 'Higher running costs'
+  return ''
+})
+
+const bvPassportStateLabel = computed(() =>
+  bvPassportState.value === 'published'
+    ? 'Verified Passport live'
+    : bvPassportState.value === 'inProgress'
+      ? 'Passport in progress'
+      : 'No Passport yet',
 )
+const bvPassportStateHint = computed(() =>
+  bvPassportState.value === 'published'
+    ? 'The owner has published a verified Passport for this home.'
+    : bvPassportState.value === 'inProgress'
+      ? 'The owner has started a Passport for this home but not published it yet.'
+      : 'No owner has claimed this home yet — everything here comes from public records.',
+)
+
+// Street average running cost from /street-energy-rank. null when the
+// backend hasn't enriched enough neighbours to publish an average.
+const bvStreetAvg = computed<number | null>(() => {
+  const a = streetEnergyRank.value?.averageCost
+  return typeof a === 'number' && a > 0 ? a : null
+})
+// £ difference between this home and the street average (+ = costs more).
+const bvStreetDiff = computed<number | null>(() => {
+  const mine = buyerAnnualCost.value
+  const avg = bvStreetAvg.value
+  if (mine == null || avg == null) return null
+  return Math.round(mine - avg)
+})
+// "Compared to area" column of the snapshot — hidden entirely when there's
+// no real street average to compare against.
+const bvAreaCompare = computed<{
+  label: string
+  sub: string
+  tone: 'good' | 'warn' | 'flat'
+} | null>(() => {
+  const d = bvStreetDiff.value
+  if (d == null) return null
+  if (d <= -50)
+    return {
+      label: 'Below average',
+      sub: 'Lower running costs than similar homes',
+      tone: 'good',
+    }
+  if (d >= 50)
+    return {
+      label: 'Above average',
+      sub: 'Higher running costs than similar homes',
+      tone: 'warn',
+    }
+  return {
+    label: 'In line with area',
+    sub: 'Running costs match similar homes nearby',
+    tone: 'flat',
+  }
+})
+// Footnote under the snapshot: where the running-cost figure comes from,
+// plus the street rank when the backend has enough neighbours to publish it.
+const bvSnapFoot = computed<string | null>(() => {
+  const parts: string[] = []
+  if (bvAnnualCostDisplay.value != null)
+    parts.push(
+      "Running cost from the property's EPC — heating, hot water & lighting",
+    )
+  if (bvStreetRankLabel.value && streetEnergyRank.value?.total)
+    parts.push(
+      `${bvStreetRankLabel.value} cheapest to run of ${streetEnergyRank.value.total} homes on this street`,
+    )
+  return parts.length ? parts.join(' · ') : null
+})
 
 const bvEpcColor = computed(() => {
   const map: Record<string, string> = {
@@ -5366,44 +5679,268 @@ const bvPassportState = computed<'unclaimed' | 'inProgress' | 'published'>(
 
 // Live "today" search count from PropertySearchLog (via /search-stats).
 const bvSearches = computed<number>(() => searchStats.value?.today ?? 0)
-const bvMonthSearches = computed<number>(
-  () => searchStats.value?.thisMonth ?? 0,
+// Live "watching" count from the same /search-stats payload.
+const bvWatchers = computed<number>(
+  () => (searchStats.value as any)?.watchers ?? 0,
 )
 
-const bvQuestions = [
-  {
-    icon: '/op-icons/homescore/flame.png',
-    title: 'When was the boiler last serviced?',
-    sub: 'Heating scores low - ask for the service record or Gas Safe certificate.',
-  },
-  {
-    icon: '/op-icons/homescore/bricks.png',
-    title: 'Is there cavity wall or loft insulation?',
-    sub: 'The biggest cost driver at this score. Ask for any installer guarantees.',
-  },
-  {
-    icon: '/op-icons/passportview/titleDeedsAndPlan.png',
-    title: 'Can you share the full EPC report?',
-    sub: 'The public register only shows the grade - the full document lists every item.',
-  },
-  {
-    icon: '/op-icons/homescore/lightning.png',
+// Per-recommendation icon (ported from the reference clone so each EPC
+// improvement gets a topic-matched glyph instead of a generic spanner).
+function iconForAskTitle(title: string): string {
+  const t = (title ?? '').toLowerCase()
+  if (/solar pv|photovoltaic/.test(t)) return '/homescore-icon/lightning.png'
+  if (/solar (?:water|thermal)/.test(t)) return '/homescore-icon/tap.png'
+  if (/(loft|roof)/.test(t)) return '/homescore-icon/roof.png'
+  if (/(cavity|wall)/.test(t)) return '/homescore-icon/walls.png'
+  if (/floor/.test(t)) return '/homescore-icon/floor.png'
+  if (/(led|light)/.test(t)) return '/homescore-icon/lightbulb.png'
+  if (/(boiler|heat pump|heating)/.test(t)) return '/homescore-icon/boiler.png'
+  if (/window|glazing/.test(t)) return '/homescore-icon/windows.png'
+  return '/homescore-icon/clipboardChecklist.png'
+}
+
+// Questions to ask the owner — built from the property's real EPC
+// recommendations (titles come straight from the backend). Wording matches
+// the reference clone ("Has the owner done: …?"). Empty when the EPC has no
+// recommendations on file, in which case the whole section is hidden.
+const bvQuestions = computed(() => {
+  const out: { icon: string; title: string; sub: string }[] = []
+  const recs = (property.value as any)?.epcRecommendations
+  if (Array.isArray(recs)) {
+    // Year the current EPC was lodged — used in the fallback prompt so buyers
+    // can ask whether a listed improvement has been done since.
+    const lodged = (property.value as any)?.lodgementDate
+    const epcYear = lodged ? new Date(lodged).getFullYear() : null
+    recs.slice(0, 3).forEach((r: any, i: number) => {
+      const title = String(r?.title ?? `EPC recommendation ${i + 1}`).trim()
+      out.push({
+        icon: iconForAskTitle(title),
+        title: `Has the owner done: ${title}?`,
+        sub:
+          r?.description ||
+          `Listed on the EPC. Ask if it's been done since${epcYear && Number.isFinite(epcYear) ? ` ${epcYear}` : ''}.`,
+      })
+    })
+  }
+  // Always-relevant safety-document questions (general buyer due diligence,
+  // not property-specific figures) — mirrors the deployed report.
+  out.push({
+    icon: '/homescore-icon/gasSafety.png',
+    title: 'Do you have a Gas Safety certificate?',
+    sub: 'A CP12 from a Gas Safe registered engineer confirms the boiler and gas appliances are safe — ask for the latest one.',
+  })
+  out.push({
+    icon: '/homescore-icon/electrician.png',
     title: 'Do you have an EICR certificate?',
-    sub: 'Electrical Installation Condition Report - not legally required for sales, but worth asking.',
-  },
+    sub: 'Electrical Installation Condition Report — not legally required, but worth asking.',
+  })
+  return out
+})
+
+// ── Buyer report tabs (Energy / Costs / Sold / Risks / Area) ──────────
+type BuyerTab = 'energy' | 'costs' | 'sold' | 'risks' | 'area'
+const buyerTab = ref<BuyerTab>('energy')
+const buyerTabs: { id: BuyerTab; label: string; icon: string }[] = [
+  { id: 'energy', label: 'Energy', icon: '/homescore-icon/lightning.png' },
+  { id: 'costs', label: 'Costs', icon: '/homescore-icon/utilityBills.png' },
+  { id: 'sold', label: 'Sold', icon: '/homescore-icon/cashAndCoins.png' },
+  { id: 'risks', label: 'Risks', icon: '/homescore-icon/shield.png' },
+  { id: 'area', label: 'Area', icon: '/homescore-icon/environmental.png' },
 ]
 
-const buyerEpcGrade = computed(() => {
-  const rating = property.value?.epcRating
-  if (rating) return String(rating).toUpperCase()
-  const score = autoScoreVal.value
-  if (score >= 92) return 'A'
-  if (score >= 81) return 'B'
-  if (score >= 69) return 'C'
-  if (score >= 55) return 'D'
-  if (score >= 39) return 'E'
-  if (score >= 21) return 'F'
-  return 'G'
+// ── Area tab — real crime data from data.police.uk ────────────
+// Public, keyless API. `crimes-street/all-crime?lat=&lng=&date=YYYY-MM`
+// returns every street-level crime within a 1-mile radius of the point for
+// that month. We load the latest available month lazily when the Area tab is
+// first opened, then aggregate by category for the breakdown bars.
+const CRIME_LABELS: Record<string, string> = {
+  'anti-social-behaviour': 'Anti-social behaviour',
+  'bicycle-theft': 'Bicycle theft',
+  burglary: 'Burglary',
+  'criminal-damage-arson': 'Criminal damage & arson',
+  drugs: 'Drugs',
+  'other-crime': 'Other crime',
+  'other-theft': 'Other theft',
+  'possession-of-weapons': 'Possession of weapons',
+  'public-order': 'Public order',
+  robbery: 'Robbery',
+  shoplifting: 'Shoplifting',
+  'theft-from-the-person': 'Theft from the person',
+  'vehicle-crime': 'Vehicle crime',
+  'violent-crime': 'Violence & sexual offences',
+}
+type AreaCrime = {
+  status: 'loading' | 'ready' | 'empty' | 'error'
+  month: string | null
+  total: number
+  categories: { key: string; label: string; count: number }[]
+}
+const areaCrime = ref<AreaCrime | null>(null)
+
+function formatCrimeMonth(m: string): string {
+  const [y, mo] = m.split('-').map(Number)
+  const d = new Date(y, (mo || 1) - 1, 1)
+  return isNaN(d.getTime())
+    ? m
+    : d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+}
+
+async function loadAreaCrime() {
+  if (areaCrime.value) return // already attempted
+  const p: any = property.value
+  const lat = Number(p?.latitude)
+  const lng = Number(p?.longitude)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    areaCrime.value = { status: 'empty', month: null, total: 0, categories: [] }
+    return
+  }
+  areaCrime.value = { status: 'loading', month: null, total: 0, categories: [] }
+  try {
+    // Newest available month (police data lags ~2 months).
+    let month = ''
+    try {
+      const dRes = await fetch('https://data.police.uk/api/crimes-street-dates')
+      if (dRes.ok) {
+        const dates = await dRes.json()
+        month = Array.isArray(dates) && dates[0]?.date ? dates[0].date : ''
+      }
+    } catch {}
+    if (!month) {
+      const now = new Date()
+      now.setMonth(now.getMonth() - 2)
+      month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    }
+    const res = await fetch(
+      `https://data.police.uk/api/crimes-street/all-crime?lat=${lat}&lng=${lng}&date=${month}`,
+    )
+    if (!res.ok) throw new Error(String(res.status))
+    const crimes = await res.json()
+    if (!Array.isArray(crimes) || crimes.length === 0) {
+      areaCrime.value = { status: 'empty', month, total: 0, categories: [] }
+      return
+    }
+    const counts: Record<string, number> = {}
+    for (const c of crimes) {
+      const key = String(c?.category ?? 'other-crime')
+      counts[key] = (counts[key] ?? 0) + 1
+    }
+    const categories = Object.entries(counts)
+      .map(([key, count]) => ({
+        key,
+        label: CRIME_LABELS[key] ?? key,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count)
+    areaCrime.value = {
+      status: 'ready',
+      month,
+      total: crimes.length,
+      categories,
+    }
+  } catch {
+    areaCrime.value = { status: 'error', month: null, total: 0, categories: [] }
+  }
+}
+
+// Lazy-load the crime data the first time the Area tab is opened.
+watch(buyerTab, (t) => {
+  if (t === 'area') loadAreaCrime()
+})
+
+// Costs tab — real backend figures. Prefers the /running-costs breakdown
+// (energy from the EPC tariff model + water regional avg + council tax band),
+// which is what the deployed app and the standalone costs page show. Falls
+// back to the bare property fields until running-costs resolves. All numbers
+// come from the backend — the water figure is the region's published average
+// (labelled as such), not an invented per-property estimate.
+const buyerCosts = computed(() => {
+  const p: any = property.value
+  const rc: any = runningCosts.value
+
+  const energy: number | null =
+    rc?.energy?.total ?? buyerAnnualCost.value ?? null
+  const water: number | null = rc?.water?.cost ?? null
+  const waterLabel: string | null = rc?.water?.label ?? null
+  const councilTax: number | null =
+    rc?.councilTax?.cost ?? p?.councilTaxAnnual ?? null
+  const councilTaxBand: string | null =
+    rc?.councilTax?.band ?? p?.councilTaxBand ?? null
+  const council: string | null =
+    rc?.councilTax?.council ?? p?.councilTaxCouncilName ?? null
+
+  const total = (energy ?? 0) + (water ?? 0) + (councilTax ?? 0)
+  return {
+    energy,
+    water,
+    waterLabel,
+    councilTax,
+    councilTaxBand,
+    council,
+    hasAny: energy != null || water != null || councilTax != null,
+    total,
+  }
+})
+
+// Sold tab — estimated value + last Land Registry sale (real fields).
+const buyerSold = computed(() => {
+  const p: any = property.value
+  const sh = soldHistory.value
+  // Sale history for this exact address — prefer the Land Registry list,
+  // fall back to the single lastSold* fields on the property record.
+  const own: any[] = (sh?.thisProperty ?? []).slice().sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  )
+  const lastFromHistory = own[0] ?? null
+  const nearby: any[] = (sh?.nearbySales ?? [])
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 6)
+  return {
+    estimated: p?.estimatedPrice ?? null,
+    lastPrice: lastFromHistory?.price ?? p?.lastSoldPrice ?? null,
+    lastDate: lastFromHistory?.date ?? p?.lastSoldDate ?? null,
+    history: own,
+    comparables: nearby,
+  }
+})
+function formatSoldDate(d: string): string {
+  const date = new Date(d)
+  if (isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+}
+// Title-cases a Land Registry address ("78, MANTILLA DRIVE" → "78, Mantilla Drive").
+function titleCaseAddress(s: string): string {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+const buyerFlood = computed<string | null>(() => property.value?.floodRisk ?? null)
+
+// Public-record risk rows from the backend running-costs endpoint (flood,
+// mining subsidence, planning). Same source the deployed app / costs page use.
+// tone: 'warn' for low/medium/high flags, 'ok' for a clear result.
+const buyerPublicRisks = computed(() => {
+  const risks: any = runningCosts.value?.risks
+  if (!risks) return [] as { key: string; icon: string; title: string; body: string; pill: string; tone: 'warn' | 'ok' }[]
+  const rows: { key: string; icon: string; title: string; body: string; pill: string; tone: 'warn' | 'ok' }[] = []
+  const map: { key: string; icon: string; title: string }[] = [
+    { key: 'flood', icon: HS_ICON.flood, title: 'Flood risk' },
+    { key: 'mining', icon: HS_ICON.mining, title: 'Mining subsidence' },
+    { key: 'planning', icon: HS_ICON.planning, title: 'Planning history' },
+  ]
+  for (const m of map) {
+    const r = risks[m.key]
+    if (!r) continue
+    rows.push({
+      key: m.key,
+      icon: m.icon,
+      title: `${m.title} — ${r.pill}`,
+      body: r.label,
+      pill: r.pill,
+      tone: r.level === 'clear' ? 'ok' : 'warn',
+    })
+  }
+  return rows
 })
 
 const buyerRisks = computed(() => {
@@ -5429,16 +5966,16 @@ const buyerRisks = computed(() => {
   if (heatingPct < 60) {
     all.push({
       key: 'heating',
-      icon: '/op-icons/homescore/flame.png',
-      title: 'Heating - needs attention',
+      icon: HS_ICON.heating,
+      title: 'Heating — needs attention',
       body: 'EPC flags old heating system. Boiler replacement could cost £2,500–£4,000.',
       tone: 'warn',
     })
   } else {
     all.push({
       key: 'heating',
-      icon: '/op-icons/homescore/flame.png',
-      title: 'Heating - looks reasonable',
+      icon: HS_ICON.heating,
+      title: 'Heating — looks reasonable',
       body: 'Heating efficiency is in line with similar homes. Worth asking for the latest service record.',
       tone: 'ok',
     })
@@ -5448,16 +5985,16 @@ const buyerRisks = computed(() => {
   if (structurePct < 60) {
     all.push({
       key: 'structure',
-      icon: '/op-icons/homescore/bricks.png',
-      title: 'Insulation - below average',
+      icon: HS_ICON.structure,
+      title: 'Insulation — below average',
       body: 'Likely no cavity wall insulation. Adds ~£400/yr vs best-in-street.',
       tone: 'warn',
     })
   } else {
     all.push({
       key: 'structure',
-      icon: '/op-icons/homescore/bricks.png',
-      title: 'Insulation - looks reasonable',
+      icon: HS_ICON.structure,
+      title: 'Insulation — looks reasonable',
       body: 'Insulation appears adequate for the property age. Confirm any guarantees with the seller.',
       tone: 'ok',
     })
@@ -5467,16 +6004,16 @@ const buyerRisks = computed(() => {
   if (electricsPct >= 60) {
     all.push({
       key: 'electrics',
-      icon: '/op-icons/homescore/lightning.png',
-      title: 'Electrics - looks reasonable',
+      icon: HS_ICON.electrics,
+      title: 'Electrics — looks reasonable',
       body: 'Average for a property of this age. Worth confirming EICR.',
       tone: 'ok',
     })
   } else {
     all.push({
       key: 'electrics',
-      icon: '/op-icons/homescore/lightning.png',
-      title: 'Electrics - worth checking',
+      icon: HS_ICON.electrics,
+      title: 'Electrics — worth checking',
       body: 'Ask for a recent EICR certificate to rule out rewiring costs.',
       tone: 'warn',
     })
@@ -5492,8 +6029,8 @@ const buyerRisks = computed(() => {
   if (anyOk && !all.some((r) => r.tone === 'ok')) {
     all.push({
       key: 'other',
-      icon: '✓',
-      title: 'Other systems - look reasonable',
+      icon: HS_ICON.other,
+      title: 'Other systems — look reasonable',
       body: 'Several EPC pillars are average-or-better. Confirm documentation with the seller.',
       tone: 'ok',
     })
@@ -5502,38 +6039,110 @@ const buyerRisks = computed(() => {
   return all.slice(0, 3)
 })
 
-const { toggleSave } = usePropertyActions()
-const { showToast } = useAppToast()
-
-// Profile (for the "Welcome back, {firstName}" greeting on the verified
-// buyer card). Lazily loaded so guests don't pay for the call.
-const { profile: userProfile, fetchProfile } = useProfile()
-onMounted(() => {
-  if (typeof localStorage !== 'undefined' && localStorage.getItem('token')) {
-    if (!userProfile.value) fetchProfile().catch(() => {})
+// ── Buyer confidence gauge ────────────────────────────────────
+// Headline confidence read for buyers, driven by the real EPC-derived
+// HomeScore + a count of pillars that fall below 60% of their max (the
+// "flags" a buyer should look into). No invented data — all from the EPC.
+const buyerConfidence = computed(() => {
+  const s = Number(result.value.total) || 0
+  const bd = autoBreakdown.value as any
+  const maxes: Record<string, number> = {
+    heating: 20,
+    structure: 25,
+    efficiency: 20,
+    electrics: 15,
+    plumbing: 20,
+  }
+  let flags = 0
+  for (const k of Object.keys(maxes)) {
+    const v = Number(bd?.[k] ?? 0)
+    if (maxes[k] > 0 && v / maxes[k] < 0.6) flags++
+  }
+  // Buyer-confidence label wording ported from the reference clone so the
+  // headline matches (e.g. a 69 reads "Above average public record"). The
+  // insulation-flag override also mirrors the clone's cautious framing.
+  const recs = (property.value as any)?.epcRecommendations
+  const insulationFlags = Array.isArray(recs)
+    ? recs.filter((r: any) =>
+        /insulation|cavity|loft|floor|wall/i.test(r?.title || ''),
+      ).length
+    : 0
+  let label: string
+  let tone: 'good' | 'ok' | 'warn'
+  if (!s) {
+    label = 'No EPC on the public register'
+    tone = 'warn'
+  } else if (insulationFlags > 0) {
+    label = `Worth investigating — ${insulationFlags} insulation flag${insulationFlags > 1 ? 's' : ''}`
+    tone = 'ok'
+  } else if (s >= 80) {
+    label = 'Strong public record — minimal flags'
+    tone = 'good'
+  } else if (s >= 60) {
+    label = 'Above average public record'
+    tone = 'ok'
+  } else if (s >= 40) {
+    label = 'Worth investigating'
+    tone = 'ok'
+  } else {
+    label = 'Investigate before offering'
+    tone = 'warn'
+  }
+  const note =
+    flags > 0
+      ? `${flags} ${flags === 1 ? 'flag' : 'flags'} from the public EPC — see the Risks tab`
+      : 'No major flags on the public EPC'
+  const color =
+    tone === 'good' ? '#16a34a' : tone === 'ok' ? '#00a19a' : '#e6a23c'
+  // dasharray for the r=32 ring used elsewhere on this page (2πr ≈ 201.06)
+  const RING = 201.06
+  return {
+    score: s,
+    label,
+    tone,
+    note,
+    flags,
+    color,
+    ringLen: RING,
+    ringOffset: RING - (s / 100) * RING,
   }
 })
 
-// BuyerVerifyCard handlers — auth-gate guests, route authed users
-// through the buyer-profile build / view flow.
-function onBuyerStartVerification() {
-  const tk =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
-  if (!tk) {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('redirectAfterLogin', '/buyer-profile')
-    }
-    authGateIntent.value = 'save-buyer'
-    return
-  }
-  router.push('/buyer-profile')
-}
-function onBuyerViewProfile() {
-  router.push('/buyer-profile/view')
-}
-function onBuyerEditProfile() {
-  router.push('/buyer-profile')
-}
+// ── Register your interest — triggers ported from the reference clone ─
+const bvWatchTriggers = computed(() => [
+  {
+    icon: '/homescore-icon/clipboardChecklist.png',
+    title: 'Milestone pings',
+    sub: 'Get pinged at 75%, 90%, and published.',
+  },
+  {
+    icon: '/homescore-icon/gift.png',
+    title: 'Free Passport the moment it publishes',
+    sub: 'Verified buyers get the full sales pack free on publish — worth £15.',
+  },
+])
+
+// ── Verified buyer upsell perks (reference §6) ────────────────
+const bvVerifiedPerks = [
+  {
+    icon: '/homescore-icon/targetPathway.png',
+    title: 'Go to the front of the queue',
+    sub: 'Owners see verified buyers first when choosing who to sell to.',
+  },
+  {
+    icon: '/homescore-icon/gift.png',
+    title: 'Get your Passport free on day one',
+    sub: "Skip the £35 charge once you're verified and registered.",
+  },
+  {
+    icon: '/homescore-icon/boostBolt.png',
+    title: '3× more likely to have an offer accepted',
+    sub: 'Owners favour verified buyers, so your offers land more often.',
+  },
+]
+
+const { toggleSave } = usePropertyActions()
+const { showToast } = useAppToast()
 
 async function saveToBuyerProfile() {
   // The "Save to Buyer Profile" CTAs now direct the user to the new
@@ -5547,10 +6156,46 @@ async function saveToBuyerProfile() {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('redirectAfterLogin', '/buyer-profile')
     }
-    authGateIntent.value = 'save-buyer'
+    showAuthGate.value = true
     return
   }
   router.push('/buyer-profile')
+}
+
+// ── Watch this property drawer (mirrors deployed app) ─────────
+// The buyer-report "Watch this property" button opens a bottom-sheet where
+// the buyer picks which notifications to receive. On submit we persist the
+// choice locally, then redirect to the property page (which registers the
+// watch on their profile) — guests sign in first, exactly like the app.
+const watchDrawerOpen = ref(false)
+function openWatchDrawer() {
+  watchDrawerOpen.value = true
+}
+function onWatchSubmit(prefs: Record<string, boolean>) {
+  watchDrawerOpen.value = false
+  // Remember the prefs + mark this property as watched so the button reflects
+  // the state if the buyer returns here.
+  try {
+    localStorage.setItem(
+      `hs_watch_${propertyId}`,
+      JSON.stringify({ prefs, at: Date.now() }),
+    )
+    localStorage.setItem(`hs_notify_publish_${propertyId}`, String(Date.now()))
+  } catch {}
+  notifiedOfPublish.value = true
+  showToast({ message: 'Watching this property', iconEmoji: '✓' })
+  // Redirect to the property page, resuming after sign-in for guests.
+  const target = `/property/${propertyId}?watched=1`
+  const token =
+    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) {
+    try {
+      localStorage.setItem('redirectAfterLogin', target)
+    } catch {}
+    router.push('/onboarding/signin')
+    return
+  }
+  router.push(target)
 }
 
 // ── Quick wins / boost score ──────────────────────────────────
@@ -5562,9 +6207,10 @@ const qwDocs = [
   {
     key: 'utility-bills',
     label: 'Utility Bills',
-    sub: 'See your actual spend vs your EPC estimate - most impactful first step',
+    sub: 'See your actual spend vs your EPC estimate — most impactful first step',
     pts: 12,
-    icon: '/op-icons/boostYourScore/utilityBills.png',
+    icon: '💡',
+    img: '/Boost/utilityBills.png',
     bg: '#FFFBEB',
   },
   {
@@ -5572,31 +6218,35 @@ const qwDocs = [
     label: 'Heating System Certificate',
     sub: 'Upgraded boiler or system not yet reflected on your EPC',
     pts: 9,
-    icon: '/op-icons/homescore/flame.png',
+    icon: '🔥',
+    img: '/homescore-icon/boiler.png',
     bg: '#FEF2F2',
   },
   {
     key: 'gas',
     label: 'Gas Safety Certificate',
-    sub: 'Annual boiler service - Gas Safe registered engineer',
+    sub: 'Annual boiler service — Gas Safe registered engineer',
     pts: 10,
-    icon: '/op-icons/boostYourScore/gasSafety.png',
+    icon: '🔧',
+    img: '/homescore-icon/gasSafety.png',
     bg: '#FFF7ED',
   },
   {
     key: 'epc',
     label: 'EPC Certificate',
-    sub: 'Energy rating - required for any sale or rental',
+    sub: 'Energy rating — required for any sale or rental',
     pts: 8,
-    icon: '/op-icons/boostYourScore/epcAssessment.png',
+    icon: '⚡',
+    img: '/homescore-icon/epcAssessment.png',
     bg: '#FFFBEB',
   },
   {
     key: 'eicr',
     label: 'EICR Report',
-    sub: 'Electrical check - removes a major buyer concern',
+    sub: 'Electrical check — removes a major buyer concern',
     pts: 7,
-    icon: '/op-icons/boostYourScore/electrician.png',
+    icon: '🔌',
+    img: '/homescore-icon/electrician.png',
     bg: '#EEF2FF',
   },
   {
@@ -5604,7 +6254,8 @@ const qwDocs = [
     label: 'Planning Permission',
     sub: 'Extensions, conversions or permitted development',
     pts: 5,
-    icon: '/op-icons/homescore/clipboard.png',
+    icon: '📋',
+    img: '/homescore-icon/clipboard.png',
     bg: '#F0FDF4',
   },
 ]
@@ -5618,21 +6269,24 @@ const qwPros = [
     key: 'gassafe',
     label: 'Book a Gas Safe engineer',
     sub: 'Service your boiler · cert auto-lands in your score',
-    icon: '/op-icons/boostYourScore/gasSafety.png',
+    icon: '🛠️',
+    img: '/Boost/gasSafety.png',
     bg: '#fef3c7',
   },
   {
     key: 'electrician',
     label: 'Book an electrician (EICR)',
     sub: 'Electrical check · from £150',
-    icon: '/op-icons/boostYourScore/electrician.png',
+    icon: '⚡',
+    img: '/Boost/electrician.png',
     bg: '#eff6ff',
   },
   {
     key: 'epcassess',
     label: 'New EPC assessment',
     sub: 'From £60 · required if yours is 10+ years old',
-    icon: '/op-icons/boostYourScore/epcAssessment.png',
+    icon: '🏡',
+    img: '/Boost/epcAssessment.png',
     bg: '#f0fdf4',
   },
 ]
@@ -5701,126 +6355,17 @@ function saveDrawerDoc() {
   }
   // Advance the sequential unlock so the next card slides in.
   const idx = qwDocs.findIndex((d) => d.key === key)
-  const doc = qwDocs.find((d) => d.key === key)
-  // Capture score before the unlock advances so the congrats overlay can
-  // show a believable "was → now" delta.
-  const scoreBefore = qwScore.value
   if (idx >= 0 && idx >= boostUnlocked.value) {
     boostUnlocked.value = Math.min(qwDocs.length - 1, idx + 1)
   }
-  const scoreAfter = Math.min(100, scoreBefore + (doc?.pts ?? 0))
-  // Trigger the congrats overlay. Dismissed by the user (or auto-tear
-  // the fireworks after 6s — see watcher).
-  if (doc) {
-    boostCongrats.value = {
-      key: doc.key,
-      label: doc.label,
-      icon: doc.icon,
-      bg: doc.bg,
-      pts: doc.pts,
-      impact: boostImpactCopy(doc.key),
-      scoreBefore,
-      scoreAfter,
-      isLast: idx === qwDocs.length - 1,
-    }
-  }
+  const doc = qwDocs.find((d) => d.key === key)
+  showToast({
+    message: `${doc?.label ?? 'Document'} saved`,
+    iconEmoji: '✓',
+  })
   qwDrawerOpen.value = false
   qwDrawerDocKey.value = null
   qwDrawerFile.value = null
-}
-
-// ── Boost: one-at-a-time question state + congrats overlay ──────────
-// `currentBoostDoc` is the first unuploaded doc in qwDocs. When all are
-// uploaded the boost section renders the "all done" tile instead.
-const currentBoostDoc = computed(() => qwDocs.find((d) => !uploadedDocs[d.key]) ?? null)
-const boostStepLabel = computed(() => {
-  if (!currentBoostDoc.value) return ''
-  const idx = qwDocs.findIndex((d) => d.key === currentBoostDoc.value!.key)
-  return idx >= 0 ? `${idx + 1} of ${qwDocs.length}` : ''
-})
-
-// Per-doc impact copy — describes what THIS upload unlocks beyond just
-// the point boost so the user sees concrete progress, not just a number.
-function boostImpactCopy(key: string): string {
-  switch (key) {
-    case 'utility-bills':
-      return "We'll cross-check your real spend against your EPC estimate - buyers see the verified figure, not the public one."
-    case 'heating-cert':
-      return 'Your heating system is now verified - boosts your energy pillar and tells buyers the boiler is recent.'
-    case 'gas':
-      return 'Annual gas safety on file - required for any rental, gives buyers confidence the appliances are checked.'
-    case 'epc':
-      return "Latest EPC locked in - the foundation of every conveyancer's enquiry pack."
-    case 'eicr':
-      return 'Electrical Installation Condition Report verified - covers a buyer survey question solicitors flag every time.'
-    case 'planning':
-      return "Planning history on file - surfaces every extension, conversion, and consent before a buyer's solicitor digs it up."
-    default:
-      return 'Document verified and locked into your Property Passport.'
-  }
-}
-
-// Congrats overlay state. Null = closed. Fireworks tied to its lifetime.
-interface BoostCongrats {
-  key: string
-  label: string
-  icon: string
-  bg: string
-  pts: number
-  impact: string
-  scoreBefore: number
-  scoreAfter: number
-  isLast: boolean
-}
-const boostCongrats = ref<BoostCongrats | null>(null)
-
-// Random bursts for the celebration. Kept local to the overlay so they
-// reset every time it opens and aren't running in the background. The
-// `infinite` animation is bounded by the user dismissing the overlay.
-interface BcFwParticle { tx: number; ty: number }
-interface BcFw { left: number; top: number; color: string; delay: number; particles: BcFwParticle[] }
-const bcFwColors = ['#00b8b0', '#f0a030', '#7c6fb0', '#ffd54a', '#ff5e7e', '#5eead4']
-const boostCongratsFireworks = ref<BcFw[]>([])
-let boostCongratsTimer: ReturnType<typeof setTimeout> | null = null
-
-watch(boostCongrats, (val) => {
-  if (boostCongratsTimer) {
-    clearTimeout(boostCongratsTimer)
-    boostCongratsTimer = null
-  }
-  if (val) {
-    boostCongratsFireworks.value = Array.from({ length: 9 }, () => {
-      const count = 18
-      const baseR = 90 + Math.random() * 50
-      const particles = Array.from({ length: count }, (_, j) => {
-        const ang = (Math.PI * 2 * j) / count + Math.random() * 0.2
-        const r = baseR + Math.random() * 20
-        return { tx: Math.cos(ang) * r, ty: Math.sin(ang) * r + 20 }
-      })
-      return {
-        left: 10 + Math.random() * 80,
-        top: 8 + Math.random() * 50,
-        color: bcFwColors[Math.floor(Math.random() * bcFwColors.length)],
-        delay: Math.random() * 1800,
-        particles,
-      }
-    })
-    // Auto-tear the fireworks after 6s — the modal stays so the user can
-    // still read the impact copy, the bursts just stop being noisy.
-    boostCongratsTimer = setTimeout(() => {
-      boostCongratsFireworks.value = []
-    }, 6000)
-  } else {
-    boostCongratsFireworks.value = []
-  }
-})
-
-function dismissBoostCongrats() {
-  const wasLast = boostCongrats.value?.isLast
-  boostCongrats.value = null
-  // Last document: take the user into the passport flow. Otherwise just
-  // let the next card render in place.
-  if (wasLast) claimOrAccessPassport()
 }
 
 function removeDrawerDoc() {
@@ -5838,15 +6383,6 @@ function closeDrawer() {
   qwDrawerFile.value = null
   qwDrawerError.value = ''
 }
-const {
-  dragStyle: qwDragStyle,
-  onTouchStart: onQwTouchStart,
-  onTouchMove: onQwTouchMove,
-  onTouchEnd: onQwTouchEnd,
-} = useSwipeToDismiss({
-  onDismiss: closeDrawer,
-  handleSelector: '.qw-modal-handle, .qw-modal-header',
-})
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -5855,38 +6391,7 @@ function formatFileSize(bytes: number): string {
 }
 
 function openMarketplace() {
-  showToast({
-    message: 'Marketplace coming soon',
-    iconEmoji: '🔧',
-  })
-}
-
-// Book-a-Pro drawer state — the qwPros row emits `openBookPro(pro)`
-// with the tapped row, we hold it here so <BookProDrawer> can render
-// the trade-specific step 3 copy (gas cert vs EICR vs EPC assessment).
-const bookProActive = ref<{ key: string; label: string; sub: string } | null>(null)
-function openBookPro(pro: { key: string; label: string; sub: string }) {
-  bookProActive.value = pro
-}
-function onNotifyMePro(proKey: string) {
-  bookProActive.value = null
-  // No email-capture endpoint wired yet; friendly acknowledgement so
-  // the tester knows the tap registered. When the marketplace ships
-  // this becomes a POST to a waitlist endpoint.
-  showToast({
-    message: `Got it - we'll email you when ${proKey === 'gassafe' ? 'Gas Safe' : proKey === 'electrician' ? 'electrician' : 'EPC assessor'} bookings go live`,
-    icon: '/op-icons/misc/bell.png',
-  })
-}
-function onFindPro(_proKey: string) {
-  // Placeholder for when the marketplace ships. For now this is
-  // unreachable because BookProDrawer's marketplace-ready flag stays
-  // false — Phase 2 will flip it and route into the marketplace flow.
-  bookProActive.value = null
-  showToast({
-    message: 'Marketplace coming soon',
-    iconEmoji: '🔧',
-  })
+  router.push('/marketplace')
 }
 
 const qwUploadedCount = computed(
@@ -5916,18 +6421,13 @@ function goToClaim() {
 function goBack() {
   // Retrace the actual forward path: pop the last screen we came from.
   let prev = screenHistory.value.pop()
-  // Defensive fallback: if history is empty but the current screen has
-  // a known forward path in SCREEN_PATH (e.g. level-up's natural
-  // predecessor is questions), use that. Covers deep-link mounts that
-  // bypassed the watcher, races during initial mount, and the case
-  // where the watcher was suppressed by `historyReady=false` during
-  // an in-page transition that happened before mount finished.
+  // Fallback for deep-link mounts and races during mount — use the known
+  // natural path for this screen and re-seed the rest so subsequent backs
+  // keep retracing correctly.
   if (!prev) {
     const path = SCREEN_PATH[screen.value]
     if (path && path.length > 0) {
       prev = path[path.length - 1]
-      // Re-seed the rest of the path so subsequent backs continue to
-      // retrace correctly (questions → landing → exit).
       screenHistory.value = path.slice(0, -1)
     }
   }
@@ -5936,9 +6436,9 @@ function goBack() {
     screen.value = prev
     return
   }
-  // No in-flow history left (we're at the first screen of this visit) — step
-  // back out of the page to wherever we came from (property page, explore…),
-  // falling back to the property page if the user landed here directly.
+  // Landing screen — step back in history so we return to wherever we came
+  // from (property page, explore, etc.) without pushing a new entry. Falls
+  // back to the property page if the user landed here directly.
   const hasInAppPrev =
     typeof window !== 'undefined' &&
     typeof (router.options.history as any)?.state?.back === 'string'
@@ -5975,97 +6475,53 @@ async function saveToBackend() {
 
 // ── Lifecycle ─────────────────────────────────────────────────
 
-// Pop the claim explainer drawer on V6ScoreView when the user returns
-// here after sign-in (`?claim=1`). The flag flips back to false after
-// the modal is dismissed.
-const autoOpenClaim = ref(false)
-
 onMounted(async () => {
-  // Allow deep-link into specific homescore screens via ?screen=boost etc.
-  // Used by sibling pages (pathway, level-up) to return into the in-page flow.
-  // `level-up` is what the pathway page sends in its back button so the
-  // user returns to the Level Up celebration rather than the search landing.
-  const qScreen = route.query.screen
-  let earlyScreenHandled = false
-  if (typeof qScreen === 'string') {
-    if (qScreen === 'boost') {
-      screen.value = 'boost'
-      seedScreenHistory('boost')
-      earlyScreenHandled = true
-    } else if (qScreen === 'level-up') {
-      screen.value = 'level-up'
-      seedScreenHistory('level-up')
-      earlyScreenHandled = true
-    } else if (qScreen === 'buyer-results') {
-      // Deep link from the property page's "Property Report" entry point
-      // (score card tap for non-owner viewers).
-      screen.value = 'buyer-results'
-      seedScreenHistory('buyer-results')
-      earlyScreenHandled = true
-    }
-  }
-
-  // Returning from sign-in with the claim journey intent — the score
-  // view's drawer pops open on the next render.
-  if (route.query.claim === '1') {
-    autoOpenClaim.value = true
-  }
-
   // Load property data — also returns hasPassport / passportPublished for guests.
   try {
     const res = await fetch(`${config.public.apiBase}/property/${propertyId}`)
     if (res.ok) {
-      property.value = await res.json()
+      // A partially-failed enrichment leaves `epcRecommendations` empty and
+      // nothing re-triggers the pull — Boost / pathway / quiz would then show
+      // no improvements at all. Re-pull before anything reads them.
+      property.value = await refreshEpcIfMissing(
+        config.public.apiBase as string,
+        propertyId,
+        await res.json(),
+      )
       prefill(property.value)
       // Seed passport state from public endpoint (used for guests).
       const p: any = property.value
       if (p?.hasPassport) {
         hasOtherOwnerPassport.value = true
         isOtherPassportPublished.value = !!p.passportPublished
-        otherPassportMilestonePct.value = p.milestonePct ?? 0
-      }
-
-      // Diagnostic: log EPC enrichment status so we can verify what real
-      // data is coming through (per-property recommendations, fabric, etc.)
-      const recs: any[] = (p as any)?.epcRecommendations ?? []
-      // eslint-disable-next-line no-console
-      console.log('[HomeScore]', {
-        propertyId,
-        address: p?.addressLine1,
-        postcode: p?.postcode,
-        epcRating: p?.epcRating,
-        epcLmkKey: p?.epcLmkKey,
-        epcRecommendations: recs.length,
-        hasWallsDescription: !!p?.wallsDescription,
-      })
-
-      // If recommendations didn't come through, the EPC API lookup probably
-      // failed (or partially failed) the first time this property was
-      // enriched. Hit the dedicated `/epc-refresh` endpoint which bypasses
-      // the "already enriched" early-return and unconditionally re-pulls
-      // the certificate + recommendations from the EPC Register.
-      if (!Array.isArray(recs) || recs.length === 0) {
-        try {
-          const refreshRes = await fetch(
-            `${config.public.apiBase}/property/${propertyId}/epc-refresh`,
-            { method: 'POST' },
-          )
-          if (refreshRes.ok) {
-            const refreshed = await refreshRes.json()
-            const newRecs = (refreshed as any)?.epcRecommendations ?? []
-            // eslint-disable-next-line no-console
-            console.log('[HomeScore][epc-refresh]', {
-              epcLmkKey: refreshed?.epcLmkKey,
-              recsAfter: Array.isArray(newRecs) ? newRecs.length : 0,
-            })
-            if (Array.isArray(newRecs) && newRecs.length > 0) {
-              property.value = refreshed
-            }
-          }
-        } catch {}
       }
     }
   } catch {}
+
+  // Full running-costs breakdown (energy + water + council tax + risks). This
+  // is what powers the buyer report Costs & Risks tabs — the same backend
+  // endpoint the standalone /homescore/costs page and the deployed app use.
+  // Fire-and-forget: the tabs fall back to bare property fields until it lands.
+  fetch(`${config.public.apiBase}/property/${propertyId}/running-costs`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((j) => {
+      if (j) runningCosts.value = j
+    })
+    .catch(() => {})
+
+  // Land Registry sold history — powers the buyer report Sold tab (this
+  // property's sale history + comparable sales nearby). Fire-and-forget.
+  fetch(`${config.public.apiBase}/property/${propertyId}/sold-history`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((j) => {
+      if (j) {
+        soldHistory.value = {
+          thisProperty: Array.isArray(j.thisProperty) ? j.thisProperty : [],
+          nearbySales: Array.isArray(j.nearbySales) ? j.nearbySales : [],
+        }
+      }
+    })
+    .catch(() => {})
 
   // Fire-and-forget: log this view + fetch search stats so we can render
   // the "People searched this address this month" card.
@@ -6099,28 +6555,17 @@ onMounted(async () => {
     if (token) {
       const { getPassportStatus } = usePassportClaim()
       const status = await getPassportStatus(propertyId)
-      // status is null when the fetch genuinely failed — leave the
-      // ownership/passport refs at their defaults rather than guessing,
-      // same reasoning as the goToClaimFlow() null-check above.
-      if (status) {
-        isPropertyOwner.value = status.isOwner ?? false
-        isPassportCollaborator.value = status.isCollaborator ?? false
-        hasOtherOwnerPassport.value =
-          !!status.hasPassport && !status.isOwner && !status.isCollaborator
-        isOtherPassportPublished.value = !!(
-          status.hasPassport && status.isPublished
-        )
-        otherPassportMilestonePct.value = (status as any).milestonePct ?? 0
-        // Capture this user's passport id so the ?screen=publish / ?screen=quick-wins
-        // handler below can short-circuit straight to the passport view when the
-        // user has already claimed (e.g. returning from the claim chain).
-        if (status.hasPassport && status.passportId && (status.isOwner || status.isCollaborator)) {
-          ownedPassportId.value = status.passportId
-        }
-        if ((status as any).passportProgress) {
-          passportProgress.value = (status as any).passportProgress
-        }
-      }
+      // Keep the raw payload — it carries passportProgress (completionPct /
+      // completedSections / totalSections) which drives the build-progress
+      // cards on the buyer report.
+      passportStatus.value = status
+      isPropertyOwner.value = status.isOwner ?? false
+      isPassportCollaborator.value = status.isCollaborator ?? false
+      hasOtherOwnerPassport.value =
+        !!status.hasPassport && !status.isOwner && !status.isCollaborator
+      isOtherPassportPublished.value = !!(
+        status.hasPassport && status.isPublished
+      )
     }
 
     // Restore "already notified" state from localStorage
@@ -6143,8 +6588,7 @@ onMounted(async () => {
           }
         }
       } catch {}
-      if (!earlyScreenHandled) screen.value = 'landing'
-      historyReady = true
+      screen.value = 'landing'
       return
     }
   } catch {}
@@ -6164,8 +6608,7 @@ onMounted(async () => {
             // Owner has a saved score — load it (backend is source of truth)
             answers.value = existing.answers
             if (Object.keys(existing.answers).length >= QUESTIONS.length) {
-              if (!earlyScreenHandled) screen.value = 'results'
-              historyReady = true
+              screen.value = 'results'
               return
             }
           }
@@ -6175,11 +6618,7 @@ onMounted(async () => {
   }
 
   const answeredCount = Object.keys(answers.value).length
-  // Deep-link screens (level-up, boost, buyer-results) handled above are
-  // final — don't let the default landing/results computation stomp them.
-  if (!earlyScreenHandled) {
-    screen.value = answeredCount >= QUESTIONS.length ? 'results' : 'landing'
-  }
+  screen.value = answeredCount >= QUESTIONS.length ? 'results' : 'landing'
 
   // Honour ?screen=… so users returning here after sign-in / signup land on
   // the page they were trying to reach (e.g. buyer-results, questions,
@@ -6193,24 +6632,12 @@ onMounted(async () => {
     'results',
     'passport',
     'publish',
-    'boost',
     'kyc',
     'kyc-pending',
     'published',
+    'boost',
+    'level-up',
   ]
-  // Boosting requires an account. A guest who lands here via ?screen=boost
-  // (e.g. from the pathway teaser) is sent to sign-in and bounced straight
-  // back to the boost screen for this property afterwards.
-  if (requested === 'boost' && !token) {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        'redirectAfterLogin',
-        `/homescore/${propertyId}?screen=boost`,
-      )
-    }
-    router.push('/onboarding/signin')
-    return
-  }
   if (token && requested && (allowed as string[]).includes(requested)) {
     if (requested === 'questions') {
       const firstUnanswered = QUESTIONS.findIndex(
@@ -6225,20 +6652,17 @@ onMounted(async () => {
     // a freshly-signed-in user who hasn't claimed the property yet is sent
     // through /claim instead of dropped onto a screen they shouldn't see.
     if (requested === 'publish' || requested === 'quick-wins') {
-      // Coming back from the claim chain (verify-ownership → passport issue),
-      // these legacy marketing screens are stale — the user now has a real
-      // passport and the "Publish to your street" / "Quick wins" pitches no
-      // longer apply. Send them to the passport view instead.
-      if (ownedPassportId.value) {
-        router.replace(`/passportview/${ownedPassportId.value}`).catch(() => {})
-      } else {
-        gateOwnerAction(requested)
-      }
+      gateOwnerAction(requested)
     } else {
       screen.value = requested as Screen
-      seedScreenHistory(requested as Screen)
     }
+    // Rebuild the path this deep link should be treated as having come
+    // from so back-navigation retraces properly.
+    seedScreenHistory(screen.value)
   }
+
+  // Everything above is initial-load noise; only user-driven transitions
+  // from here on belong on the back stack.
   historyReady = true
 })
 
@@ -6260,14 +6684,6 @@ watch(screen, (s) => {
 </script>
 
 <style scoped>
-.inline-ic {
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  vertical-align: -2px;
-  display: inline-block;
-  margin-right: 2px;
-}
 /* ── Page ────────────────────────────────────────────────── */
 .hs-page {
   min-height: 100dvh;
@@ -6279,7 +6695,193 @@ watch(screen, (s) => {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* `clip` (not `hidden`) prevents horizontal scroll WITHOUT turning this into
+     a scroll container — so the sticky web nav and sidebars keep working. */
+  overflow-x: clip;
+}
+
+/* ── Web result layout (landing screen only) ─────────────────────────
+   On the landing screen we widen the page to a full web canvas and let
+   ResultDetail's internal shell lay its cards out in a two-column grid. */
+.hs-page--web {
+  max-width: none;
+  background: #f3f2ef;
+}
+
+.hsw-shell {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.hsw-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(243, 242, 239, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
+}
+
+.hsw-nav-inner {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hsw-brand {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0d1835;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.hsw-brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.hsw-brand-beta {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 2px;
+}
+
+.hsw-links {
+  display: flex;
+  gap: 6px;
+}
+
+.hsw-links button {
+  border: 0;
+  background: transparent;
+  color: #475a7b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.18s, color 0.18s;
+}
+
+.hsw-links button:hover {
+  color: #0c2342;
+  background: rgba(0, 161, 154, 0.08);
+}
+
+.hsw-links button.active {
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24);
+}
+
+.hsw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hsw-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8e3ee;
+  background: #fff;
+  color: #0c2342;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.hsw-back:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
+
+.hsw-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+.hsw-tour {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #e2f1ea;
+  background: #f1f9f4;
+  color: #00a19a;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.hsw-tour:hover {
+  background: #f2faf8;
+  border-color: #b2e4e1;
+  color: #007e78;
+}
+
+.hsw-cta {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #00857f;
+  box-shadow: 0 10px 20px rgba(47, 93, 223, 0.18);
+  transition: transform 0.18s;
+}
+
+.hsw-cta:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 899px) {
+  /* Below the two-column breakpoint, hide the desktop nav links/CTA so the
+     landing reverts to a clean mobile presentation. */
+  .hsw-links,
+  .hsw-cta {
+    display: none;
+  }
+  .hsw-shell {
+    width: calc(100% - 32px);
+  }
+  .hsw-nav-inner {
+    min-height: 56px;
+  }
 }
 
 /* ── Header ───────────────────────────────────────────── */
@@ -6310,29 +6912,18 @@ watch(screen, (s) => {
   text-align: center;
 }
 .hs-header-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
   margin: 0;
 }
 .hs-header-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   margin: 1px 0 0;
 }
 .hs-header-spacer {
   width: 32px;
-  flex-shrink: 0;
-}
-.hs-beta-pill {
-  padding: 5px 12px;
-  border: 1.5px solid #00a19a;
-  border-radius: 999px;
-  color: #00726c;
-  background: #fff;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
   flex-shrink: 0;
 }
 .hs-tour-btn {
@@ -6341,9 +6932,9 @@ watch(screen, (s) => {
   border-radius: 50%;
   background: #f1f9f4;
   border: 1px solid #e2f1ea;
-  color: #00726c;
+  color: #00a19a;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 800;
   cursor: pointer;
   display: grid;
@@ -6373,13 +6964,13 @@ watch(screen, (s) => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #008a84;
+  background: #1f7a66;
   box-shadow: 0 0 0 4px #ccfbf1;
   flex-shrink: 0;
 }
 .hs-prop-address {
   flex: 1;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   font-weight: 600;
   white-space: nowrap;
@@ -6388,7 +6979,7 @@ watch(screen, (s) => {
   margin: 0;
 }
 .hs-epc-chip {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: white;
   padding: 2px 7px;
@@ -6404,20 +6995,71 @@ watch(screen, (s) => {
   scroll-behavior: smooth;
 }
 
+/* ── Web layout (move-ready screen on desktop) ────────────────────── */
+.hs-scroll--web {
+  flex: none;
+  overflow-y: visible;
+  padding: 0;
+}
+.mrw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.mrw-headline {
+  margin-bottom: 14px;
+}
+.mrw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.mrw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.mrw-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
+  align-items: start;
+  gap: 28px;
+  margin-top: 4px;
+}
+.mrw-col {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .mrw-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
 /* ── Loading ──────────────────────────────────────────── */
 .hs-loading-wrap {
   flex: 1;
+  min-height: 60vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 18px;
 }
 .hs-loading-ring {
-  width: 44px;
-  height: 44px;
-  border: 4px solid #e2e8e8;
-  border-top-color: #008a84;
+  width: 52px;
+  height: 52px;
+  border: 4px solid #d6efed;
+  border-top-color: #00a19a;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -6427,9 +7069,10 @@ watch(screen, (s) => {
   }
 }
 .hs-loading-label {
-  font-size: 0.875rem;
-  color: #94a3b8;
-  font-weight: 500;
+  font-size: 15px;
+  color: #5b6d89;
+  font-weight: 600;
+  letter-spacing: -0.1px;
 }
 
 /* ── Money hook ───────────────────────────────────────── */
@@ -6456,19 +7099,19 @@ watch(screen, (s) => {
   );
 }
 .hs-money-hook-label {
-  font-size: 0.8125rem;
+  font-size: 13px;
   opacity: 0.85;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .hs-money-hook-amount {
-  font-size: 2.25rem;
+  font-size: 36px;
   font-weight: 700;
   margin: 6px 0 4px;
   letter-spacing: -0.02em;
 }
 .hs-money-hook-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   opacity: 0.9;
   line-height: 1.4;
 }
@@ -6487,10 +7130,10 @@ watch(screen, (s) => {
   color: #0f172a;
 }
 .hs-gauge-card-eyebrow {
-  font-size: 0.75rem;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #008a84;
+  color: #1f7a66;
   font-weight: 600;
   margin-bottom: 6px;
   align-self: flex-start;
@@ -6502,7 +7145,7 @@ watch(screen, (s) => {
 .hs-gauge-svg {
   display: block;
 }
-/* EPC-based positive-framing block - sits above the confidence pill */
+/* EPC-based positive-framing block — sits above the confidence pill */
 .hs-epc-explain {
   margin-top: 14px;
   background: #f8fafc;
@@ -6512,15 +7155,15 @@ watch(screen, (s) => {
   text-align: left;
 }
 .hs-epc-explain-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #00726c;
+  color: #00a19a;
   margin-bottom: 6px;
 }
 .hs-epc-explain-body {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #4a5568;
   line-height: 1.55;
 }
@@ -6534,7 +7177,7 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   background: #fef3c7;
   color: #92400e;
@@ -6542,23 +7185,23 @@ watch(screen, (s) => {
   padding: 5px 12px;
 }
 .hs-conf-pill-ic {
-  font-size: 0.75rem;
+  font-size: 12px;
   line-height: 1;
 }
 .hs-conf-pill--good {
   background: #d1fae5;
-  color: #008a84;
+  color: #1f7a66;
 }
 .hs-conf-pill--ok {
   background: #f1f9f4;
-  color: #00726c;
+  color: #00a19a;
 }
 .hs-conf-pill--warn {
   background: #fef3c7;
   color: #92400e;
 }
 .hs-epc-note {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   text-align: center;
   margin: 10px 0 0;
@@ -6574,7 +7217,7 @@ watch(screen, (s) => {
   width: 100%;
   padding: 16px 18px;
   border-radius: 14px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -6588,11 +7231,11 @@ watch(screen, (s) => {
   filter: brightness(1.05);
 }
 .hs-cta-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
 }
 .hs-cta-sub {
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #94a3b8;
   margin: 0 0 14px;
 }
@@ -6604,7 +7247,7 @@ watch(screen, (s) => {
   border: 1px solid #fef3c7;
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #92400e;
   line-height: 1.45;
   margin-top: 4px;
@@ -6621,13 +7264,13 @@ watch(screen, (s) => {
   color: #0f172a;
 }
 .hs-breakdown-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 650;
   color: #0f172a;
   margin: 0 0 6px;
 }
 .hs-breakdown-note {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   margin: 10px 0 0;
   text-align: center;
@@ -6642,7 +7285,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.875rem;
+  font-size: 14px;
 }
 .hs-pillar-name {
   width: 75px;
@@ -6687,12 +7330,12 @@ watch(screen, (s) => {
 }
 .hs-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #008a84, #2dd4bf);
+  background: linear-gradient(90deg, #1f7a66, #2dd4bf);
   border-radius: 4px;
   transition: width 0.45s ease;
 }
 .hs-progress-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   text-align: right;
   margin: 0;
@@ -6731,7 +7374,7 @@ watch(screen, (s) => {
   flex-shrink: 0;
 }
 .hs-live-num {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   z-index: 2;
   position: relative;
@@ -6740,20 +7383,20 @@ watch(screen, (s) => {
   flex: 1;
 }
 .hs-live-lbl {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
 }
 .hs-live-hint {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
   margin-top: 1px;
 }
 .hs-live-conf {
-  font-size: 0.75rem;
+  font-size: 12px;
   padding: 4px 8px;
   background: #fef3c7;
   color: #92400e;
@@ -6770,7 +7413,7 @@ watch(screen, (s) => {
 }
 .hs-live-conf.high {
   background: #dcfce7;
-  color: #008a84;
+  color: #166534;
 }
 
 /* ── Delta flying animation ───────────────────────────── */
@@ -6778,14 +7421,14 @@ watch(screen, (s) => {
   position: absolute;
   right: 14px;
   top: 50%;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   animation: floatUp 1.2s ease forwards;
   pointer-events: none;
   z-index: 10;
 }
 .hs-delta-float.pos {
-  color: #008a84;
+  color: #16a34a;
 }
 .hs-delta-float.neg {
   color: #dc2626;
@@ -6817,16 +7460,16 @@ watch(screen, (s) => {
   color: #0f172a;
 }
 .hs-cat-chip {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
-  color: #008a84;
+  color: #1f7a66;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 10px;
   display: block;
 }
 .hs-q-title {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 650;
   line-height: 1.3;
   margin: 0 0 18px;
@@ -6847,7 +7490,7 @@ watch(screen, (s) => {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #0f172a;
   text-align: left;
 }
@@ -6855,7 +7498,7 @@ watch(screen, (s) => {
   border-color: #94a3b8;
 }
 .hs-option-btn.selected {
-  border-color: #008a84;
+  border-color: #1f7a66;
   background: #f0fdfa;
   color: #0f766e;
   font-weight: 600;
@@ -6871,8 +7514,8 @@ watch(screen, (s) => {
   transition: border-color 0.15s ease;
 }
 .hs-option-btn.selected .hs-option-radio {
-  border-color: #008a84;
-  background: #008a84;
+  border-color: #1f7a66;
+  background: #1f7a66;
 }
 .hs-option-radio-dot {
   width: 8px;
@@ -6889,12 +7532,12 @@ watch(screen, (s) => {
   color: #0f766e;
 }
 .hs-narr-hint {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   font-style: italic;
   margin: 12px 0 0;
   line-height: 1.45;
-  border-left: 3px solid #008a84;
+  border-left: 3px solid #1f7a66;
   padding-left: 10px;
 }
 
@@ -6909,18 +7552,18 @@ watch(screen, (s) => {
   border: 1px solid #e2e8e8;
   padding: 14px 18px;
   border-radius: 14px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
 .hs-btn-primary {
   flex: 1;
-  background: #008a84;
+  background: #1f7a66;
   color: #fff;
   border: none;
   padding: 14px 18px;
   border-radius: 14px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -6934,7 +7577,7 @@ watch(screen, (s) => {
   color: #475569;
   border: none;
   padding: 14px;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -6965,7 +7608,7 @@ watch(screen, (s) => {
   margin-bottom: 14px;
 }
 .hs-pp-banner-ic {
-  font-size: 1.375rem;
+  font-size: 22px;
   line-height: 1;
   flex-shrink: 0;
 }
@@ -6974,22 +7617,22 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .hs-pp-banner-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 2px;
 }
 .hs-pp-banner-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.45;
 }
 .hs-pp-banner-cta--mint {
   flex-shrink: 0;
   border: none;
-  background: #00a19a;
+  background: #3dbda3;
   color: #042f2e;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   padding: 7px 12px;
   border-radius: 9px;
@@ -7030,11 +7673,11 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #00726c;
+  color: #3dbda3;
   margin-bottom: 6px;
 }
 .hs-pp-eyebrow-ic {
@@ -7063,7 +7706,7 @@ watch(screen, (s) => {
   flex-shrink: 0;
 }
 .hs-pp-pub-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.01em;
@@ -7071,7 +7714,7 @@ watch(screen, (s) => {
   margin-bottom: 8px;
 }
 .hs-pp-pub-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.78);
   line-height: 1.55;
   margin-bottom: 10px;
@@ -7094,31 +7737,31 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #00726c;
+  color: #3dbda3;
   margin-bottom: 6px;
 }
 .hs-pp-pub-explainer-row {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.78);
   line-height: 1.45;
   display: flex;
   gap: 6px;
 }
 .hs-pp-pub-check {
-  color: #00726c;
+  color: #3dbda3;
   font-weight: 800;
   flex-shrink: 0;
 }
 .hs-pp-pub-unlock {
   width: 100%;
   border: none;
-  background: #00a19a;
+  background: #3dbda3;
   color: #042f2e;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   padding: 11px;
   border-radius: 11px;
@@ -7146,7 +7789,7 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7154,7 +7797,7 @@ watch(screen, (s) => {
   margin-bottom: 6px;
 }
 .hs-pp-claimed-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: #78350f;
   letter-spacing: -0.01em;
@@ -7162,7 +7805,7 @@ watch(screen, (s) => {
   margin-bottom: 8px;
 }
 .hs-pp-claimed-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #78350f;
   line-height: 1.55;
   margin-bottom: 10px;
@@ -7197,18 +7840,18 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #00726c;
+  color: #00a19a;
   margin-bottom: 6px;
 }
 .hs-pp-claimed-explainer-title-amber {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -7216,14 +7859,14 @@ watch(screen, (s) => {
   margin-bottom: 6px;
 }
 .hs-pp-claimed-explainer-row {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #4a5568;
   line-height: 1.45;
   display: flex;
   gap: 6px;
 }
 .hs-pp-claimed-check {
-  color: #00726c;
+  color: #00a19a;
   font-weight: 800;
   flex-shrink: 0;
 }
@@ -7232,7 +7875,7 @@ watch(screen, (s) => {
   border: none;
   background: #f59e0b;
   color: #fff;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   padding: 11px;
   border-radius: 11px;
@@ -7249,8 +7892,8 @@ watch(screen, (s) => {
 }
 .hs-pp-claimed-done {
   text-align: center;
-  font-size: 0.8125rem;
-  color: #008a84;
+  font-size: 13px;
+  color: #15803d;
   font-weight: 600;
   padding: 8px 0;
   margin-bottom: 4px;
@@ -7268,7 +7911,7 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7276,7 +7919,7 @@ watch(screen, (s) => {
   margin-bottom: 6px;
 }
 .hs-pp-none-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.01em;
@@ -7284,7 +7927,7 @@ watch(screen, (s) => {
   margin-bottom: 8px;
 }
 .hs-pp-none-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #4a5568;
   line-height: 1.55;
   margin-bottom: 10px;
@@ -7306,34 +7949,34 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #00726c;
+  color: #00a19a;
   margin-bottom: 6px;
 }
 .hs-pp-none-explainer-row {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #4a5568;
   line-height: 1.45;
   display: flex;
   gap: 6px;
 }
 .hs-pp-none-check {
-  color: #00726c;
+  color: #00a19a;
   font-weight: 800;
   flex-shrink: 0;
 }
 
-/* Owner sign-in CTA - sits below the published / in-progress banner */
+/* Owner sign-in CTA — sits below the published / in-progress banner */
 .hs-pp-owner-cta {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
   width: 100%;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   padding: 10px;
   border-radius: 11px;
@@ -7345,7 +7988,7 @@ watch(screen, (s) => {
 .hs-pp-owner-cta--published {
   border: 1.5px solid rgba(94, 234, 212, 0.5);
   background: rgba(94, 234, 212, 0.08);
-  color: #00726c;
+  color: #3dbda3;
   margin: 0;
   padding: 10px;
 }
@@ -7380,18 +8023,18 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .hs-pp-inprogress-ic {
-  font-size: 1.125rem;
+  font-size: 18px;
   line-height: 1;
   flex-shrink: 0;
   margin-top: 1px;
 }
 .hs-pp-inprogress-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #92400e;
 }
 .hs-pp-inprogress-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #78350f;
   margin-top: 2px;
   line-height: 1.5;
@@ -7407,13 +8050,13 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .hs-pp-inprogress-box-title {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #92400e;
   font-weight: 600;
   margin-bottom: 2px;
 }
 .hs-pp-inprogress-box-body {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #78350f;
   line-height: 1.4;
 }
@@ -7424,7 +8067,7 @@ watch(screen, (s) => {
   border-radius: 11px;
   background: #f59e0b;
   color: #fff;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
@@ -7435,8 +8078,8 @@ watch(screen, (s) => {
 }
 .hs-pp-inprogress-done {
   text-align: center;
-  font-size: 0.8125rem;
-  color: #008a84;
+  font-size: 13px;
+  color: #15803d;
   font-weight: 600;
   padding: 10px 0 2px;
 }
@@ -7448,7 +8091,7 @@ watch(screen, (s) => {
   color: #fff;
   padding: 14px 16px;
   border-radius: 14px;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
@@ -7461,12 +8104,12 @@ watch(screen, (s) => {
   background: #1a163a;
 }
 .hs-readonly-cta-arrow {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
 }
 .hs-readonly-subnote {
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #64748b;
   margin-top: 8px;
   line-height: 1.5;
@@ -7483,7 +8126,7 @@ watch(screen, (s) => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #008a84;
+  background: #1f7a66;
   box-shadow: 0 0 0 4px #ccfbf1;
   flex-shrink: 0;
   margin-top: 6px;
@@ -7494,12 +8137,12 @@ watch(screen, (s) => {
 }
 .hs-addr-text {
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #231d45;
   line-height: 1.25;
 }
 .hs-addr-tiny {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #94a3b8;
   margin-top: 2px;
   line-height: 1.35;
@@ -7515,7 +8158,7 @@ watch(screen, (s) => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: #fff;
   padding: 3px 9px;
@@ -7540,7 +8183,7 @@ watch(screen, (s) => {
 }
 .hs-addr-badge--unclaimed {
   background: #f0fdfa;
-  color: #00726c;
+  color: #00a19a;
   border: 1px solid #e2f1ea;
   cursor: pointer;
   transition: background 0.15s;
@@ -7551,14 +8194,14 @@ watch(screen, (s) => {
 }
 
 .hs-savings-hero {
-  background: linear-gradient(135deg, #008a84, #00a19a);
+  background: linear-gradient(135deg, #1f7a66, #00a19a);
   color: #fff;
   border-radius: 20px;
   padding: 22px;
   margin-bottom: 14px;
 }
 .hs-savings-eyebrow {
-  font-size: 0.75rem;
+  font-size: 12px;
   opacity: 0.85;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -7571,7 +8214,7 @@ watch(screen, (s) => {
   margin-top: 6px;
 }
 .hs-savings-amount {
-  font-size: 2rem;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -7579,11 +8222,11 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.2);
   padding: 8px 14px;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
 }
 .hs-savings-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   opacity: 0.9;
   margin-top: 4px;
   line-height: 1.4;
@@ -7602,7 +8245,7 @@ watch(screen, (s) => {
   padding: 16px 16px 12px;
 }
 .hs-journey-eyebrow {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -7619,11 +8262,11 @@ watch(screen, (s) => {
   padding: 0 8px;
 }
 .hs-journey-num {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 800;
 }
 .hs-journey-label {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
   margin-top: 1px;
@@ -7631,7 +8274,7 @@ watch(screen, (s) => {
   letter-spacing: 0.05em;
 }
 .hs-journey-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: #475569;
   margin-top: 3px;
 }
@@ -7644,12 +8287,12 @@ watch(screen, (s) => {
 }
 .hs-journey-bar-fill {
   height: 8px;
-  background: linear-gradient(90deg, #008a84, #008a84);
+  background: linear-gradient(90deg, #1f7a66, #16a34a);
   border-radius: 4px;
   transition: width 0.8s ease;
 }
 .hs-journey-bar-label {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
 }
 .hs-street {
@@ -7666,7 +8309,7 @@ watch(screen, (s) => {
   padding: 16px 16px 12px;
 }
 .hs-carbon-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -7680,13 +8323,13 @@ watch(screen, (s) => {
   margin-bottom: 12px;
 }
 .hs-carbon-kg {
-  font-size: 2.25rem;
+  font-size: 36px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -1px;
 }
 .hs-carbon-kg-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   opacity: 0.75;
   margin-top: 2px;
 }
@@ -7706,16 +8349,16 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
 }
 .hs-carbon-grade-label {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
 }
 .hs-carbon-vs-avg {
-  font-size: 0.8125rem;
+  font-size: 13px;
   opacity: 0.8;
 }
 .hs-carbon-bars {
@@ -7732,7 +8375,7 @@ watch(screen, (s) => {
 .hs-carbon-bar-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.5625rem;
+  font-size: 9px;
   opacity: 0.55;
   margin-bottom: 14px;
   letter-spacing: 0.04em;
@@ -7746,7 +8389,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   opacity: 0.9;
 }
 .hs-carbon-driver-icon {
@@ -7756,7 +8399,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6875rem;
+  font-size: 11px;
   flex-shrink: 0;
 }
 .hs-carbon-driver-label {
@@ -7772,7 +8415,7 @@ watch(screen, (s) => {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 .hs-carbon-upgrade-title {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   margin-bottom: 6px;
 }
@@ -7782,7 +8425,7 @@ watch(screen, (s) => {
   gap: 10px;
 }
 .hs-carbon-upgrade-text {
-  font-size: 0.75rem;
+  font-size: 12px;
   opacity: 0.8;
 }
 .hs-carbon-save-pill {
@@ -7790,7 +8433,7 @@ watch(screen, (s) => {
   background: #00a19a;
   border-radius: 999px;
   padding: 4px 10px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -7807,7 +8450,7 @@ watch(screen, (s) => {
   margin-bottom: 14px;
 }
 .hs-trust-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 650;
   margin: 0 0 10px;
   color: #0f172a;
@@ -7824,7 +8467,7 @@ watch(screen, (s) => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -7832,7 +8475,7 @@ watch(screen, (s) => {
   margin: 0 auto 5px;
 }
 .hs-trust-dot.done {
-  background: #008a84;
+  background: #16a34a;
   color: #fff;
 }
 .hs-trust-dot.pending {
@@ -7840,17 +8483,17 @@ watch(screen, (s) => {
   color: #94a3b8;
 }
 .hs-trust-step-label {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
 }
 .hs-trust-step-label.done {
-  color: #008a84;
+  color: #16a34a;
 }
 .hs-trust-step-label.pending {
   color: #94a3b8;
 }
 .hs-trust-step-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: #94a3b8;
   margin-top: 2px;
   line-height: 1.3;
@@ -7862,14 +8505,14 @@ watch(screen, (s) => {
   margin-top: 13px;
 }
 .hs-trust-connector.done {
-  background: #008a84;
+  background: #16a34a;
 }
 .hs-trust-explain {
   background: #f8fafc;
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 10px;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #0f172a;
   line-height: 1.5;
 }
@@ -7885,12 +8528,12 @@ watch(screen, (s) => {
   margin-bottom: 14px;
 }
 .hs-trust-nudge-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #0f766e;
 }
 .hs-trust-nudge-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   margin-top: 1px;
 }
@@ -7905,13 +8548,13 @@ watch(screen, (s) => {
   color: #0f172a;
 }
 .hs-wins-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 650;
   color: #0f172a;
   margin: 0 0 2px;
 }
 .hs-wins-sub {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #475569;
   margin: 0 0 14px;
 }
@@ -7935,7 +8578,7 @@ watch(screen, (s) => {
   background: #f0fdfa;
   color: #0f766e;
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 15px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -7944,13 +8587,13 @@ watch(screen, (s) => {
   flex: 1;
 }
 .hs-win-name {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: #0f172a;
   margin: 0 0 2px;
 }
 .hs-win-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   margin: 0;
 }
@@ -7959,15 +8602,15 @@ watch(screen, (s) => {
   flex-shrink: 0;
 }
 .hs-win-saving {
-  color: #008a84;
+  color: #16a34a;
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 15px;
   margin: 0;
 }
 .hs-win-pts {
-  color: #008a84;
+  color: #1f7a66;
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: 13px;
   margin: 0;
 }
 
@@ -7980,7 +8623,7 @@ watch(screen, (s) => {
   color: #0f172a;
 }
 .hs-opps-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 650;
   color: #78350f;
   margin: 0 0 10px;
@@ -7999,18 +8642,18 @@ watch(screen, (s) => {
   margin-bottom: 0;
 }
 .hs-opp-icon {
-  font-size: 1.125rem;
+  font-size: 18px;
   line-height: 1;
   flex-shrink: 0;
 }
 .hs-opp-name {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   color: #78350f;
   margin: 0 0 2px;
 }
 .hs-opp-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #92400e;
   margin: 0;
   line-height: 1.4;
@@ -8033,21 +8676,21 @@ watch(screen, (s) => {
   margin-bottom: 4px;
 }
 .hs-nb-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 650;
   color: #0f172a;
 }
 .hs-nb-rank {
   background: #f0fdfa;
   color: #0f766e;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
 }
 .hs-nb-body {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #475569;
   margin-bottom: 12px;
   line-height: 1.4;
@@ -8071,7 +8714,7 @@ watch(screen, (s) => {
 }
 .hs-nb-pos {
   width: 22px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #94a3b8;
   flex-shrink: 0;
@@ -8080,7 +8723,7 @@ watch(screen, (s) => {
   color: #0f766e;
 }
 .hs-nb-addr {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 500;
   color: #0f172a;
 }
@@ -8089,12 +8732,12 @@ watch(screen, (s) => {
   font-weight: 700;
 }
 .hs-nb-detail {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   margin-top: 1px;
 }
 .hs-nb-cost {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -8106,7 +8749,7 @@ watch(screen, (s) => {
   margin-bottom: 12px;
 }
 .hs-nb-gap-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #92400e;
   margin-bottom: 6px;
@@ -8120,14 +8763,14 @@ watch(screen, (s) => {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #78350f;
 }
 .hs-nb-gap-footer {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid #fed7aa;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #92400e;
 }
 .hs-nb-nudge {
@@ -8140,12 +8783,12 @@ watch(screen, (s) => {
   cursor: pointer;
 }
 .hs-nb-nudge-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #0f766e;
 }
 .hs-nb-nudge-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   opacity: 0.8;
 }
@@ -8156,7 +8799,7 @@ watch(screen, (s) => {
   border: 1px solid #e2e8e8;
   border-radius: 14px;
   padding: 14px 20px;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #475569;
   font-weight: 500;
   cursor: pointer;
@@ -8193,8 +8836,8 @@ watch(screen, (s) => {
 .hs-pp-badge {
   display: inline-block;
   background: rgba(20, 184, 166, 0.2);
-  color: #00726c;
-  font-size: 0.75rem;
+  color: #3dbda3;
+  font-size: 12px;
   font-weight: 700;
   padding: 5px 10px;
   border-radius: 999px;
@@ -8203,13 +8846,13 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .hs-pp-title {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 700;
   margin: 0 0 8px;
   line-height: 1.25;
 }
 .hs-pp-body {
-  font-size: 0.9375rem;
+  font-size: 15px;
   opacity: 0.85;
   line-height: 1.5;
   margin: 0 0 16px;
@@ -8223,7 +8866,7 @@ watch(screen, (s) => {
 .hs-pp-progress-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8125rem;
+  font-size: 13px;
   margin-bottom: 8px;
   opacity: 0.85;
 }
@@ -8235,7 +8878,7 @@ watch(screen, (s) => {
 }
 .hs-pp-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #14b8a6, #00a19a);
+  background: linear-gradient(90deg, #14b8a6, #3dbda3);
   border-radius: 999px;
   transition: width 0.6s ease;
 }
@@ -8252,27 +8895,28 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.08);
   padding: 10px 12px;
   border-radius: 10px;
-  font-size: 0.875rem;
+  font-size: 14px;
 }
 .hs-pp-doc-ic {
-  font-size: 0.875rem;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
 }
-.hs-pp-doc-ic img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.hs-empty-ic {
   display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  margin: 0 auto 8px;
 }
 .hs-pp-doc-name {
   flex: 1;
 }
 .hs-pp-doc-gain {
-  color: #00726c;
+  color: #3dbda3;
   font-weight: 600;
-  font-size: 0.8125rem;
+  font-size: 13px;
 }
 .hs-pp-cta {
   background: #14b8a6;
@@ -8281,7 +8925,7 @@ watch(screen, (s) => {
   padding: 14px 16px;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 14px;
   cursor: pointer;
   width: 100%;
   display: flex;
@@ -8293,7 +8937,7 @@ watch(screen, (s) => {
 }
 .hs-pp-cta-sub {
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   opacity: 0.7;
   margin-top: 10px;
 }
@@ -8308,7 +8952,7 @@ watch(screen, (s) => {
   color: #0f172a;
 }
 .hs-pp-unlocks-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 650;
   color: #0f172a;
   margin: 0 0 12px;
@@ -8324,30 +8968,68 @@ watch(screen, (s) => {
   align-items: flex-start;
 }
 .hs-pp-unlock-icon {
-  font-size: 1.25rem;
   width: 24px;
   height: 24px;
-  display: inline-block;
-  flex-shrink: 0;
-}
-.hs-pp-unlock-icon img {
-  width: 100%;
-  height: 100%;
   object-fit: contain;
-  display: block;
+  flex-shrink: 0;
 }
 .hs-pp-unlock-name {
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #0f172a;
 }
 .hs-pp-unlock-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   color: #475569;
   margin-top: 2px;
 }
 
 /* ── Vault tabs ──────────────────────────────────────── */
+/* ── Web layout (passport screen on desktop) ──────────────────────── */
+.ppw-main {
+  position: relative;
+  z-index: 2;
+  width: min(960px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 30px 0 60px;
+}
+.ppw-head {
+  margin-bottom: 18px;
+}
+.ppw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.ppw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.ppw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+/* Turn the tab strip into a rounded web card. */
+.ppw-main .hs-vault-tabs {
+  border: 1px solid #e7ecf2;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(19, 45, 78, 0.05);
+  overflow: hidden;
+}
+
 .hs-vault-tabs {
   display: flex;
   background: white;
@@ -8360,7 +9042,7 @@ watch(screen, (s) => {
   border: none;
   border-bottom: 2.5px solid transparent;
   padding: 13px 6px 11px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
@@ -8373,13 +9055,13 @@ watch(screen, (s) => {
     border-color 0.15s;
 }
 .hs-vault-tab.active {
-  color: #008a84;
-  border-bottom-color: #008a84;
+  color: #1f7a66;
+  border-bottom-color: #1f7a66;
 }
 .hs-tab-badge {
-  background: #008a84;
+  background: #1f7a66;
   color: white;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 999px;
@@ -8399,18 +9081,18 @@ watch(screen, (s) => {
   flex: 1;
   padding: 11px 12px;
   border-radius: 10px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   border: none;
 }
 .hs-pa-btn.outline {
   background: #f0fdfa;
-  color: #008a84;
+  color: #1f7a66;
   border: 1.5px solid #99f6e4;
 }
 .hs-pa-btn.solid {
-  background: #008a84;
+  background: #1f7a66;
   color: #fff;
 }
 .hs-pa-btn:disabled {
@@ -8420,7 +9102,7 @@ watch(screen, (s) => {
 
 /* ── Street tab ──────────────────────────────────────── */
 .hs-vm-header {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #475569;
   line-height: 1.5;
   margin: 0 0 12px;
@@ -8447,24 +9129,16 @@ watch(screen, (s) => {
   background: #f0fdfa;
 }
 .hs-street-house-icon {
-  font-size: 1.25rem;
+  font-size: 20px;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-}
-.hs-street-house-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
 }
 .hs-street-addr {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
 }
 .hs-street-meta {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #64748b;
   margin-top: 2px;
   display: flex;
@@ -8472,7 +9146,7 @@ watch(screen, (s) => {
   align-items: center;
 }
 .hs-street-epc {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: #fff;
   padding: 1px 5px;
@@ -8482,14 +9156,14 @@ watch(screen, (s) => {
   flex-shrink: 0;
 }
 .hs-street-badge {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 999px;
 }
 .hs-street-badge.published {
   background: #dcfce7;
-  color: #008a84;
+  color: #166534;
 }
 .hs-street-badge.started {
   background: #fef3c7;
@@ -8513,7 +9187,7 @@ watch(screen, (s) => {
   border: 1px solid #e2e8e8;
 }
 .hs-street-stats-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 12px;
@@ -8541,26 +9215,26 @@ watch(screen, (s) => {
   background: #f8fafc;
 }
 .hs-stat-val {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   color: #0f172a;
 }
 .hs-stat-box.brand .hs-stat-val {
-  color: #008a84;
+  color: #1f7a66;
 }
 .hs-stat-box.green .hs-stat-val {
-  color: #008a84;
+  color: #16a34a;
 }
 .hs-stat-box.amber .hs-stat-val {
   color: #92400e;
 }
 .hs-stat-lbl {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #64748b;
   margin-top: 1px;
 }
 .hs-street-tip {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   line-height: 1.5;
   padding: 10px;
@@ -8603,7 +9277,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -8612,12 +9286,12 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .hs-buyer-name {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
 }
 .hs-buyer-criteria {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #475569;
   margin-top: 2px;
   line-height: 1.4;
@@ -8629,7 +9303,7 @@ watch(screen, (s) => {
   margin-top: 6px;
 }
 .hs-buyer-tag {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 999px;
@@ -8638,14 +9312,14 @@ watch(screen, (s) => {
 }
 .hs-buyer-tag.match {
   background: #dcfce7;
-  color: #008a84;
+  color: #166534;
 }
 .hs-buyer-tag.partial {
   background: #fef3c7;
   color: #92400e;
 }
 .hs-buyer-match-score {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 800;
   flex-shrink: 0;
   min-width: 38px;
@@ -8679,7 +9353,7 @@ watch(screen, (s) => {
   border: 1px solid #e2f1ea;
   display: grid;
   place-items: center;
-  color: #00726c;
+  color: #00a19a;
   cursor: pointer;
 }
 .hsq2-back svg {
@@ -8694,10 +9368,10 @@ watch(screen, (s) => {
   border: 1px solid #e2f1ea;
   padding: 5px 11px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
-  color: #00726c;
+  color: #00a19a;
   text-transform: uppercase;
 }
 .hs-pulse {
@@ -8756,13 +9430,13 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .hsq2-addr-line {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.2;
 }
 .hsq2-addr-meta {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
   margin-top: 2px;
@@ -8776,7 +9450,7 @@ watch(screen, (s) => {
   border-top: 1px solid rgba(255, 255, 255, 0.22);
 }
 .hsq2-cat-pill {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.85);
   letter-spacing: 0.08em;
@@ -8797,7 +9471,7 @@ watch(screen, (s) => {
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .hsq2-q-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: #fff;
   white-space: nowrap;
@@ -8819,14 +9493,14 @@ watch(screen, (s) => {
   margin-bottom: 12px;
 }
 .hsq2-score-eyebrow .left {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: #9c98ad;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .hsq2-score-eyebrow .right {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   color: #007e78;
   background: #f2faf8;
@@ -8863,14 +9537,14 @@ watch(screen, (s) => {
   justify-content: center;
 }
 .hsq2-g-num .gn-big {
-  font-size: 1.625rem;
+  font-size: 26px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.8px;
   line-height: 1;
 }
 .hsq2-g-num .gn-small {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   color: #9c98ad;
   letter-spacing: 0.06em;
@@ -8881,14 +9555,14 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .hsq2-band {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.2px;
   line-height: 1.2;
 }
 .hsq2-explainer {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: #6b6783;
   margin-top: 4px;
@@ -8901,7 +9575,7 @@ watch(screen, (s) => {
   padding: 16px 22px 0;
 }
 .hsq2-q-text {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.4px;
@@ -8909,7 +9583,7 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .hsq2-context {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: #6b6783;
   background: #f8f9fb;
@@ -8933,7 +9607,7 @@ watch(screen, (s) => {
   border-radius: 12px;
   padding: 14px 16px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #231d45;
   cursor: pointer;
@@ -8979,7 +9653,7 @@ watch(screen, (s) => {
   color: #fff;
   border: none;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   padding: 13px 18px;
   border-radius: 999px;
@@ -9034,7 +9708,7 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.15);
 }
 .hsq-count {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.6);
 }
@@ -9052,7 +9726,7 @@ watch(screen, (s) => {
 }
 .hsq-progress-fill {
   height: 4px;
-  background: linear-gradient(90deg, #008a84, #00a19a);
+  background: linear-gradient(90deg, #1f7a66, #3dbda3);
   border-radius: 999px;
   transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -9067,9 +9741,9 @@ watch(screen, (s) => {
   border: 1px solid rgba(0, 161, 154, 0.35);
   border-radius: 999px;
   padding: 4px 11px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
-  color: #00726c;
+  color: #3dbda3;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -9107,7 +9781,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 900;
   color: #231d45;
   line-height: 1;
@@ -9120,7 +9794,7 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .hsq-live-lbl {
-  font-size: 0.5625rem;
+  font-size: 9px;
   color: #94a3b8;
   font-weight: 700;
   text-transform: uppercase;
@@ -9128,7 +9802,7 @@ watch(screen, (s) => {
   margin-bottom: 2px;
 }
 .hsq-live-hint {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: #231d45;
   white-space: nowrap;
@@ -9136,13 +9810,13 @@ watch(screen, (s) => {
   text-overflow: ellipsis;
 }
 .hsq-delta {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .hsq-delta.pos {
-  color: #008a84;
+  color: #16a34a;
 }
 .hsq-delta.neg {
   color: #dc2626;
@@ -9164,7 +9838,7 @@ watch(screen, (s) => {
   margin-bottom: 4px;
 }
 .hsq-title {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   color: #231d45;
   line-height: 1.3;
@@ -9172,7 +9846,7 @@ watch(screen, (s) => {
   letter-spacing: -0.02em;
 }
 .hsq-hint {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #475569;
   line-height: 1.6;
   padding: 12px 14px;
@@ -9196,7 +9870,7 @@ watch(screen, (s) => {
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #0f172a;
   text-align: left;
   font-family: inherit;
@@ -9206,8 +9880,8 @@ watch(screen, (s) => {
   border-color: #e2f1ea;
 }
 .hsq-opt.selected {
-  background: #008a84;
-  border-color: #008a84;
+  background: #1f7a66;
+  border-color: #1f7a66;
   color: #fff;
   font-weight: 600;
 }
@@ -9240,10 +9914,10 @@ watch(screen, (s) => {
   flex: 1;
   height: 48px;
   border: none;
-  background: #008a84;
+  background: #1f7a66;
   color: #fff;
   border-radius: 14px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -9269,9 +9943,9 @@ watch(screen, (s) => {
   margin-bottom: 12px;
 }
 .hs-journey-link {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
-  color: #008a84;
+  color: #1f7a66;
 }
 .hs-journey-num-wrap {
   display: flex;
@@ -9280,7 +9954,7 @@ watch(screen, (s) => {
   gap: 2px;
 }
 .hs-journey-num-small {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   font-weight: 600;
 }
@@ -9291,7 +9965,7 @@ watch(screen, (s) => {
   background: #f8fafc;
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #0f172a;
   line-height: 1.5;
   margin-top: 10px;
@@ -9314,9 +9988,9 @@ watch(screen, (s) => {
   height: 50px;
   border: none;
   border-radius: 14px;
-  background: #008a84;
+  background: #1f7a66;
   color: #fff;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -9331,14 +10005,14 @@ watch(screen, (s) => {
 }
 .hs-sticky-cta-sub {
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   margin-top: 6px;
 }
 
 /* ── Landing interest selector ─────────────────────────── */
 .hs-interest-label {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: #64748b;
   text-align: center;
@@ -9366,7 +10040,7 @@ watch(screen, (s) => {
   font-family: inherit;
 }
 .hs-interest-btn.primary {
-  background: #008a84;
+  background: #1f7a66;
   color: #fff;
 }
 .hs-interest-btn.outline {
@@ -9381,7 +10055,7 @@ watch(screen, (s) => {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  font-size: 1.0625rem;
+  font-size: 17px;
 }
 .hs-interest-ic.primary {
   background: rgba(255, 255, 255, 0.2);
@@ -9398,11 +10072,11 @@ watch(screen, (s) => {
   flex: 1;
 }
 .hs-interest-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
 }
 .hs-interest-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #64748b;
   margin-top: 1px;
 }
@@ -9410,7 +10084,7 @@ watch(screen, (s) => {
   color: rgba(255, 255, 255, 0.85);
 }
 .hs-interest-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   color: #cbd5e1;
 }
 .hs-interest-chev.primary {
@@ -9442,19 +10116,19 @@ watch(screen, (s) => {
   border-radius: 50%;
 }
 .hs-buyer-hero-eyebrow {
-  font-size: 0.75rem;
+  font-size: 12px;
   opacity: 0.8;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .hs-buyer-hero-amount {
-  font-size: 2.25rem;
+  font-size: 36px;
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 6px 0 4px;
 }
 .hs-buyer-hero-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   opacity: 0.9;
   line-height: 1.4;
 }
@@ -9473,11 +10147,11 @@ watch(screen, (s) => {
   flex: 1;
 }
 .hs-buyer-hero-stat-num {
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 800;
 }
 .hs-buyer-hero-stat-lbl {
-  font-size: 0.6875rem;
+  font-size: 11px;
   opacity: 0.7;
   margin-top: 1px;
 }
@@ -9490,7 +10164,7 @@ watch(screen, (s) => {
   border: 1px solid #e5e7eb;
 }
 .hs-buyer-risk-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 10px;
@@ -9516,31 +10190,31 @@ watch(screen, (s) => {
   border: 1px solid #bbf7d0;
 }
 .hs-buyer-risk-ic {
-  font-size: 1.125rem;
+  font-size: 18px;
   flex-shrink: 0;
 }
 .hs-buyer-risk-row.warn .hs-buyer-risk-head {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #92400e;
 }
 .hs-buyer-risk-row.warn .hs-buyer-risk-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #78350f;
   margin-top: 1px;
 }
 .hs-buyer-risk-row.ok .hs-buyer-risk-head {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #14532d;
 }
 .hs-buyer-risk-row.ok .hs-buyer-risk-body {
-  font-size: 0.8125rem;
-  color: #008a84;
+  font-size: 13px;
+  color: #166534;
   margin-top: 1px;
 }
 .hs-buyer-bd-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #64748b;
   margin: 0 0 12px;
 }
@@ -9548,7 +10222,7 @@ watch(screen, (s) => {
   background: #fef3c7;
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #78350f;
   line-height: 1.5;
   margin-top: 12px;
@@ -9557,7 +10231,7 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.08);
   padding: 12px 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.8125rem;
+  font-size: 13px;
   opacity: 0.85;
   line-height: 1.5;
   color: #fff;
@@ -9570,13 +10244,13 @@ watch(screen, (s) => {
   border: 1px solid #e5e7eb;
 }
 .hs-buyer-qa-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 4px;
 }
 .hs-buyer-qa-sub {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #64748b;
   margin: 0 0 12px;
 }
@@ -9595,16 +10269,16 @@ watch(screen, (s) => {
   border-radius: 11px;
 }
 .hs-buyer-qa-ic {
-  font-size: 1.0625rem;
+  font-size: 17px;
   flex-shrink: 0;
 }
 .hs-buyer-qa-head {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: #0f172a;
 }
 .hs-buyer-qa-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #64748b;
   margin-top: 2px;
 }
@@ -9620,26 +10294,26 @@ watch(screen, (s) => {
   cursor: pointer;
 }
 .hs-buyer-save-ic {
-  font-size: 1.625rem;
+  font-size: 26px;
   flex-shrink: 0;
 }
 .hs-buyer-save-body {
   flex: 1;
 }
 .hs-buyer-save-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
 }
 .hs-buyer-save-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #64748b;
   margin-top: 2px;
 }
 .hs-buyer-save-arrow {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
-  color: #008a84;
+  color: #1f7a66;
   white-space: nowrap;
 }
 
@@ -9658,12 +10332,12 @@ watch(screen, (s) => {
   margin-bottom: 6px;
 }
 .hs-nb-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
 }
 .hs-nb-rank {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   background: #fef3c7;
   color: #92400e;
@@ -9671,7 +10345,7 @@ watch(screen, (s) => {
   border-radius: 999px;
 }
 .hs-nb-body {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #64748b;
   margin: 0 0 12px;
 }
@@ -9684,7 +10358,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.875rem;
+  font-size: 14px;
   padding: 5px 4px;
   border-radius: 8px;
 }
@@ -9697,34 +10371,34 @@ watch(screen, (s) => {
   width: 20px;
   text-align: center;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
 }
 .hs-nb-pos.mine {
-  color: #008a84;
+  color: #1f7a66;
 }
 .hs-nb-addr {
-  font-size: 0.9375rem;
+  font-size: 15px;
   color: #0f172a;
   font-weight: 500;
 }
 .hs-nb-addr.mine {
-  color: #008a84;
+  color: #1f7a66;
   font-weight: 700;
 }
 .hs-nb-detail {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
 }
 .hs-nb-cost {
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 14px;
   white-space: nowrap;
 }
 
 /* ── Quick wins ────────────────────────────────────────── */
 .hs-qw-section-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -9763,19 +10437,19 @@ watch(screen, (s) => {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  font-size: 1.125rem;
+  font-size: 18px;
 }
 .hs-qw-doc-body {
   flex: 1;
   min-width: 0;
 }
 .hs-qw-doc-name {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
 }
 .hs-qw-doc-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #64748b;
   margin-top: 1px;
 }
@@ -9783,9 +10457,9 @@ watch(screen, (s) => {
   flex-shrink: 0;
 }
 .hs-qw-doc-pts {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
-  color: #008a84;
+  color: #16a34a;
   background: #dcfce7;
   padding: 2px 7px;
   border-radius: 999px;
@@ -9794,9 +10468,9 @@ watch(screen, (s) => {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #008a84;
+  background: #16a34a;
   color: #fff;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   display: grid;
   place-items: center;
@@ -9831,7 +10505,7 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .hs-qw-mr-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -9839,7 +10513,7 @@ watch(screen, (s) => {
   margin-bottom: 6px;
 }
 .hs-qw-mr-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 800;
   color: #fff;
   line-height: 1.25;
@@ -9847,7 +10521,7 @@ watch(screen, (s) => {
   letter-spacing: -0.02em;
 }
 .hs-qw-mr-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
   line-height: 1.55;
   margin-bottom: 16px;
@@ -9859,7 +10533,7 @@ watch(screen, (s) => {
   border-radius: 13px;
   background: #14b8a6;
   color: #042f2e;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   font-family: inherit;
@@ -9893,7 +10567,7 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .hs-mr-hero-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -9901,7 +10575,7 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .hs-mr-hero-title {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   line-height: 1.2;
@@ -9909,7 +10583,7 @@ watch(screen, (s) => {
   margin-bottom: 8px;
 }
 .hs-mr-hero-body {
-  font-size: 0.9375rem;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
   margin-bottom: 16px;
@@ -9932,7 +10606,7 @@ watch(screen, (s) => {
   border: 1px solid rgba(20, 184, 166, 0.3);
 }
 .hs-mr-compare-head {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -9942,13 +10616,13 @@ watch(screen, (s) => {
   color: #fca5a5;
 }
 .hs-mr-compare-head.teal {
-  color: #00726c;
+  color: #3dbda3;
 }
 .hs-mr-compare-list {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.55);
 }
 .hs-mr-compare-list.ok {
@@ -9979,20 +10653,20 @@ watch(screen, (s) => {
   place-items: center;
   flex-shrink: 0;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
 }
 .hs-mr-step-ic.teal {
-  background: #008a84;
+  background: #1f7a66;
 }
 .hs-mr-step-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 3px;
 }
 .hs-mr-step-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #64748b;
   line-height: 1.5;
 }
@@ -10009,12 +10683,12 @@ watch(screen, (s) => {
   text-align: center;
 }
 .hs-mr-stat-num {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 800;
-  color: #008a84;
+  color: #1f7a66;
 }
 .hs-mr-stat-lbl {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: #64748b;
   margin-top: 2px;
   line-height: 1.3;
@@ -10026,7 +10700,7 @@ watch(screen, (s) => {
   border-radius: 14px;
   background: #231d45;
   color: #fff;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   font-family: inherit;
@@ -10039,12 +10713,12 @@ watch(screen, (s) => {
 }
 .hs-mr-claim-sub {
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #94a3b8;
   margin-bottom: 8px;
 }
 
-/* "People searched this address this month" card - matches prototype */
+/* "People searched this address this month" card — matches prototype */
 .hs-searched-card {
   display: flex;
   align-items: center;
@@ -10056,7 +10730,7 @@ watch(screen, (s) => {
   overflow: hidden;
 }
 .hs-searched-card--published {
-  background: linear-gradient(135deg, #008a84, #0f766e);
+  background: linear-gradient(135deg, #1f7a66, #0f766e);
   color: #fff;
 }
 .hs-searched-card--inprogress,
@@ -10087,7 +10761,7 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .hs-searched-num {
-  font-size: 2.375rem;
+  font-size: 38px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -2px;
@@ -10097,10 +10771,10 @@ watch(screen, (s) => {
 }
 .hs-searched-card--inprogress .hs-searched-num,
 .hs-searched-card--unclaimed .hs-searched-num {
-  color: #00726c;
+  color: #3dbda3;
 }
 .hs-searched-numlbl {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -10137,18 +10811,18 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #00726c;
+  color: #3dbda3;
   margin-bottom: 4px;
 }
 .hs-searched-pulse {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #00a19a;
+  background: #3dbda3;
   box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.25);
   animation: hs-pulse-mint 1.5s infinite;
   flex-shrink: 0;
@@ -10163,7 +10837,7 @@ watch(screen, (s) => {
   }
 }
 .hs-searched-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -10173,7 +10847,7 @@ watch(screen, (s) => {
   color: #fff;
 }
 .hs-searched-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   margin-top: 4px;
   line-height: 1.4;
 }
@@ -10186,7 +10860,7 @@ watch(screen, (s) => {
 }
 .hs-searched-card--inprogress .hs-searched-title,
 .hs-searched-card--unclaimed .hs-searched-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   line-height: 1.35;
 }
 
@@ -10201,206 +10875,6 @@ watch(screen, (s) => {
   place-items: center;
   padding: 20px;
 }
-
-/* ── Boost congratulations overlay ───────────────────────────────────
-   Fires after each document upload in the one-at-a-time boost flow.
-   Fireworks burst behind a centered impact card that shows the points
-   gained and what was actually verified. */
-.bc-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 110;
-  background: rgba(15, 23, 42, 0.72);
-  backdrop-filter: blur(6px);
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  overflow: hidden;
-}
-.bc-firework-host {
-  /* Above the boost celebration modal content so the sparks read as
-     celebration on top rather than a background pattern peeking
-     through. pointer-events:none keeps the confirm button underneath
-     tappable. */
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 9999;
-}
-.bc-firework {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-.bc-fw-particle {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  opacity: 0;
-  animation: bcFwBurst 1800ms cubic-bezier(0.12, 0.65, 0.35, 1) infinite;
-  will-change: transform, opacity;
-}
-@keyframes bcFwBurst {
-  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bc-fw-particle { animation: none; }
-}
-.bc-card {
-  position: relative;
-  width: 100%;
-  max-width: 22rem;
-  background: #fff;
-  border-radius: 22px;
-  padding: 24px 22px 18px;
-  text-align: center;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
-  z-index: 1;
-}
-.bc-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  margin: 0 auto 14px;
-  display: grid;
-  place-items: center;
-  font-size: 1.75rem;
-}
-.bc-eyebrow {
-  font-size: 0.5625rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #00726c;
-  margin-bottom: 6px;
-}
-.bc-title {
-  font-size: 1.75rem;
-  font-weight: 900;
-  color: #231d45;
-  letter-spacing: -0.6px;
-  line-height: 1.1;
-  margin-bottom: 4px;
-}
-.bc-doc-label {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #4a5568;
-  margin-bottom: 12px;
-}
-.bc-impact {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #6b7089;
-  line-height: 1.55;
-  margin-bottom: 18px;
-}
-.bc-score-row {
-  background: #f5f6fa;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 18px;
-}
-.bc-score-cell {
-  text-align: center;
-}
-.bc-score-eyebrow {
-  font-size: 0.625rem;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  color: #6b7089;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.bc-score-val {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 10px;
-  font-feature-settings: 'tnum';
-}
-.bc-score-was {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #a8a9ad;
-  text-decoration: line-through;
-}
-.bc-score-arrow {
-  font-size: 0.875rem;
-  color: #00726c;
-}
-.bc-score-now {
-  font-size: 1.625rem;
-  font-weight: 900;
-  color: #00726c;
-  letter-spacing: -0.5px;
-}
-.bc-continue {
-  width: 100%;
-  border: none;
-  padding: 14px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #00a19a, #008a84);
-  color: #fff;
-  font-size: 0.875rem;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: inherit;
-  letter-spacing: -0.1px;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
-}
-.bc-continue:hover {
-  filter: brightness(1.06);
-}
-
-/* Boost "all done" tile - replaces the doc card list once every
-   question is answered. */
-.boost-all-done {
-  text-align: center;
-  padding: 22px 18px;
-  background: linear-gradient(135deg, #e2f1ea, #fff);
-  border-radius: 14px;
-  border: 1px solid #cfe9df;
-}
-.boost-all-done-ic {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #00a19a;
-  color: #fff;
-  margin: 0 auto 10px;
-  display: grid;
-  place-items: center;
-  font-size: 1.375rem;
-  font-weight: 800;
-}
-.boost-all-done-title {
-  font-size: 0.9375rem;
-  font-weight: 800;
-  color: #231d45;
-  margin-bottom: 4px;
-}
-.boost-all-done-sub {
-  font-size: 0.75rem;
-  color: #6b7089;
-}
-
-/* Small step indicator next to "UPLOAD A DOCUMENT" section header. */
-.boost-step-pill {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgba(0, 161, 154, 0.12);
-  color: #007e78;
-  font-size: 0.625rem;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  vertical-align: middle;
-}
 .hs-authgate-card {
   width: 100%;
   max-width: 24rem;
@@ -10411,30 +10885,24 @@ watch(screen, (s) => {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 .hs-authgate-ic {
-  width: 85px;
-  height: 85px;
+  box-sizing: border-box;
+  width: 56px;
+  height: 56px;
+  padding: 12px;
   border-radius: 50%;
   background: #f0fdfa;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 14px;
-  font-size: 1.625rem;
-  overflow: hidden;
-}
-.hs-authgate-ic img {
-  width: 65px;
-  height: 65px;
   object-fit: contain;
   display: block;
+  margin: 0 auto 14px;
 }
 .hs-authgate-title {
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 800;
   color: #1f2024;
   margin-bottom: 6px;
 }
 .hs-authgate-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   color: #64748b;
   line-height: 1.55;
   margin-bottom: 18px;
@@ -10446,28 +10914,11 @@ watch(screen, (s) => {
   border-radius: 12px;
   background: #00a19a;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   font-family: inherit;
   margin-bottom: 8px;
-}
-.hs-authgate-secondary {
-  width: 100%;
-  border: 1.5px solid #e4e5ed;
-  padding: 13px;
-  border-radius: 12px;
-  background: #fff;
-  color: #231d45;
-  font-size: 0.875rem;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: inherit;
-  margin-bottom: 8px;
-  transition: background 0.15s;
-}
-.hs-authgate-secondary:hover {
-  background: #f5f6fa;
 }
 .hs-authgate-ghost {
   width: 100%;
@@ -10476,14 +10927,14 @@ watch(screen, (s) => {
   border-radius: 12px;
   background: transparent;
   color: #64748b;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
 }
 
 /* ──────────────────────────────────────────────────────────────
-   BUYER-RESULTS (watch) - matches homescore-v2_13.html prototype
+   BUYER-RESULTS (watch) — matches homescore-v2_13.html prototype
    ────────────────────────────────────────────────────────────── */
 .bv-root {
   --bv-navy: #231d45;
@@ -10506,85 +10957,262 @@ watch(screen, (s) => {
   background: var(--bv-bg);
 }
 
-/* ── Address card (consistent with ResultDetail) ────────────── */
-.bv-addr-card {
-  margin: 16px 22px 0;
-  border-radius: 22px;
-  padding: 22px 22px 18px;
-  background: linear-gradient(
-    135deg,
-    var(--bv-navy-soft) 0%,
-    var(--bv-navy) 60%,
-    #0d1a3a 100%
-  );
-  color: #fff;
+/* ── Web layout (buyer-results screen on desktop) ─────────────────── */
+.bv-root--web {
+  background: transparent;
+}
+.bvw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.bvw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.bvw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--bv-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.bvw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--bv-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.bvw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.bvw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.bvw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.bvw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Sidebar cards fill the column (reset their 28rem-era margins). */
+.bvw-layout .bvw-aside > * {
+  margin: 0;
+}
+.bvw-content {
+  min-width: 0;
+}
+/* The report sections keep their native side gutters so headers and cards
+   stay aligned; just trim the first one's top padding. */
+.bvw-content > .bv-section-h:first-child {
+  padding-top: 0;
+}
+
+@media (max-width: 980px) {
+  .bvw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .bvw-aside {
+    position: static;
+  }
+}
+
+/* ── Address hero (navy card + isometric house) ─────────────── */
+.bv-hero-card {
   position: relative;
   overflow: hidden;
-  box-shadow:
-    0 12px 32px -8px rgba(35, 29, 69, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    #322a63 0%,
+    var(--bv-navy) 55%,
+    #171238 100%
+  );
+  box-shadow: 0 14px 34px -12px rgba(35, 29, 69, 0.55);
 }
-.bv-addr-card::after {
+.bv-hero-card::after {
   content: '';
   position: absolute;
-  top: -45%;
-  right: -15%;
-  width: 240px;
-  height: 240px;
+  top: -40%;
+  right: -20%;
+  width: 230px;
+  height: 230px;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.06) 0%,
-    transparent 65%
+    rgba(107, 212, 205, 0.16) 0%,
+    transparent 62%
   );
   pointer-events: none;
 }
-.bv-addr-card > * {
+.bv-hero-card > * {
   position: relative;
   z-index: 1;
 }
-.bv-addr-house-illus {
-  position: absolute;
-  z-index: 1;
-  top: 14px;
-  right: 14px;
-  width: 108px;
-  height: 108px;
-  object-fit: contain;
-  pointer-events: none;
-}
-.bv-addr-top {
+.bv-hero-top {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 8px;
 }
-.bv-addr-pin {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-.bv-addr-block {
+.bv-hero-text {
   flex: 1;
   min-width: 0;
-  padding-right: 96px;
 }
-.bv-addr-line {
-  font-size: 1.1875rem;
+.bv-hero-addr {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 17px;
   font-weight: 800;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-  min-height: 1.2em;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+  min-height: 1.25em;
+}
+.bv-hero-pin {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  font-size: 15px;
+  color: #6bd4cd;
+}
+.bv-hero-addr-line {
+  min-width: 0;
+}
+.bv-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+  padding-left: 24px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.62);
+}
+.bv-hero-dot {
+  opacity: 0.55;
+}
+.bv-hero-house {
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  margin: -8px -4px -10px 0;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+}
+.bv-hero-epc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.bv-hero-epc-letter {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.bv-hero-epc-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+.bv-hero-epc-sub {
+  margin-top: 1px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6bd4cd;
+}
+.bv-hero-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+}
+.bv-hero-state.is-published {
+  background: rgba(107, 212, 205, 0.18);
+  border-color: rgba(107, 212, 205, 0.42);
+  color: #9ff0e9;
+}
+.bv-hero-state-ic {
+  display: inline-grid;
+  place-items: center;
+  font-size: 13px;
+  opacity: 0.6;
+  cursor: help;
+}
+.bv-hero-live {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.bv-hero-live-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3;
+}
+.bv-hero-live-row b {
+  font-weight: 800;
+  color: #fff;
+}
+.bv-hero-live-ic {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #6bd4cd;
 }
 .bv-typewriter-caret {
   display: inline-block;
   margin-left: 1px;
   font-weight: 400;
-  color: rgba(35, 29, 69, 0.55);
+  color: rgba(255, 255, 255, 0.6);
   animation: bv-caretBlink 0.85s steps(2, end) infinite;
 }
 @keyframes bv-caretBlink {
@@ -10592,325 +11220,566 @@ watch(screen, (s) => {
     opacity: 0;
   }
 }
-.bv-addr-meta {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.78);
-  margin-top: 2px;
-}
-.bv-addr-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-}
-.bv-addr-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: -0.05px;
-}
-.bv-addr-pill.epc {
-  padding-left: 6px;
-}
-.bv-epc-letter {
-  display: inline-grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  color: #fff;
-  font-size: 0.6875rem;
-  font-weight: 800;
-}
-.bv-state-unclaimed,
-.bv-state-progress {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(255, 255, 255, 0.94);
-  color: #7a3a05;
-}
-.bv-state-published {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(255, 255, 255, 0.94);
-  color: var(--bv-teal-deep);
-}
-.bv-addr-stats {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-}
-.bv-stat-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
-}
-.bv-stat-count {
-  font-weight: 800;
-}
-.bv-sep {
-  opacity: 0.5;
-}
-.bv-pulse-dot {
-  width: 7px;
-  height: 7px;
-  background: #fff;
-  border-radius: 50%;
-  position: relative;
-  flex-shrink: 0;
-}
-.bv-pulse-dot::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  animation: bv-pulse 1.6s ease-out infinite;
-}
-.bv-pulse-green {
-  background: #6bd4cd;
-}
-.bv-pulse-green::after {
-  border-color: rgba(94, 234, 212, 0.5);
-}
-@keyframes bv-pulse {
-  0% {
-    transform: scale(0.6);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
 
-/* ── Buyer snapshot card ────────────────────────────────────── */
-.bv-snapshot-card {
-  margin: 12px 22px 0;
-  padding: 20px;
+/* ── Buyer snapshot card (score + cost + area read) ─────────── */
+.bv-snap-card {
+  padding: 16px;
+  border-radius: 18px;
   background: #fff;
-  border: 1px solid var(--bv-border, #ece9f3);
-  border-radius: 20px;
-  box-shadow: 0 8px 24px -12px rgba(35, 29, 69, 0.18);
+  border: 1px solid #eef0f4;
+  box-shadow: 0 6px 20px rgba(24, 52, 88, 0.07);
 }
-.bv-snapshot-top {
+.bv-snap-eyebrow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bv-teal);
 }
-.bv-snapshot-body {
+.bv-snap-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bv-teal);
+}
+.bv-snap-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+}
+.bv-snap-head-text {
   flex: 1;
   min-width: 0;
 }
-.bv-snapshot-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.6563rem;
+.bv-snap-title {
+  font-size: 16px;
   font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: #6b7089;
-  margin-bottom: 6px;
-}
-.bv-snapshot-title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #231d45;
   letter-spacing: -0.3px;
+  line-height: 1.25;
+  color: var(--bv-navy);
 }
-.bv-snapshot-title span {
+.bv-snap-title-sep {
+  margin: 0 2px;
+  color: #c7cbd6;
+}
+.bv-snap-title-soft {
+  font-weight: 700;
+  color: #5b6d89;
+}
+.bv-snap-sub {
+  margin-top: 4px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #6b7089;
+  color: var(--bv-text-soft);
+  line-height: 1.4;
 }
-.bv-snapshot-desc {
-  font-size: 0.7813rem;
-  font-weight: 500;
-  color: #6b7089;
-  line-height: 1.5;
-  margin-top: 6px;
-}
-.bv-snapshot-gauge-wrap {
+.bv-snap-ring {
   position: relative;
-  width: 84px;
-  height: 84px;
   flex-shrink: 0;
+  width: 56px;
+  height: 56px;
 }
-.bv-snapshot-gauge-svg {
-  width: 84px;
-  height: 84px;
+.bv-snap-ring svg {
+  width: 100%;
+  height: 100%;
   transform: rotate(-90deg);
 }
-.bv-snapshot-gauge-bg {
+.bv-snap-ring-bg {
   fill: none;
-  stroke: rgba(35, 29, 69, 0.1);
-  stroke-width: 8;
+  stroke: #eef0f4;
 }
-.bv-snapshot-gauge-fill {
+.bv-snap-ring-fill {
   fill: none;
-  stroke-width: 8;
   stroke-linecap: round;
-  stroke-dasharray: 251.33;
-  transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: stroke-dashoffset 0.9s ease;
 }
-.bv-snapshot-gauge-center {
+.bv-snap-ring-num {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--bv-navy);
 }
-.bv-snapshot-gauge-num {
-  font-size: 1.375rem;
-  font-weight: 900;
-  color: #231d45;
-  line-height: 1;
+.bv-snap-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f1f5;
 }
-.bv-snapshot-gauge-denom {
-  font-size: 0.625rem;
-  font-weight: 700;
-  color: #9c98ad;
-}
-.bv-snapshot-stats {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid #f0eff6;
-}
-.bv-snapshot-stat {
-  flex: 1;
+.bv-snap-stat {
   min-width: 0;
-  text-align: center;
-  padding: 0 4px;
 }
-.bv-snapshot-stat + .bv-snapshot-stat {
-  border-left: 1px solid #f0eff6;
-}
-.bv-snapshot-stat-ic {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  margin: 0 auto 6px;
+.bv-snap-ic {
   display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  margin-bottom: 6px;
 }
-.bv-snapshot-stat-ic--svg {
-  color: #00726c;
-}
-.bv-snapshot-stat-label {
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: #6b7089;
+.bv-snap-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #8b93a7;
   line-height: 1.3;
 }
-.bv-snapshot-stat-val {
-  font-size: 0.8438rem;
-  font-weight: 800;
-  color: #231d45;
+.bv-snap-stat-val {
   margin-top: 3px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  color: var(--bv-navy);
 }
-.bv-snapshot-stat-val span {
-  font-size: 0.625rem;
+.bv-snap-stat-val span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b93a7;
+}
+.bv-snap-stat-val.tone-good {
+  color: #0f9d76;
+}
+.bv-snap-stat-val.tone-warn {
+  color: #c07d10;
+}
+.bv-snap-stat-note {
+  margin-top: 4px;
+  font-size: 10.5px;
   font-weight: 600;
+  color: #9aa2b4;
+  line-height: 1.35;
+}
+.bv-snap-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f1f5;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8b93a7;
+  line-height: 1.4;
+}
+.bv-snap-foot-ic {
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 13px;
+  color: var(--bv-teal);
+}
+@media (max-width: 430px) {
+  .bv-snap-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── "This property is unclaimed" navy banner ────────────────── */
+.bv-claim-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--bv-navy-soft) 0%, var(--bv-navy) 70%, #0d1a3a 100%);
+  color: #fff;
+  box-shadow: 0 12px 30px -10px rgba(35, 29, 69, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.bv-claim-banner:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px -10px rgba(35, 29, 69, 0.55);
+}
+.bv-claim-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-claim-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+.bv-claim-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.4;
+}
+.bv-claim-arrow {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+/* ── Watch this property card ────────────────────────────────── */
+.bv-watch-card {
+  margin: 0 22px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  box-shadow: 0 6px 20px rgba(24, 52, 88, 0.07);
+}
+.bv-watch-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #9c98ad;
 }
-
-/* ── Report tabs ────────────────────────────────────────────── */
-.bv-tabs {
-  display: flex;
-  gap: 8px;
-  margin: 14px 22px 0;
-  overflow-x: auto;
-  scrollbar-width: none;
+.bv-watch-title {
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.3px;
 }
-.bv-tabs::-webkit-scrollbar {
-  display: none;
+.bv-watch-lede {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bv-text-soft);
+  line-height: 1.5;
 }
-.bv-tab {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  border: 1px solid #ece9f3;
-  background: #fff;
-  color: #6b7089;
-  font-size: 0.7813rem;
+.bv-watch-lede b {
+  color: var(--bv-navy);
   font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.bv-tab-emoji {
-  font-size: 0.8125rem;
-}
-.bv-tab.active {
-  background: #00a19a;
-  border-color: #00a19a;
-  color: #fff;
-}
-
-/* ── Costs / Area panels (shared card style) ─────────────────── */
-.bv-costs-card {
-  margin: 8px 22px 0;
-  padding: 4px 18px;
-  background: #fff;
-  border: 1px solid #ece9f3;
-  border-radius: 16px;
-}
-.bv-costs-row {
+.bv-watch-rows {
+  margin: 16px 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+}
+.bv-watch-row {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
   padding: 13px 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #6b7089;
+  border-bottom: 1px solid #f2f3f7;
 }
-.bv-costs-row + .bv-costs-row {
-  border-top: 1px solid #f0eff6;
+.bv-watch-row:last-child {
+  border-bottom: none;
 }
-.bv-costs-row b {
-  color: #231d45;
+.bv-watch-ic {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  border-radius: 9px;
+  background: #f5f7fb;
+  object-fit: contain;
+}
+.bv-watch-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-watch-row-title {
+  font-size: 14px;
   font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.1px;
+}
+.bv-watch-row-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--bv-text-soft);
+  line-height: 1.4;
+}
+.bv-watch-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: var(--bv-teal);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(0, 161, 154, 0.5);
+  transition: transform 0.15s, filter 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.bv-watch-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+.bv-watch-btn:disabled {
+  background: #eaf6f5;
+  color: #017a72;
+  box-shadow: none;
+  cursor: default;
 }
 
-/* ── Empty-tab state (Sold / Area with no data yet) ──────────── */
-.bv-empty-tab {
-  margin: 8px 22px 0;
-  padding: 28px 20px;
-  background: #fff;
-  border: 1px dashed #ddd9ea;
-  border-radius: 16px;
-  text-align: center;
+/* ── Verified buyer upsell (navy) ────────────────────────────── */
+.bv-verified-card {
+  margin: 14px 22px 0;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, var(--bv-navy) 0%, #2f2760 55%, #0d1a3a 100%);
+  color: #fff;
+  box-shadow: 0 14px 32px -10px rgba(35, 29, 69, 0.5);
 }
-.bv-empty-tab-title {
-  font-size: 0.875rem;
+.bv-verified-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
   font-weight: 800;
-  color: #231d45;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
 }
-.bv-empty-tab-sub {
-  font-size: 0.7813rem;
-  font-weight: 500;
-  color: #6b7089;
-  line-height: 1.5;
+.bv-verified-title {
   margin-top: 6px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.bv-verified-lede {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+}
+.bv-verified-rows {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bv-verified-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.bv-verified-ic {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border-radius: 8px;
+  background: rgba(107, 212, 205, 0.18);
+  object-fit: contain;
+}
+.bv-verified-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-verified-row-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+}
+.bv-verified-row-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.4;
+}
+.bv-verified-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: var(--bv-teal);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(0, 161, 154, 0.55);
+  transition: transform 0.15s, filter 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.bv-verified-btn-ic {
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+/* ── Illustrated icons inside the interest / verified cards ─── */
+.bv-watch-eyebrow img,
+.bv-verified-eyebrow img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bv-watch-btn-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bv-watch-btn-ic {
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+/* ── Passport build state (owner claimed, not published yet) ── */
+.bv-pp-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 22px 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--bv-teal-pale);
+  box-shadow: 0 6px 20px rgba(24, 52, 88, 0.06);
+}
+.bv-pp-banner-ic {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 38px;
+  height: 38px;
+  padding: 5px;
+  border-radius: 11px;
+  background: var(--bv-teal-paler);
+  object-fit: contain;
+}
+.bv-pp-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+.bv-pp-banner-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.2px;
+}
+.bv-pp-banner-pill {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--bv-teal-pale);
+  color: var(--bv-teal-deep);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.bv-pp-banner-sub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--bv-text-soft);
+  line-height: 1.45;
+}
+.bv-pp-banner-sub b {
+  font-weight: 800;
+  color: var(--bv-navy);
+}
+.bv-pp-hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 22px 12px;
+  padding: 18px 20px 20px;
+  border-radius: 18px;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    #322a63 0%,
+    var(--bv-navy) 55%,
+    #171238 100%
+  );
+  box-shadow: 0 12px 30px -10px rgba(35, 29, 69, 0.5);
+}
+.bv-pp-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+.bv-pp-eyebrow img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bv-pp-pct-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 10px;
+}
+.bv-pp-pct {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: #6bd4cd;
+}
+.bv-pp-frac {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.72);
+}
+.bv-pp-bar {
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+.bv-pp-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00a19a, #6bd4cd);
+  transition: width 0.9s ease;
+}
+.bv-pp-sub {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.45;
+}
+.bv-pp-sub b {
+  font-weight: 800;
+  color: #ffc857;
+}
+.bv-verified-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 /* ── Section header (mirrors costs page) ───────────────────── */
@@ -10940,6 +11809,18 @@ watch(screen, (s) => {
   width: 16px;
   height: 16px;
 }
+/* Illustrated (PNG) variant — the artwork carries its own colour, so the
+   teal tile drops back to a soft neutral chip. */
+.bv-section-h-icon.img {
+  background: var(--bv-teal-paler);
+  border: 1px solid var(--bv-teal-pale);
+  box-shadow: none;
+}
+.bv-section-h-icon.img img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
 .bv-section-h-icon.warn {
   background: linear-gradient(135deg, #f0b656, #c18a38);
   box-shadow: 0 3px 10px rgba(230, 162, 60, 0.3);
@@ -10953,14 +11834,14 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .bv-section-h-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--bv-navy);
   letter-spacing: -0.2px;
   line-height: 1.1;
 }
 .bv-section-h-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--bv-text-soft);
   letter-spacing: -0.05px;
@@ -10968,6 +11849,246 @@ watch(screen, (s) => {
 }
 
 /* ── Buyer risk summary card (amber outer + pastel inner rows) ── */
+/* ── Buyer report tabs ────────────────────────────────────────────── */
+.bv-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 22px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.bv-tabs::-webkit-scrollbar {
+  display: none;
+}
+.bv-tab {
+  flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  border: 1px solid #e7ecf2;
+  background: #fff;
+  color: #6b6783;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.bv-tab:hover {
+  color: #231d45;
+}
+.bv-tab.active {
+  background: #00a19a;
+  border-color: #00a19a;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(0, 161, 154, 0.24);
+}
+.bv-tab-ic {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bv-tabpanel {
+  animation: bv-tabfade 0.28s ease;
+}
+@keyframes bv-tabfade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Costs / Sold hero + rows */
+.bv-costs-hero {
+  margin: 0 22px 12px;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(150deg, #00a19a 0%, #00b6ad 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.22);
+}
+.bv-costs-hero.sold {
+  background: linear-gradient(150deg, #231d45 0%, #3a2f78 100%);
+  box-shadow: 0 10px 24px rgba(35, 29, 69, 0.22);
+}
+.bv-costs-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 6px;
+}
+.bv-costs-num {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.bv-costs-num span {
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+.bv-costs-sub {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+.bv-costs-rows {
+  margin: 0 22px 10px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+}
+.bv-costs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f7;
+}
+.bv-costs-row:last-child {
+  border-bottom: none;
+}
+.bv-costs-row-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #231d45;
+}
+.bv-costs-ic {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  vertical-align: -5px;
+  margin-right: 7px;
+}
+.bv-costs-row-label small {
+  font-weight: 500;
+  color: #9c98ad;
+}
+.bv-costs-row b {
+  font-size: 14px;
+  font-weight: 900;
+  color: #231d45;
+  white-space: nowrap;
+}
+.bv-arealinks {
+  margin: 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bv-arealink {
+  display: flex;
+  flex-direction: column;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #231d45;
+  box-shadow: 0 4px 14px rgba(24, 52, 88, 0.05);
+}
+.bv-arealink small {
+  font-weight: 500;
+  color: #9c98ad;
+  margin-top: 2px;
+  font-size: 11.5px;
+}
+.bv-area-note {
+  margin: 0 22px 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f4faf8;
+  border: 1px solid #d7efea;
+}
+.bv-area-note-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #017a72;
+  margin-bottom: 6px;
+}
+.bv-area-note-title img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bv-area-note-body {
+  font-size: 12.5px;
+  color: #4a5570;
+  line-height: 1.5;
+}
+
+/* ── Crime breakdown (Area tab · data.police.uk) ─────────────── */
+.bv-crime-card {
+  margin: 0 22px 10px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+}
+.bv-crime-head {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9c98ad;
+  margin-bottom: 12px;
+}
+.bv-crime-row {
+  display: grid;
+  grid-template-columns: 148px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+.bv-crime-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bv-navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bv-crime-bar-wrap {
+  height: 8px;
+  border-radius: 6px;
+  background: #f0f1f5;
+  overflow: hidden;
+}
+.bv-crime-bar {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #00a19a, #33b1aa);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bv-crime-val {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  text-align: right;
+}
+@media (max-width: 460px) {
+  .bv-crime-row {
+    grid-template-columns: 110px 1fr 36px;
+  }
+}
+
 .bv-risks-card {
   margin: 0 22px;
   background: #fff;
@@ -11000,25 +12121,18 @@ watch(screen, (s) => {
   border-color: rgba(199, 62, 54, 0.3);
 }
 .bv-risk-icon {
-  font-size: 1rem;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
   margin-top: 1px;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-}
-.bv-risk-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
 }
 .bv-risk-body {
   flex: 1;
   min-width: 0;
 }
 .bv-risk-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.15px;
   margin-bottom: 2px;
@@ -11033,7 +12147,7 @@ watch(screen, (s) => {
   color: var(--bv-red);
 }
 .bv-risk-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--bv-text-soft);
   line-height: 1.4;
@@ -11049,7 +12163,7 @@ watch(screen, (s) => {
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.08);
 }
 .bv-breakdown-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--bv-text-soft);
   line-height: 1.5;
@@ -11067,10 +12181,19 @@ watch(screen, (s) => {
   gap: 10px;
 }
 .bv-bd-label {
-  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--bv-navy);
-  width: 62px;
+  width: 92px;
+  flex-shrink: 0;
+}
+.bv-bd-ic {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .bv-bd-bar-wrap {
@@ -11086,14 +12209,14 @@ watch(screen, (s) => {
   transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .bv-bd-val {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   width: 36px;
   text-align: right;
   flex-shrink: 0;
 }
 .bv-bd-note {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: #8b6b00;
   background: #fffbe6;
@@ -11131,42 +12254,28 @@ watch(screen, (s) => {
   background: var(--bv-teal-paler);
 }
 .bv-q-icon {
-  font-size: 1rem;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
   margin-top: 1px;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-}
-.bv-q-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
 }
 .bv-q-body {
   flex: 1;
   min-width: 0;
 }
 .bv-q-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--bv-navy);
   letter-spacing: -0.15px;
   margin-bottom: 3px;
 }
 .bv-q-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--bv-text-soft);
   line-height: 1.4;
-}
-.bv-q-chev {
-  flex-shrink: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--bv-text-soft);
-  margin-top: 2px;
 }
 
 /* ── Save to Buyer Profile card ────────────────────────────── */
@@ -11206,20 +12315,20 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .bv-save-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--bv-navy);
   letter-spacing: -0.2px;
   margin-bottom: 2px;
 }
 .bv-save-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--bv-text-soft);
   line-height: 1.4;
 }
 .bv-save-cta {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--bv-teal-dark);
   flex-shrink: 0;
@@ -11230,7 +12339,7 @@ watch(screen, (s) => {
   display: block;
   margin: 14px auto 0;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--bv-text-soft);
   background: none;
@@ -11243,8 +12352,93 @@ watch(screen, (s) => {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   SIMULATOR - replaces the old quiz; matches homescore-v2_13.html
+   SIMULATOR — replaces the old quiz; matches homescore-v2_13.html
    ────────────────────────────────────────────────────────────── */
+/* ── Web layout (questions / accuracy-check screen on desktop) ────── */
+.sim-root--web {
+  max-width: none !important;
+  min-height: auto;
+  background: transparent;
+  overflow: visible;
+}
+.simw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.simw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.simw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: #00857f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.simw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #00a19a;
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.simw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.simw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.simw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.simw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Sidebar cards fill the column (reset their 28rem-era margins/padding). */
+.simw-layout .simw-aside > * {
+  margin: 0;
+}
+.simw-content {
+  min-width: 0;
+}
+/* The content keeps the sections' native spacing; just trim the first one's
+   top margin so it aligns with the sidebar. */
+.simw-content > .sim-paths {
+  margin-top: 0;
+}
+
+@media (max-width: 980px) {
+  .simw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .simw-aside {
+    position: static;
+  }
+}
+
 .sim-root {
   --sim-navy: #231d45;
   --sim-navy-soft: #4a4566;
@@ -11306,7 +12500,7 @@ watch(screen, (s) => {
   border: 1px solid var(--sim-teal-pale);
   padding: 5px 11px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: var(--sim-teal);
@@ -11320,7 +12514,7 @@ watch(screen, (s) => {
   box-shadow: 0 0 0 3px var(--sim-teal-pale);
 }
 
-/* Address card - amber, ResultDetail-consistent */
+/* Address card — amber, ResultDetail-consistent */
 .sim-addr-card {
   margin: 8px 16px 0;
   border-radius: 22px;
@@ -11371,13 +12565,13 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .sim-addr-line {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.2;
 }
 .sim-addr-meta {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
   margin-top: 2px;
@@ -11414,15 +12608,52 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .sim-hero-eyebrow {
-  font-size: 0.5625rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
   font-weight: 800;
   color: var(--sim-teal-dark);
   letter-spacing: 1.4px;
   text-transform: uppercase;
   margin-bottom: 10px;
 }
+.sim-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00a19a;
+  box-shadow: 0 0 0 0 rgba(0, 161, 154, 0.5);
+  animation: sim-live-pulse 1.6s ease-out infinite;
+}
+@keyframes sim-live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 161, 154, 0.5); }
+  100% { box-shadow: 0 0 0 7px rgba(0, 161, 154, 0); }
+}
+.sim-pts-badge {
+  margin-left: auto;
+  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 900;
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.12);
+  border: 1px solid rgba(0, 161, 154, 0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  text-transform: none;
+}
+.sim-score-aim {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b06a00;
+  line-height: 1.35;
+  margin: 2px 0 4px;
+}
+.sim-score-aim--hit {
+  color: #00857f;
+}
 .sim-hero-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--sim-text-soft);
   line-height: 1.55;
@@ -11468,26 +12699,26 @@ watch(screen, (s) => {
   justify-content: center;
 }
 .sim-score-num {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   color: var(--sim-navy);
   line-height: 1;
 }
 .sim-score-denom {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: var(--sim-text-faint);
 }
 .sim-score-info {
   flex: 1;
 }
 .sim-score-band {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 3px;
 }
 .sim-score-grade {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--sim-text-soft);
 }
 .sim-stats-row {
@@ -11507,7 +12738,7 @@ watch(screen, (s) => {
   border-right: none;
 }
 .sim-stat-label {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   color: var(--sim-teal-dark);
   letter-spacing: 1px;
@@ -11515,7 +12746,7 @@ watch(screen, (s) => {
   margin-bottom: 3px;
 }
 .sim-stat-val {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--sim-navy);
   letter-spacing: -0.3px;
@@ -11525,7 +12756,7 @@ watch(screen, (s) => {
   color: var(--sim-teal);
 }
 .sim-stat-delta {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   color: var(--sim-teal);
   margin-top: 1px;
@@ -11541,7 +12772,7 @@ watch(screen, (s) => {
   padding: 14px 16px;
 }
 .sim-paths-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--sim-teal-dark);
   letter-spacing: 1.2px;
@@ -11579,11 +12810,31 @@ watch(screen, (s) => {
   border-width: 2px;
 }
 .sim-path-icon {
-  font-size: 1rem;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   margin-bottom: 4px;
 }
+.sim-publish-ic {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: -5px;
+  margin-right: 7px;
+}
+/* Lucide glyphs inside the simulator / publish / KYC buttons. */
+.sim-step-btn .iconify,
+.sim-publish-go .iconify,
+.sim-cta-btn .iconify,
+.pub-cta-primary .iconify,
+.kyc-cta-primary .iconify,
+.kyc-cta-outline .iconify,
+.boost-section-label .iconify {
+  vertical-align: -2px;
+  margin-right: 6px;
+}
 .sim-path-title {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 3px;
@@ -11592,7 +12843,7 @@ watch(screen, (s) => {
   color: var(--sim-teal-dark);
 }
 .sim-path-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
   color: var(--sim-text-soft);
   line-height: 1.4;
@@ -11600,7 +12851,7 @@ watch(screen, (s) => {
 .sim-paths-or {
   display: flex;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: var(--sim-text-faint);
 }
@@ -11618,12 +12869,12 @@ watch(screen, (s) => {
   justify-content: space-between;
 }
 .sim-progress-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: var(--sim-text-soft);
 }
 .sim-progress-count {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: var(--sim-teal);
 }
@@ -11691,7 +12942,7 @@ watch(screen, (s) => {
   border-radius: 50%;
   background: var(--sim-line-soft);
   color: var(--sim-text-faint);
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -11722,17 +12973,17 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .sim-step-title {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 1px;
 }
 .sim-step-meta {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: var(--sim-text-soft);
 }
 .sim-step-badge {
-  font-size: 1rem;
+  font-size: 16px;
   flex-shrink: 0;
   min-width: 20px;
   text-align: center;
@@ -11746,13 +12997,13 @@ watch(screen, (s) => {
   display: block;
 }
 .sim-step-desc {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--sim-text-soft);
   line-height: 1.5;
   margin: 10px 0 8px;
 }
 .sim-step-impact {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: var(--sim-teal-dark);
   background: var(--sim-teal-paler);
@@ -11761,7 +13012,7 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .sim-step-question {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 8px;
@@ -11777,7 +13028,7 @@ watch(screen, (s) => {
   border-radius: 9px;
   border: 1.5px solid;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -11833,17 +13084,17 @@ watch(screen, (s) => {
   border-color: var(--sim-teal);
 }
 .sim-bill-emoji {
-  font-size: 1.75rem;
+  font-size: 28px;
   flex-shrink: 0;
 }
 .sim-bill-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 3px;
 }
 .sim-bill-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
   color: var(--sim-text-soft);
   line-height: 1.5;
@@ -11858,13 +13109,13 @@ watch(screen, (s) => {
   padding: 16px 18px;
 }
 .sim-publish-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 4px;
 }
 .sim-publish-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--sim-text-soft);
   line-height: 1.5;
   margin-bottom: 12px;
@@ -11881,7 +13132,7 @@ watch(screen, (s) => {
   border: none;
   border-radius: 10px;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -11891,13 +13142,13 @@ watch(screen, (s) => {
   border: 1.5px solid var(--sim-teal-pale);
   border-radius: 10px;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: var(--sim-text-soft);
   cursor: pointer;
 }
 
-/* EPC nudge - variant-driven, matches prototype simUpdateEpcNudge() */
+/* EPC nudge — variant-driven, matches prototype simUpdateEpcNudge() */
 .sim-epc-nudge {
   margin: 10px 16px 0;
   border-radius: 16px;
@@ -11923,17 +13174,19 @@ watch(screen, (s) => {
   border: 2px solid var(--sim-teal-pale);
 }
 .sim-epc-nudge-icon {
-  font-size: 1.375rem;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .sim-epc-nudge-title {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   color: var(--sim-navy);
   margin-bottom: 3px;
 }
 .sim-epc-nudge-body {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--sim-text-soft);
   line-height: 1.5;
 }
@@ -11944,7 +13197,7 @@ watch(screen, (s) => {
   border: none;
   border-radius: 9px;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -11961,7 +13214,7 @@ watch(screen, (s) => {
   border: none;
   border-radius: 14px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.3);
@@ -11982,7 +13235,7 @@ watch(screen, (s) => {
   border: 1.5px solid var(--sim-line-soft);
   border-radius: 10px;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: var(--sim-text-soft);
   cursor: pointer;
@@ -12007,7 +13260,7 @@ watch(screen, (s) => {
   box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
 }
 /* Modal lives outside .sim-root (it's a sibling of the sim screen), so the
-   sim-* CSS variables don't cascade - use literal palette here. */
+   sim-* CSS variables don't cascade — use literal palette here. */
 .sim-diff-handle {
   width: 40px;
   height: 4px;
@@ -12016,13 +13269,13 @@ watch(screen, (s) => {
   margin: 0 auto 20px;
 }
 .sim-diff-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: #231d45;
   margin-bottom: 6px;
 }
 .sim-diff-body {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #6b6783;
   margin-bottom: 16px;
   line-height: 1.5;
@@ -12033,7 +13286,7 @@ watch(screen, (s) => {
   border-radius: 12px;
   padding: 12px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 15px;
   color: #231d45;
   resize: none;
   height: 90px;
@@ -12055,11 +13308,13 @@ watch(screen, (s) => {
   align-items: flex-start;
 }
 .sim-diff-tip-icon {
-  font-size: 1rem;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .sim-diff-tip-text {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #231d45;
   line-height: 1.5;
 }
@@ -12076,7 +13331,7 @@ watch(screen, (s) => {
   border: none;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
@@ -12090,7 +13345,7 @@ watch(screen, (s) => {
   border: 1.5px solid #f5f5f7;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #6b6783;
   cursor: pointer;
@@ -12119,7 +13374,7 @@ watch(screen, (s) => {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   POST-QUIZ (refined results) - matches homescore-v2_13.html postquiz
+   POST-QUIZ (refined results) — matches homescore-v2_13.html postquiz
    ────────────────────────────────────────────────────────────── */
 .pq-root {
   --pq-navy: #231d45;
@@ -12145,6 +13400,92 @@ watch(screen, (s) => {
   color: var(--pq-navy);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ── Web layout (results screen on desktop) ───────────────────────── */
+.pq-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.pqw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.pqw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.pqw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--pq-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pqw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--pq-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.pqw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.pqw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.pqw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.pqw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.pqw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+/* Neutralise the cards' original 28rem-era side margins — spacing is now the
+   flex gaps. Specificity (0,3,0) wins over each card's own margin rule. */
+.pqw-layout .pqw-aside > *,
+.pqw-layout .pqw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .pqw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .pqw-aside {
+    position: static;
+  }
 }
 
 /* Top nav */
@@ -12175,19 +13516,19 @@ watch(screen, (s) => {
   text-align: center;
 }
 .pq-topnav-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--pq-navy);
   letter-spacing: -0.2px;
 }
 .pq-topnav-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--pq-text-soft);
   margin-top: 1px;
 }
 
-/* Amber address card - consistent with ResultDetail */
+/* Amber address card — consistent with ResultDetail */
 .pq-addr-card {
   margin: 8px 22px 0;
   border-radius: 22px;
@@ -12239,13 +13580,13 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .pq-addr-line {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.2;
 }
 .pq-addr-meta {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
   margin-top: 2px;
@@ -12267,7 +13608,7 @@ watch(screen, (s) => {
   color: #fff;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.05px;
 }
@@ -12281,7 +13622,7 @@ watch(screen, (s) => {
   height: 18px;
   border-radius: 4px;
   color: #fff;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
 }
 .pq-state-done {
@@ -12299,7 +13640,7 @@ watch(screen, (s) => {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.92);
 }
@@ -12380,7 +13721,7 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .pq-overpay-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.78);
   letter-spacing: 1.6px;
@@ -12397,7 +13738,7 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.85);
 }
 .pq-overpay-num {
-  font-size: 2.75rem;
+  font-size: 44px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -1.6px;
@@ -12406,14 +13747,14 @@ watch(screen, (s) => {
   font-feature-settings: 'tnum';
 }
 .pq-overpay-num .unit {
-  font-size: 1.375rem;
+  font-size: 22px;
   color: rgba(255, 255, 255, 0.78);
   font-weight: 700;
   letter-spacing: -0.5px;
   margin-left: 2px;
 }
 .pq-overpay-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
@@ -12429,7 +13770,7 @@ watch(screen, (s) => {
   border-radius: 14px;
   padding: 14px 18px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.1px;
   cursor: pointer;
@@ -12460,18 +13801,9 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.22);
 }
 .pq-hero-btn-emoji {
-  font-size: 1rem;
+  font-size: 16px;
   line-height: 1;
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-}
-.pq-hero-btn-emoji img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
 }
 .pq-hero-btn-label {
   flex: 1;
@@ -12517,7 +13849,7 @@ watch(screen, (s) => {
   margin-bottom: 12px;
 }
 .pq-score-eyebrow .left {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 1.2px;
   color: var(--pq-teal-dark);
@@ -12527,7 +13859,7 @@ watch(screen, (s) => {
   background: #e8f5ea;
   border: 1px solid #b8e8c8;
   color: var(--pq-success);
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   padding: 4px 9px;
   border-radius: 999px;
@@ -12566,14 +13898,14 @@ watch(screen, (s) => {
   justify-content: center;
 }
 .pq-g-num .gn-big {
-  font-size: 2rem;
+  font-size: 32px;
   font-weight: 800;
   color: var(--pq-navy);
   line-height: 1;
   letter-spacing: -1px;
 }
 .pq-g-num .gn-small {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--pq-text-faint);
   font-weight: 700;
 }
@@ -12582,14 +13914,14 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .pq-score-band {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 800;
   color: var(--pq-navy);
   letter-spacing: -0.3px;
   margin-bottom: 4px;
 }
 .pq-score-explainer {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--pq-text-soft);
   line-height: 1.5;
 }
@@ -12602,7 +13934,7 @@ watch(screen, (s) => {
   background: var(--pq-teal-paler);
   border: 1px solid var(--pq-teal-pale);
   border-radius: 9px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--pq-teal-dark);
   line-height: 1.45;
@@ -12614,7 +13946,7 @@ watch(screen, (s) => {
   margin-top: 1px;
 }
 
-/* Refined breakdown - amber-tinted cream card per prototype */
+/* Refined breakdown — amber-tinted cream card per prototype */
 .pq-breakdown-card {
   margin: 12px 22px 0;
   padding: 18px;
@@ -12629,14 +13961,14 @@ watch(screen, (s) => {
   box-shadow: 0 10px 26px rgba(230, 162, 60, 0.16);
 }
 .pq-breakdown-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--pq-navy);
   letter-spacing: -0.2px;
   margin-bottom: 3px;
 }
 .pq-breakdown-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--pq-text-soft);
   line-height: 1.5;
@@ -12653,7 +13985,7 @@ watch(screen, (s) => {
   gap: 10px;
 }
 .pq-breakdown-label {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--pq-navy);
   width: 72px;
@@ -12672,14 +14004,14 @@ watch(screen, (s) => {
   transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .pq-breakdown-value {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   width: 42px;
   text-align: right;
   flex-shrink: 0;
 }
 
-/* Next step / interest card - navy bordered with subtle gradient */
+/* Next step / interest card — navy bordered with subtle gradient */
 .pq-interest-card {
   margin: 12px 22px 0;
   padding: 18px;
@@ -12700,7 +14032,7 @@ watch(screen, (s) => {
   box-shadow: 0 10px 26px rgba(35, 29, 69, 0.16);
 }
 .pq-interest-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--pq-text-faint);
   letter-spacing: 1.2px;
@@ -12749,17 +14081,11 @@ watch(screen, (s) => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-size: 1rem;
+  font-size: 16px;
 }
 .pq-interest-opt-icon svg {
   width: 14px;
   height: 14px;
-}
-.pq-interest-opt-icon img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  display: block;
 }
 .pq-interest-opt.outline .pq-interest-opt-icon {
   color: var(--pq-teal-dark);
@@ -12772,12 +14098,12 @@ watch(screen, (s) => {
   gap: 2px;
 }
 .pq-interest-opt-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.1px;
 }
 .pq-interest-opt-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
   opacity: 0.85;
@@ -12787,7 +14113,7 @@ watch(screen, (s) => {
   opacity: 1;
 }
 .pq-interest-opt-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   flex-shrink: 0;
   opacity: 0.7;
 }
@@ -12802,17 +14128,17 @@ watch(screen, (s) => {
   text-align: center;
 }
 .pq-placeholder-emoji {
-  font-size: 2.5rem;
+  font-size: 40px;
   margin-bottom: 10px;
 }
 .pq-placeholder-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--pq-navy);
   margin-bottom: 8px;
 }
 .pq-placeholder-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--pq-text-soft);
   line-height: 1.5;
   margin-bottom: 16px;
@@ -12823,7 +14149,7 @@ watch(screen, (s) => {
   border-radius: 10px;
   padding: 10px 16px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--pq-text-soft);
   cursor: pointer;
@@ -12835,7 +14161,7 @@ watch(screen, (s) => {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   PUBLISH - matches homescore-v2_13.html publish screen
+   PUBLISH — matches homescore-v2_13.html publish screen
    ────────────────────────────────────────────────────────────── */
 .pub-root {
   --pub-navy: #231d45;
@@ -12862,6 +14188,92 @@ watch(screen, (s) => {
   color: var(--pub-navy);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ── Web layout (publish screen on desktop) ───────────────────────── */
+.pub-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.pubw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.pubw-head {
+  max-width: 720px;
+  margin-bottom: 24px;
+}
+.pubw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--pub-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pubw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--pub-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.pubw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+.pubw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.pubw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.pubw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.pubw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Neutralise the cards' original 28rem-era side margins — spacing is now the
+   flex gaps. Specificity (0,3,0) wins over each card's own margin rule. */
+.pubw-layout .pubw-aside > *,
+.pubw-layout .pubw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .pubw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .pubw-aside {
+    position: static;
+  }
 }
 
 /* Amber address card */
@@ -12916,13 +14328,13 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .pub-addr-line {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.2;
 }
 .pub-addr-meta {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
   margin-top: 2px;
@@ -12944,11 +14356,11 @@ watch(screen, (s) => {
   color: #fff;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
 }
 /* Publish-specific: EPC pill uses white bg (not the translucent-on-amber
-   variant used on the other screens) - matches the prototype behaviour. */
+   variant used on the other screens) — matches the prototype behaviour. */
 .pub-addr-pill.epc {
   padding-left: 6px;
   background: #fff;
@@ -12962,7 +14374,7 @@ watch(screen, (s) => {
   height: 18px;
   border-radius: 4px;
   color: #fff;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
 }
 .pub-state-done {
@@ -12999,13 +14411,13 @@ watch(screen, (s) => {
   text-align: center;
 }
 .pub-topnav-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--pub-navy);
   letter-spacing: -0.2px;
 }
 .pub-topnav-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--pub-text-soft);
   margin-top: 1px;
@@ -13049,7 +14461,7 @@ watch(screen, (s) => {
   z-index: 1;
 }
 .pub-hero-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.78);
   letter-spacing: 1.6px;
@@ -13066,7 +14478,7 @@ watch(screen, (s) => {
   background: rgba(255, 255, 255, 0.85);
 }
 .pub-hero-title {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.4px;
@@ -13074,7 +14486,7 @@ watch(screen, (s) => {
   margin: 6px 0 10px;
 }
 .pub-hero-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.5;
@@ -13089,7 +14501,7 @@ watch(screen, (s) => {
   padding: 16px 18px;
 }
 .pub-contrib-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--pub-text-faint);
   letter-spacing: 1.2px;
@@ -13115,15 +14527,18 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: var(--pub-navy);
 }
 .pub-contrib-icon {
-  font-size: 0.9375rem;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .pub-contrib-val {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--pub-teal-dark);
   font-feature-settings: 'tnum';
@@ -13149,7 +14564,7 @@ watch(screen, (s) => {
   background: var(--pub-gold);
 }
 .pub-contrib-note {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: var(--pub-text-faint);
   margin-top: 3px;
 }
@@ -13164,13 +14579,15 @@ watch(screen, (s) => {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--pub-teal-dark);
   line-height: 1.5;
 }
 .pub-anon-icon {
-  font-size: 1rem;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .pub-anon b {
@@ -13192,14 +14609,14 @@ watch(screen, (s) => {
   margin-bottom: 4px;
 }
 .pub-street-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--pub-text-faint);
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
 .pub-street-count {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--pub-teal-dark);
 }
@@ -13217,7 +14634,7 @@ watch(screen, (s) => {
   transition: width 1.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .pub-street-note {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--pub-text-soft);
   margin-bottom: 12px;
@@ -13243,7 +14660,7 @@ watch(screen, (s) => {
   opacity: 1;
 }
 .pub-milestone-num {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--pub-text-soft);
 }
@@ -13251,7 +14668,7 @@ watch(screen, (s) => {
   color: var(--pub-teal-dark);
 }
 .pub-milestone-label {
-  font-size: 0.5rem;
+  font-size: 8px;
   font-weight: 700;
   color: var(--pub-text-faint);
   text-transform: uppercase;
@@ -13274,7 +14691,7 @@ watch(screen, (s) => {
   border: none;
   border-radius: 16px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   display: flex;
@@ -13293,7 +14710,7 @@ watch(screen, (s) => {
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--pub-text-soft);
   cursor: pointer;
@@ -13313,17 +14730,17 @@ watch(screen, (s) => {
   text-align: center;
 }
 .pub-placeholder-emoji {
-  font-size: 2.5rem;
+  font-size: 40px;
   margin-bottom: 10px;
 }
 .pub-placeholder-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--pub-navy);
   margin-bottom: 8px;
 }
 .pub-placeholder-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--pub-text-soft);
   line-height: 1.5;
   margin-bottom: 16px;
@@ -13334,7 +14751,7 @@ watch(screen, (s) => {
   border-radius: 10px;
   padding: 10px 16px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--pub-text-soft);
   cursor: pointer;
@@ -13346,7 +14763,7 @@ watch(screen, (s) => {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   KYC + KYC-PENDING + PUBLISHED - matches homescore-v2_13.html
+   KYC + KYC-PENDING + PUBLISHED — matches homescore-v2_13.html
    ────────────────────────────────────────────────────────────── */
 .kyc-root {
   --kyc-navy: #231d45;
@@ -13372,6 +14789,92 @@ watch(screen, (s) => {
   color: var(--kyc-navy);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ── Web layout (kyc screen on desktop) ───────────────────────────── */
+.kyc-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.kycw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.kycw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.kycw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--kyc-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.kycw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--kyc-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.kycw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.kycw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.kycw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.kycw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.kycw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+/* Neutralise the cards' original 28rem-era side margins — spacing is now the
+   flex gaps. Specificity (0,3,0) wins over each card's own margin rule. */
+.kycw-layout .kycw-aside > *,
+.kycw-layout .kycw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .kycw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .kycw-aside {
+    position: static;
+  }
 }
 
 /* Top nav */
@@ -13402,13 +14905,13 @@ watch(screen, (s) => {
   text-align: center;
 }
 .kyc-topnav-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--kyc-navy);
   letter-spacing: -0.2px;
 }
 .kyc-topnav-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--kyc-text-soft);
   margin-top: 1px;
@@ -13430,7 +14933,7 @@ watch(screen, (s) => {
   border-radius: 50%;
   background: var(--kyc-line);
   color: var(--kyc-text-faint);
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -13447,10 +14950,10 @@ watch(screen, (s) => {
 .kyc-step.verified .kyc-step-num {
   background: var(--kyc-success);
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 14px;
 }
 .kyc-step-label {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 700;
   color: var(--kyc-text-faint);
   text-transform: uppercase;
@@ -13487,11 +14990,18 @@ watch(screen, (s) => {
   padding: 28px 20px;
 }
 .kyc-hero-emoji {
-  font-size: 2.5rem;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
   margin-bottom: 12px;
 }
+.kyc-method-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
 .kyc-hero-title {
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.4px;
@@ -13499,10 +15009,10 @@ watch(screen, (s) => {
   margin-bottom: 8px;
 }
 .kyc-hero--success .kyc-hero-title {
-  font-size: 1.25rem;
+  font-size: 20px;
 }
 .kyc-hero-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.55;
@@ -13541,38 +15051,31 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.125rem;
+  font-size: 18px;
   flex-shrink: 0;
-  overflow: hidden;
-}
-.kyc-method-icon img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  display: block;
 }
 .kyc-method-body {
   flex: 1;
 }
 .kyc-method-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--kyc-navy);
 }
 .kyc-method-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--kyc-text-soft);
   margin-top: 1px;
 }
 .kyc-method-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   color: var(--kyc-line);
 }
 
 .kyc-privacy {
   margin: 14px 22px 0;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
   color: var(--kyc-text-faint);
   line-height: 1.5;
@@ -13587,7 +15090,7 @@ watch(screen, (s) => {
   padding: 16px 18px;
 }
 .kyc-unlocked-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--kyc-text-faint);
   letter-spacing: 1.2px;
@@ -13603,12 +15106,14 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: var(--kyc-navy);
 }
 .kyc-unlocked-icon {
-  font-size: 0.9375rem;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -13627,7 +15132,7 @@ watch(screen, (s) => {
   border: none;
   border-radius: 14px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 161, 154, 0.3);
@@ -13635,13 +15140,6 @@ watch(screen, (s) => {
 }
 .kyc-cta-primary:hover {
   background: var(--kyc-teal-bright);
-}
-.kyc-cta-primary img {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  vertical-align: -3px;
-  display: inline-block;
 }
 .kyc-cta-outline {
   width: 100%;
@@ -13651,7 +15149,7 @@ watch(screen, (s) => {
   color: var(--kyc-teal-dark);
   border-radius: 14px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   transition: background 0.15s;
@@ -13665,7 +15163,7 @@ watch(screen, (s) => {
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--kyc-text-soft);
   cursor: pointer;
@@ -13691,11 +15189,11 @@ watch(screen, (s) => {
   box-shadow: 0 12px 32px -10px rgba(0, 161, 154, 0.45);
 }
 .kyc-success-emoji {
-  font-size: 3.25rem;
+  font-size: 52px;
   margin-bottom: 16px;
 }
 .kyc-success-title {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.5px;
@@ -13703,7 +15201,7 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .kyc-success-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
@@ -13718,7 +15216,7 @@ watch(screen, (s) => {
   padding: 16px 18px;
 }
 .kyc-updates-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--kyc-text-faint);
   letter-spacing: 1.2px;
@@ -13734,7 +15232,7 @@ watch(screen, (s) => {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--kyc-navy);
   line-height: 1.45;
@@ -13743,18 +15241,11 @@ watch(screen, (s) => {
   font-weight: 800;
 }
 .kyc-updates-icon {
-  font-size: 0.875rem;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
   margin-top: 1px;
-  width: 18px;
-  height: 18px;
-  display: inline-block;
-}
-.kyc-updates-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
 }
 
 /* Street impact pill */
@@ -13767,13 +15258,15 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--kyc-teal-dark);
   line-height: 1.5;
 }
 .kyc-street-impact-icon {
-  font-size: 1.25rem;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -13782,7 +15275,7 @@ watch(screen, (s) => {
   margin: 14px 22px 0;
 }
 .kyc-next-step-eyebrow {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: var(--kyc-text-faint);
   letter-spacing: 1px;
@@ -13792,59 +15285,91 @@ watch(screen, (s) => {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   QUICK-WINS BOOST-SCORE UPLOAD DRAWER - bottom sheet, matches the
+   QUICK-WINS BOOST-SCORE UPLOAD DRAWER — bottom sheet, matches the
    landlord passport upload UX (Teleport target = <body>).
    ────────────────────────────────────────────────────────────── */
 .qw-overlay {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(20, 16, 45, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 20px;
+  animation: qw-fade 0.2s ease;
+}
+@keyframes qw-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .qw-modal {
   width: 100%;
-  max-width: 28rem;
+  max-width: 27rem;
   background: #fff;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
-  padding: 16px 20px 24px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  border-radius: 22px;
+  box-shadow: 0 30px 70px rgba(20, 16, 45, 0.4);
+  padding: 22px 24px 24px;
   display: flex;
   flex-direction: column;
-  max-height: 86vh;
-  animation: qw-slide-up 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 88vh;
+  animation: qw-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes qw-slide-up {
+@keyframes qw-pop {
   from {
-    transform: translateY(20px);
+    transform: translateY(12px) scale(0.98);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
+/* Drag handle only makes sense as a bottom-sheet affordance — hidden on the
+   centered modal. */
 .qw-modal-handle {
-  width: 40px;
-  height: 4px;
-  background: #f5f5f7;
-  border-radius: 100px;
-  margin: 0 auto 14px;
+  display: none;
 }
 .qw-modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 6px;
 }
 .qw-modal-title {
-  font-size: 0.9375rem;
+  font-size: 18px;
   font-weight: 800;
   color: #231d45;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* On phones, drop to a bottom-sheet — nicer reach on touch. */
+@media (max-width: 560px) {
+  .qw-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .qw-modal {
+    max-width: none;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    animation: qw-slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .qw-modal-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: #e7e5ee;
+    border-radius: 100px;
+    margin: 0 auto 14px;
+  }
+}
+@keyframes qw-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 .qw-modal-close {
   width: 30px;
@@ -13853,7 +15378,7 @@ watch(screen, (s) => {
   border: none;
   background: #f5f5f7;
   color: #6b6783;
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 700;
   cursor: pointer;
   display: grid;
@@ -13868,10 +15393,10 @@ watch(screen, (s) => {
   margin-bottom: 14px;
 }
 .qw-modal-intro {
-  font-size: 0.8125rem;
+  font-size: 13.5px;
   color: #6b6783;
-  line-height: 1.5;
-  margin-bottom: 14px;
+  line-height: 1.55;
+  margin-bottom: 18px;
 }
 
 /* Doc preview row (existing saved file OR pending new file) */
@@ -13890,7 +15415,9 @@ watch(screen, (s) => {
   border-color: #e5f4f2;
 }
 .qw-doc-preview-icon {
-  font-size: 1.375rem;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .qw-doc-preview-info {
@@ -13898,7 +15425,7 @@ watch(screen, (s) => {
   min-width: 0;
 }
 .qw-doc-preview-name {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.1px;
@@ -13907,7 +15434,7 @@ watch(screen, (s) => {
   white-space: nowrap;
 }
 .qw-doc-preview-meta {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #6b6783;
   margin-top: 2px;
 }
@@ -13917,7 +15444,7 @@ watch(screen, (s) => {
   border-radius: 8px;
   padding: 7px 11px;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: #6b6783;
   cursor: pointer;
@@ -13928,21 +15455,23 @@ watch(screen, (s) => {
   border-color: #c8c5e0;
 }
 
-/* File picker row */
+/* File picker — centered dropzone */
 .qw-upload-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border: 2px dashed #e5f4f2;
-  border-radius: 12px;
+  text-align: center;
+  gap: 12px;
+  padding: 26px 20px;
+  border: 2px dashed #bfe6e2;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.15s;
-  background: #f2faf8;
+  transition: border-color 0.16s, background 0.16s;
+  background: rgba(0, 161, 154, 0.05);
 }
 .qw-upload-row:hover {
   border-color: #00a19a;
-  background: #e5f4f2;
+  background: rgba(0, 161, 154, 0.09);
 }
 .qw-upload-input {
   position: absolute;
@@ -13952,36 +15481,38 @@ watch(screen, (s) => {
   pointer-events: none;
 }
 .qw-upload-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   background: #fff;
-  color: #00726c;
-  border: 1.5px solid #e5f4f2;
+  color: #00a19a;
+  border: 1px solid #d3ede9;
+  box-shadow: 0 6px 16px rgba(0, 161, 154, 0.14);
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
 .qw-upload-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 .qw-upload-text {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: #231d45;
+  letter-spacing: -0.01em;
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 .qw-upload-text small {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
-  color: #6b6783;
-  margin-top: 2px;
+  color: #8b8799;
 }
 
 .qw-modal-error {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #c73e36;
   background: #fef2f2;
   border: 1px solid rgba(199, 62, 54, 0.2);
@@ -14000,41 +15531,43 @@ watch(screen, (s) => {
 .qw-btn-secondary,
 .qw-btn-primary {
   flex: 1;
-  padding: 13px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 13px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: transform 0.14s, box-shadow 0.16s, background 0.16s, border-color 0.16s;
 }
 .qw-btn-secondary {
-  background: #fafafa;
-  border: 1.5px solid #ececef;
-  color: #6b6783;
+  background: #fff;
+  border: 1.5px solid #ececf2;
+  color: #5a5570;
 }
 .qw-btn-secondary:hover {
   color: #231d45;
   border-color: #c8c5e0;
 }
 .qw-btn-primary {
-  background: #00a19a;
+  background: linear-gradient(135deg, #00a19a, #00857f);
   border: none;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
+  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.32);
 }
 .qw-btn-primary:hover:not(:disabled) {
-  background: #00b6ae;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(0, 161, 154, 0.42);
 }
 .qw-btn-primary:disabled {
-  background: #ececef;
-  color: #9c98ad;
+  background: #eceef3;
+  color: #a8a5b8;
   box-shadow: none;
   cursor: not-allowed;
 }
 
 /* ──────────────────────────────────────────────────────────────
-   BOOST YOUR SCORE - matches homescore-v2_13.html `boost` screen
+   BOOST YOUR SCORE — matches homescore-v2_13.html `boost` screen
    ────────────────────────────────────────────────────────────── */
 .boost-root {
   --b-navy: #231d45;
@@ -14060,6 +15593,90 @@ watch(screen, (s) => {
   color: var(--b-navy);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ── Web layout (boost / quick-wins screen on desktop) ────────────── */
+.boost-root--web {
+  max-width: none;
+  min-height: auto;
+  background: transparent;
+  padding-bottom: 0;
+  overflow: visible;
+}
+.boostw-main {
+  position: relative;
+  z-index: 2;
+  padding: 30px 0 60px;
+}
+.boostw-head {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.boostw-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--b-teal-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.boostw-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--b-teal);
+  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+}
+.boostw-head h1 {
+  margin: 0;
+  color: #231d45;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.boostw-lede {
+  margin: 14px 0 0;
+  color: #5b6d89;
+  font-size: 16px;
+  font-weight: 600;
+}
+.boostw-layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+.boostw-aside {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.boostw-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.boostw-layout .boostw-aside > *,
+.boostw-layout .boostw-content > * {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .boostw-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .boostw-aside {
+    position: static;
+  }
 }
 
 /* Top nav */
@@ -14090,13 +15707,13 @@ watch(screen, (s) => {
   text-align: center;
 }
 .boost-topnav-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--b-navy);
   letter-spacing: -0.2px;
 }
 .boost-topnav-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--b-text-soft);
   margin-top: 1px;
@@ -14118,70 +15735,32 @@ watch(screen, (s) => {
   margin-bottom: 14px;
 }
 .boost-journey-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   color: var(--b-text-faint);
   letter-spacing: 1px;
 }
 .boost-journey-right {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: var(--b-teal-dark);
 }
 .boost-journey-stats {
   display: flex;
-  align-items: flex-start;
-  /* More breathing room between the three rings - the visual weight of
-     each circular gauge replaces the old vertical divider, so each stat
-     gets a clear "island" of space. */
-  gap: 18px;
+  align-items: center;
   margin-bottom: 14px;
-  padding: 0 6px;
 }
 .boost-stat {
   flex: 1;
   text-align: center;
-  min-width: 0;
-}
-/* Circular gauge wrapping each stat number. The fill ring colour comes
-   from `--ring-color` (set inline per-stat) so HomeScore can flip
-   red → amber → green while Move Ready stays teal. */
-.boost-ring {
-  position: relative;
-  width: 76px;
-  height: 76px;
-  margin: 0 auto 8px;
-}
-.boost-ring svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-.boost-ring-track {
-  fill: none;
-  stroke: #eef0f6;
-  stroke-width: 4.5;
-}
-.boost-ring-fill {
-  fill: none;
-  stroke: var(--ring-color, #00a19a);
-  stroke-width: 4.5;
-  stroke-linecap: round;
-  stroke-dasharray: 163.36;
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
 }
 .boost-stat-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
+  font-size: 30px;
   font-weight: 800;
   color: var(--b-text-soft);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
   line-height: 1;
+  margin-bottom: 4px;
   font-feature-settings: 'tnum';
 }
 .boost-stat-num.amber {
@@ -14191,7 +15770,7 @@ watch(screen, (s) => {
   color: var(--b-text-faint);
 }
 .boost-stat-label {
-  font-size: 0.5rem;
+  font-size: 8px;
   font-weight: 800;
   color: var(--b-text-faint);
   letter-spacing: 1px;
@@ -14199,7 +15778,7 @@ watch(screen, (s) => {
   margin-bottom: 2px;
 }
 .boost-stat-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
   color: var(--b-text-soft);
 }
@@ -14224,20 +15803,15 @@ watch(screen, (s) => {
 
 /* Section labels */
 .boost-section-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   padding: 18px 16px 8px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--b-text-soft);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-}
-.boost-section-label img {
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  vertical-align: -2px;
-  display: inline-block;
-  margin-right: 2px;
 }
 
 /* Card rows */
@@ -14287,35 +15861,34 @@ watch(screen, (s) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 20px;
   flex-shrink: 0;
   overflow: hidden;
 }
-.boost-doc-icon img {
-  width: 30px;
-  height: 30px;
+.boost-doc-icon-img {
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  display: block;
 }
 .boost-doc-body {
   flex: 1;
   min-width: 0;
 }
 .boost-doc-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--b-navy);
   letter-spacing: -0.1px;
   margin-bottom: 3px;
 }
 .boost-doc-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--b-text-soft);
   line-height: 1.4;
 }
 .boost-pts {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: var(--b-success);
   background: #f0fbf4;
@@ -14332,7 +15905,7 @@ watch(screen, (s) => {
   background: var(--b-teal);
   color: #fff;
   border: none;
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 400;
   cursor: pointer;
   display: flex;
@@ -14349,90 +15922,29 @@ watch(screen, (s) => {
   transform: scale(1.1);
 }
 .boost-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   color: var(--b-line);
   flex-shrink: 0;
 }
 
-/* "Next step on your journey" CTA - teal hero with two ring gauges
-   (Move Ready, Passport) on a white-on-teal palette. Mirrors the
-   "Your Property" hero so the visual language reads as the same kind
-   of progress signal across the page. */
+/* "Now make it count" CTA */
 .pj-cta-card {
   margin: 16px 16px 0;
-  background: linear-gradient(135deg, #00a19a 0%, #008a84 60%, #006e68 100%);
+  background: linear-gradient(135deg, var(--b-navy) 0%, #1a1640 100%);
   border-radius: 20px;
   padding: 22px 20px 20px;
-  box-shadow: 0 8px 28px rgba(0, 110, 104, 0.32);
+  box-shadow: 0 8px 28px rgba(35, 29, 69, 0.3);
 }
 .pj-cta-eyebrow {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.5);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  margin-bottom: 14px;
-  text-align: center;
-}
-/* Two ring gauges, well spaced horizontally - same dial language as
-   the V6 score hero on the property view. */
-.pj-cta-rings {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 48px;
-  margin-bottom: 16px;
-}
-.pj-cta-ring {
-  position: relative;
-  width: 96px;
-  text-align: center;
-}
-.pj-cta-ring svg {
-  width: 96px;
-  height: 96px;
-  transform: rotate(-90deg);
-  display: block;
-}
-.pj-cta-ring-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.22);
-  stroke-width: 6;
-}
-.pj-cta-ring-fill {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 6;
-  stroke-linecap: round;
-  stroke-dasharray: 213.63;
-  transition: stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.55));
-}
-.pj-cta-ring-num {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 96px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.375rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-  font-feature-settings: 'tnum';
-}
-.pj-cta-ring-label {
-  margin-top: 6px;
-  font-size: 0.625rem;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.88);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 .pj-cta-title {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.4px;
@@ -14440,39 +15952,28 @@ watch(screen, (s) => {
   margin-bottom: 10px;
 }
 .pj-cta-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   margin-bottom: 16px;
 }
 .pj-cta-btn {
   width: 100%;
   padding: 15px;
-  background: #fff;
-  color: #007e78;
+  background: var(--b-teal);
+  color: #fff;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   border: none;
   border-radius: 14px;
   cursor: pointer;
   letter-spacing: -0.1px;
-  transition: filter 0.15s, background 0.15s;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.pj-cta-btn-ic {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  display: block;
+  transition: background 0.15s;
 }
 .pj-cta-btn:hover {
-  filter: brightness(1.04);
+  background: var(--b-teal-bright);
 }
 
 /* Back link at the bottom */
@@ -14482,7 +15983,7 @@ watch(screen, (s) => {
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--b-text-soft);
   padding: 8px 14px;
@@ -14490,52 +15991,5 @@ watch(screen, (s) => {
 }
 .boost-back-link:hover {
   color: var(--b-navy);
-}
-
-/* 3D icon images that replaced flat emoji inside icon wrappers */
-.sim-path-icon {
-  width: 24px;
-  height: 24px;
-  margin: 0 auto 4px;
-}
-.sim-diff-tip-icon {
-  width: 22px;
-  height: 22px;
-}
-.pq-hero-btn-emoji,
-.pub-contrib-icon {
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-}
-.sim-bill-emoji {
-  width: 34px;
-  height: 34px;
-}
-.pub-anon-icon {
-  width: 22px;
-  height: 22px;
-}
-.kyc-hero-emoji {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 12px;
-}
-.qw-doc-preview-icon {
-  width: 28px;
-  height: 28px;
-}
-.sim-path-icon img,
-.sim-bill-emoji img,
-.sim-diff-tip-icon img,
-.pq-hero-btn-emoji img,
-.pub-contrib-icon img,
-.pub-anon-icon img,
-.kyc-hero-emoji img,
-.qw-doc-preview-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
 }
 </style>
