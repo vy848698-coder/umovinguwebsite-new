@@ -150,7 +150,14 @@
       </div>
 
       <!-- Grants listed on the EPC -->
-      <div class="grant-banner anim-2">
+      <div
+        class="grant-banner grant-banner--link anim-2"
+        role="button"
+        tabindex="0"
+        @click="openGrantCheckSheet"
+        @keydown.enter="openGrantCheckSheet"
+        @keydown.space.prevent="openGrantCheckSheet"
+      >
         <div class="grant-banner-ic">
           <img src="/homescore-icon/gift.png" alt="" loading="lazy" />
         </div>
@@ -167,6 +174,7 @@
             Eligibility depends on income, property type and area.
           </div>
         </div>
+        <Icon name="i-lucide-chevron-right" class="grant-banner-chev" />
       </div>
 
       <div class="pw-grid">
@@ -531,6 +539,15 @@ function openInstallerSheet(m: { title: string }) {
   installerKind.value = kindForMissionTitle(m.title)
   installerMeasureTitle.value = m.title
   installerInitialState.value = 'routes'
+  installerSheetOpen.value = true
+}
+
+// Grant banner → the installer sheet's eligibility check, so the user can
+// see which schemes they may qualify for.
+function openGrantCheckSheet() {
+  installerKind.value = 'other'
+  installerMeasureTitle.value = ''
+  installerInitialState.value = 'elig'
   installerSheetOpen.value = true
 }
 
@@ -1260,6 +1277,20 @@ function onBack() {
   border-radius: 20px;
   color: #fff;
   box-shadow: 0 14px 32px rgba(29, 24, 66, 0.28);
+}
+.grant-banner--link {
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+.grant-banner--link:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+.grant-banner-chev {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 .grant-banner-ic {
   width: 46px;

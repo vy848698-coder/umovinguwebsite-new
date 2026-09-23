@@ -246,17 +246,26 @@
         <div class="ssp-head-info">
           <div class="ssp-head-title">Your street, ranked by energy cost</div>
           <div class="ssp-head-sub">
-            {{ property?.postcode || '—' }} · {{ streetTotal || 18 }} homes · estimated from EPC data
+            {{ property?.postcode || '—' }}<template v-if="hasStreetRank"> · {{ streetTotal }} homes</template> · estimated from EPC data
           </div>
         </div>
         <div class="ssp-head-close" @click="activePanel = null">×</div>
       </div>
       <div class="ssp-rank-hero">
-        <div class="ssp-rank-num">#{{ streetRank ?? 8 }}</div>
+        <div class="ssp-rank-num">{{ hasStreetRank ? `#${streetRank}` : '—' }}</div>
         <div class="ssp-rank-info">
-          <div class="ssp-rank-label">{{ streetRankOrdinal }} cheapest of {{ streetTotal || 18 }} homes</div>
+          <div class="ssp-rank-label">
+            <template v-if="hasStreetRank">{{ streetRankOrdinal }} cheapest of {{ streetTotal }} homes</template>
+            <template v-else>Street ranking not available yet</template>
+          </div>
           <div class="ssp-rank-sub">
-            <b>£190 below</b> the postcode average of £1,651/yr
+            <template v-if="streetDiff != null && streetAverageCost">
+              <b>£{{ formatNum(Math.abs(streetDiff)) }} {{ streetDiff <= 0 ? 'below' : 'above' }}</b>
+              the street average of £{{ formatNum(streetAverageCost) }}/yr
+            </template>
+            <template v-else>
+              Not enough neighbouring homes have EPC data to compare yet.
+            </template>
           </div>
         </div>
       </div>
@@ -394,7 +403,7 @@
             £{{ formatNum(annualCost - potentialSaving) }}<span>/yr</span>
           </div>
           <div class="ssp-street-projection-sub">
-            <b>2nd of {{ streetTotal || 18 }}</b> on your street · up from {{ streetRankOrdinal.toLowerCase() }}
+            <template v-if="epcPotentialRating">EPC <b>{{ epcPotentialRating }}</b> potential</template><template v-if="epcPotentialRating && hasStreetRank"> · </template><template v-if="hasStreetRank">up from {{ streetRankOrdinal.toLowerCase() }} of {{ streetTotal }} on your street</template>
           </div>
         </div>
         <div class="ssp-street-projection-saving">
@@ -477,8 +486,14 @@
       <!-- Rank on the left, the mini street strip on the right. -->
       <div class="hsh-main">
         <div class="hsh-rankrow">
-          <span class="hsh-big">#{{ streetRank ?? 8 }}</span>
-          <span class="hsh-rmeta">of {{ streetTotal || 43 }} homes</span>
+          <template v-if="hasStreetRank">
+            <span class="hsh-big">#{{ streetRank }}</span>
+            <span class="hsh-rmeta">of {{ streetTotal }} homes</span>
+          </template>
+          <template v-else>
+            <span class="hsh-big">—</span>
+            <span class="hsh-rmeta">street rank pending</span>
+          </template>
         </div>
         <div class="hsh-preview" aria-hidden="true">
           <div
@@ -492,16 +507,23 @@
         </div>
       </div>
 
-      <p class="hsh-line">
-        This home is estimated to cost <b>£190 less</b> per year to run than
-        the street average.
+      <p v-if="streetDiff != null && streetDiff !== 0" class="hsh-line">
+        This home is estimated to cost
+        <b>£{{ formatNum(Math.abs(streetDiff)) }} {{ streetDiff < 0 ? 'less' : 'more' }}</b>
+        per year to run than the street average.
+      </p>
+      <p v-else-if="streetDiff === 0" class="hsh-line">
+        This home costs about the same to run as the street average.
+      </p>
+      <p v-else class="hsh-line">
+        Not enough neighbouring homes have EPC data to compare running costs yet.
       </p>
 
       <div class="hsh-foot">
-        <span class="hsh-projchip">
+        <span v-if="(potentialSaving ?? 0) > 0" class="hsh-projchip">
           <span>
-            ↑ With the suggested improvements, it could rank <b>#2</b> and save
-            around <b>£{{ formatNum(potentialSaving) }}/year</b>
+            ↑ With the suggested improvements<template v-if="epcPotentialRating">, it could reach EPC <b>{{ epcPotentialRating }}</b></template>
+            and save around <b>£{{ formatNum(potentialSaving) }}/year</b>
           </span>
         </span>
         <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
@@ -609,8 +631,8 @@
           </div>
           <div class="epc-arrow">→</div>
           <div class="epc-grade">
-            <div class="epc-grade-letter" style="background: #7ab040">C</div>
-            <div class="epc-grade-sub">Potential · 75</div>
+            <div class="epc-grade-letter" :style="{ background: epcPotentialColor }">{{ epcPotentialRating || '—' }}</div>
+            <div class="epc-grade-sub">Potential · {{ epcPotentialScore ?? '—' }}</div>
           </div>
           <div class="epc-saving">
             <div class="epc-saving-num">£{{ formatNum(potentialSaving) }}/yr</div>
@@ -684,7 +706,7 @@
             <div class="fork-opt-icon"><img src="/homescore-icon/boostBolt.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">Boost your score</div>
-              <div class="fork-opt-sub">Add docs to grow your Move Ready &amp; Passport.</div>
+              <div class="fork-opt-sub">Add docs to grow your Upfront Ready &amp; Passport.</div>
             </div>
             <div class="fork-opt-chev">›</div>
           </button>
@@ -760,7 +782,7 @@
           <div class="claim-title">Claim this property</div>
           <div class="claim-sub">
             You'll verify you own <b>{{ addrLineFull }}</b> and unlock your
-            HomeScore, Move Ready % and Property Passport.
+            HomeScore, Upfront Ready % and Property Passport.
           </div>
           <div class="claim-steps">
             <div class="claim-step">
@@ -832,6 +854,8 @@ const props = withDefaults(
     /** Street rank (1 = cheapest, N = most expensive) */
     streetRank?: number | null
     streetTotal?: number | null
+    /** Street average annual energy cost from /street-energy-rank. */
+    streetAverageCost?: number | null
     /** Real searches today from PropertySearchLog */
     searchesToday?: number
     /** Number of users actively watching this property (wishlist + saved).
@@ -853,12 +877,13 @@ const props = withDefaults(
     isPropertyOwner?: boolean
   }>(),
   {
-    potentialSaving: 445,
+    potentialSaving: 0,
     co2Now: null,
     co2Potential: null,
     billsSplit: null,
     streetRank: null,
     streetTotal: null,
+    streetAverageCost: null,
     searchesToday: 0,
     watchersCount: 0,
     passportState: 'unclaimed',
@@ -1046,7 +1071,11 @@ const scoreBandTitle = computed(() => {
 })
 const scoreExplainer = computed(() => {
   const saving = formatNum(props.potentialSaving ?? 0)
-  return `The EPC lists <b>6 steps</b> to lift your score and cut bills by <b>~£${saving}/yr</b>. See the path below.`
+  // Real count from the EPC certificate's recommendations (was fixed at 6).
+  const count = (props.property as any)?.epcRecommendations?.length ?? 0
+  const steps =
+    count > 0 ? `${count} improvement${count === 1 ? '' : 's'}` : 'improvements'
+  return `Public data suggests <b>${steps}</b> that could reduce estimated running costs by around <b>£${saving}/year</b>.`
 })
 
 // ── EPC letter pill colour ───────────────────────────────────────
@@ -1239,7 +1268,7 @@ function mkHouse(
 // drive off this state. Clicking any house re-points everything.
 const selectedHouse = ref<StreetHouse>(
   mkHouse(
-    '15',
+    String(youHouseNum.value),
     props.epcRating || 'E',
     Math.round(props.score),
     `£${formatNum(props.annualCost)}`,
@@ -1291,9 +1320,49 @@ const outwardPostcode = computed(() => {
   return pc.split(/\s+/)[0]
 })
 
+// Real street comparison — only when the backend has ranked this home
+// against at least one neighbour; otherwise the rank UI is hidden.
+const hasStreetRank = computed(
+  () => props.streetRank != null && (props.streetTotal ?? 0) > 1,
+)
+// £ this home costs vs the street average (+ = costs more). null when the
+// backend has no average yet.
+const streetDiff = computed<number | null>(() => {
+  const avg = Number(props.streetAverageCost)
+  if (!avg || !Number.isFinite(avg) || !props.annualCost) return null
+  return Math.round(props.annualCost - avg)
+})
+
+// Real potential rating/score from the EPC certificate (was fixed at C/75).
+const epcPotentialScore = computed<number | null>(() => {
+  const v = Number(
+    (props.property as any)?.epcScorePotential ??
+      (props.property as any)?.epcCert?.potentialScore,
+  )
+  return Number.isFinite(v) && v > 0 ? v : null
+})
+const epcPotentialRating = computed<string | null>(
+  () =>
+    (props.property as any)?.epcRatingPotential ||
+    (props.property as any)?.epcCert?.potentialRating ||
+    null,
+)
+const epcPotentialColor = computed(() => {
+  const map: Record<string, string> = {
+    A: '#008060',
+    B: '#2EAB55',
+    C: '#7AB040',
+    D: '#E6A23C',
+    E: '#D86F4A',
+    F: '#C73E36',
+    G: '#7A2A20',
+  }
+  return map[(epcPotentialRating.value || '').toUpperCase()] || '#9c98ad'
+})
+
 // Ordinal suffix for the street-rank label (8 → "8th", 1 → "1st", etc.)
 const streetRankOrdinal = computed(() => {
-  const r = props.streetRank ?? 8
+  const r = props.streetRank ?? 0
   const v = r % 100
   if (v >= 11 && v <= 13) return `${r}th`
   switch (r % 10) {

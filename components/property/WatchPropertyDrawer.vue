@@ -76,7 +76,8 @@
               Maybe later
             </button>
             <button class="watch-btn primary" type="button" :disabled="submitting" @click="onSubmit">
-              {{ submitting ? 'Saving…' : '👁 Watch this property' }}
+              <template v-if="submitting">Saving…</template>
+              <template v-else><Icon name="i-lucide-eye" class="watch-btn-ic" /> Watch this property</template>
             </button>
           </div>
           <div class="watch-privacy">
@@ -401,6 +402,11 @@ function onSubmit() {
   cursor: pointer;
   transition: all 0.15s;
   border: none;
+}
+.watch-btn-ic {
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
 }
 .watch-btn.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
