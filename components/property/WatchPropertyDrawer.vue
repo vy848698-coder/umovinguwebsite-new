@@ -80,7 +80,7 @@
             </button>
           </div>
           <div class="watch-privacy">
-            <span class="watch-privacy-icon">🔒</span>
+            <Icon name="i-lucide-lock" class="watch-privacy-icon" />
             <span>Saved to your account. Watching is private.</span>
           </div>
         </div>
@@ -225,7 +225,11 @@ function onSubmit() {
   box-shadow: 0 -8px 30px rgba(35, 29, 69, 0.25);
   max-height: 90dvh;
   overflow-y: auto;
+  scrollbar-width: none;
   padding-bottom: env(safe-area-inset-bottom);
+}
+.watch-sheet::-webkit-scrollbar {
+  display: none;
 }
 .watch-grip {
   width: 42px;

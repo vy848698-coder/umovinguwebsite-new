@@ -1,7 +1,8 @@
 <template>
-  <div class="hs-v6-levelup">
-    <!-- Header: back button + centered "Quiz complete" label -->
-    <div class="lu-mini-header">
+  <div class="hs-v6-levelup" :class="{ 'lu-has-nav': hideBack }">
+    <!-- Minimal back-only mini-header (no title strip, no bell).
+         Hidden when the page provides its own top nav (hideBack). -->
+    <div v-if="!hideBack" class="lu-mini-header">
       <button
         class="lu-back"
         type="button"
@@ -19,391 +20,157 @@
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
-      <div class="lu-header-title">
-        <svg class="levelup-eyebrow-ic" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M2 22l3-9 6 6-9 3zm7-8l4-4 5 5-4 4-5-5zm5-5l4-4a3.5 3.5 0 015 5l-4 4-5-5zM17 3l1 1-1 1V4h-1l1-1zm4 4l1 1-1 1V8h-1l1-1zm-2 4l1 1-1 1v-1h-1l1-1z"
-          />
-        </svg>
-        Quiz complete
-      </div>
-      <div class="lu-header-spacer" />
     </div>
 
-    <!-- Intro: title + house illustration, no card wrapper -->
-    <div class="levelup-intro anim-1">
-      <div class="levelup-intro-text">
-        <div class="levelup-title">{{ headline.title }}</div>
-        <div class="levelup-sub">
-          {{ headline.sub }}
-        </div>
-      </div>
-      <div class="levelup-house-wrap">
-        <svg
-          class="lu-sparkle lu-sparkle--1"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" />
-        </svg>
-        <svg
-          class="lu-sparkle lu-sparkle--2"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" />
-        </svg>
-        <img
-          src="/op-icons/landing/homeScoreCard.png"
-          alt=""
-          class="levelup-house-ic"
-        />
-      </div>
-    </div>
-
-    <!-- Before / Now score card -->
-    <div class="levelup-score-card anim-1 level-up">
-      <div class="levelup-row">
-        <div class="levelup-col">
-          <div class="levelup-col-label">BEFORE</div>
-          <div class="levelup-circle-wrap">
-            <svg
-              class="levelup-circle-svg"
-              viewBox="0 0 120 120"
-              aria-hidden="true"
-            >
-              <circle class="lc-bg" cx="60" cy="60" r="50" stroke-width="9" />
-              <circle
-                class="lc-fill lc-fill--from"
-                cx="60"
-                cy="60"
-                r="50"
-                stroke-width="9"
-                stroke-dasharray="314.16"
-                :stroke-dashoffset="fromRingOffset"
-                stroke-linecap="round"
-                fill="none"
-              />
-            </svg>
-            <div class="levelup-circle-num">
-              <div class="lc-big">{{ fromScore }}</div>
-              <div class="lc-small">/100</div>
+    <div class="lu-shell">
+      <!-- Top row: level-up hero (left) + what-happens-next (right) -->
+      <div class="lu-top-grid">
+        <!-- Level up hero -->
+        <div class="levelup-hero anim-1 level-up">
+          <div class="levelup-eyebrow"><Icon name="i-lucide-party-popper" /> Level up · Quiz complete</div>
+          <div class="levelup-title">You levelled up your home.</div>
+          <div class="levelup-sub">
+            Your refined HomeScore reflects what's been done since the EPC. More
+            accurate. Higher confidence.
+          </div>
+          <div class="levelup-row">
+            <div class="levelup-from">
+              <div class="levelup-from-num">{{ fromScore }}</div>
+              <div class="levelup-from-label">Was · Level {{ fromLevel }}</div>
+            </div>
+            <div class="levelup-arrow">
+              <Icon name="i-lucide-arrow-right" />
+            </div>
+            <div class="levelup-to">
+              <div class="levelup-to-num">{{ animatedToScore }}</div>
+              <div class="levelup-to-label">Now · Level {{ toLevel }}</div>
             </div>
           </div>
-          <div class="levelup-col-title">Public HomeScore</div>
-          <div class="levelup-col-sub">Based on EPC data</div>
-          <div v-if="epcRating" class="levelup-epc-pill">
-            EPC {{ epcRating }}
+          <div class="levelup-delta">
+            <Icon name="i-lucide-trending-up" /> {{ deltaLabel }}
           </div>
         </div>
-        <div class="levelup-arrow">→</div>
-        <div class="levelup-col">
-          <div class="levelup-col-label levelup-col-label--now">NOW</div>
-          <div class="levelup-circle-wrap">
-            <svg
-              class="levelup-circle-svg"
-              viewBox="0 0 120 120"
-              aria-hidden="true"
-            >
-              <defs>
-                <linearGradient id="luGrad" x1="1" y1="0" x2="0" y2="0">
-                  <stop offset="0%" stop-color="#00BB93" />
-                  <stop offset="100%" stop-color="#016F84" />
-                </linearGradient>
-              </defs>
-              <circle class="lc-bg" cx="60" cy="60" r="50" stroke-width="9" />
-              <circle
-                class="lc-fill lc-fill--to"
-                cx="60"
-                cy="60"
-                r="50"
-                stroke-width="9"
-                stroke="url(#luGrad)"
-                stroke-dasharray="314.16"
-                :stroke-dashoffset="toRingOffset"
-                stroke-linecap="round"
-                fill="none"
-              />
-            </svg>
-            <div class="levelup-circle-num">
-              <div class="lc-big lc-big--to">{{ animatedToScore }}</div>
-              <div class="lc-small lc-small--to">/100</div>
+
+        <!-- "What happens next" explainer — two paths (v6-3) -->
+        <div class="boost-explain anim-2">
+          <div class="boost-explain-steps">
+            <div class="boost-explain-step">
+              <div class="boost-explain-num">1</div>
+              <div class="boost-explain-icon path"><Icon name="i-lucide-route" /></div>
+              <div class="boost-explain-text">
+                <b>Follow the pathway</b> — take recommended steps to keep
+                climbing your HomeScore.
+              </div>
+            </div>
+            <div class="boost-explain-hr" />
+            <div class="boost-explain-step">
+              <div class="boost-explain-num">2</div>
+              <div class="boost-explain-icon boost"><Icon name="i-lucide-zap" /></div>
+              <div class="boost-explain-text">
+                <b>Boost your score</b> — add docs and book pros to grow your
+                Passport.
+              </div>
             </div>
           </div>
-          <div class="levelup-col-title levelup-col-title--now">
-            {{ nowColTitle }}
-          </div>
-          <div class="levelup-col-sub">Based on what you told us</div>
-          <div v-if="epcRating" class="levelup-epc-pill">
-            EPC {{ epcRating }}
+          <div class="boost-explain-foot">
+            Pathway lifts your <b>HomeScore</b> · Boost lifts your
+            <b>Move Ready</b> &amp; <b>Passport</b>.
           </div>
         </div>
       </div>
 
-      <div class="levelup-stats-row">
-        <div class="lu-stat-box">
-          <span class="lu-stat-icon">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="3 17 9 11 13 15 21 6" />
-              <polyline points="15 6 21 6 21 12" />
-            </svg>
-          </span>
-          <div class="lu-stat-text">
-            <div class="lu-stat-eyebrow">HomeScore increase</div>
-            <div class="lu-stat-val">+{{ delta }}</div>
+      <!-- Refined stats -->
+      <div class="section-h-row">
+        <div class="section-h">Your refined stats</div>
+        <div class="section-h-sub">{{ toScore }}/100 points</div>
+      </div>
+      <div class="refined-stats-card">
+        <div v-for="s in refinedStats" :key="s.id" class="stat-row gained">
+          <div class="stat-icon" :class="[s.tone, { 'has-img': s.icon.includes('/') }]">
+            <img v-if="s.icon.includes('/')" :src="s.icon" :alt="s.label" loading="lazy" />
+            <Icon v-else :name="s.icon" />
           </div>
-        </div>
-        <div class="lu-stat-box">
-          <span class="lu-stat-icon lu-stat-icon--img"
-            ><img
-              src="/op-icons/investment/cashAndCoins.png"
-              alt=""
-              loading="lazy"
-          /></span>
-          <div class="lu-stat-text">
-            <div class="lu-stat-eyebrow">Estimated bill saving</div>
-            <div class="lu-stat-val">£{{ estSavings }}/year</div>
+          <div class="stat-label">{{ s.label }}</div>
+          <div class="stat-bar-wrap">
+            <div
+              class="stat-bar-fill"
+              :class="s.tone"
+              :style="{ width: barsAnimated ? s.pct + '%' : '0%' }"
+            />
           </div>
-        </div>
-        <div class="lu-stat-box">
-          <span class="lu-stat-icon lu-stat-icon--img"
-            ><img
-              src="/op-icons/investment/plantSprout.png"
-              alt=""
-              loading="lazy"
-          /></span>
-          <div class="lu-stat-text">
-            <div class="lu-stat-eyebrow">Lower carbon impact</div>
-            <div class="lu-stat-val">{{ carbonSavedDisplay }}</div>
-          </div>
+          <div class="stat-value">{{ s.value }}/{{ s.max }}</div>
         </div>
       </div>
-    </div>
 
-    <!-- What changed -->
-    <div class="section-h-row">
-      <div class="section-h">
-        What changed
-        <span class="section-h-info" aria-hidden="true">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
-        </span>
+      <!-- Bottom CTAs (v6-2: primary filled pathway + outlined boost) -->
+      <div class="bottom-cta">
+        <button
+          class="bottom-cta-btn"
+          type="button"
+          @click="$emit('open-pathway')"
+        >
+          <img class="bottom-cta-ico" src="/homescore-icon/targetPathway.png" alt="" /> See the EPC's pathway
+        </button>
+        <button
+          class="bottom-cta-secondary outlined"
+          type="button"
+          @click="$emit('open-boost')"
+        >
+          <img class="bottom-cta-ico" src="/homescore-icon/boostBolt.png" alt="" /> Boost your score
+        </button>
       </div>
-      <div class="section-h-sub">{{ toScore }}/100 points</div>
-    </div>
-    <div class="refined-stats-card">
-      <div
-        v-for="s in refinedStats"
-        :key="s.id"
-        class="stat-row"
-        :class="{ gained: s.gain > 0 }"
-      >
-        <div class="stat-icon">
-          <img
-            v-if="s.icon && s.icon.startsWith('/')"
-            :src="s.icon"
-            alt=""
-            loading="lazy"
-          />
-          <template v-else>{{ s.icon }}</template>
-        </div>
-        <div class="stat-label">{{ s.label }}</div>
-        <div class="stat-bar-wrap">
-          <div
-            class="stat-bar-fill"
-            :class="s.tone"
-            :style="{ width: barsAnimated ? s.pct + '%' : '0%' }"
-          />
-        </div>
-        <div class="stat-value">{{ s.before }} → {{ s.value }}/{{ s.max }}</div>
-        <div class="stat-gain-pill" :class="{ zero: s.gain === 0 }">
-          {{ s.gain > 0 ? '+' + s.gain : '–' }}
-        </div>
-      </div>
-    </div>
 
-    <!-- Keep going tip -->
-    <div class="keep-going-banner">
-      <span class="kg-ic" aria-hidden="true">✨</span>
-      <div class="kg-body">
-        <div class="kg-title">Keep going!</div>
-        <div class="kg-sub">
-          See what improvements could boost your score further, or build your
-          Property Passport to save and verify your home.
-        </div>
-      </div>
+      <div style="height: 32px" />
     </div>
-
-    <!-- Bottom tiles: pathway + build passport — exact same layout as the
-         "I own this property" / "I'm interested" tiles on the score-result
-         screen (fork-tile-icon-top / fork-tile-icon--buyer pattern). -->
-    <div class="bottom-cta bottom-cta--tiles">
-      <button class="lu-tile lu-tile--pathway" type="button" @click="$emit('open-pathway')">
-        <img
-          src="/op-icons/homescore/pathwaySignpost.png"
-          alt=""
-          class="lu-tile-icon-top"
-          loading="lazy"
-        />
-        <div class="lu-tile-title">See my improvement pathway</div>
-        <div class="lu-tile-sub">
-          See the EPC-recommended improvements, costs and potential savings.
-        </div>
-        <span class="lu-tile-arrow lu-tile-arrow--pathway">→</span>
-      </button>
-      <button
-        class="lu-tile lu-tile--passport"
-        type="button"
-        @click="$emit('build-passport')"
-      >
-        <div class="lu-tile-buyer-body">
-          <div class="lu-tile-title">Build my Property Passport</div>
-          <div class="lu-tile-sub">
-            Create a free account, add documents and build your home's
-            verified record.
-          </div>
-        </div>
-        <img
-          src="/op-icons/landing/propertyPassportCard.png"
-          alt=""
-          class="lu-tile-icon--buyer"
-          loading="lazy"
-        />
-        <span class="lu-tile-arrow lu-tile-arrow--passport">→</span>
-      </button>
-    </div>
-
-    <div class="lu-trust-note">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        width="13"
-        height="13"
-      >
-        <rect x="3" y="11" width="18" height="11" rx="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
-      Your data is secure and private. You're in control.
-    </div>
-
-    <div style="height: 32px" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useConfetti } from '~/composables/useConfetti'
-import { computeHomeScorePillars } from '~/utils/homescorePillars'
 
 interface Props {
   fromScore: number
   toScore: number
   delta: number
   estSavings?: number
-  property?: any | null
-  /** Per-pillar points earned this quiz session, keyed by pillar id. */
-  statGains?: Record<string, number>
-  co2Now?: number | null
-  co2Potential?: number | null
+  /** Hide the internal back arrow when the host page renders its own nav. */
+  hideBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   estSavings: 309,
-  property: null,
-  statGains: () => ({}),
-  co2Now: null,
-  co2Potential: null,
+  hideBack: false,
 })
 
 defineEmits<{
   (e: 'back'): void
   (e: 'open-pathway'): void
   (e: 'open-boost'): void
-  (e: 'build-passport'): void
 }>()
 
 const { runConfetti } = useConfetti()
 
-// Real EPC certificate letter — fixed regardless of the quiz refinement,
-// shown under both circles same as the reference (the EPC itself doesn't
-// change, only the live/refined HomeScore does).
-const epcRating = computed(() => props.property?.epcRating ?? null)
+function gradeFor(score: number): string {
+  if (score >= 92) return 'A'
+  if (score >= 81) return 'B'
+  if (score >= 69) return 'C'
+  if (score >= 55) return 'D'
+  if (score >= 39) return 'E'
+  if (score >= 21) return 'F'
+  return 'G'
+}
 
-// If the quiz didn't actually move the score (e.g. every question was
-// answered "Not yet" / "Not applicable"), don't claim it's "performing
-// better than its public EPC record" — that's only true when delta > 0.
-const headline = computed(() => {
-  if (props.delta > 0) {
-    return {
-      title: "You've updated your HomeScore!",
-      sub: 'Your answers show your home is performing better than its public EPC record.',
-    }
-  }
-  return {
-    title: 'Your HomeScore is confirmed',
-    sub: "Your answers match what's on your public EPC record - no change to your score.",
-  }
+const fromLevel = computed(() => gradeFor(props.fromScore))
+const toLevel = computed(() => gradeFor(props.toScore))
+
+const deltaLabel = computed(() => {
+  const sign = props.delta >= 0 ? '+' : ''
+  return `${sign}${props.delta} points gained · est. bills ↓ £${props.estSavings}/yr`
 })
-
-// "Refined" implies the quiz actually moved the score — when it didn't
-// (delta = 0), the NOW column is just confirming the public score, not
-// refining it.
-const nowColTitle = computed(() =>
-  props.delta > 0 ? 'Your refined HomeScore' : 'Your confirmed HomeScore',
-)
 
 const animatedToScore = ref(props.fromScore)
 const barsAnimated = ref(false)
-
-const CIRCUMFERENCE = 2 * Math.PI * 50 // 314.16, matches the SVG r=50 rings
-const fromRingOffset = computed(
-  () =>
-    CIRCUMFERENCE -
-    (Math.max(0, Math.min(100, props.fromScore)) / 100) * CIRCUMFERENCE,
-)
-const toRingOffset = computed(
-  () =>
-    CIRCUMFERENCE -
-    (Math.max(0, Math.min(100, animatedToScore.value)) / 100) * CIRCUMFERENCE,
-)
-
-// Carbon figure scales the full now→potential EPC gap by how much of the
-// score gap this quiz session actually closed — a rough but honest
-// approximation, since we don't have a per-question CO2 figure to sum.
-const carbonSavedDisplay = computed(() => {
-  // No score change → no carbon change, regardless of whether we have
-  // real co2Now/co2Potential figures for this property. Only reach for
-  // the CO2 data when there's an actual delta to translate into a share.
-  if (props.delta <= 0) return '0 tonnes/year'
-  if (props.co2Now == null || props.co2Potential == null) return '-'
-  const totalGap = props.co2Now - props.co2Potential
-  const scoreGap = Math.max(1, 100 - props.fromScore)
-  const share = Math.max(0, Math.min(1, props.delta / scoreGap))
-  const saved = totalGap * share
-  if (saved <= 0) return '0 tonnes/year'
-  return `~${saved.toFixed(1)} tonnes/year`
-})
 
 onMounted(() => {
   // Fire the same confetti burst the onboarding "preferences saved"
@@ -432,27 +199,81 @@ onMounted(() => {
   }, 250)
 })
 
-// Real before→after per pillar: "before" comes from the same EPC-based
-// formulas the score screen uses (via the shared util so the two screens
-// never disagree), "after" adds back whatever this quiz session actually
-// earned per pillar (see V6QuizView's statGains emit on finish).
-const refinedStats = computed(() => {
-  const before = computeHomeScorePillars(props.property)
-  return before.map((s) => {
-    const gain = Math.max(0, props.statGains?.[s.id] ?? 0)
-    const value = Math.min(s.max, s.value + gain)
-    return {
-      ...s,
-      before: s.value,
-      value,
-      gain: value - s.value,
-      pct: Math.round((value / s.max) * 100),
-    }
-  })
-})
+const refinedStats = [
+  {
+    id: 'heating',
+    icon: '/homescore-icon/flame.png',
+    label: 'Heating',
+    value: 16,
+    max: 20,
+    pct: 80,
+    tone: 'high',
+  },
+  {
+    id: 'structure',
+    icon: '/homescore-icon/bricks.png',
+    label: 'Structure',
+    value: 17,
+    max: 25,
+    pct: 68,
+    tone: 'high',
+  },
+  {
+    id: 'efficiency',
+    icon: '/homescore-icon/bulb.png',
+    label: 'Efficiency',
+    value: 6,
+    max: 15,
+    pct: 40,
+    tone: 'mid',
+  },
+  {
+    id: 'electrics',
+    icon: '/homescore-icon/lightning.png',
+    label: 'Electrics',
+    value: 10,
+    max: 20,
+    pct: 50,
+    tone: 'mid',
+  },
+  {
+    id: 'plumbing',
+    icon: '/homescore-icon/tap.png',
+    label: 'Plumbing',
+    value: 13,
+    max: 20,
+    pct: 65,
+    tone: 'mid',
+  },
+] as const
+
 </script>
 
 <style scoped>
+/* Centered desktop shell — matches the page's 1140px nav shell so the
+   hero/explainer/stats align under the top nav. */
+.lu-shell {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+/* Top row: hero + "what happens next" side-by-side on desktop,
+   stacked on mobile. */
+.lu-top-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 4px;
+}
+@media (min-width: 900px) {
+  .lu-top-grid {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 20px;
+    align-items: stretch;
+    margin-top: 8px;
+  }
+}
 .hs-v6-levelup {
   --primary: #231d45;
   --accent: #00a19a;
@@ -461,7 +282,7 @@ const refinedStats = computed(() => {
   --accent-pale: #e5f4f2;
   --accent-paler: #f2faf8;
   --bg: #f5f6fa;
-  --page: #f0f2f8;
+  --page: #f3f2ef;
   --card: #ffffff;
   --text: #231d45;
   --text-secondary: #6b7089;
@@ -483,10 +304,11 @@ const refinedStats = computed(() => {
 }
 
 /* Soften prototype's 800-weights to match SF Pro app scale */
-.hs-v6-levelup :is(.levelup-title, .lc-big, .stat-value) {
+.hs-v6-levelup
+  :is(.levelup-title, .levelup-to-num, .levelup-from-num, .stat-value) {
   font-weight: 700;
 }
-.hs-v6-levelup :is(.levelup-sub, .lu-tile-sub) {
+.hs-v6-levelup :is(.levelup-sub, .levelup-from-label, .levelup-to-label) {
   font-weight: 500;
 }
 
@@ -533,14 +355,14 @@ const refinedStats = computed(() => {
   min-width: 0;
 }
 .app-header-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.2px;
   line-height: 1.15;
 }
 .app-header-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-top: 1px;
@@ -563,7 +385,8 @@ const refinedStats = computed(() => {
     box-shadow: 0 12px 32px -8px rgba(0, 161, 154, 0.3);
   }
   50% {
-    box-shadow: 0 12px 32px -8px rgba(0, 161, 154, 0.3),
+    box-shadow:
+      0 12px 32px -8px rgba(0, 161, 154, 0.3),
       0 0 0 8px rgba(0, 161, 154, 0.15);
   }
 }
@@ -571,244 +394,132 @@ const refinedStats = computed(() => {
   animation: hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Intro - title/sub + house illustration, sits directly on page bg */
-.levelup-intro {
+/* Hero */
+.levelup-hero {
   position: relative;
   z-index: 2;
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 10px 20px 0;
+  flex-direction: column;
+  margin: 0;
+  padding: 28px 28px 24px;
+  background:
+    radial-gradient(120% 130% at 100% 0%, rgba(0, 161, 154, 0.14), transparent 55%),
+    linear-gradient(160deg, #e6f6f3 0%, #f4fcfa 46%, #ffffff 100%);
+  border: 2px solid var(--accent);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px -8px rgba(0, 161, 154, 0.3);
+  overflow: hidden;
 }
-.levelup-intro-text {
-  flex: 1;
-  min-width: 0;
+.levelup-hero.level-up {
+  animation:
+    hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both,
+    levelGlow 1.5s ease-out 3;
 }
-.levelup-house-wrap {
-  position: relative;
-  flex-shrink: 0;
-  width: 160px;
-  height: 120px;
-  margin-top: -6px;
-}
-.levelup-house-ic {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.lu-sparkle {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  color: var(--accent-light);
-  opacity: 0.8;
-}
-.lu-sparkle--1 {
-  top: -4px;
-  left: 4px;
-}
-.lu-sparkle--2 {
-  top: 18px;
-  right: -6px;
-  width: 8px;
-  height: 8px;
-}
-.levelup-eyebrow-ic {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
+.levelup-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
   color: var(--accent-dark);
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 100px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  border: 1px solid var(--accent-pale);
+  box-shadow: 0 1px 2px rgba(0, 138, 132, 0.06);
+  margin-bottom: 12px;
 }
+.levelup-eyebrow :deep(svg) { width: 13px; height: 13px; }
 .levelup-title {
-  font-size: 1.5rem;
+  font-size: 28px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.6px;
-  line-height: 1.15;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
   margin-bottom: 6px;
 }
 .levelup-sub {
-  font-size: 0.7813rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* Before / Now score card */
-.levelup-score-card {
-  position: relative;
-  z-index: 2;
-  margin: 16px 20px 0;
-  padding: 22px 18px 18px;
-  background: var(--card);
-  border: 1.5px solid var(--accent);
-  border-radius: 16px;
-  box-shadow: 0 12px 32px -8px rgba(0, 161, 154, 0.3);
-}
-.levelup-score-card.level-up {
-  animation: hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both,
-    levelGlow 1.5s ease-out 3;
+  line-height: 1.55;
+  margin-bottom: 16px;
 }
 .levelup-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 20px;
-}
-.levelup-col {
-  flex: 1;
-  max-width: 140px;
-  text-align: center;
-}
-.levelup-col-label {
-  font-size: 0.6563rem;
-  font-weight: 800;
-  color: var(--text-faint);
-  letter-spacing: 1.4px;
-  margin-bottom: 10px;
-}
-.levelup-col-label--now {
-  color: var(--accent-dark);
-}
-.levelup-circle-wrap {
-  position: relative;
-  width: 92px;
-  height: 92px;
-  flex-shrink: 0;
-  margin: 0 auto;
-}
-.levelup-circle-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-.lc-bg {
-  fill: none;
-  stroke: var(--bg);
-}
-.lc-fill {
-  fill: none;
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.lc-fill--from {
-  stroke: var(--text-faint);
-  opacity: 0.5;
-}
-.levelup-circle-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-}
-.lc-big {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--text-faint);
-  letter-spacing: -0.8px;
-  line-height: 1;
-}
-.lc-big--to {
-  color: var(--accent-dark);
-  font-size: 1.75rem;
-}
-.lc-small {
-  font-size: 0.5625rem;
-  font-weight: 700;
-  color: var(--text-faint);
-  margin-top: 2px;
-}
-.lc-small--to {
-  color: var(--accent-dark);
-}
-.levelup-arrow {
-  font-size: 1.375rem;
-  color: var(--accent);
-  font-weight: 800;
-  flex-shrink: 0;
-  margin-top: 34px;
-}
-.levelup-col-title {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  margin-top: 10px;
-}
-.levelup-col-title--now {
-  color: var(--accent-dark);
-}
-.levelup-col-sub {
-  font-size: 0.6563rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-.levelup-epc-pill {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 3px 10px;
-  background: #fdf1e7;
-  color: #b5762f;
-  font-size: 0.625rem;
-  font-weight: 800;
-  border-radius: 100px;
-}
-
-.levelup-stats-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-  padding-top: 16px;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 18px;
   border-top: 1px solid var(--border-soft);
 }
-.lu-stat-box {
+.levelup-from,
+.levelup-to {
+  text-align: center;
   flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
-.lu-stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid var(--accent-pale);
-  color: var(--accent-dark);
+.levelup-from-num {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--text-faint);
+  letter-spacing: -1.6px;
+  line-height: 1;
+}
+.levelup-from-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-faint);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.levelup-arrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  color: var(--accent);
 }
-.lu-stat-icon svg {
-  width: 15px;
-  height: 15px;
+.levelup-arrow :deep(svg) {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.4;
 }
-.lu-stat-icon--img {
-  border-color: var(--border-soft);
-  padding: 4px;
-}
-.lu-stat-icon--img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.lu-stat-text {
-  min-width: 0;
-}
-.lu-stat-eyebrow {
-  font-size: 0.5625rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  line-height: 1.3;
-  margin-bottom: 4px;
-}
-.lu-stat-val {
-  font-size: 0.875rem;
+.levelup-to-num {
+  font-size: 52px;
   font-weight: 800;
   color: var(--accent-dark);
-  letter-spacing: -0.2px;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+.levelup-to-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.levelup-delta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid var(--accent-pale);
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  box-shadow: 0 1px 2px rgba(0, 138, 132, 0.06);
+}
+.levelup-delta :deep(svg) {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 /* Section heading */
@@ -818,28 +529,17 @@ const refinedStats = computed(() => {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 18px 20px 10px;
+  padding: 24px 4px 12px;
 }
 .section-h {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text-secondary);
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
-.section-h-info {
-  display: inline-flex;
-  color: var(--text-faint);
-}
-.section-h-info svg {
-  width: 12px;
-  height: 12px;
-}
 .section-h-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: var(--accent-dark);
 }
@@ -848,45 +548,69 @@ const refinedStats = computed(() => {
 .refined-stats-card {
   position: relative;
   z-index: 2;
-  margin: 0 20px;
-  padding: 14px 16px;
+  margin: 0;
+  padding: 20px 24px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--shadow-card);
 }
 .stat-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  gap: 14px;
+  padding: 9px 0;
 }
 .stat-icon {
-  font-size: 0.875rem;
   width: 34px;
   height: 34px;
-  text-align: center;
-  flex-shrink: 0;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg);
+  flex-shrink: 0;
 }
-.stat-icon img {
+.stat-icon :deep(svg) { width: 17px; height: 17px; }
+/* 3D PNG icons: show the artwork itself, no tinted chip behind it */
+.stat-icon.has-img,
+.stat-icon.has-img.high,
+.stat-icon.has-img.mid,
+.stat-icon.has-img.low {
+  width: 30px;
+  height: 30px;
+  border-radius: 0;
+  background: transparent;
+}
+.stat-icon.has-img img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  display: block;
+}
+/* Tone-tinted icon chips echo the bar colour */
+.stat-icon.high {
+  color: var(--accent-dark);
+  background: var(--accent-paler);
+}
+.stat-icon.mid {
+  color: var(--warning);
+  background: #fff6e8;
+}
+.stat-icon.low {
+  color: var(--error);
+  background: #fdeef0;
 }
 .stat-label {
-  width: 70px;
-  font-size: 0.6875rem;
+  width: 96px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
 }
 .stat-bar-wrap {
   flex: 1;
-  height: 8px;
+  height: 10px;
   background: var(--bg);
   border-radius: 100px;
   overflow: hidden;
@@ -907,9 +631,9 @@ const refinedStats = computed(() => {
   background: linear-gradient(90deg, var(--error), var(--error-light));
 }
 .stat-value {
-  width: 62px;
+  width: 58px;
   text-align: right;
-  font-size: 0.625rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text);
   flex-shrink: 0;
@@ -917,144 +641,12 @@ const refinedStats = computed(() => {
 .stat-row.gained .stat-value {
   color: var(--accent-dark);
 }
-.stat-gain-pill {
-  width: 30px;
-  text-align: center;
-  flex-shrink: 0;
-  font-size: 0.6563rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  background: var(--accent-paler);
-  border-radius: 100px;
-  padding: 3px 0;
-}
-.stat-gain-pill.zero {
-  color: var(--text-faint);
-  background: var(--bg);
-}
-
-/* Keep going tip banner */
-.keep-going-banner {
-  position: relative;
-  z-index: 2;
-  margin: 16px 20px 0;
-  padding: 14px 16px;
-  background: var(--accent-paler);
-  border: 1px solid var(--accent-pale);
-  border-radius: 14px;
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
-.kg-ic {
-  font-size: 1.125rem;
-  flex-shrink: 0;
-  line-height: 1.2;
-}
-.kg-body {
-  flex: 1;
-  min-width: 0;
-}
-.kg-title {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  margin-bottom: 3px;
-}
-.kg-sub {
-  font-size: 0.7188rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
 
 /* Bottom CTA */
 .bottom-cta {
   position: relative;
   z-index: 2;
-  padding: 16px 20px 24px;
-}
-.bottom-cta--tiles {
-  display: flex;
-  gap: 10px;
-  align-items: stretch;
-}
-.lu-tile {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  overflow: visible;
-  text-align: left;
-  border-radius: 16px;
-  border: none;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.15s;
-}
-.lu-tile:hover {
-  transform: translateY(-1px);
-}
-.lu-tile--pathway {
-  background: var(--accent-paler);
-  padding: 16px 14px 50px;
-}
-.lu-tile-icon-top {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  display: block;
-  margin: auto;
-  margin-bottom: 10px;
-}
-.lu-tile-buyer-body {
-  padding-right: 8px;
-}
-.lu-tile-icon--buyer {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  margin: auto;
-}
-.lu-tile-title {
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.25;
-  margin-bottom: 6px;
-}
-.lu-tile-sub {
-  font-size: 0.7188rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  padding-right: 4px;
-}
-.lu-tile-arrow {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 0.9375rem;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-.lu-tile-arrow--pathway {
-  background: var(--accent-dark);
-}
-.lu-tile--passport {
-  background: #fff;
-  border: 1.5px solid var(--accent);
-  padding: 16px 14px 50px;
-}
-.lu-tile-arrow--passport {
-  background: var(--accent-dark);
+  padding: 20px 0 4px;
 }
 .bottom-cta-btn {
   width: 100%;
@@ -1064,7 +656,7 @@ const refinedStats = computed(() => {
   border: none;
   border-radius: 14px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 161, 154, 0.3);
@@ -1077,6 +669,9 @@ const refinedStats = computed(() => {
 .bottom-cta-btn:hover {
   filter: brightness(1.06);
 }
+.bottom-cta-btn :deep(svg),
+.bottom-cta-secondary :deep(svg) { width: 17px; height: 17px; }
+.bottom-cta-ico { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
 .bottom-cta-secondary {
   width: 100%;
   margin-top: 10px;
@@ -1086,7 +681,7 @@ const refinedStats = computed(() => {
   border: 1.5px solid var(--border);
   border-radius: 14px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -1099,7 +694,7 @@ const refinedStats = computed(() => {
   background: var(--accent-paler);
   color: var(--accent-dark);
 }
-/* Outlined variant - transparent background, accent border (v6-2) */
+/* Outlined variant — transparent background, accent border (v6-2) */
 .bottom-cta-secondary.outlined {
   background: transparent;
   border: 1.5px solid var(--accent);
@@ -1108,26 +703,18 @@ const refinedStats = computed(() => {
 .bottom-cta-secondary.outlined:hover {
   background: var(--accent-paler);
 }
-/* 3D illustration inside the two bottom CTAs - replaces the 🎯 and ⚡
-   emoji at the front of each button. Sized to sit neatly next to the
-   label without overwhelming the button height. */
-.bottom-cta-ic {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  flex-shrink: 0;
-  margin-right: 2px;
-}
 
-/* Header (back button + centered "Quiz complete" label) */
+/* Mini header (back-only, no title strip, no bell) */
 .lu-mini-header {
   position: relative;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 12px 20px;
   padding-top: calc(12px + env(safe-area-inset-top));
+}
+/* When the host page supplies its own top nav (hideBack), the mini-header
+   is gone — add top breathing room so the hero clears the sticky nav. */
+.hs-v6-levelup.lu-has-nav {
+  padding-top: 22px;
 }
 .lu-back {
   width: 36px;
@@ -1142,37 +729,111 @@ const refinedStats = computed(() => {
   color: var(--text);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  flex-shrink: 0;
 }
 .lu-back svg {
   width: 16px;
   height: 16px;
 }
-.lu-header-title {
+
+/* "What happens next" explainer — stacked two-path layout with icon
+   chips + a summary footer (v6-3) */
+.boost-explain {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 22px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+}
+.boost-explain-steps {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+}
+.boost-explain-step {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: var(--accent-dark);
+  gap: 14px;
+  min-width: 0;
 }
-.lu-header-spacer {
-  width: 36px;
-  flex-shrink: 0;
-}
-
-.lu-trust-note {
+.boost-explain-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin: 16px 24px 0;
-  font-size: 0.6563rem;
-  font-weight: 500;
-  color: var(--text-faint);
-  text-align: center;
-}
-.lu-trust-note svg {
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 161, 154, 0.3);
+}
+.boost-explain-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--accent-paler);
+  color: var(--accent-dark);
+}
+.boost-explain-icon.boost {
+  background: #fff6e8;
+  color: var(--warning);
+}
+.boost-explain-icon :deep(svg) { width: 21px; height: 21px; }
+.boost-explain-hr {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 16px 0;
+}
+.boost-explain-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+.boost-explain-text :deep(b) {
+  color: var(--text);
+  font-weight: 700;
+}
+.boost-explain-foot {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin-top: 18px;
+  padding: 12px 16px;
+  background: var(--accent-paler);
+  border: 1px solid var(--accent-pale);
+  border-radius: 12px;
+  text-align: center;
+  line-height: 1.5;
+}
+.boost-explain-foot :deep(b) {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+@keyframes hs-v6-fadeUp-anim2 {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.anim-2 {
+  animation: hs-v6-fadeUp-anim2 0.35s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 </style>

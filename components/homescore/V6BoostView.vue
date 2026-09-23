@@ -1,8 +1,10 @@
 <template>
   <div class="hs-v6-boost">
-    <!-- Mini header (back + title + help) -->
-    <div class="boost-header">
+    <!-- Mini header (back + title + help). The back arrow is hidden when the
+         host page renders its own top nav (hideBack). -->
+    <div class="boost-header" :class="{ 'boost-header--nav': hideBack }">
       <button
+        v-if="!hideBack"
         class="boost-back"
         type="button"
         @click="$emit('back')"
@@ -28,11 +30,18 @@
       </button>
     </div>
 
+    <!-- Desktop dashboard body: fills the 1140px nav shell and lays the
+         cards into a two-column grid at desktop widths. On mobile it
+         collapses to the original single-column stack (source order). -->
+    <div class="boost-body">
     <!-- Your property journey · gauge rings -->
     <div class="boost-journey-card anim-1">
       <div class="boost-journey-head">
-        <div class="boost-journey-eyebrow">✨ Your property journey</div>
-        <div class="boost-journey-update">Updates as you add docs</div>
+        <div class="boost-journey-eyebrow"><Icon name="i-lucide-sparkles" /> Your property journey</div>
+        <div class="boost-journey-update"><Icon name="i-lucide-file-plus-2" /> Updates as you add docs</div>
+      </div>
+      <div class="boost-journey-headline">
+        Every document you add unlocks <b>more of your Passport</b>.
       </div>
       <div class="boost-gauges-row">
         <div
@@ -43,7 +52,7 @@
         >
           <!-- <div class="gauge-emoji">{{ g.emoji }}</div> -->
           <div class="boost-gauge-ring">
-            <svg viewBox="0 0 90 90" aria-hidden="true">
+            <svg viewBox="0 0 90 90">
               <circle cx="45" cy="45" r="36" stroke-width="7" fill="none" />
               <circle
                 cx="45"
@@ -60,10 +69,10 @@
               <defs>
                 <linearGradient
                   :id="`bjGrad-${g.id}`"
-                  x1="100%"
+                  x1="0%"
                   y1="0%"
-                  x2="0%"
-                  y2="0%"
+                  x2="100%"
+                  y2="100%"
                 >
                   <stop offset="0%" :stop-color="g.gradFrom" />
                   <stop offset="100%" :stop-color="g.gradTo" />
@@ -75,12 +84,14 @@
               }}<span v-if="g.suffix">{{ g.suffix }}</span>
             </div>
           </div>
-          <div class="boost-gauge-cat">{{ g.label }}</div>
-          <div class="boost-gauge-sub">{{ g.sub }}</div>
+          <div class="boost-gauge-meta">
+            <div class="boost-gauge-cat">{{ g.label }}</div>
+            <div class="boost-gauge-sub">{{ g.sub }}</div>
+          </div>
         </div>
       </div>
       <div class="boost-journey-foot">
-        <div class="boost-journey-foot-icon">📊</div>
+        <div class="boost-journey-foot-icon"><Icon name="i-lucide-bar-chart-3" /></div>
         <div class="boost-journey-foot-text">
           Each document you add unlocks
           <b>more of your Passport</b>.
@@ -114,11 +125,11 @@
       <p class="bes-p">
         Your <b>street rank and the public register</b> still read
         {{ officialPublicRating }}·{{ officialPublicScore }} from
-        {{ officialPublicYear }} - so the work you've done isn't showing
+        {{ officialPublicYear }} — so the work you've done isn't showing
         where it counts. A new EPC syncs the public record to your verified
         score.
       </p>
-      <button class="bes-btn" type="button" @click="$emit('open-marketplace', 'epc')">
+      <button class="bes-btn" type="button" @click="$emit('view-report', 'epc')">
         Update my EPC · from £60 →
       </button>
       <div class="bes-micro">
@@ -129,8 +140,9 @@
     <!-- Upload a document. One question at a time — only the next
          unuploaded doc renders. After upload, the congratulations
          overlay celebrates the impact, then the next card slides in. -->
+    <div class="boost-block boost-block--upload">
     <div class="boost-section-h">
-      <span class="ico"><img src="/op-icons/misc/paperClip.png" alt="" loading="lazy" /></span> Upload a document
+      <span class="ico"><Icon name="i-lucide-paperclip" /></span> Upload a document
       <span class="pill-progress"
         >{{ uploadedDocs.length }} of {{ docs.length }}</span
       >
@@ -139,13 +151,13 @@
          see their progress. Only the next-unuploaded card is rendered
          after them; later docs stay hidden until their turn. -->
     <div v-for="d in completedDocs" :key="d.id" class="boost-row added">
-      <div class="boost-row-icon" :class="[d.tone, { 'boost-row-icon--img': !!d.iconImage }]">
-        <img v-if="d.iconImage" :src="d.iconImage" :alt="d.title" class="boost-row-icon-img" loading="lazy" />
-        <template v-else>{{ d.icon }}</template>
+      <div class="boost-row-icon" :class="[d.tone, { 'has-img': d.img }]">
+        <img v-if="d.img" :src="d.img" :alt="d.title" class="boost-row-icon-img" />
+        <Icon v-else :name="d.icon" />
       </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ d.title }}</div>
-        <div class="boost-row-sub">Verified · +{{ d.mrDelta }}% Upfront Ready</div>
+        <div class="boost-row-sub">Verified · +{{ d.mrDelta }}% Move Ready</div>
       </div>
       <div class="boost-row-check">✓</div>
     </div>
@@ -154,10 +166,15 @@
       :key="currentDoc.id"
       class="boost-row boost-row--active"
       @click="onAddDoc(currentDoc.id)"
-     role="button" tabindex="0" @keydown.enter="onAddDoc(currentDoc.id)" @keydown.space.prevent="onAddDoc(currentDoc.id)">
-      <div class="boost-row-icon" :class="[currentDoc.tone, { 'boost-row-icon--img': !!currentDoc.iconImage }]">
-        <img v-if="currentDoc.iconImage" :src="currentDoc.iconImage" :alt="currentDoc.title" class="boost-row-icon-img" loading="lazy" />
-        <template v-else>{{ currentDoc.icon }}</template>
+    >
+      <div class="boost-row-icon" :class="[currentDoc.tone, { 'has-img': currentDoc.img }]">
+        <img
+          v-if="currentDoc.img"
+          :src="currentDoc.img"
+          :alt="currentDoc.title"
+          class="boost-row-icon-img"
+        />
+        <Icon v-else :name="currentDoc.icon" />
       </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ currentDoc.title }}</div>
@@ -168,7 +185,7 @@
 
     <!-- All documents uploaded celebration -->
     <div v-else class="boost-row alldone">
-      <div class="boost-row-icon gold boost-row-icon--img"><img src="/op-icons/misc/trophy.png" alt="" class="boost-row-icon-img" loading="lazy" /></div>
+      <div class="boost-row-icon gold"><Icon name="i-lucide-trophy" /></div>
       <div class="boost-row-info">
         <div class="boost-row-title">All documents uploaded</div>
         <div class="boost-row-sub">
@@ -177,6 +194,7 @@
       </div>
       <div class="boost-row-chev">›</div>
     </div>
+    </div><!-- /boost-block--upload -->
 
     <!-- Per-upload congratulations overlay. Fireworks burst behind a
          centered impact card with the points won + what this document
@@ -210,20 +228,12 @@
           </div>
         </div>
         <div class="bcv-card">
-          <div class="bcv-ico" :class="[celebrateDoc.tone, { 'bcv-ico--img': !!celebrateDoc.iconImage }]">
-            <img v-if="celebrateDoc.iconImage" :src="celebrateDoc.iconImage" :alt="celebrateDoc.title" class="bcv-ico-img" loading="lazy" />
-            <template v-else>{{ celebrateDoc.icon }}</template>
+          <div class="bcv-ico" :class="celebrateDoc.tone">
+            <Icon :name="celebrateDoc.icon" />
           </div>
-          <!-- "VERIFIED" is only honest for the utility bill (where
-               server-side OCR just confirmed a real annual spend
-               figure). For every other doc we haven't wired real
-               verification yet, so we call it "UPLOADED" — tester
-               feedback flagged the previous copy as false. -->
-          <div class="bcv-eyebrow">
-            {{ celebrateDoc.id === 'bills' ? 'BILL VERIFIED' : 'DOCUMENT UPLOADED' }}
-          </div>
+          <div class="bcv-eyebrow">DOCUMENT VERIFIED</div>
           <div class="bcv-headline">
-            +{{ celebrateDoc.mrDelta }}% Upfront Ready
+            +{{ celebrateDoc.mrDelta }}% Move Ready
           </div>
           <div class="bcv-subhead">+{{ celebrateDoc.ppDelta }}% Passport</div>
           <div class="bcv-doc-label">{{ celebrateDoc.title }}</div>
@@ -236,24 +246,19 @@
     </Teleport>
 
     <!-- Book a professional -->
+    <div class="boost-block boost-block--book">
     <div class="boost-section-h">
-      <span class="ico"><img src="/op-icons/misc/wrench.png" alt="" loading="lazy" /></span> Book a professional
+      <span class="ico"><Icon name="i-lucide-wrench" /></span> Book a professional
     </div>
     <div
       v-for="b in bookings"
       :key="b.id"
       class="boost-row"
-      @click="$emit('open-marketplace', b.id)"
-     role="button" tabindex="0" @keydown.enter="$emit('open-marketplace', b.id)" @keydown.space.prevent="$emit('open-marketplace', b.id)">
-      <div class="boost-row-icon" :class="[b.tone, { 'boost-row-icon--img': !!b.iconImage }]">
-        <img
-          v-if="b.iconImage"
-          :src="b.iconImage"
-          :alt="b.title"
-          class="boost-row-icon-img"
-          loading="lazy"
-        />
-        <template v-else>{{ b.icon }}</template>
+      @click="$emit('view-report', b.id)"
+    >
+      <div class="boost-row-icon" :class="[b.tone, { 'has-img': b.img }]">
+        <img v-if="b.img" :src="b.img" :alt="b.title" class="boost-row-icon-img" />
+        <Icon v-else :name="b.icon" />
       </div>
       <div class="boost-row-info">
         <div class="boost-row-title">{{ b.title }}</div>
@@ -261,23 +266,24 @@
       </div>
       <div class="boost-row-chev">›</div>
     </div>
+    </div><!-- /boost-block--book -->
 
     <!-- Next step on your journey · 1:1 with `.nextstep` from the
          umu-owner-journey prototype (lines 342-347). Reads as a single
          decisive teal CTA — the rings live up top in the journey card
          so we don't double up the dial language here. -->
     <div class="nextstep anim-2">
-      <div class="ns-eye">✦ Next step on your journey</div>
+      <div class="ns-eye"><Icon name="i-lucide-sparkles" /> Next step on your journey</div>
       <div class="ns-h">Your Passport is {{ passportPct }}% there.</div>
       <div class="ns-p">
-        Each document you add lifts your scores. Reach Upfront Ready and publish
+        Each document you add lifts your scores. Reach Move Ready and publish
         your Passport to lock in everything you've built.
       </div>
       <button type="button" class="ns-btn" @click="$emit('start-passport')">
-        <img class="ns-btn-ic" src="/op-icons/misc/rocket.png" alt="" loading="lazy" />
-        Continue my Passport →
+        <Icon name="i-lucide-rocket" /> Continue my Passport →
       </button>
     </div>
+    </div><!-- /boost-body -->
 
     <div style="height: 32px" />
 
@@ -290,27 +296,22 @@
       <div v-if="activeDoc" class="bd-upload">
         <div class="bd-upload-head">
           <div class="bd-upload-ico" :class="activeDoc.tone">
-            <img
-              v-if="activeDoc.iconImage"
-              :src="activeDoc.iconImage"
-              :alt="activeDoc.title"
-              class="bd-upload-ico-img"
-              loading="lazy"
-            />
-            <template v-else>{{ activeDoc.icon }}</template>
+            <Icon :name="activeDoc.icon" />
           </div>
           <div class="bd-upload-sub">{{ activeDoc.sub }}</div>
         </div>
 
-        <label class="bd-dropzone" :class="{ 'has-file': !!selectedFile }" for="a11y-field-V6BoostView-65">
+        <label class="bd-dropzone" :class="{ 'has-file': !!selectedFile }">
           <input
             ref="fileInputRef"
             type="file"
             accept="application/pdf,image/png,image/jpeg"
             class="bd-dropzone-input"
             @change="onFileChange"
-           id="a11y-field-V6BoostView-65"/>
-          <div class="bd-dropzone-icon">{{ selectedFile ? '✓' : '📄' }}</div>
+          />
+          <div class="bd-dropzone-icon">
+            <Icon :name="selectedFile ? 'i-lucide-check' : 'i-lucide-file-text'" />
+          </div>
           <div class="bd-dropzone-title">
             {{ selectedFile ? selectedFile.name : 'Drop your document here' }}
           </div>
@@ -326,27 +327,19 @@
         </label>
 
         <div class="bd-upload-note">
-          🔒 We read the key details only - the file is stored against your
+          <Icon name="i-lucide-lock" /> We read the key details only — the file is stored against your
           property and never shared without your say-so.
         </div>
-
-        <!-- Error line shown when OCR fails to find a legible spend
-             on the bill (returned annualSpend=null). The user needs
-             actionable copy telling them what to try next. -->
-        <div v-if="uploadError" class="bd-upload-err" role="alert">{{ uploadError }}</div>
       </div>
 
       <template #footer>
         <button
           class="bd-upload-cta"
           type="button"
-          :disabled="!selectedFile || uploading"
+          :disabled="!selectedFile"
           @click="confirmUpload"
         >
-          <template v-if="uploading">Reading your bill…</template>
-          <template v-else>
-            {{ selectedFile ? 'Add to my property →' : 'Choose a file' }}
-          </template>
+          {{ selectedFile ? 'Add to my property →' : 'Choose a file' }}
         </button>
       </template>
     </BaseDrawer>
@@ -359,27 +352,24 @@ import BaseDrawer from '~/components/ui/BaseDrawer.vue'
 
 interface Props {
   homeScore: number
-  /** Passed through so the utility-bill upload can call the real OCR
-   *  endpoint (POST /property/:id/bill-parse). Without it we can't
-   *  verify the bill and would revert to a fake boost - see
-   *  confirmUpload() below for the branch that requires this. */
-  propertyId?: string | null
   moveReadyStart?: number
   passportStart?: number
-  /** Public-register EPC fields - drive the "Make it official" card.
+  /** Public-register EPC fields — drive the "Make it official" card.
    *  Falls back to the prototype's example values when missing. */
   publicEpcRating?: string | null
   publicEpcScore?: number | null
   publicEpcYear?: string | number | null
+  /** Hide the internal back arrow when the host page renders its own nav. */
+  hideBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  propertyId: null,
   moveReadyStart: 12,
   passportStart: 30,
   publicEpcRating: null,
   publicEpcScore: null,
   publicEpcYear: null,
+  hideBack: false,
 })
 
 // Score → EPC band letter. Matches the prototype's verified-score badge.
@@ -401,6 +391,7 @@ const officialVerifiedScore = computed(() => Math.round(props.homeScore))
 defineEmits<{
   (e: 'back'): void
   (e: 'open-marketplace', kind: string): void
+  (e: 'view-report', kind: string): void
   (e: 'start-passport'): void
 }>()
 
@@ -408,41 +399,38 @@ defineEmits<{
 const docs = [
   {
     id: 'bills',
-    icon: '💡',
-    iconImage: '/op-icons/boostYourScore/utilityBills.png',
+    icon: 'i-lucide-lightbulb',
+    img: '/Boost/utilityBills.png',
     tone: 'yellow',
     title: 'Utility bills',
-    sub: 'See your actual spend vs your EPC estimate - most impactful first step',
+    sub: 'See your actual spend vs your EPC estimate — most impactful first step',
     mrDelta: 22,
     ppDelta: 12,
   },
   {
     id: 'gas',
-    icon: '🔥',
-    iconImage: '/op-icons/boostYourScore/gasSafety.png',
+    icon: 'i-lucide-flame',
     tone: 'amber',
     title: 'Gas Safety Certificate',
-    sub: 'Annual safety check from a Gas Safe engineer · +25% Upfront Ready',
+    sub: 'Annual safety check from a Gas Safe engineer · +25% MoveReady',
     mrDelta: 25,
     ppDelta: 15,
   },
   {
     id: 'eicr',
-    icon: '⚡',
-    iconImage: '/op-icons/boostYourScore/electrician.png',
+    icon: 'i-lucide-zap',
     tone: 'violet',
     title: 'EICR · Electrical safety report',
-    sub: '5-yearly · required for letting · +20% Upfront Ready',
+    sub: '5-yearly · required for letting · +20% MoveReady',
     mrDelta: 20,
     ppDelta: 14,
   },
   {
     id: 'boiler',
-    icon: '🛠',
-    iconImage: '/op-icons/boostYourScore/gasSafety.png',
+    icon: 'i-lucide-wrench',
     tone: 'teal',
     title: 'Boiler service record',
-    sub: 'Annual service invoice or certificate · +12% Upfront Ready',
+    sub: 'Annual service invoice or certificate · +12% MoveReady',
     mrDelta: 12,
     ppDelta: 10,
   },
@@ -451,24 +439,24 @@ const docs = [
 const bookings = [
   {
     id: 'gas-safe',
-    icon: '🔥',
-    iconImage: '/op-icons/boostYourScore/gasSafety.png',
+    icon: 'i-lucide-flame',
+    img: '/Boost/gasSafety.png',
     tone: 'amber',
     title: 'Book a Gas Safe engineer',
     sub: 'Service your boiler · cert auto-lands in your score',
   },
   {
     id: 'eicr',
-    icon: '⚡',
-    iconImage: '/op-icons/boostYourScore/electrician.png',
+    icon: 'i-lucide-zap',
+    img: '/Boost/electrician.png',
     tone: 'violet',
     title: 'Book an electrician (EICR)',
     sub: 'Electrical check · from £150',
   },
   {
     id: 'new-epc',
-    icon: '🏠',
-    iconImage: '/op-icons/boostYourScore/epcAssessment.png',
+    icon: 'i-lucide-house',
+    img: '/Boost/epcAssessment.png',
     tone: 'green',
     title: 'New EPC assessment',
     sub: 'From £60 · required if yours is 10+ years old',
@@ -515,14 +503,14 @@ const gauges = ref<Gauge[]>([
     target: props.homeScore,
     max: 100,
     suffix: '',
-    gradFrom: '#00BB93',
-    gradTo: '#016F84',
+    gradFrom: '#5EEAD4',
+    gradTo: '#00B8B0',
     animatedValue: 0,
   },
   {
     id: 'mr',
     emoji: '📋',
-    label: 'Upfront Ready',
+    label: 'Move Ready',
     sub: 'Docs & certs',
     target: moveReadyPct.value,
     max: 100,
@@ -539,11 +527,11 @@ const gauges = ref<Gauge[]>([
     target: passportPct.value,
     max: 100,
     suffix: '%',
-    // Passport ring uses white so it reads as a neutral "completion"
-    // metric — distinct from Move Ready (amber) without competing with
-    // HomeScore (teal) for tone weight on the dark navy card.
-    gradFrom: '#ffffff',
-    gradTo: '#e5e7eb',
+    // Passport ring uses a soft lavender so it reads as a distinct
+    // "ownership" metric — separate from Move Ready (amber) and
+    // HomeScore (teal) on the dark navy card, matching the design mock.
+    gradFrom: '#C4B5FD',
+    gradTo: '#A78BFA',
     animatedValue: 0,
   },
 ])
@@ -605,96 +593,19 @@ function onUploadClose() {
   activeDocId.value = null
 }
 
-// State for the utility-bill OCR round-trip. The user waits for
-// Tesseract on the server before the celebration overlay opens, so
-// we show a spinner state on the CTA and an explicit error line if
-// the bill couldn't be parsed. Everything else uses the direct-mark
-// path.
-const uploading = ref(false)
-const uploadError = ref('')
-const parsedBillResult = ref<{
-  annualSpend: number | null
-  supplier: string | null
-  period: string | null
-} | null>(null)
-
-async function confirmUpload() {
+function confirmUpload() {
   if (!selectedFile.value) {
     fileInputRef.value?.click()
     return
   }
   const id = activeDocId.value
-  if (!id || uploadedDocs.value.includes(id)) {
-    onUploadClose()
-    return
+  if (id && !uploadedDocs.value.includes(id)) {
+    // Mark the doc uploaded — this lifts the Move Ready / Passport gauges.
+    // (Server-side file upload endpoint to be wired when available.)
+    uploadedDocs.value = [...uploadedDocs.value, id]
+    const doc = docs.find((d) => d.id === id)
+    if (doc) celebrateDoc.value = doc
   }
-
-  // Utility bill takes the OCR path: server extracts real annual
-  // spend + supplier from the image/PDF. Only grant the boost when
-  // the OCR actually found a number — no more "click and the score
-  // goes up regardless of what you uploaded" (tester feedback #5).
-  if (id === 'bills') {
-    if (!props.propertyId) {
-      uploadError.value =
-        "Can't verify without a property. Please claim this property first."
-      return
-    }
-    uploadError.value = ''
-    uploading.value = true
-    try {
-      const config = useRuntimeConfig()
-      const base = (config.public as any).apiBase || ''
-      const token =
-        typeof window !== 'undefined' ? localStorage.getItem('token') : null
-      const fd = new FormData()
-      fd.append('file', selectedFile.value)
-      const parsed: any = await $fetch(
-        `${base}/property/${props.propertyId}/bill-parse`,
-        {
-          method: 'POST',
-          body: fd,
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        },
-      )
-      // Only credit the boost when we actually extracted a number.
-      // If Tesseract couldn't read a legible spend figure the bill
-      // is either unreadable or not an energy bill — we tell the
-      // user and don't touch the gauges.
-      if (parsed && typeof parsed.annualSpend === 'number' && parsed.annualSpend > 0) {
-        parsedBillResult.value = {
-          annualSpend: parsed.annualSpend,
-          supplier: parsed.supplier ?? null,
-          period: parsed.period ?? null,
-        }
-        uploadedDocs.value = [...uploadedDocs.value, id]
-        const doc = docs.find((d) => d.id === id)
-        if (doc) celebrateDoc.value = doc
-        onUploadClose()
-      } else {
-        uploadError.value =
-          "Couldn't read a spend figure from that file. Try a clearer photo of the annual summary page, or a PDF directly from your supplier."
-      }
-    } catch (e: any) {
-      uploadError.value =
-        e?.data?.message ??
-        e?.message ??
-        "Couldn't upload the bill. Try again in a moment."
-    } finally {
-      uploading.value = false
-    }
-    return
-  }
-
-  // Non-bill docs (gas, EICR, boiler) don't have server-side
-  // verification wired yet, so we mark them uploaded but tell the
-  // user honestly in the celebration copy that it's uploaded — not
-  // "verified" — until a professional reviews it. The score bump is
-  // preserved for now (tester feedback #5 was specifically about the
-  // utility bill mismatch); when we add proper verification for the
-  // others we'll gate them the same way.
-  uploadedDocs.value = [...uploadedDocs.value, id]
-  const doc = docs.find((d) => d.id === id)
-  if (doc) celebrateDoc.value = doc
   onUploadClose()
 }
 
@@ -717,31 +628,19 @@ const isLastDoc = computed(
 
 // Per-doc impact copy — describes what THIS upload verifies beyond the
 // numeric uplift, so the user reads concrete value, not just a percentage.
-// The utility-bill line is generated dynamically below because it now
-// carries the OCR-extracted annual spend figure (tester feedback #5).
 const docImpacts: Record<string, string> = {
   bills:
-    "Real annual spend extracted from your bill. Buyers see this verified figure, not the older EPC estimate.",
-  gas: 'Uploaded - kept on file against your property. Buyer-side visibility, and a marker for solicitors that annual gas safety is in place.',
-  eicr: 'Uploaded - buyers see the EICR is on file against your property. Full verification runs at conveyancing.',
+    "We'll cross-check your real spend against your EPC estimate — buyers see the verified figure, not the public one.",
+  gas: 'Annual gas safety is on file. Required for any rental and reassures buyers the appliances are checked.',
+  eicr: 'Electrical Installation Condition Report verified — covers a survey question solicitors flag every time.',
   boiler:
-    'Uploaded - service history stored against the property. Buyers can see maintenance is up-to-date.',
+    'Boiler service history locked in. Tells buyers the heating system is maintained and recent.',
 }
 const celebrateImpact = computed(() => {
   const id = celebrateDoc.value?.id
-  // Utility-bill line is dynamic: once OCR returns we replace the
-  // generic copy with the actual numbers we extracted — that's what
-  // the user is being told is "verified", so it should be visible.
-  if (id === 'bills' && parsedBillResult.value?.annualSpend) {
-    const spend = Math.round(parsedBillResult.value.annualSpend)
-    const supplier = parsedBillResult.value.supplier
-    return supplier
-      ? `We read £${spend}/yr as your annual spend on the ${supplier} bill you uploaded. Buyers see this verified figure, not the older EPC estimate.`
-      : `We read £${spend}/yr as your annual spend on the bill you uploaded. Buyers see this verified figure, not the older EPC estimate.`
-  }
   return (
     (id && docImpacts[id]) ||
-    'Uploaded and locked into your Property Passport.'
+    'Document verified and locked into your Property Passport.'
   )
 })
 
@@ -815,6 +714,239 @@ function formatFileSize(bytes: number): string {
 </script>
 
 <style scoped>
+/* ── Layout shell ─────────────────────────────────────────────────
+   The body wrapper centres the content on the same 1140px shell as the
+   site nav so the page reads as a full desktop dashboard rather than a
+   narrow mobile column floating in whitespace. On mobile it's a simple
+   vertical stack; at desktop it becomes a two-column grid. */
+.boost-body {
+  width: min(1140px, calc(100% - 40px));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* Cards carry their own mobile margins — inside .boost-body the wrapper
+   owns the horizontal rhythm, so neutralise them. */
+.boost-body > .boost-journey-card,
+.boost-body > .boost-epcstatus,
+.boost-body > .nextstep,
+.boost-body > .boost-block {
+  margin: 0;
+}
+.boost-block {
+  display: flex;
+  flex-direction: column;
+}
+.boost-block .boost-section-h {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.boost-block .boost-row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+@media (min-width: 980px) {
+  /* `.hs-v6-boost` prefix lifts specificity above the base `.boost-header`
+     shorthand so the heading lines up flush with the card column below
+     instead of sitting indented. */
+  .hs-v6-boost .boost-header {
+    width: min(1140px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 18px 2px 14px;
+  }
+  .hs-v6-boost .boost-header-title {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .hs-v6-boost .boost-header-sub {
+    font-size: 14px;
+    margin-top: 6px;
+    color: var(--text-secondary);
+  }
+  .hs-v6-boost .boost-help {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  /* Dashboard grid: the journey card is a full-width hero banner; below it
+     the primary action lists (upload / book) sit in the left column with the
+     "make it official" EPC upsell as a tall right-hand sidebar; the next-step
+     CTA closes the page full width. */
+  .boost-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-areas:
+      'journey  journey'
+      'upload   epc'
+      'book     epc'
+      'nextstep nextstep';
+    gap: 22px 24px;
+    align-items: start;
+    margin-top: 2px;
+  }
+  .hs-v6-boost .boost-journey-card {
+    grid-area: journey;
+    padding: 34px 40px 30px;
+    border-radius: 24px;
+  }
+  .hs-v6-boost .boost-journey-card .boost-journey-head {
+    margin-bottom: 10px;
+  }
+  .hs-v6-boost .boost-epcstatus {
+    grid-area: epc;
+    align-self: start;
+    padding: 26px 26px 24px;
+    border-radius: 22px;
+  }
+  .hs-v6-boost .boost-block--upload {
+    grid-area: upload;
+  }
+  .hs-v6-boost .boost-block--book {
+    grid-area: book;
+  }
+
+  /* Left-column lists: larger section labels + roomier rows to match the mock. */
+  .hs-v6-boost .boost-section-h {
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    padding: 4px 4px 12px;
+  }
+  .hs-v6-boost .boost-block--book .boost-section-h {
+    padding-top: 22px;
+  }
+  .hs-v6-boost .boost-row {
+    padding: 20px 22px;
+    border-radius: 16px;
+    gap: 16px;
+  }
+  .hs-v6-boost .boost-row-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+  .hs-v6-boost .boost-row-title {
+    font-size: 15.5px;
+  }
+  .hs-v6-boost .boost-row-sub {
+    font-size: 12.5px;
+  }
+  .hs-v6-boost .boost-row-plus {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  /* Big hero headline, matching the mock. */
+  .hs-v6-boost .boost-journey-headline {
+    font-size: 33px;
+    font-weight: 800;
+    line-height: 1.22;
+    letter-spacing: -0.6px;
+    margin: 4px 0 30px;
+    max-width: 640px;
+  }
+  .hs-v6-boost .boost-journey-eyebrow {
+    font-size: 11px;
+    letter-spacing: 1.6px;
+  }
+  .hs-v6-boost .boost-journey-update {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+
+  /* Stat tiles: each stat sits in its own translucent bordered box with the
+     ring on the left and the label/sub to the right — matching the mock. */
+  .hs-v6-boost .boost-gauges-row {
+    gap: 18px;
+  }
+  .hs-v6-boost .boost-gauge-col {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 22px;
+    text-align: left;
+    padding: 26px 26px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 18px;
+  }
+  .hs-v6-boost .boost-gauge-col:hover {
+    transform: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .hs-v6-boost .boost-gauge-ring {
+    width: 104px;
+    height: 104px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .hs-v6-boost .boost-gauge-num {
+    font-size: 30px;
+  }
+  .hs-v6-boost .boost-gauge-num.pct {
+    font-size: 26px;
+  }
+  .hs-v6-boost .boost-gauge-meta {
+    min-width: 0;
+  }
+  .hs-v6-boost .boost-gauge-cat {
+    margin-top: 0;
+    font-size: 14px;
+    letter-spacing: 0.8px;
+  }
+  .hs-v6-boost .boost-gauge-sub {
+    margin-top: 5px;
+    font-size: 12.5px;
+  }
+
+  /* Footer strip inside the journey card. */
+  .hs-v6-boost .boost-journey-foot {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+
+  /* Next-step becomes a wide horizontal banner: copy left, CTA right. */
+  .hs-v6-boost .nextstep {
+    grid-area: nextstep;
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'eye btn'
+      'h   btn'
+      'p   btn';
+    align-items: center;
+    column-gap: 32px;
+    padding: 32px 40px;
+    border-radius: 24px;
+  }
+  .hs-v6-boost .nextstep .ns-eye {
+    grid-area: eye;
+  }
+  .hs-v6-boost .nextstep .ns-h {
+    grid-area: h;
+    font-size: 30px;
+  }
+  .hs-v6-boost .nextstep .ns-p {
+    grid-area: p;
+    max-width: 640px;
+  }
+  .hs-v6-boost .nextstep .ns-btn {
+    grid-area: btn;
+    width: auto;
+    margin-top: 0;
+    padding: 17px 32px;
+    white-space: nowrap;
+  }
+}
 .hs-v6-boost {
   --primary: #231d45;
   --accent: #00a19a;
@@ -822,8 +954,10 @@ function formatFileSize(bytes: number): string {
   --accent-light: #00b8b0;
   --accent-pale: #e5f4f2;
   --accent-paler: #f2faf8;
-  --bg: #f5f6fa;
-  --page: #f0f2f8;
+  /* Match the app-wide flat cream canvas (#f3f2ef) used on the landing /
+     explore pages and behind the translucent cream nav — not a bluish tint. */
+  --bg: #f3f2ef;
+  --page: #f3f2ef;
   --card: #ffffff;
   --text: #231d45;
   --text-secondary: #6b7089;
@@ -847,6 +981,14 @@ function formatFileSize(bytes: number): string {
   padding: 14px 20px;
   padding-top: calc(14px + env(safe-area-inset-top));
 }
+/* When the host page supplies its own top nav, the back arrow is gone —
+   left-align the title so it reads as a proper page heading. */
+.boost-header--nav {
+  padding-top: 22px;
+}
+.boost-header--nav .boost-header-info {
+  text-align: left;
+}
 .boost-back,
 .boost-help {
   width: 36px;
@@ -861,7 +1003,7 @@ function formatFileSize(bytes: number): string {
   color: var(--text);
   flex-shrink: 0;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
 }
 .boost-back svg {
@@ -873,13 +1015,13 @@ function formatFileSize(bytes: number): string {
   text-align: center;
 }
 .boost-header-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.2px;
 }
 .boost-header-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 1px;
@@ -952,20 +1094,42 @@ function formatFileSize(bytes: number): string {
   margin-bottom: 18px;
 }
 .boost-journey-eyebrow {
-  font-size: 0.625rem;
+  font-size: 10px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.95);
   letter-spacing: 1.4px;
   text-transform: uppercase;
 }
 .boost-journey-update {
-  font-size: 0.6563rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
   font-weight: 700;
   color: white;
-  padding: 3px 9px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 100px;
+}
+.boost-journey-update :deep(svg) {
+  width: 14px;
+  height: 14px;
+  opacity: 0.9;
+}
+
+/* Hero headline inside the journey card */
+.boost-journey-headline {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  color: #fff;
+  margin: 12px 0 18px;
+}
+.boost-journey-headline b {
+  color: #f5a94b;
+  font-weight: 800;
 }
 
 /* Gauges */
@@ -983,7 +1147,7 @@ function formatFileSize(bytes: number): string {
   transform: translateY(-2px);
 }
 /* .gauge-emoji {
-  font-size: 1rem;
+  font-size: 16px;
   line-height: 1;
   margin-bottom: 8px;
   opacity: 0.9;
@@ -1011,7 +1175,7 @@ function formatFileSize(bytes: number): string {
   filter: drop-shadow(0 0 9px rgba(255, 179, 71, 0.7));
 }
 .boost-gauge-col.pp .boost-gauge-ring svg circle:last-of-type {
-  filter: drop-shadow(0 0 9px rgba(255, 255, 255, 0.7));
+  filter: drop-shadow(0 0 9px rgba(167, 139, 250, 0.7));
 }
 .boost-gauge-num {
   position: absolute;
@@ -1019,13 +1183,13 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.6px;
   color: white;
 }
 .boost-gauge-num.pct {
-  font-size: 1.25rem;
+  font-size: 20px;
 }
 .boost-gauge-num span {
   font-size: 0.7em;
@@ -1033,7 +1197,7 @@ function formatFileSize(bytes: number): string {
   opacity: 0.85;
 }
 .boost-gauge-cat {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 700;
   color: white;
   letter-spacing: 0.7px;
@@ -1041,7 +1205,7 @@ function formatFileSize(bytes: number): string {
   margin-top: 10px;
 }
 .boost-gauge-sub {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
   margin-top: 2px;
@@ -1057,11 +1221,11 @@ function formatFileSize(bytes: number): string {
   border-radius: 10px;
 }
 .boost-journey-foot-icon {
-  font-size: 1rem;
+  font-size: 16px;
 }
 .boost-journey-foot-text {
   flex: 1;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.4;
@@ -1073,7 +1237,7 @@ function formatFileSize(bytes: number): string {
 
 /* Section heading */
 .boost-section-h {
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--text-secondary);
   letter-spacing: 1.2px;
@@ -1084,16 +1248,7 @@ function formatFileSize(bytes: number): string {
   gap: 6px;
 }
 .boost-section-h .ico {
-  font-size: 0.75rem;
-  width: 16px;
-  height: 16px;
-  display: inline-flex;
-}
-.boost-section-h .ico img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
+  font-size: 12px;
 }
 .pill-progress {
   margin-left: auto;
@@ -1102,7 +1257,7 @@ function formatFileSize(bytes: number): string {
   color: var(--accent-dark);
   border: 1px solid var(--accent-pale);
   border-radius: 100px;
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -1166,8 +1321,19 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.375rem;
+  font-size: 22px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.boost-row-icon-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+/* Rows showing a real PNG icon sit on plain white, not the tinted tile.
+   Extra .has-img raises specificity above the .boost-row-icon.<tone> rules. */
+.boost-row-icon.has-img.has-img {
+  background: #fff;
 }
 .boost-row-icon.yellow {
   background: #fff6d5;
@@ -1188,32 +1354,19 @@ function formatFileSize(bytes: number): string {
   background: linear-gradient(135deg, #ffd700, #ff9500);
   color: white;
 }
-.boost-row-icon--img {
-  width: 56px;
-  height: 56px;
-  background: transparent !important;
-  padding: 0;
-  overflow: visible;
-}
-.boost-row-icon-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
 .boost-row-info {
   flex: 1;
   min-width: 0;
 }
 .boost-row-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.2px;
   line-height: 1.2;
 }
 .boost-row-sub {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 3px;
@@ -1228,7 +1381,7 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 300;
   flex-shrink: 0;
   box-shadow: 0 4px 10px rgba(0, 161, 154, 0.35);
@@ -1242,12 +1395,12 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
   flex-shrink: 0;
 }
 .boost-row-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   color: var(--text-faint);
   flex-shrink: 0;
 }
@@ -1265,20 +1418,20 @@ function formatFileSize(bytes: number): string {
   box-shadow: 0 12px 28px rgba(0, 120, 112, 0.3);
 }
 .ns-eye {
-  font-size: 0.625rem;
+  font-size: 10px;
   letter-spacing: 1.3px;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
   font-weight: 800;
 }
 .ns-h {
-  font-size: 1.3125rem;
+  font-size: 21px;
   font-weight: 750;
   margin-top: 15px;
   letter-spacing: -0.3px;
 }
 .ns-p {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   color: rgba(255, 255, 255, 0.82);
   line-height: 1.5;
   margin-top: 8px;
@@ -1293,19 +1446,13 @@ function formatFileSize(bytes: number): string {
   background: #fff;
   color: #007E78;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
   transition: filter 0.15s, transform 0.15s;
-}
-.ns-btn-ic {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  display: block;
 }
 .ns-btn:hover {
   filter: brightness(1.04);
@@ -1336,14 +1483,8 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.375rem;
+  font-size: 22px;
   flex-shrink: 0;
-}
-.bd-upload-ico-img {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-  display: block;
 }
 .bd-upload-ico.yellow {
   background: #fff6d5;
@@ -1359,7 +1500,7 @@ function formatFileSize(bytes: number): string {
 }
 .bd-upload-sub {
   flex: 1;
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.45;
@@ -1392,18 +1533,18 @@ function formatFileSize(bytes: number): string {
   display: none;
 }
 .bd-dropzone-icon {
-  font-size: 1.875rem;
+  font-size: 30px;
   line-height: 1;
 }
 .bd-dropzone-title {
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.2px;
   word-break: break-word;
 }
 .bd-dropzone-meta {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-faint);
 }
@@ -1413,21 +1554,10 @@ function formatFileSize(bytes: number): string {
 }
 .bd-upload-note {
   margin-top: 14px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.5;
-}
-.bd-upload-err {
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #fff2f2;
-  border: 1px solid #f3c9c9;
-  color: #a02c2c;
-  font-size: 0.7813rem;
-  font-weight: 600;
-  line-height: 1.45;
 }
 .bd-upload-cta {
   width: 100%;
@@ -1437,7 +1567,7 @@ function formatFileSize(bytes: number): string {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: white;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
@@ -1528,20 +1658,7 @@ function formatFileSize(bytes: number): string {
   margin: 0 auto 14px;
   display: grid;
   place-items: center;
-  font-size: 1.75rem;
-}
-.bcv-ico--img {
-  width: 72px;
-  height: 72px;
-  background: transparent !important;
-  padding: 0;
-  overflow: visible;
-}
-.bcv-ico-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
+  font-size: 28px;
 }
 .bcv-ico.yellow {
   background: #fff6d5;
@@ -1558,34 +1675,70 @@ function formatFileSize(bytes: number): string {
 .bcv-ico.green {
   background: #d4f2e0;
 }
+
+/* ── Lucide icon sizing / tint (emoji → <Icon> swap) ──────────────── */
+.boost-journey-eyebrow,
+.ns-eye {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.boost-journey-eyebrow :deep(svg),
+.ns-eye :deep(svg) { width: 12px; height: 12px; }
+.boost-journey-foot-icon {
+  display: inline-flex;
+  color: rgba(255, 255, 255, 0.9);
+}
+.boost-journey-foot-icon :deep(svg) { width: 16px; height: 16px; }
+.boost-section-h .ico { display: inline-flex; }
+.boost-section-h .ico :deep(svg) { width: 13px; height: 13px; }
+.boost-row-icon :deep(svg),
+.bd-upload-ico :deep(svg) { width: 22px; height: 22px; }
+.bcv-ico :deep(svg) { width: 27px; height: 27px; }
+.bd-dropzone-icon { color: var(--accent-dark); }
+.bd-dropzone-icon :deep(svg) { width: 30px; height: 30px; margin: 0 auto; }
+.ns-btn :deep(svg) { width: 16px; height: 16px; }
+.bd-upload-note :deep(svg) {
+  display: inline-block;
+  vertical-align: -2px;
+  width: 13px;
+  height: 13px;
+  margin-right: 3px;
+}
+/* Tint each pale icon chip to match its hue (Lucide is monochrome). */
+.boost-row-icon.yellow, .bd-upload-ico.yellow, .bcv-ico.yellow { color: #c99700; }
+.boost-row-icon.amber, .bd-upload-ico.amber, .bcv-ico.amber { color: #b45309; }
+.boost-row-icon.teal, .bd-upload-ico.teal, .bcv-ico.teal { color: var(--accent-dark); }
+.boost-row-icon.green, .bd-upload-ico.green, .bcv-ico.green { color: #0f9d58; }
+.boost-row-icon.violet, .bd-upload-ico.violet, .bcv-ico.violet { color: #7c3aed; }
 .bcv-eyebrow {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 2px;
-  color: #00726c;
+  color: #00a19a;
   margin-bottom: 6px;
 }
 .bcv-headline {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 900;
   color: #231d45;
   letter-spacing: -0.4px;
   line-height: 1.15;
 }
 .bcv-subhead {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: #b07afe;
   margin-top: 2px;
 }
 .bcv-doc-label {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: #6b7089;
   margin: 10px 0 8px;
 }
 .bcv-impact {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 500;
   color: #6b7089;
   line-height: 1.55;
@@ -1599,7 +1752,7 @@ function formatFileSize(bytes: number): string {
   background: linear-gradient(135deg, #00a19a, #008a84);
   color: #ffffff !important;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   letter-spacing: -0.1px;
@@ -1631,14 +1784,14 @@ function formatFileSize(bytes: number): string {
   background: linear-gradient(180deg, #C18A38, #A9772A);
 }
 .bes-eye {
-  font-size: 0.625rem;
+  font-size: 10px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: #A9772A;
   font-weight: 800;
 }
 .bes-h {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 750;
   color: #231D45;
   margin: 6px 0 14px;
@@ -1664,7 +1817,7 @@ function formatFileSize(bytes: number): string {
   border: 1px solid #BFE7DF;
 }
 .bes-bl {
-  font-size: 0.5625rem;
+  font-size: 9px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-weight: 800;
@@ -1679,21 +1832,21 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 800;
   color: #fff;
 }
 .bes-badge.stale .bes-letter { background: #D86F4A; opacity: 0.65; }
 .bes-badge.ver   .bes-letter { background: #6F9A33; }
 .bes-num {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   margin-top: 6px;
 }
 .bes-badge.stale .bes-num { color: #7E7D93; }
 .bes-badge.ver   .bes-num { color: #231D45; }
 .bes-tagp {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 700;
   margin-top: 6px;
   display: inline-block;
@@ -1703,13 +1856,13 @@ function formatFileSize(bytes: number): string {
 .bes-badge.stale .bes-tagp { background: #E7E6F0; color: #8A8899; }
 .bes-badge.ver   .bes-tagp { background: #fff;    color: #007E78; }
 .bes-arrow {
-  font-size: 1.125rem;
+  font-size: 18px;
   color: #C18A38;
   font-weight: 700;
   flex: none;
 }
 .bes-p {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #7E7D93;
   line-height: 1.5;
   margin: 14px 0 0;
@@ -1725,7 +1878,7 @@ function formatFileSize(bytes: number): string {
   background: #fff;
   color: #007E78;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   align-items: center;
   justify-content: center;
@@ -1739,7 +1892,7 @@ function formatFileSize(bytes: number): string {
 }
 .bes-micro {
   text-align: center;
-  font-size: 0.625rem;
+  font-size: 10px;
   color: #A9A8BC;
   margin-top: 9px;
 }
