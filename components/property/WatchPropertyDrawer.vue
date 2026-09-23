@@ -6,12 +6,20 @@
         class="watch-overlay"
         @click.self="$emit('close')"
       >
-        <div class="watch-sheet" @click.stop>
+        <div
+          class="watch-sheet"
+          :style="dragStyle"
+          @click.stop
+          @touchstart.passive="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+          @touchcancel="onTouchEnd"
+        >
           <div class="watch-grip" />
           <div class="watch-head">
-            <div class="watch-eyebrow">👁 Watch{{ addressLabel ? ` · ${addressLabel}` : '' }}</div>
-            <div class="watch-title">Pick what you want to be pinged about.</div>
-            <div class="watch-sub">All notifications stay in your buyer profile. Turn any off in Settings anytime.</div>
+            <div class="watch-eyebrow"><img src="/op-icons/misc/eye.png" alt="" style="height:1.4em;display:inline-block;vertical-align:-0.3em;margin-right:4px" loading="lazy" />Watch this property</div>
+            <div class="watch-title">Pick what you want to be notified about.</div>
+            <div class="watch-sub">We'll keep you updated when something important happens at <b>{{ addressLabel || 'this property' }}</b>.</div>
           </div>
 
           <div class="watch-triggers">
@@ -20,7 +28,14 @@
               :key="t.key"
               class="watch-trigger"
             >
-              <div class="watch-trigger-ico"><img :src="t.img" :alt="t.title" loading="lazy" /></div>
+              <div class="watch-trigger-ico">
+                <img
+                  :src="`/op-icons/watchThisProperty/${t.icon}.png`"
+                  :alt="''"
+                  class="watch-trigger-img"
+                  loading="lazy"
+                />
+              </div>
               <div class="watch-trigger-body">
                 <div class="watch-trigger-title">{{ t.title }}</div>
                 <div class="watch-trigger-sub">{{ t.sub }}</div>
@@ -38,11 +53,21 @@
           </div>
 
           <div class="watch-read-row">
-            <div class="watch-read-icon"><img src="/property-cards/buyersWatching.png" alt="" loading="lazy" /></div>
+            <div class="watch-read-icon">
+              <img
+                src="/op-icons/watchThisProperty/buyersWatching.png"
+                alt=""
+                class="watch-read-img"
+                loading="lazy"
+              />
+            </div>
             <div class="watch-read-text">
-              <b>You'll be among the first buyers watching</b> this address. The seller
-              sees that on their dashboard when they claim it — sometimes that's the
-              nudge they need.
+              <b>You'll be among the first to know.</b> Sellers see that buyers
+              are watching this property when they claim it - it's a helpful
+              nudge.
+              <br /><br />
+              Stay connected to this property. Watch it now and we'll let you
+              know when new Passport information becomes available.
             </div>
           </div>
 
@@ -51,12 +76,12 @@
               Maybe later
             </button>
             <button class="watch-btn primary" type="button" :disabled="submitting" @click="onSubmit">
-              {{ submitting ? 'Saving…' : '✓ Watch this property' }}
+              {{ submitting ? 'Saving…' : '👁 Watch this property' }}
             </button>
           </div>
           <div class="watch-privacy">
             <span class="watch-privacy-icon">🔒</span>
-            <span>Saved to your buyer profile. The owner won't see your name — only a count of "buyers watching".</span>
+            <span>Saved to your account. Watching is private.</span>
           </div>
         </div>
       </div>
@@ -65,13 +90,26 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
-defineProps<{
+type PassportWatchState = 'unclaimed' | 'private' | 'partiallyPublic' | 'public'
+
+const props = defineProps<{
   open: boolean
   /** Short address label shown in the eyebrow, e.g. "9 Woodfield Rd". */
   addressLabel?: string
   submitting?: boolean
+  /** Existing prefs to prefill with (e.g. from GET /property/:id/watch) -
+   *  without this the toggles always reset to the hardcoded defaults below,
+   *  discarding whatever the user actually chose last time. */
+  initialPrefs?: Record<string, boolean> | null
+  /** Drives which toggles actually make sense to show. Without this, every
+   *  toggle showed regardless of the property's real state - "Owner claims
+   *  this property" on an already-claimed property, "Passport published"
+   *  on an already-published one, both describing events that can never
+   *  fire again. Optional and defaults to showing everything, so a caller
+   *  that hasn't been updated yet still works exactly as before. */
+  passportState?: PassportWatchState | null
 }>()
 
 const emit = defineEmits<{
@@ -79,21 +117,74 @@ const emit = defineEmits<{
   (e: 'submit', prefs: Record<string, boolean>): void
 }>()
 
-const triggers = [
-  { key: 'claimed', img: '/property-cards/ownerClaim.png', title: 'Owner claims this property', sub: 'Most important — your "in" with the seller' },
-  { key: 'progress', img: '/property-cards/passportProgress.png', title: 'Passport progress milestones', sub: '25% · 50% · 75% built' },
-  { key: 'published', img: '/property-cards/passportPublished.png', title: 'Passport published', sub: 'Live notification + access (free for verified)' },
-  { key: 'comparables', img: '/property-cards/comparableSales.png', title: 'Comparable sales nearby', sub: 'Weekly digest if there\'s new Land Registry data' },
-  { key: 'homescore', img: '/property-cards/homescoreChanges.png', title: 'HomeScore changes', sub: 'New EPC or upgrade pushes the score up or down' },
-] as const
+const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
+  onDismiss: () => emit('close'),
+  handleSelector: '.watch-grip',
+})
 
-const selected = reactive<Record<string, boolean>>({
+// 'updated' reuses the same `progress` preference key as 'progress' — it's
+// the identical underlying PropertyWatch field, just relabeled per state
+// (build-progress framing before publish, "anything changed" framing
+// after) — no backend change needed for any of this.
+const ALL_TRIGGERS = {
+  claimed: { key: 'claimed', icon: 'ownerClaim', title: 'Owner claims this property', sub: "You'll be notified the moment they verify ownership." },
+  progress: { key: 'progress', icon: 'passportProgress', title: 'Passport goes Partially Public', sub: "We'll let you know as soon as it's live to view - even before every section is finished." },
+  updated: { key: 'progress', icon: 'passportProgress', title: 'Passport updated', sub: "We'll let you know if the owner adds or changes anything." },
+  published: { key: 'published', icon: 'passportPublished', title: 'Passport becomes Public', sub: "We'll notify you when it's fully public and you can access everything." },
+  comparables: { key: 'comparables', icon: 'comparableSales', title: 'Comparable sales nearby', sub: "Weekly update if there's new Land Registry data." },
+  homescore: { key: 'homescore', icon: 'homescoreChanges', title: 'HomeScore changes', sub: "We'll let you know if the public HomeScore goes up or down." },
+} as const
+
+// Which toggles apply to each real property state:
+// - unclaimed: nothing's been built yet, so no progress/updated toggle;
+//   claiming and publishing are both still real future events.
+// - private: claimed already (no 'claimed' toggle); still pre-publish, so
+//   both "goes Partially Public" and "becomes Public" are real future
+//   events — no build-progress % pings exist on the backend, so the
+//   'progress' toggle is worded around the actual Partially Public state
+//   instead of a fake 25/50/75% milestone ping.
+// - partiallyPublic: already claimed AND already published (that's what
+//   "partially public" means under the Private/Partially Public/Public
+//   model — live, just incomplete) — so neither 'claimed' nor 'published'
+//   applies. It can still change, though, so 'updated' replaces 'progress'.
+// - public: claimed, published, and complete — none of claimed/published/
+//   progress/updated describe a real future event; only the
+//   state-independent toggles are left.
+const TRIGGERS_BY_STATE: Record<PassportWatchState, (keyof typeof ALL_TRIGGERS)[]> = {
+  unclaimed: ['claimed', 'published', 'comparables', 'homescore'],
+  private: ['progress', 'published', 'comparables', 'homescore'],
+  partiallyPublic: ['updated', 'comparables', 'homescore'],
+  public: ['comparables', 'homescore'],
+}
+
+const triggers = computed(() => {
+  const state = props.passportState
+  const keys = state ? TRIGGERS_BY_STATE[state] : (Object.keys(ALL_TRIGGERS) as (keyof typeof ALL_TRIGGERS)[])
+  return keys.map((k) => ALL_TRIGGERS[k])
+})
+
+const DEFAULT_PREFS: Record<string, boolean> = {
   claimed: true,
   progress: true,
   published: true,
   comparables: false,
   homescore: true,
+}
+
+const selected = reactive<Record<string, boolean>>({
+  ...DEFAULT_PREFS,
+  ...(props.initialPrefs ?? {}),
 })
+
+// initialPrefs typically arrives async (a GET call after the drawer's
+// already mounted) — watch so a late-arriving fetch still prefills.
+watch(
+  () => props.initialPrefs,
+  (prefs) => {
+    if (!prefs) return
+    Object.assign(selected, prefs)
+  },
+)
 
 function onSubmit() {
   emit('submit', { ...selected })
@@ -109,9 +200,8 @@ function onSubmit() {
   -webkit-backdrop-filter: blur(4px);
   z-index: 1100;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 24px;
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   --accent: #00a19a;
@@ -131,37 +221,25 @@ function onSubmit() {
   width: 100%;
   max-width: 28rem;
   background: var(--card);
-  border-radius: 22px;
-  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.28);
-  max-height: min(88dvh, 720px);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 30px rgba(35, 29, 69, 0.25);
+  max-height: 90dvh;
   overflow-y: auto;
-  padding-bottom: 6px;
-  /* Slim, on-brand scrollbar instead of the wide OS default. */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  padding-bottom: env(safe-area-inset-bottom);
 }
-.watch-sheet::-webkit-scrollbar { width: 8px; }
-.watch-sheet::-webkit-scrollbar-track { background: transparent; }
-.watch-sheet::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 999px;
-  border: 2px solid #fff;
-  background-clip: padding-box;
-}
-.watch-sheet::-webkit-scrollbar-thumb:hover { background: #a8b0bf; background-clip: padding-box; }
 .watch-grip {
-  display: none;
   width: 42px;
   height: 4px;
   background: var(--border);
   border-radius: 100px;
   margin: 10px auto 0;
+  touch-action: none;
 }
 .watch-head {
   padding: 14px 22px 6px;
 }
 .watch-eyebrow {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: 1.4px;
@@ -169,7 +247,7 @@ function onSubmit() {
   margin-bottom: 6px;
 }
 .watch-title {
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.4px;
@@ -177,50 +255,54 @@ function onSubmit() {
   margin-bottom: 6px;
 }
 .watch-sub {
-  font-size: 12.5px;
+  font-size: 0.7813rem;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.55;
+}
+.watch-sub b {
+  color: var(--text);
+  font-weight: 800;
 }
 .watch-triggers {
   padding: 6px 22px 0;
 }
 .watch-trigger {
   display: flex;
-  gap: 10px;
-  padding: 11px 0;
+  gap: 12px;
+  padding: 13px 0;
   align-items: center;
 }
 .watch-trigger + .watch-trigger {
   border-top: 1px dashed var(--border-soft);
 }
 .watch-trigger-ico {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  overflow: hidden;
 }
-.watch-trigger-ico img {
+.watch-trigger-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
 }
 .watch-trigger-body {
   flex: 1;
   min-width: 0;
 }
 .watch-trigger-title {
-  font-size: 12.5px;
+  font-size: 0.7813rem;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.1px;
 }
 .watch-trigger-sub {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 2px;
@@ -264,20 +346,21 @@ function onSubmit() {
   border-radius: 12px;
 }
 .watch-read-icon {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.watch-read-icon img {
+.watch-read-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
 }
 .watch-read-text {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.5;
@@ -295,7 +378,7 @@ function onSubmit() {
   flex: 1;
   padding: 14px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 800;
   border-radius: 12px;
   cursor: pointer;
@@ -324,25 +407,14 @@ function onSubmit() {
   align-items: flex-start;
   gap: 8px;
   padding: 6px 22px 18px;
-  font-size: 10.5px;
+  font-size: 0.6563rem;
   font-weight: 500;
   color: var(--text-faint);
   line-height: 1.5;
 }
 .watch-privacy-icon {
   flex-shrink: 0;
-  font-size: 13px;
-}
-
-/* On phones, revert to a true bottom sheet (flush to the bottom edge). */
-@media (max-width: 560px) {
-  .watch-overlay { align-items: flex-end; padding: 0; }
-  .watch-sheet {
-    border-radius: 22px 22px 0 0;
-    max-height: 90dvh;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .watch-grip { display: block; }
+  font-size: 0.8125rem;
 }
 
 /* Slide-up transition */
@@ -360,12 +432,6 @@ function onSubmit() {
 }
 .watch-modal-enter-from .watch-sheet,
 .watch-modal-leave-to .watch-sheet {
-  transform: translateY(24px) scale(0.98);
-}
-@media (max-width: 560px) {
-  .watch-modal-enter-from .watch-sheet,
-  .watch-modal-leave-to .watch-sheet {
-    transform: translateY(100%);
-  }
+  transform: translateY(100%);
 }
 </style>
