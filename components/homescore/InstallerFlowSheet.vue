@@ -104,7 +104,7 @@
               </div>
             </div>
 
-            <span class="ifs-indicative">⚠️ Indicative only — your installer confirms at survey</span>
+            <span class="ifs-indicative"><Icon name="i-lucide-triangle-alert" /> Indicative only — your installer confirms at survey</span>
             <button class="ifs-back-link" @click="state = 'routes'">‹ Back</button>
           </div>
 

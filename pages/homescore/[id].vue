@@ -80,6 +80,7 @@
         :bills-split="resolvedBillsSplit"
         :street-rank="streetEnergyRank?.rank ?? null"
         :street-total="streetEnergyRank?.total ?? null"
+        :street-average-cost="streetEnergyRank?.averageCost ?? null"
         :searches-today="searchStats?.today ?? 0"
         :watchers-count="(searchStats as any)?.watchers ?? 0"
         :passport-state="resolvedPassportState"
@@ -182,8 +183,9 @@
 
       <V6BoostView
         :home-score="autoScoreVal"
+        :property-id="propertyId"
         :public-epc-rating="property?.epcRating ?? null"
-        :public-epc-score="(property as any)?.epcScore ?? null"
+        :public-epc-score="(property as any)?.epcScore ?? (property as any)?.epcCert?.currentEnergyEfficiency ?? null"
         :public-epc-year="resolvedEpcYear"
         :hide-back="true"
         @back="goBack"
@@ -224,10 +226,16 @@
         :from-score="autoScoreVal"
         :to-score="v6QuizFinal?.finalScore ?? autoScoreVal"
         :delta="v6QuizFinal?.delta ?? 0"
+        :property="property"
+        :stat-gains="v6QuizFinal?.statGains ?? {}"
+        :est-savings="v6QuizFinal?.answeredSavings ?? 0"
+        :co2-now="resolvedCo2Now"
+        :co2-potential="resolvedCo2Potential"
         :hide-back="true"
         @back="goBack"
         @open-pathway="goToPathway"
         @open-boost="goToBoost"
+        @build-passport="goToPassportDashboard"
       />
     </template>
 
@@ -2289,6 +2297,154 @@
             </div>
           </div>
         </div>
+
+        <!-- ── Public records (ported from the app's Property Report) ── -->
+        <div class="bv-section-h">
+          <div class="bv-section-h-icon img">
+            <img src="/homescore-icon/landmarks.png" alt="" loading="lazy" />
+          </div>
+          <div class="bv-section-h-text">
+            <div class="bv-section-h-title">Public records</div>
+            <div class="bv-section-h-sub">
+              Env Agency · Planning.data.gov.uk · Historic England · BGS · EPC Register
+            </div>
+          </div>
+        </div>
+        <div class="bv-rc-list">
+          <!-- Listed building / conservation area -->
+          <div class="bv-rc" :class="{ open: bvOpenCards.has('listed') }">
+            <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('listed')" @click="bvToggleCard('listed')">
+              <img class="bv-rc-ic" src="/homescore-icon/landmarks.png" alt="" loading="lazy" />
+              <span class="bv-rc-info">
+                <span class="bv-rc-title">Listed building &amp; conservation area</span>
+                <span class="bv-rc-sub">{{ bvListedSub }}</span>
+              </span>
+              <span class="bv-rc-pill" :class="bvIsListed ? 'note' : 'clear'">{{ bvListedLabel }}</span>
+              <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+            </button>
+            <div v-if="bvOpenCards.has('listed')" class="bv-rc-body">
+              <template v-if="bvHeritageConstraints.length">
+                <div v-for="(c, i) in bvHeritageConstraints" :key="'hc' + i">
+                  <b>{{ c.type }}:</b> {{ c.name }}<template v-if="c.reference"> · {{ c.reference }}</template>
+                </div>
+              </template>
+              <template v-else>
+                No National Heritage List entry for this address, and not within a
+                recorded conservation area.
+              </template>
+              <template v-if="bvListedBuildings.length">
+                <div class="bv-rc-subhead">Listed buildings nearby</div>
+                <div v-for="(lb, i) in bvListedBuildings.slice(0, 5)" :key="'lb' + i">
+                  <b>{{ lb.grade || 'Listed' }}:</b> {{ lb.name }}
+                </div>
+              </template>
+              <div class="bv-rc-src">
+                <span class="bv-rc-src-label">Source</span>
+                <span class="bv-rc-tag teal">Historic England</span>
+                <span class="bv-rc-tag">Planning.data.gov.uk</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Planning applications on file -->
+          <div class="bv-rc" :class="{ open: bvOpenCards.has('planning') }">
+            <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('planning')" @click="bvToggleCard('planning')">
+              <img class="bv-rc-ic" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
+              <span class="bv-rc-info">
+                <span class="bv-rc-title">Planning history</span>
+                <span class="bv-rc-sub">
+                  <template v-if="!bvEnrichmentLoaded">Checking planning records…</template>
+                  <template v-else-if="bvPlanningApps.length">{{ bvPlanningApps.length }} application{{ bvPlanningApps.length === 1 ? '' : 's' }} on file near this address · Local planning authority</template>
+                  <template v-else>No applications on file near this address · Local planning authority</template>
+                </span>
+              </span>
+              <span class="bv-rc-pill" :class="bvPlanningApps.length ? 'note' : 'clear'">{{
+                bvPlanningApps.length ? `${bvPlanningApps.length} app${bvPlanningApps.length === 1 ? '' : 's'}` : 'Clear'
+              }}</span>
+              <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+            </button>
+            <div v-if="bvOpenCards.has('planning')" class="bv-rc-body">
+              <template v-if="bvPlanningApps.length">
+                <div v-for="(a, i) in bvPlanningApps.slice(0, 6)" :key="'pa' + i" class="bv-rc-line">
+                  <b v-if="a.dateLabel">{{ a.dateLabel }}</b><template v-if="a.dateLabel"> — </template>{{ a.description }}
+                  <span class="bv-rc-status" :class="{ ok: a.approved }">{{ a.status }}</span>
+                </div>
+              </template>
+              <template v-else>No planning applications recorded near this address.</template>
+              <div v-if="bvPlanningApps.length" class="bv-rc-note">
+                Applications are matched by location, so nearby sites can appear.
+                Ask the seller's solicitor which, if any, relate to this home.
+              </div>
+              <div class="bv-rc-src">
+                <span class="bv-rc-src-label">Source</span>
+                <span class="bv-rc-tag teal">Planning.data.gov.uk</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ground stability -->
+          <div class="bv-rc" :class="{ open: bvOpenCards.has('ground') }">
+            <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('ground')" @click="bvToggleCard('ground')">
+              <img class="bv-rc-ic" src="/homescore-icon/floor.png" alt="" loading="lazy" />
+              <span class="bv-rc-info">
+                <span class="bv-rc-title">Ground stability</span>
+                <span class="bv-rc-sub">{{ bvGroundSub }}</span>
+              </span>
+              <span class="bv-rc-pill" :class="bvGroundFlag ? 'note' : 'clear'">{{ bvGroundLabel }}</span>
+              <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+            </button>
+            <div v-if="bvOpenCards.has('ground')" class="bv-rc-body">
+              <template v-if="bvGroundConstraints.length">
+                <div v-for="(g, i) in bvGroundConstraints" :key="'gc' + i">
+                  <b>{{ g.type }}:</b> {{ g.name }}
+                </div>
+              </template>
+              <template v-else>
+                No contaminated-land or mineral-safeguarding-area records cover
+                this point.
+              </template>
+              <div v-if="bvRadon" class="bv-rc-line">
+                <b>Radon potential: {{ bvRadon.band }}.</b> {{ bvRadon.description }}
+              </div>
+              <div class="bv-rc-note">
+                Full coal-mining subsidence needs a paid Coal Authority CON29M
+                report (~£25) - there's no free per-property API.
+              </div>
+              <div class="bv-rc-src">
+                <span class="bv-rc-src-label">Source</span>
+                <span class="bv-rc-tag teal">Planning.data.gov.uk</span>
+                <span v-if="bvRadon" class="bv-rc-tag">British Geological Survey</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Everything flagged on the EPC ─────────────────────── -->
+        <template v-if="bvEpcRiskFlags.length">
+          <div class="bv-section-h">
+            <div class="bv-section-h-icon img">
+              <img src="/homescore-icon/epcAssessment.png" alt="" loading="lazy" />
+            </div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Flagged on the EPC</div>
+              <div class="bv-section-h-sub">
+                {{ bvEpcRiskFlags.length }} improvement{{ bvEpcRiskFlags.length === 1 ? '' : 's' }} recommended by the assessor
+              </div>
+            </div>
+          </div>
+          <div class="bv-rc-list">
+            <div v-for="r in bvEpcRiskFlags" :key="r.id" class="bv-rc bv-rc--flat">
+              <div class="bv-rc-head">
+                <img class="bv-rc-ic" :src="r.icon" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">{{ r.title }}</span>
+                  <span class="bv-rc-sub">{{ r.sub }}</span>
+                </span>
+                <span class="bv-rc-pill" :class="r.flag ? 'flag' : 'note'">{{ r.flag ? 'Flag' : 'Note' }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
         </div><!-- /risks tab -->
 
         <!-- ═══ ENERGY tab ═══ -->
@@ -2426,13 +2582,22 @@
           </div>
           <div v-if="buyerSold.history.length" class="bv-costs-rows">
             <div
-              v-for="(s, i) in buyerSold.history"
+              v-for="(s, i) in (bvShowAllSales ? buyerSold.history : buyerSold.history.slice(0, 8))"
               :key="'own' + i"
               class="bv-costs-row"
             >
               <span class="bv-costs-row-label">{{ formatSoldDate(s.date) }}<template v-if="s.tenure"> <small>· {{ s.tenure }}</small></template></span>
               <b>£{{ Number(s.price).toLocaleString() }}</b>
             </div>
+            <button
+              v-if="buyerSold.history.length > 8"
+              type="button"
+              class="bv-rc-link bv-rc-link--rows"
+              @click="bvShowAllSales = !bvShowAllSales"
+            >
+              {{ bvShowAllSales ? 'Show fewer sales' : `Show all ${buyerSold.history.length} sales` }}
+              <Icon :name="bvShowAllSales ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" />
+            </button>
           </div>
           <div v-else class="bv-bd-note" style="margin:0">
             No Land Registry Price Paid record exists for this exact address —
@@ -2466,6 +2631,30 @@
               </div>
             </div>
           </template>
+
+          <!-- ── Title & tenure (ported from the app's Property Report) ── -->
+          <div class="bv-rc" :class="{ open: bvOpenCards.has('title') }">
+            <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('title')" @click="bvToggleCard('title')">
+              <img class="bv-rc-ic" src="/homescore-icon/titleDeedsAndPlan.png" alt="" loading="lazy" />
+              <span class="bv-rc-info">
+                <span class="bv-rc-title">Title &amp; tenure</span>
+                <span class="bv-rc-sub">{{ bvTenureLabel }}</span>
+              </span>
+              <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+            </button>
+            <div v-if="bvOpenCards.has('title')" class="bv-rc-body">
+              <b>Tenure:</b> {{ bvTenureLabel }}.<br />
+              <b>Title number:</b>
+              {{ bvTitleNumber }}.<br />
+              <template v-if="bvTitleArea"><b>Title plot area:</b> {{ bvTitleArea.toLocaleString() }} m².<br /></template>
+              The Land Registry can provide a full Title Register (£3) and Title
+              Plan (£3) with a buyer's solicitor account.
+              <div class="bv-rc-src">
+                <span class="bv-rc-src-label">Source</span>
+                <span class="bv-rc-tag teal">HM Land Registry</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ═══ AREA tab — real data.police.uk crime data ═══ -->
@@ -2536,6 +2725,265 @@
               the latest month published by police forces (data lags ~2 months).
             </div>
           </template>
+
+          <!-- 12-month crime trend (enrichment) -->
+          <div v-if="bvCrime12m" class="bv-rc-trend">
+            <Icon name="i-lucide-activity" class="bv-rc-trend-ic" />
+            <span>
+              <b>{{ bvCrime12m.total.toLocaleString() }}</b> crimes in the last 12 months
+              (~{{ bvCrime12m.perMonth.toLocaleString() }}/mo)<template v-if="bvCrime12m.trend">
+                · <span :class="bvCrime12m.trendGood ? 'trend-good' : 'trend-bad'">{{ bvCrime12m.trend }}</span></template>
+            </span>
+          </div>
+
+          <!-- ── Local area (ported from the app's Property Report) ── -->
+          <div class="bv-section-h">
+            <div class="bv-section-h-icon img">
+              <img src="/homescore-icon/map.png" alt="" loading="lazy" />
+            </div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Around this home</div>
+              <div class="bv-section-h-sub">Schools, transport, healthcare &amp; connectivity</div>
+            </div>
+          </div>
+          <div class="bv-rc-list">
+            <!-- Schools -->
+            <div class="bv-rc" :class="{ open: bvOpenCards.has('schools') }">
+              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('schools')" @click="bvToggleCard('schools')">
+                <img class="bv-rc-ic" src="/homescore-icon/graduationCap.png" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">Schools nearby</span>
+                  <span class="bv-rc-sub">{{
+                    !bvEnrichmentLoaded ? 'Loading schools…' : bvSchools.length ? `${bvSchools.length} within ~1 mile` : 'None found within ~1 mile'
+                  }}</span>
+                </span>
+                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+              </button>
+              <div v-if="bvOpenCards.has('schools')" class="bv-rc-body">
+                <template v-if="bvSchools.length">
+                  <div v-for="(s, i) in bvSchools" :key="'sc' + i" class="bv-rc-row">
+                    <span class="bv-rc-row-main">
+                      <span class="bv-rc-row-name">{{ s.name }}</span>
+                      <span class="bv-rc-row-meta">{{ s.meta }}</span>
+                    </span>
+                    <span class="bv-rc-row-val">{{ s.dist }}</span>
+                  </div>
+                </template>
+                <div v-else class="bv-rc-empty">
+                  {{ bvEnrichmentLoaded ? 'No schools found within ~1 mile of this address.' : 'Loading schools…' }}
+                </div>
+                <div class="bv-rc-src">
+                  <span class="bv-rc-src-label">Source</span>
+                  <span class="bv-rc-tag teal">Ordnance Survey</span>
+                  <span class="bv-rc-tag">Ofsted ratings not connected</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Broadband + mobile -->
+            <div class="bv-rc" :class="{ open: bvOpenCards.has('bb') }">
+              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('bb')" @click="bvToggleCard('bb')">
+                <img class="bv-rc-ic" src="/homescore-icon/phoneCall.png" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">Broadband &amp; mobile</span>
+                  <span class="bv-rc-sub">Ofcom checker for {{ property?.postcode }}</span>
+                </span>
+                <span v-if="bvBroadband" class="bv-rc-pill clear">{{
+                  bvBroadband.fttp ? 'FTTP' : bvBroadband.superfast ? 'Superfast' : 'Standard'
+                }}</span>
+                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+              </button>
+              <div v-if="bvOpenCards.has('bb')" class="bv-rc-body">
+                <template v-if="bvBroadband">
+                  <div class="bv-bb">
+                    <span class="bv-bb-num">{{ bvBroadband.maxDownload ?? '—' }}</span>
+                    <span class="bv-bb-unit">Mb/s max download</span>
+                  </div>
+                  <template v-if="bvMobileNets.length">
+                    <div class="bv-rc-subhead">Mobile signal (outdoor)</div>
+                    <div v-for="n in bvMobileNets" :key="n.name" class="bv-rc-row">
+                      <span class="bv-rc-row-name">{{ n.name }}</span>
+                      <span class="bv-bb-bars" :aria-label="`${n.bars} of 5`">
+                        <i v-for="bar in 5" :key="bar" :class="{ on: bar <= n.bars }" />
+                      </span>
+                    </div>
+                  </template>
+                </template>
+                <div v-else class="bv-rc-empty">
+                  {{
+                    !bvEnrichmentLoaded
+                      ? 'Loading broadband & mobile coverage…'
+                      : 'Ofcom coverage for this postcode isn\'t connected yet. Check it on the Ofcom broadband & mobile checker.'
+                  }}
+                </div>
+                <div class="bv-rc-src">
+                  <span class="bv-rc-src-label">Source</span>
+                  <span class="bv-rc-tag teal">Ofcom · Connected Nations</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transport -->
+            <div class="bv-rc" :class="{ open: bvOpenCards.has('transport') }">
+              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('transport')" @click="bvToggleCard('transport')">
+                <img class="bv-rc-ic" src="/homescore-icon/map.png" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">Transport</span>
+                  <span class="bv-rc-sub">Stations &amp; bus stops nearby</span>
+                </span>
+                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+              </button>
+              <div v-if="bvOpenCards.has('transport')" class="bv-rc-body">
+                <template v-if="bvTransport.length">
+                  <div v-for="(t, i) in bvTransport" :key="'tr' + i" class="bv-rc-row">
+                    <span class="bv-rc-row-main">
+                      <span class="bv-rc-row-name">
+                        <Icon :name="t.kind === 'Rail' ? 'i-lucide-train-front' : 'i-lucide-bus'" class="bv-rc-row-ic" />{{ t.name }}
+                      </span>
+                      <span class="bv-rc-row-meta">{{ t.kind }}</span>
+                    </span>
+                    <span class="bv-rc-row-val">{{ t.dist }}</span>
+                  </div>
+                </template>
+                <div v-else class="bv-rc-empty">
+                  {{ bvEnrichmentLoaded ? 'No stations or bus stops found nearby.' : 'Loading transport…' }}
+                </div>
+                <div class="bv-rc-src">
+                  <span class="bv-rc-src-label">Source</span>
+                  <span class="bv-rc-tag teal">Overpass · OpenStreetMap</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Healthcare -->
+            <div class="bv-rc" :class="{ open: bvOpenCards.has('health') }">
+              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('health')" @click="bvToggleCard('health')">
+                <img class="bv-rc-ic" src="/homescore-icon/shield.png" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">Healthcare nearby</span>
+                  <span class="bv-rc-sub">GP surgeries, pharmacies &amp; hospitals</span>
+                </span>
+                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+              </button>
+              <div v-if="bvOpenCards.has('health')" class="bv-rc-body">
+                <template v-if="bvHealthcare.length">
+                  <div v-for="(h, i) in bvHealthcare" :key="'hc' + i" class="bv-rc-row">
+                    <span class="bv-rc-row-main">
+                      <span class="bv-rc-row-name">{{ h.name }}</span>
+                      <span class="bv-rc-row-meta">{{ h.kind }}</span>
+                    </span>
+                    <span class="bv-rc-row-val">{{ h.dist }}</span>
+                  </div>
+                </template>
+                <div v-else class="bv-rc-empty">
+                  {{ bvEnrichmentLoaded ? 'No GP surgeries, pharmacies or hospitals found nearby.' : 'Loading healthcare…' }}
+                </div>
+                <div class="bv-rc-src">
+                  <span class="bv-rc-src-label">Source</span>
+                  <span class="bv-rc-tag teal">Overpass · OpenStreetMap</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Parks & green space -->
+            <div v-if="bvParks.length" class="bv-rc" :class="{ open: bvOpenCards.has('parks') }">
+              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('parks')" @click="bvToggleCard('parks')">
+                <img class="bv-rc-ic" src="/homescore-icon/plantSprout.png" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">Parks &amp; green space</span>
+                  <span class="bv-rc-sub">{{ bvParks.length }} nearby</span>
+                </span>
+                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+              </button>
+              <div v-if="bvOpenCards.has('parks')" class="bv-rc-body">
+                <div v-for="(p, i) in bvParks" :key="'pk' + i" class="bv-rc-row">
+                  <span class="bv-rc-row-name">{{ p.name }}</span>
+                  <span class="bv-rc-row-val">{{ p.dist }}</span>
+                </div>
+                <div class="bv-rc-src">
+                  <span class="bv-rc-src-label">Source</span>
+                  <span class="bv-rc-tag teal">Overpass · OpenStreetMap</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Neighbourhood -->
+            <div class="bv-rc" :class="{ open: bvOpenCards.has('hood') }">
+              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('hood')" @click="bvToggleCard('hood')">
+                <img class="bv-rc-ic" src="/homescore-icon/housesCluster.png" alt="" loading="lazy" />
+                <span class="bv-rc-info">
+                  <span class="bv-rc-title">Neighbourhood</span>
+                  <span class="bv-rc-sub">{{ bvNeighbourhood ? `${property?.postcode || ''} area profile` : 'Census demographics' }}</span>
+                </span>
+                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+              </button>
+              <div v-if="bvOpenCards.has('hood')" class="bv-rc-body">
+                <template v-if="bvNeighbourhood">
+                  <div v-for="(n, i) in bvNeighbourhood" :key="'nb' + i" class="bv-rc-row">
+                    <span class="bv-rc-row-name">{{ n.label }}</span>
+                    <span class="bv-rc-row-val">{{ n.value }}</span>
+                  </div>
+                  <div class="bv-rc-src">
+                    <span class="bv-rc-src-label">Source</span>
+                    <span class="bv-rc-tag teal">ONS Census 2021</span>
+                  </div>
+                </template>
+                <div v-else class="bv-rc-empty">
+                  Census demographics (ONS 2021) aren't connected yet. We're
+                  planning to wire the NOMIS API to surface population, age
+                  profile, tenure mix and deprivation for this neighbourhood.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ STREET tab — /street-energy-rank ═══ -->
+        <div v-show="buyerTab === 'street'" class="bv-tabpanel">
+          <div class="bv-costs-hero sold">
+            <div class="bv-costs-eyebrow">Running-cost rank on this street</div>
+            <div class="bv-costs-num">
+              <template v-if="streetEnergyRank?.rank && (streetEnergyRank?.total ?? 0) > 1">
+                {{ bvStreetRankLabel }}<span> of {{ streetEnergyRank?.total }}</span>
+              </template>
+              <template v-else>—</template>
+            </div>
+            <div class="bv-costs-sub">
+              <template v-if="bvStreetRankText">{{ bvStreetRankText }}</template>
+              <template v-else>Estimated from EPC running costs of neighbouring homes.</template>
+            </div>
+          </div>
+          <div v-if="bvStreetCallout" class="bv-rc-trend">
+            <Icon name="i-lucide-trending-down" class="bv-rc-trend-ic" />
+            <span>The top homes on this street pay roughly <b>{{ bvStreetCallout }}/yr less</b>. The EPC pathway could close most of that gap.</span>
+          </div>
+          <div v-if="bvStreetBars.length > 1" class="bv-crime-card">
+            <div class="bv-crime-head">Annual energy cost by home</div>
+            <div
+              v-for="(b, i) in bvStreetBars"
+              :key="'sb' + i"
+              class="bv-street-row"
+              :class="{ you: b.isYou }"
+            >
+              <div class="bv-crime-label">{{ b.label }}<template v-if="b.epc"> · EPC {{ b.epc }}</template></div>
+              <div class="bv-crime-bar-wrap">
+                <div class="bv-street-bar" :class="b.tone" :style="{ width: b.pct + '%' }" />
+              </div>
+              <div class="bv-crime-val">£{{ b.cost.toLocaleString() }}</div>
+            </div>
+          </div>
+          <div v-else class="bv-area-note">
+            <div class="bv-area-note-title">
+              <img src="/homescore-icon/housesCluster.png" alt="" loading="lazy" />Not enough neighbours yet
+            </div>
+            <div class="bv-area-note-body">
+              Not enough neighbouring properties have been enriched to draw a street
+              comparison yet.
+            </div>
+          </div>
+          <button type="button" class="bv-rc-link" @click="goToStreetCompare">
+            Open the full street comparison <Icon name="i-lucide-arrow-right" />
+          </button>
         </div>
 
         <!-- ── Questions to ask the owner (real EPC recommendations) ── -->
@@ -2622,6 +3070,67 @@
                 publishes.</b
               >
             </div>
+          </div>
+        </template>
+
+        <!-- ── Published Passport (ported from the app's Property Report) ── -->
+        <template v-if="bvPassportState === 'published'">
+          <div class="bv-pp-banner bv-pp-banner--published">
+            <img class="bv-pp-banner-ic" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
+            <div class="bv-pp-banner-body">
+              <div class="bv-pp-banner-title">
+                {{ bvPassportState4 === 'public' ? 'Claimed · Public' : 'Claimed · Partially Public' }}
+                <span class="bv-pp-banner-pill">Solicitor-grade</span>
+              </div>
+              <div class="bv-pp-banner-sub">
+                Full verified sales pack ready<template v-if="passportSectionsTotal">
+                  —
+                  <b>{{ passportSectionsDone }} of {{ passportSectionsTotal }} sections</b></template>. Title, surveys, planning &amp; fittings in one place.
+              </div>
+            </div>
+          </div>
+
+          <div class="bv-buypp-card">
+            <div class="bv-buypp-top">
+              <img class="bv-buypp-badge" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
+              <span class="bv-buypp-grade">Solicitor-grade</span>
+            </div>
+            <div class="bv-buypp-title">The full story on this home - verified.</div>
+            <div class="bv-buypp-sub">
+              Everything a buyer's solicitor needs, gathered &amp; checked upfront.
+              Homes with a Passport sell <b>~12 weeks faster</b>.
+            </div>
+            <div class="bv-buypp-inside">
+              <div v-for="item in bvBuyPpItems" :key="item" class="bv-buypp-item">
+                <Icon name="i-lucide-check" class="bv-buypp-tick" />{{ item }}
+              </div>
+            </div>
+            <div class="bv-buypp-pricerow">
+              <div class="bv-buypp-price">£15<small> one-off</small></div>
+              <div class="bv-buypp-pricenote">
+                Instant access to the full pack. <b>Free for verified buyers</b> -
+                verify once, open every Passport.
+              </div>
+            </div>
+            <button class="bv-buypp-cta" type="button" @click="onBuyPassport">
+              <img src="/homescore-icon/clipboard.png" alt="" class="bv-buypp-cta-ic" loading="lazy" />Open the full Passport →
+            </button>
+          </div>
+
+          <div class="bv-qoffer-card">
+            <div class="bv-qoffer-eyebrow">
+              <img src="/homescore-icon/moneyBagPound.png" alt="" loading="lazy" />Qualified offer
+            </div>
+            <div class="bv-qoffer-title">Make an offer the seller sees first.</div>
+            <div class="bv-qoffer-sub">
+              Verified buyers can submit a qualified offer straight from the
+              Passport - ID &amp; funds already checked, so the seller knows it's
+              real.
+              <b>You need to be verified to make one.</b>
+            </div>
+            <button class="bv-qoffer-cta" type="button" @click="verifyBuyerDrawerOpen = true">
+              <img src="/homescore-icon/padlock.png" alt="" loading="lazy" />Get verified to make an offer →
+            </button>
           </div>
         </template>
 
@@ -2762,7 +3271,7 @@
             <p class="boostw-kicker"><span class="boostw-kicker-dot" />Boost your score</p>
             <h1>Every document adds real value</h1>
             <p class="boostw-lede">
-              Add certificates and book trusted pros to verify your home and grow your Move Ready score.
+              Add certificates and book trusted pros to verify your home and grow your Upfront Ready score.
             </p>
           </div>
 
@@ -2791,7 +3300,7 @@
               <div class="boost-stat-num" :class="{ muted: qwMoveReady === 0 }">
                 {{ qwMoveReady }}%
               </div>
-              <div class="boost-stat-label">MOVE READY</div>
+              <div class="boost-stat-label">UPFRONT READY</div>
               <div class="boost-stat-sub">Docs &amp; certs</div>
             </div>
             <div class="boost-stat-div" />
@@ -2890,7 +3399,7 @@
           </div>
           <div class="pj-cta-sub">
             Each document you add is a verified layer of your Property Passport.
-            Keep uploading to reach Move Ready status and lock in everything
+            Keep uploading to reach Upfront Ready status and lock in everything
             you've built.
           </div>
           <button
@@ -2949,7 +3458,7 @@
 
         <main class="hsw-shell mrw-main">
           <div class="mrw-headline">
-            <p class="mrw-kicker"><span class="mrw-kicker-dot" />Move-ready status</p>
+            <p class="mrw-kicker"><span class="mrw-kicker-dot" />Upfront Ready status</p>
           </div>
         <!-- Hero -->
         <div class="hs-mr-hero">
@@ -2960,7 +3469,7 @@
               90% of sales fall through<br />because of missing paperwork.
             </div>
             <div class="hs-mr-hero-body">
-              Move-ready means your ownership is verified, your documents are in
+              Upfront Ready means your ownership is verified, your documents are in
               order, and a buyer's solicitor can start work the same day they
               make an offer.
             </div>
@@ -3093,6 +3602,13 @@
       :address-label="property?.addressLine1 || ''"
       @close="watchDrawerOpen = false"
       @submit="onWatchSubmit"
+    />
+
+    <!-- Get verified drawer (qualified offer on a published Passport) -->
+    <VerifyBuyerDrawer
+      :open="verifyBuyerDrawerOpen"
+      @close="verifyBuyerDrawerOpen = false"
+      @start="onVerifyBuyerStart"
     />
 
     <!-- Auth gate modal — shown when a guest taps "I'm interested in buying"
@@ -3362,6 +3878,7 @@ import V6NoEpcEstimator from '~/components/homescore/V6NoEpcEstimator.vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
+import VerifyBuyerDrawer from '~/components/property/VerifyBuyerDrawer.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
 import type { TopWin, Opportunity } from '~/types/homescore'
 import { QUESTIONS } from '~/utils/homescoreScoring'
@@ -3690,11 +4207,15 @@ const v6QuizFinal = ref<{
   finalScore: number
   delta: number
   answers: Record<string, string>
+  statGains?: Record<string, number>
+  answeredSavings?: number
 } | null>(null)
 function onQuizFinish(payload: {
   finalScore: number
   delta: number
   answers: Record<string, string>
+  statGains?: Record<string, number>
+  answeredSavings?: number
 }) {
   v6QuizFinal.value = payload
   // Push 'questions' explicitly — the watcher can miss this transition when
@@ -3744,6 +4265,13 @@ function goToStreetCompare() {
 
 function goToRunningCosts() {
   router.push(`/homescore/costs/${propertyId}`)
+}
+
+// "Build my Property Passport" from the level-up screen → the pre-claim
+// passport dashboard (progress, EPC age, locked doc tiles, real claim CTA),
+// not straight into the claim wizard.
+function goToPassportDashboard() {
+  router.push(`/homescore/passport/${propertyId}`)
 }
 
 function notifyWhenPublished() {
@@ -5290,7 +5818,10 @@ async function loadStreetPublishStats() {
 // (e.g. after the user just published — the count should now include them).
 watch(screen, (s) => {
   if (s === 'publish' || s === 'published') void loadStreetPublishStats()
-  if (s === 'buyer-results') void loadStreetEnergyRank()
+  if (s === 'buyer-results') {
+    void loadStreetEnergyRank()
+    void loadBuyerEnrichment()
+  }
 })
 const pubMilestones = [
   { target: 1, label: 'Pioneer' },
@@ -5585,11 +6116,13 @@ const bvEpcCostHint = computed(() => {
 })
 
 const bvPassportStateLabel = computed(() =>
-  bvPassportState.value === 'published'
-    ? 'Verified Passport live'
-    : bvPassportState.value === 'inProgress'
-      ? 'Passport in progress'
-      : 'No Passport yet',
+  bvPassportState4.value === 'public'
+    ? 'Claimed · Public'
+    : bvPassportState4.value === 'partiallyPublic'
+      ? 'Claimed · Partially Public'
+      : bvPassportState4.value === 'private'
+        ? 'Claimed · Private · Passport in progress'
+        : 'Unclaimed · No Passport yet',
 )
 const bvPassportStateHint = computed(() =>
   bvPassportState.value === 'published'
@@ -5738,7 +6271,7 @@ const bvQuestions = computed(() => {
 })
 
 // ── Buyer report tabs (Energy / Costs / Sold / Risks / Area) ──────────
-type BuyerTab = 'energy' | 'costs' | 'sold' | 'risks' | 'area'
+type BuyerTab = 'energy' | 'costs' | 'sold' | 'risks' | 'area' | 'street'
 const buyerTab = ref<BuyerTab>('energy')
 const buyerTabs: { id: BuyerTab; label: string; icon: string }[] = [
   { id: 'energy', label: 'Energy', icon: '/homescore-icon/lightning.png' },
@@ -5746,7 +6279,332 @@ const buyerTabs: { id: BuyerTab; label: string; icon: string }[] = [
   { id: 'sold', label: 'Sold', icon: '/homescore-icon/cashAndCoins.png' },
   { id: 'risks', label: 'Risks', icon: '/homescore-icon/shield.png' },
   { id: 'area', label: 'Area', icon: '/homescore-icon/environmental.png' },
+  { id: 'street', label: 'Street', icon: '/homescore-icon/housesCluster.png' },
 ]
+
+// Expandable report cards (Area / Risks / Sold). Same open-set pattern as
+// the app's Property Report; schools open by default like its crime card.
+const bvOpenCards = ref<Set<string>>(new Set(['schools']))
+function bvToggleCard(id: string) {
+  const next = new Set(bvOpenCards.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  bvOpenCards.value = next
+}
+
+// ── Property enrichment (Sold / Risks / Area) ────────────────
+// /property/:id/enrichment aggregates ~10 public sources (OS, Overpass,
+// Historic England, planning.data.gov.uk, BGS radon, police, Ofcom, Land
+// Registry). Same endpoint + auth header the app's Property Report uses.
+// Loaded once, the first time the buyer report is shown.
+const bvEnrichment = ref<any>(null)
+const bvEnrichmentLoaded = ref(false)
+let bvEnrichmentRequested = false
+async function loadBuyerEnrichment() {
+  if (bvEnrichmentRequested) return
+  bvEnrichmentRequested = true
+  try {
+    const token =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    const res = await fetch(
+      `${config.public.apiBase}/property/${propertyId}/enrichment`,
+      { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+    )
+    if (res.ok) bvEnrichment.value = await res.json()
+  } catch {
+    /* sections fall back to their "not available" notes */
+  }
+  bvEnrichmentLoaded.value = true
+}
+
+// Also covers a direct deep link (?screen=buyer-results) where the screen
+// watcher never sees a change.
+watch(
+  () => screen.value === 'buyer-results',
+  (isBuyer) => {
+    if (isBuyer) void loadBuyerEnrichment()
+  },
+  { immediate: true },
+)
+
+function bvFmtDist(km: number | null | undefined): string {
+  if (km == null || !Number.isFinite(Number(km))) return ''
+  const mi = Number(km) * 0.621371
+  return mi < 0.1 ? `${Math.round(Number(km) * 1000)}m` : `${mi.toFixed(1)} mi`
+}
+
+// Sold tab — Title & tenure
+const bvTenureLabel = computed(() => {
+  const p: any = property.value
+  // EPC tenure first, then the most recent Land Registry sale's tenure.
+  const t = String(
+    p?.tenure ||
+      p?.epcCert?.tenure ||
+      bvEnrichment.value?.epcCert?.tenure ||
+      buyerSold.value.history[0]?.tenure ||
+      '',
+  )
+  if (/freehold/i.test(t)) return 'Freehold'
+  if (/leasehold/i.test(t)) return 'Leasehold'
+  if (/rented|social|private/i.test(t)) return t
+  return 'Available via solicitor'
+})
+const bvShowAllSales = ref(false)
+const bvTitleNumber = computed<string>(
+  () => (property.value as any)?.titleNumber || 'available via solicitor',
+)
+const bvTitleArea = computed<number | null>(() => {
+  const a = Number(bvEnrichment.value?.titleBoundary?.areaM2)
+  return Number.isFinite(a) && a > 0 ? Math.round(a) : null
+})
+
+// Risks tab — listed building / conservation area
+const bvListedBuildings = computed<any[]>(() => {
+  const direct =
+    bvEnrichment.value?.listedBuildings ||
+    bvEnrichment.value?.nearby?.listedBuildings ||
+    []
+  return Array.isArray(direct) ? direct : []
+})
+const bvHeritageConstraints = computed<any[]>(() => {
+  const cs: any[] = bvEnrichment.value?.planningHistory?.constraints || []
+  return cs.filter((c) =>
+    /listed|conservation|heritage/i.test(`${c?.type || ''} ${c?.category || ''}`),
+  )
+})
+const bvIsListed = computed(() => bvHeritageConstraints.value.length > 0)
+const bvListedLabel = computed(() => (bvIsListed.value ? 'Check' : 'None'))
+const bvListedSub = computed(() => {
+  if (!bvEnrichmentLoaded.value) return 'Checking heritage records…'
+  if (bvIsListed.value)
+    return bvHeritageConstraints.value
+      .map((c) => `${c.type}${c.name ? ` · ${c.name}` : ''}`)
+      .join(', ')
+  return 'Not listed · not in a conservation area'
+})
+
+// Risks tab — planning applications on file
+const bvPlanningApps = computed(() => {
+  const apps: any[] = bvEnrichment.value?.planningHistory?.applications || []
+  return apps.map((a) => {
+    const status = String(a?.decision || a?.status || '')
+    return {
+      ref: a?.reference || '',
+      description: a?.description || a?.applicationType || 'Planning application',
+      status: status || 'On record',
+      approved: /grant|approv|permit/i.test(status),
+      dateLabel: a?.decisionDate ? formatSoldDate(a.decisionDate) : '',
+    }
+  })
+})
+
+// Risks tab — ground stability (contaminated land + mineral safeguarding
+// from planning.data.gov.uk, plus BGS radon potential).
+const bvGroundConstraints = computed<any[]>(() => {
+  const cs: any[] = bvEnrichment.value?.planningHistory?.constraints || []
+  return cs.filter((c) => c?.category === 'ground')
+})
+const bvRadon = computed<{ band: string; description: string } | null>(() => {
+  const r = bvEnrichment.value?.radon
+  return r?.band ? { band: String(r.band), description: String(r.description || '') } : null
+})
+const bvGroundFlag = computed(
+  () =>
+    bvGroundConstraints.value.length > 0 ||
+    (!!bvRadon.value && !/low/i.test(bvRadon.value.band)),
+)
+const bvGroundLabel = computed(() => (bvGroundFlag.value ? 'Check' : 'None flagged'))
+const bvGroundSub = computed(() => {
+  if (!bvEnrichmentLoaded.value) return 'Checking ground records…'
+  const parts: string[] = []
+  if (bvGroundConstraints.value.length)
+    parts.push(bvGroundConstraints.value.map((c) => c.type).join(', ') + ' on record')
+  else parts.push('No contaminated-land or mineral-safeguarding flags')
+  if (bvRadon.value) parts.push(`Radon: ${bvRadon.value.band}`)
+  return parts.join(' · ')
+})
+
+// Risks tab — every improvement flagged on the EPC (the app lists them all).
+const bvEpcRiskFlags = computed(() => {
+  const recs: any[] = (property.value as any)?.epcRecommendations || []
+  return recs.map((r, i) => {
+    const saving = Number(r?.typicalSaving ?? 0)
+    const title = String(r?.title || `EPC recommendation ${i + 1}`)
+    const flag = saving >= 100
+    return {
+      id: r?.id || `rec-${i}`,
+      icon: iconForAskTitle(title),
+      title,
+      sub: `${r?.description || 'Listed on the EPC.'}${saving > 0 ? ` Adds ~£${Math.round(saving)}/yr.` : ''}`,
+      flag,
+    }
+  })
+})
+
+// Area tab — 12-month crime trend from the enrichment payload (the monthly
+// breakdown above still comes live from data.police.uk).
+const bvCrime12m = computed(() => {
+  const c: any = bvEnrichment.value?.crime
+  if (!c || c.totalLast12m == null) return null
+  let trend = ''
+  if (c.yoyChangePct != null) {
+    const pct = Math.abs(Number(c.yoyChangePct))
+    trend =
+      c.trendDirection === 'up'
+        ? `↑ ${pct}% vs prior 6mo`
+        : c.trendDirection === 'down'
+          ? `↓ ${pct}% vs prior 6mo`
+          : 'flat vs prior 6mo'
+  }
+  return {
+    total: Number(c.totalLast12m),
+    perMonth: Math.round(Number(c.totalLast12m) / 12),
+    trend,
+    trendGood: c.trendDirection === 'down',
+  }
+})
+
+// Area tab — schools, transport, healthcare, parks, broadband, neighbourhood
+const bvSchools = computed(() => {
+  const arr: any[] = bvEnrichment.value?.nearby?.schools || []
+  return arr.slice(0, 6).map((s) => ({
+    name: s?.name && !/^\d+$/.test(String(s.name)) ? s.name : s?.category || 'School',
+    meta: s?.category || s?.phase || 'School',
+    dist: bvFmtDist(s?.distanceKm),
+  }))
+})
+const bvTransport = computed(() => {
+  const trains: any[] = bvEnrichment.value?.nearby?.trains || []
+  const buses: any[] = bvEnrichment.value?.nearby?.busStops || []
+  return [
+    ...trains.slice(0, 3).map((t) => ({ name: t?.name || 'Station', dist: bvFmtDist(t?.distanceKm), kind: 'Rail' })),
+    ...buses.slice(0, 3).map((b) => ({ name: b?.name || 'Bus stop', dist: bvFmtDist(b?.distanceKm), kind: 'Bus' })),
+  ]
+})
+const bvHealthcare = computed(() => {
+  const amenities: any[] = bvEnrichment.value?.nearby?.amenities || []
+  return amenities
+    .filter((a) => /doctor|hospital|pharmacy|clinic|gp|dentist/i.test(a?.category || ''))
+    .slice(0, 4)
+    .map((a) => ({ name: a?.name || 'Healthcare', dist: bvFmtDist(a?.distanceKm), kind: a?.category || '' }))
+})
+const bvParks = computed(() => {
+  const parks: any[] = bvEnrichment.value?.nearby?.parks || []
+  return parks.slice(0, 4).map((p) => ({ name: p?.name || 'Park', dist: bvFmtDist(p?.distanceKm) }))
+})
+const bvBroadband = computed(() => {
+  const b = bvEnrichment.value?.broadband
+  return b && b.available ? b : null
+})
+const bvMobileNets = computed(() => {
+  const m = bvEnrichment.value?.mobileSignal
+  if (!m || !m.available) return [] as { name: string; bars: number }[]
+  const score = (net: any) => {
+    if (!net) return 0
+    let s = 0
+    if (net.voice4g) s += 2
+    if (net.data4g) s += 2
+    if (net.data5g) s += 1
+    return Math.min(5, s)
+  }
+  return [
+    { name: 'EE', bars: score(m.EE) },
+    { name: 'O2', bars: score(m.O2) },
+    { name: 'Vodafone', bars: score(m.Vodafone) },
+    { name: 'Three', bars: score(m.Three) },
+  ]
+})
+// ONS census demographics — only when the backend supplies them.
+const bvNeighbourhood = computed<{ label: string; value: string }[] | null>(() => {
+  const d = bvEnrichment.value?.demographics
+  if (!d) return null
+  const rows: { label: string; value: string }[] = []
+  if (d.population != null) rows.push({ label: 'Population (LSOA)', value: String(d.population) })
+  if (d.medianAge != null) rows.push({ label: 'Median age', value: String(d.medianAge) })
+  if (d.ownerOccupiedPct != null) rows.push({ label: 'Owner-occupied', value: `${d.ownerOccupiedPct}%` })
+  if (d.deprivationDecile != null) rows.push({ label: 'Deprivation decile', value: `${d.deprivationDecile}/10` })
+  return rows.length ? rows : null
+})
+
+// Street tab — /street-energy-rank neighbours as cost bars.
+const bvStreetBars = computed(() => {
+  const d: any = streetEnergyRank.value
+  const neighbours: any[] = d?.neighbours || []
+  if (!neighbours.length) return []
+  const max = Math.max(1, ...neighbours.map((n) => Number(n?.cost) || 0))
+  return neighbours.map((n) => {
+    const cost = Number(n?.cost) || 0
+    const tone = n?.isYou ? 'you' : cost <= max * 0.55 ? 'good' : cost <= max * 0.7 ? 'avg' : 'mid'
+    return {
+      label: n?.label || 'Neighbour',
+      epc: n?.epcRating || '',
+      cost,
+      pct: Math.max(4, Math.round((cost / max) * 100)),
+      tone,
+      isYou: !!n?.isYou,
+    }
+  })
+})
+const bvStreetRankText = computed(() => {
+  const d: any = streetEnergyRank.value
+  const r = d?.rank
+  const t = d?.total
+  if (!r || !t || t < 2) return ''
+  const pc = property.value?.postcode || ''
+  if (r / t <= 0.33) return `Top third on this street · ${pc}`
+  if (r / t <= 0.5) return `Better half of the street · ${pc}`
+  if (r / t <= 0.66) return `Around average · ${pc}`
+  return `Below average · ${pc}`
+})
+const bvStreetCallout = computed(() => {
+  const best = Number(streetEnergyRank.value?.bestCost)
+  const yours = Number(streetEnergyRank.value?.yourCost)
+  if (!best || !yours) return ''
+  const diff = Math.round(yours - best)
+  return diff > 0 ? `£${diff.toLocaleString('en-GB')}` : ''
+})
+
+// Four-state passport status (same thresholds as the dashboard search and
+// the app): published → Public at 100% milestones, else Partially Public;
+// claimed but unpublished → Private.
+const bvPassportState4 = computed<'unclaimed' | 'private' | 'partiallyPublic' | 'public'>(() => {
+  if (bvPassportState.value === 'unclaimed') return 'unclaimed'
+  if (bvPassportState.value === 'inProgress') return 'private'
+  const pct = Number(
+    (property.value as any)?.milestonePct ?? passportStatus.value?.milestonePct ?? 0,
+  )
+  return pct >= 100 ? 'public' : 'partiallyPublic'
+})
+
+// Published-state actions — open the owner's Passport / get verified.
+const bvBuyPpItems = [
+  'Title & deeds',
+  'RICS survey',
+  'Planning & building regs',
+  'Fixtures & fittings',
+  'Warranties & guarantees',
+  '+ 14 more sections',
+]
+const verifyBuyerDrawerOpen = ref(false)
+function onBuyPassport() {
+  const pid = passportStatus.value?.passportId
+  if (pid) router.push(`/passportview/${pid}`)
+  else router.push(`/property/${propertyId}`)
+}
+function onVerifyBuyerStart() {
+  verifyBuyerDrawerOpen.value = false
+  const target = '/buyer-profile/build'
+  const token =
+    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  if (!token) {
+    try {
+      localStorage.setItem('redirectAfterLogin', target)
+    } catch {}
+    router.push('/onboarding/signin')
+    return
+  }
+  router.push(target)
+}
 
 // ── Area tab — real crime data from data.police.uk ────────────
 // Public, keyless API. `crimes-street/all-crime?lat=&lng=&date=YYYY-MM`
@@ -5845,6 +6703,10 @@ async function loadAreaCrime() {
 // Lazy-load the crime data the first time the Area tab is opened.
 watch(buyerTab, (t) => {
   if (t === 'area') loadAreaCrime()
+  // Safety net if the report was reached without the screen watcher firing
+  // (e.g. first render straight into buyer-results).
+  void loadBuyerEnrichment()
+  if (t === 'street') void loadStreetEnergyRank()
 })
 
 // Costs tab — real backend figures. Prefers the /running-costs breakdown
@@ -5931,6 +6793,9 @@ const buyerPublicRisks = computed(() => {
   for (const m of map) {
     const r = risks[m.key]
     if (!r) continue
+    // The enrichment planning card below lists the real applications; drop
+    // the summary row when it would contradict it ("not yet available").
+    if (m.key === 'planning' && bvPlanningApps.value.length) continue
     rows.push({
       key: m.key,
       icon: m.icon,
@@ -6502,6 +7367,9 @@ onMounted(async () => {
   // is what powers the buyer report Costs & Risks tabs — the same backend
   // endpoint the standalone /homescore/costs page and the deployed app use.
   // Fire-and-forget: the tabs fall back to bare property fields until it lands.
+  // Street rank feeds the score screen's "How does this home compare?" card,
+  // so load it up front rather than only when the buyer report opens.
+  void loadStreetEnergyRank()
   fetch(`${config.public.apiBase}/property/${propertyId}/running-costs`)
     .then((r) => (r.ok ? r.json() : null))
     .then((j) => {
@@ -10543,7 +11411,7 @@ watch(screen, (s) => {
   gap: 8px;
 }
 
-/* ── Move Ready ────────────────────────────────────────── */
+/* ── Upfront Ready ────────────────────────────────────────── */
 .hs-mr-hero {
   background: linear-gradient(150deg, #1a1640 0%, #231d45 60%, #2a2158 100%);
   border-radius: 20px;
@@ -15991,5 +16859,515 @@ watch(screen, (s) => {
 }
 .boost-back-link:hover {
   color: var(--b-navy);
+}
+
+/* ── Buyer report: expandable public-record / area cards (ported from
+   the app's Property Report, restyled for the web report) ──────────── */
+.bv-rc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 22px 12px;
+}
+.bv-tabpanel > .bv-rc {
+  margin: 12px 22px 0;
+}
+.bv-rc {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+  overflow: hidden;
+}
+.bv-rc.open {
+  border-color: var(--bv-teal-pale);
+}
+.bv-rc-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.bv-rc--flat .bv-rc-head {
+  cursor: default;
+  align-items: flex-start;
+}
+button.bv-rc-head:hover {
+  background: var(--bv-teal-paler);
+}
+.bv-rc-ic {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bv-rc-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.bv-rc-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bv-navy);
+  letter-spacing: -0.1px;
+}
+.bv-rc-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--bv-text-soft);
+}
+.bv-rc-pill {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.bv-rc-pill.clear {
+  background: #e8f6ee;
+  color: #1f7a42;
+}
+.bv-rc-pill.note {
+  background: var(--bv-amber-pale);
+  color: #9a6512;
+}
+.bv-rc-pill.flag {
+  background: #fdecea;
+  color: var(--bv-red);
+}
+.bv-rc-chev {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--bv-text-faint);
+  transition: transform 0.2s ease;
+}
+.bv-rc.open .bv-rc-chev {
+  transform: rotate(180deg);
+}
+.bv-rc-body {
+  padding: 0 16px 16px 62px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--bv-navy-soft);
+}
+.bv-rc-body b {
+  color: var(--bv-navy);
+  font-weight: 800;
+}
+.bv-rc-line {
+  margin-bottom: 6px;
+}
+.bv-rc-status {
+  margin-left: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #9a6512;
+}
+.bv-rc-status.ok {
+  color: var(--bv-teal-dark);
+}
+.bv-rc-subhead {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bv-text-faint);
+}
+.bv-rc-note {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f7f7fa;
+  font-size: 12px;
+  color: var(--bv-text-soft);
+}
+.bv-rc-empty {
+  font-size: 13px;
+  color: var(--bv-text-soft);
+}
+.bv-rc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bv-line-soft);
+}
+.bv-rc-row:last-of-type {
+  border-bottom: 0;
+}
+.bv-rc-row-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bv-rc-row-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bv-navy);
+}
+.bv-rc-row-ic {
+  width: 14px;
+  height: 14px;
+  color: var(--bv-teal-dark);
+}
+.bv-rc-row-meta {
+  font-size: 11.5px;
+  color: var(--bv-text-faint);
+}
+.bv-rc-row-val {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--bv-teal-dark);
+}
+.bv-rc-src {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.bv-rc-src-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bv-text-faint);
+}
+.bv-rc-tag {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f1f2f6;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bv-text-soft);
+}
+.bv-rc-tag.teal {
+  background: var(--bv-teal-pale);
+  color: var(--bv-teal-deep);
+}
+.bv-rc-trend {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 22px 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bv-navy-soft);
+}
+.bv-rc-trend b {
+  color: var(--bv-navy);
+}
+.bv-rc-trend-ic {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--bv-teal-dark);
+}
+.trend-good {
+  color: #1f7a42;
+  font-weight: 800;
+}
+.trend-bad {
+  color: #9a6512;
+  font-weight: 800;
+}
+.bv-rc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 22px 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bv-teal-dark);
+  cursor: pointer;
+}
+.bv-rc-link--rows {
+  margin: 8px 0 0;
+}
+.bv-rc-link:hover {
+  text-decoration: underline;
+}
+@media (max-width: 560px) {
+  .bv-rc-body {
+    padding-left: 16px;
+  }
+}
+
+/* Broadband */
+.bv-bb {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.bv-bb-num {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--bv-navy);
+  letter-spacing: -0.5px;
+}
+.bv-bb-unit {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bv-text-soft);
+}
+.bv-bb-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+.bv-bb-bars i {
+  width: 5px;
+  border-radius: 2px;
+  background: #e3e4ea;
+}
+.bv-bb-bars i:nth-child(1) { height: 5px; }
+.bv-bb-bars i:nth-child(2) { height: 8px; }
+.bv-bb-bars i:nth-child(3) { height: 11px; }
+.bv-bb-bars i:nth-child(4) { height: 14px; }
+.bv-bb-bars i:nth-child(5) { height: 16px; }
+.bv-bb-bars i.on {
+  background: var(--bv-teal);
+}
+
+/* Street tab bars */
+.bv-street-row {
+  display: grid;
+  grid-template-columns: 148px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+.bv-street-row.you .bv-crime-label,
+.bv-street-row.you .bv-crime-val {
+  color: var(--bv-teal-dark);
+  font-weight: 900;
+}
+.bv-street-bar {
+  height: 100%;
+  border-radius: 6px;
+  background: #c9ccd8;
+}
+.bv-street-bar.good { background: #2eab55; }
+.bv-street-bar.avg { background: #9fd08a; }
+.bv-street-bar.mid { background: var(--bv-amber); }
+.bv-street-bar.you { background: linear-gradient(90deg, #00a19a, #33b1aa); }
+@media (max-width: 460px) {
+  .bv-street-row {
+    grid-template-columns: 110px 1fr 56px;
+  }
+}
+
+/* Published Passport: banner, full-pack card, qualified offer */
+.bv-pp-banner--published {
+  border-color: #d9d3f5;
+}
+.bv-buypp-card {
+  margin: 0 22px 14px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #fff;
+  border: 2px solid var(--bv-teal);
+  box-shadow: 0 10px 28px -12px rgba(0, 161, 154, 0.35);
+}
+.bv-buypp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bv-buypp-badge {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.bv-buypp-grade {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bv-teal-pale);
+  color: var(--bv-teal-deep);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.bv-buypp-title {
+  margin-top: 12px;
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--bv-navy);
+  letter-spacing: -0.3px;
+}
+.bv-buypp-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--bv-text-soft);
+}
+.bv-buypp-sub b {
+  color: var(--bv-teal-dark);
+}
+.bv-buypp-inside {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  margin-top: 14px;
+}
+.bv-buypp-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bv-navy);
+}
+.bv-buypp-tick {
+  width: 14px;
+  height: 14px;
+  color: var(--bv-teal);
+  flex-shrink: 0;
+}
+.bv-buypp-pricerow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bv-line-soft);
+}
+.bv-buypp-price {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--bv-navy);
+  white-space: nowrap;
+}
+.bv-buypp-price small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bv-text-soft);
+}
+.bv-buypp-pricenote {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bv-text-soft);
+}
+.bv-buypp-pricenote b {
+  color: var(--bv-navy);
+}
+.bv-buypp-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00a19a, #007e78);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.bv-buypp-cta:hover {
+  filter: brightness(1.06);
+}
+.bv-buypp-cta-ic {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+.bv-qoffer-card {
+  margin: 0 22px 14px;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, var(--bv-navy) 0%, #2f2760 55%, #0d1a3a 100%);
+  color: #fff;
+  box-shadow: 0 14px 32px -10px rgba(35, 29, 69, 0.5);
+}
+.bv-qoffer-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd58a;
+}
+.bv-qoffer-eyebrow img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+.bv-qoffer-title {
+  margin-top: 8px;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+.bv-qoffer-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+.bv-qoffer-sub b {
+  color: #ffd58a;
+}
+.bv-qoffer-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.bv-qoffer-cta:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.bv-qoffer-cta img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 </style>

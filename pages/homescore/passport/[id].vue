@@ -78,7 +78,7 @@
           <div class="pb-hero-right">
             <p class="pb-hero-note">
               Add key documents to reach <b>60%</b> and unlock
-              <b>Move Ready</b>.
+              <b>Upfront Ready</b>.
             </p>
             <button class="pb-hero-btn" type="button" @click="goToMilestones">
               See milestones <Icon name="i-lucide-arrow-right" />
@@ -89,7 +89,7 @@
         <div class="pb-hero-foot">
           <span class="pb-hero-foot-ic"><Icon name="i-lucide-bar-chart-3" /></span>
           Add documents and evidence to build your Passport and unlock
-          <b>Move Ready</b>.
+          <b>Upfront Ready</b>.
         </div>
       </section>
 
@@ -138,7 +138,7 @@
       <!-- ── Professional evidence ───────────────────── -->
       <div class="pb-section-h">
         <Icon name="i-lucide-user-round" />
-        Get professional evidence
+        Hire a professional
       </div>
       <div class="pb-pro-card anim-3">
         <button
@@ -501,8 +501,8 @@ const claimPoints = computed(() =>
         },
         {
           icon: '/op-icons/verify-identity/idBadge.png',
-          title: 'ID verification (KYC)',
-          sub: 'Quick & secure identity checks',
+          title: 'ID & security step',
+          sub: 'Quick & secure identity check',
         },
         {
           icon: '/op-icons/verify-identity/shield.png',

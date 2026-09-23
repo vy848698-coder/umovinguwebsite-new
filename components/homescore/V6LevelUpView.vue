@@ -28,22 +28,71 @@
         <!-- Level up hero -->
         <div class="levelup-hero anim-1 level-up">
           <div class="levelup-eyebrow"><Icon name="i-lucide-party-popper" /> Level up · Quiz complete</div>
-          <div class="levelup-title">You levelled up your home.</div>
-          <div class="levelup-sub">
-            Your refined HomeScore reflects what's been done since the EPC. More
-            accurate. Higher confidence.
-          </div>
+          <div class="levelup-title">{{ headline.title }}</div>
+          <div class="levelup-sub">{{ headline.sub }}</div>
+          <!-- Before / Now rings (ported from the app's score card) -->
           <div class="levelup-row">
-            <div class="levelup-from">
-              <div class="levelup-from-num">{{ fromScore }}</div>
-              <div class="levelup-from-label">Was · Level {{ fromLevel }}</div>
+            <div class="levelup-col">
+              <div class="levelup-col-label">Before · Level {{ fromLevel }}</div>
+              <div class="levelup-circle-wrap">
+                <svg class="levelup-circle-svg" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="lc-bg" cx="60" cy="60" r="50" stroke-width="9" />
+                  <circle
+                    class="lc-fill lc-fill--from"
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    stroke-width="9"
+                    :stroke-dasharray="CIRCUMFERENCE"
+                    :stroke-dashoffset="fromRingOffset"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+                <div class="levelup-circle-num">
+                  <div class="lc-big">{{ fromScore }}</div>
+                  <div class="lc-small">/100</div>
+                </div>
+              </div>
+              <div class="levelup-col-title">Public HomeScore</div>
+              <div class="levelup-col-sub">Based on EPC data</div>
+              <div v-if="epcRating" class="levelup-epc-pill">EPC {{ epcRating }}</div>
             </div>
             <div class="levelup-arrow">
               <Icon name="i-lucide-arrow-right" />
             </div>
-            <div class="levelup-to">
-              <div class="levelup-to-num">{{ animatedToScore }}</div>
-              <div class="levelup-to-label">Now · Level {{ toLevel }}</div>
+            <div class="levelup-col">
+              <div class="levelup-col-label levelup-col-label--now">Now · Level {{ toLevel }}</div>
+              <div class="levelup-circle-wrap">
+                <svg class="levelup-circle-svg" viewBox="0 0 120 120" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="luGrad" x1="1" y1="0" x2="0" y2="0">
+                      <stop offset="0%" stop-color="#00BB93" />
+                      <stop offset="100%" stop-color="#016F84" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="lc-bg" cx="60" cy="60" r="50" stroke-width="9" />
+                  <circle
+                    class="lc-fill"
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    stroke-width="9"
+                    stroke="url(#luGrad)"
+                    :stroke-dasharray="CIRCUMFERENCE"
+                    :stroke-dashoffset="toRingOffset"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+                <div class="levelup-circle-num">
+                  <div class="lc-big lc-big--to">{{ animatedToScore }}</div>
+                  <div class="lc-small lc-small--to">/100</div>
+                </div>
+              </div>
+              <div class="levelup-col-title levelup-col-title--now">{{ nowColTitle }}</div>
+              <div class="levelup-col-sub">Based on what you told us</div>
+              <div v-if="epcRating" class="levelup-epc-pill">EPC {{ epcRating }}</div>
             </div>
           </div>
           <div class="levelup-delta">
@@ -74,21 +123,54 @@
           </div>
           <div class="boost-explain-foot">
             Pathway lifts your <b>HomeScore</b> · Boost lifts your
-            <b>Move Ready</b> &amp; <b>Passport</b>.
+            <b>Upfront Ready</b> &amp; <b>Passport</b>.
           </div>
         </div>
       </div>
 
-      <!-- Refined stats -->
+      <!-- Headline impact stats (ported from the app's score card) -->
+      <div class="levelup-stats-row anim-2">
+        <div class="lu-stat-box">
+          <span class="lu-stat-icon"><Icon name="i-lucide-trending-up" /></span>
+          <div class="lu-stat-text">
+            <div class="lu-stat-eyebrow">HomeScore increase</div>
+            <div class="lu-stat-val">{{ delta > 0 ? '+' : '' }}{{ delta }}</div>
+          </div>
+        </div>
+        <div class="lu-stat-box">
+          <span class="lu-stat-icon lu-stat-icon--img">
+            <img src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />
+          </span>
+          <div class="lu-stat-text">
+            <div class="lu-stat-eyebrow">Estimated bill saving</div>
+            <div class="lu-stat-val">£{{ formatNum(estSavings) }}/year</div>
+          </div>
+        </div>
+        <div class="lu-stat-box">
+          <span class="lu-stat-icon lu-stat-icon--img">
+            <img src="/homescore-icon/plantSprout.png" alt="" loading="lazy" />
+          </span>
+          <div class="lu-stat-text">
+            <div class="lu-stat-eyebrow">Lower carbon impact</div>
+            <div class="lu-stat-val">{{ carbonSavedDisplay }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- What changed — real before → after per pillar -->
       <div class="section-h-row">
-        <div class="section-h">Your refined stats</div>
+        <div class="section-h">What changed · your refined stats</div>
         <div class="section-h-sub">{{ toScore }}/100 points</div>
       </div>
       <div class="refined-stats-card">
-        <div v-for="s in refinedStats" :key="s.id" class="stat-row gained">
-          <div class="stat-icon" :class="[s.tone, { 'has-img': s.icon.includes('/') }]">
-            <img v-if="s.icon.includes('/')" :src="s.icon" :alt="s.label" loading="lazy" />
-            <Icon v-else :name="s.icon" />
+        <div
+          v-for="s in refinedStats"
+          :key="s.id"
+          class="stat-row"
+          :class="{ gained: s.gain > 0 }"
+        >
+          <div class="stat-icon has-img">
+            <img :src="s.icon" :alt="s.label" loading="lazy" />
           </div>
           <div class="stat-label">{{ s.label }}</div>
           <div class="stat-bar-wrap">
@@ -98,19 +180,50 @@
               :style="{ width: barsAnimated ? s.pct + '%' : '0%' }"
             />
           </div>
-          <div class="stat-value">{{ s.value }}/{{ s.max }}</div>
+          <div class="stat-value">{{ s.before }} → {{ s.value }}/{{ s.max }}</div>
+          <div class="stat-gain-pill" :class="{ zero: s.gain === 0 }">
+            {{ s.gain > 0 ? '+' + s.gain : '–' }}
+          </div>
         </div>
       </div>
 
-      <!-- Bottom CTAs (v6-2: primary filled pathway + outlined boost) -->
+      <!-- Keep going tip -->
+      <div class="keep-going-banner">
+        <span class="kg-ic" aria-hidden="true"><Icon name="i-lucide-sparkles" /></span>
+        <div class="kg-body">
+          <div class="kg-title">Keep going!</div>
+          <div class="kg-sub">
+            See what improvements could boost your score further, or build your
+            Property Passport to save and verify your home.
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom tiles: pathway + build passport, then boost -->
       <div class="bottom-cta">
-        <button
-          class="bottom-cta-btn"
-          type="button"
-          @click="$emit('open-pathway')"
-        >
-          <img class="bottom-cta-ico" src="/homescore-icon/targetPathway.png" alt="" /> See the EPC's pathway
-        </button>
+        <div class="lu-tiles">
+          <button class="lu-tile lu-tile--pathway" type="button" @click="$emit('open-pathway')">
+            <img src="/homescore-icon/pathwaySignpost.png" alt="" class="lu-tile-icon" loading="lazy" />
+            <div class="lu-tile-body">
+              <div class="lu-tile-title">See my improvement pathway</div>
+              <div class="lu-tile-sub">
+                See the EPC-recommended improvements, costs and potential savings.
+              </div>
+            </div>
+            <Icon name="i-lucide-arrow-right" class="lu-tile-arrow" />
+          </button>
+          <button class="lu-tile lu-tile--passport" type="button" @click="$emit('build-passport')">
+            <img src="/homescore-icon/propertyPassportCard.png" alt="" class="lu-tile-icon" loading="lazy" />
+            <div class="lu-tile-body">
+              <div class="lu-tile-title">Build my Property Passport</div>
+              <div class="lu-tile-sub">
+                Create a free account, add documents and build your home's
+                verified record.
+              </div>
+            </div>
+            <Icon name="i-lucide-arrow-right" class="lu-tile-arrow" />
+          </button>
+        </div>
         <button
           class="bottom-cta-secondary outlined"
           type="button"
@@ -118,6 +231,11 @@
         >
           <img class="bottom-cta-ico" src="/homescore-icon/boostBolt.png" alt="" /> Boost your score
         </button>
+      </div>
+
+      <div class="lu-trust-note">
+        <Icon name="i-lucide-lock" />
+        Your data is secure and private. You're in control.
       </div>
 
       <div style="height: 32px" />
@@ -128,18 +246,30 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useConfetti } from '~/composables/useConfetti'
+import { computeHomeScorePillars } from '~/utils/homescorePillars'
 
 interface Props {
   fromScore: number
   toScore: number
   delta: number
+  /** Bill saving earned from the quiz answers (the host page falls back to
+   *  the EPC's potential saving). */
   estSavings?: number
+  property?: any | null
+  /** Per-pillar points earned this quiz session, keyed by pillar id. */
+  statGains?: Record<string, number>
+  co2Now?: number | null
+  co2Potential?: number | null
   /** Hide the internal back arrow when the host page renders its own nav. */
   hideBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  estSavings: 309,
+  estSavings: 0,
+  property: null,
+  statGains: () => ({}),
+  co2Now: null,
+  co2Potential: null,
   hideBack: false,
 })
 
@@ -147,6 +277,7 @@ defineEmits<{
   (e: 'back'): void
   (e: 'open-pathway'): void
   (e: 'open-boost'): void
+  (e: 'build-passport'): void
 }>()
 
 const { runConfetti } = useConfetti()
@@ -164,13 +295,69 @@ function gradeFor(score: number): string {
 const fromLevel = computed(() => gradeFor(props.fromScore))
 const toLevel = computed(() => gradeFor(props.toScore))
 
+function formatNum(n: number): string {
+  return Math.round(n || 0).toLocaleString('en-GB')
+}
+
+// Real EPC certificate letter — the certificate doesn't change with the
+// quiz, only the refined HomeScore does, so it sits under both rings.
+const epcRating = computed(() => props.property?.epcRating ?? null)
+
+// Only claim the home "performs better than its EPC" when the quiz actually
+// moved the score.
+const headline = computed(() => {
+  if (props.delta > 0) {
+    return {
+      title: "You've updated your HomeScore!",
+      sub: 'Your answers show your home is performing better than its public EPC record. More accurate. Higher confidence.',
+    }
+  }
+  return {
+    title: 'Your HomeScore is confirmed',
+    sub: "Your answers match what's on your public EPC record - no change to your score.",
+  }
+})
+
+const nowColTitle = computed(() =>
+  props.delta > 0 ? 'Your refined HomeScore' : 'Your confirmed HomeScore',
+)
+
 const deltaLabel = computed(() => {
   const sign = props.delta >= 0 ? '+' : ''
-  return `${sign}${props.delta} points gained · est. bills ↓ £${props.estSavings}/yr`
+  const pts = `${sign}${props.delta} points gained`
+  return props.estSavings > 0
+    ? `${pts} · est. bills ↓ £${formatNum(props.estSavings)}/yr`
+    : pts
 })
 
 const animatedToScore = ref(props.fromScore)
 const barsAnimated = ref(false)
+
+const CIRCUMFERENCE = 2 * Math.PI * 50 // matches the SVG r=50 rings
+const fromRingOffset = computed(
+  () =>
+    CIRCUMFERENCE -
+    (Math.max(0, Math.min(100, props.fromScore)) / 100) * CIRCUMFERENCE,
+)
+const toRingOffset = computed(
+  () =>
+    CIRCUMFERENCE -
+    (Math.max(0, Math.min(100, animatedToScore.value)) / 100) * CIRCUMFERENCE,
+)
+
+// Carbon figure scales the full now→potential EPC gap by how much of the
+// score gap this quiz session closed — an honest approximation, since there
+// is no per-question CO2 figure to sum.
+const carbonSavedDisplay = computed(() => {
+  if (props.delta <= 0) return '0 tonnes/year'
+  if (props.co2Now == null || props.co2Potential == null) return '—'
+  const totalGap = props.co2Now - props.co2Potential
+  const scoreGap = Math.max(1, 100 - props.fromScore)
+  const share = Math.max(0, Math.min(1, props.delta / scoreGap))
+  const saved = totalGap * share
+  if (saved <= 0) return '0 tonnes/year'
+  return `~${saved.toFixed(1)} tonnes/year`
+})
 
 onMounted(() => {
   // Fire the same confetti burst the onboarding "preferences saved"
@@ -199,53 +386,23 @@ onMounted(() => {
   }, 250)
 })
 
-const refinedStats = [
-  {
-    id: 'heating',
-    icon: '/homescore-icon/flame.png',
-    label: 'Heating',
-    value: 16,
-    max: 20,
-    pct: 80,
-    tone: 'high',
-  },
-  {
-    id: 'structure',
-    icon: '/homescore-icon/bricks.png',
-    label: 'Structure',
-    value: 17,
-    max: 25,
-    pct: 68,
-    tone: 'high',
-  },
-  {
-    id: 'efficiency',
-    icon: '/homescore-icon/bulb.png',
-    label: 'Efficiency',
-    value: 6,
-    max: 15,
-    pct: 40,
-    tone: 'mid',
-  },
-  {
-    id: 'electrics',
-    icon: '/homescore-icon/lightning.png',
-    label: 'Electrics',
-    value: 10,
-    max: 20,
-    pct: 50,
-    tone: 'mid',
-  },
-  {
-    id: 'plumbing',
-    icon: '/homescore-icon/tap.png',
-    label: 'Plumbing',
-    value: 13,
-    max: 20,
-    pct: 65,
-    tone: 'mid',
-  },
-] as const
+// Real before→after per pillar: "before" comes from the same EPC-based
+// formulas the score screen uses (shared util, so the screens never
+// disagree); "after" adds what this quiz session earned per pillar.
+const refinedStats = computed(() => {
+  const before = computeHomeScorePillars(props.property)
+  return before.map((s) => {
+    const gain = Math.max(0, props.statGains?.[s.id] ?? 0)
+    const value = Math.min(s.max, s.value + gain)
+    return {
+      ...s,
+      before: s.value,
+      value,
+      gain: value - s.value,
+      pct: Math.round((value / s.max) * 100),
+    }
+  })
+})
 
 </script>
 
@@ -836,4 +993,247 @@ const refinedStats = [
 .anim-2 {
   animation: hs-v6-fadeUp-anim2 0.35s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* ── Before / Now rings inside the hero ─────────────────────────── */
+.levelup-row { align-items: flex-start; }
+.levelup-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+}
+.levelup-col-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-faint);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.levelup-col-label--now { color: var(--accent-dark); }
+.levelup-circle-wrap {
+  position: relative;
+  width: 116px;
+  height: 116px;
+}
+.levelup-circle-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.lc-bg { fill: none; stroke: #e7eaf0; }
+.lc-fill { transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1); }
+.lc-fill--from { stroke: #b8bccb; }
+.levelup-circle-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.lc-big {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1.2px;
+  color: var(--text-faint);
+}
+.lc-big--to { color: var(--accent-dark); font-size: 38px; }
+.lc-small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+.lc-small--to { color: var(--accent-dark); }
+.levelup-col-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 10px;
+}
+.levelup-col-title--now { color: var(--accent-dark); }
+.levelup-col-sub {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.levelup-epc-pill {
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text);
+}
+.levelup-row > .levelup-arrow { align-self: center; margin-top: -24px; }
+
+/* ── Headline impact stat boxes ─────────────────────────────────── */
+.levelup-stats-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (min-width: 720px) {
+  .levelup-stats-row { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+.lu-stat-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+.lu-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--accent-paler);
+  color: var(--accent-dark);
+}
+.lu-stat-icon :deep(svg) { width: 20px; height: 20px; }
+.lu-stat-icon--img { background: transparent; }
+.lu-stat-icon--img img { width: 40px; height: 40px; object-fit: contain; }
+.lu-stat-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.lu-stat-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.4px;
+  margin-top: 2px;
+}
+
+/* ── What changed rows: wider labels + gain pill ────────────────── */
+.stat-label { width: 170px; }
+.stat-value { width: 96px; }
+.stat-gain-pill {
+  min-width: 40px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: var(--accent-paler);
+  border: 1px solid var(--accent-pale);
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  flex-shrink: 0;
+}
+.stat-gain-pill.zero {
+  background: var(--bg);
+  border-color: var(--border-soft);
+  color: var(--text-faint);
+}
+@media (max-width: 640px) {
+  .stat-row { gap: 10px; }
+  .stat-label { width: 96px; font-size: 12.5px; }
+  .stat-value { width: 72px; font-size: 12px; }
+}
+
+/* ── Keep going tip ─────────────────────────────────────────────── */
+.keep-going-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: #fff8e8;
+  border: 1px solid #f6e2b3;
+  border-radius: 16px;
+}
+.kg-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kg-ic :deep(svg) { width: 18px; height: 18px; }
+.kg-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.kg-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+/* ── Pathway + passport tiles ───────────────────────────────────── */
+.lu-tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 720px) {
+  .lu-tiles { grid-template-columns: 1fr 1fr; gap: 16px; }
+}
+.lu-tile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  border: none;
+  border-radius: 18px;
+  color: #ffffff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+.lu-tile:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.lu-tile--pathway {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 6px 18px rgba(0, 161, 154, 0.3);
+}
+.lu-tile--passport {
+  background: var(--primary);
+  box-shadow: 0 6px 18px rgba(35, 29, 69, 0.25);
+}
+.lu-tile-icon { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
+.lu-tile-body { flex: 1; min-width: 0; }
+.lu-tile-title { font-size: 16px; font-weight: 800; letter-spacing: -0.2px; }
+.lu-tile-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-top: 3px;
+  opacity: 0.86;
+}
+.lu-tile-arrow { width: 20px; height: 20px; flex-shrink: 0; }
+
+.lu-trust-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.lu-trust-note :deep(svg) { width: 13px; height: 13px; }
 </style>

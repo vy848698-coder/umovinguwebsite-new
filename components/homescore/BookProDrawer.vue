@@ -72,7 +72,7 @@
           </ol>
 
           <div class="bpd-info">
-            <span class="bpd-info-icon">💷</span>
+            <span class="bpd-info-icon"><Icon name="i-lucide-badge-pound-sterling" /></span>
             <div>
               <div class="bpd-info-title">No booking fee</div>
               <div class="bpd-info-sub">You pay the pro's quote - nothing on top.</div>
@@ -268,6 +268,8 @@ function onCta() {
 .bpd-info-icon {
   font-size: 1.375rem;
   flex-shrink: 0;
+  display: inline-flex;
+  color: #008a84;
 }
 .bpd-info-title {
   font-size: 0.7813rem; font-weight: 800;
