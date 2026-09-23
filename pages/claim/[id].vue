@@ -440,6 +440,54 @@
       </div>
     </div>
 
+    <!-- ════════════════════════════ LR FAILED ════════════════════════════ -->
+    <div v-else-if="step === 'lr-failed'" class="cl-screen cl-center-col">
+      <div class="cl-lr-pulse-wrap">
+        <div class="cl-lr-inner" style="background: #fef2f2; color: #b91c1c">⚠️</div>
+      </div>
+      <h1 class="cl-h1" style="text-align: center">Ownership not confirmed</h1>
+      <p class="cl-body" style="text-align: center; max-width: 320px">
+        {{
+          lrErrorMessage ||
+          'HM Land Registry could not confirm you own this property.'
+        }}
+      </p>
+
+      <div
+        v-if="
+          lrResult?.status === 'ADDITIONAL_INFO_NEEDED' ||
+          lrResult?.matchResult === 'NO_MATCHES'
+        "
+        class="cl-card cl-mb-sm cl-w-full"
+        style="max-width: 360px"
+      >
+        <div class="cl-eyebrow cl-mb-sm">What HM Land Registry returned</div>
+        <div class="cl-lrf-rows">
+          <div v-if="lrResult?.titleNumber" class="cl-lrf-row">
+            <span class="cl-lrf-l">Title number</span>
+            <span class="cl-lrf-v">{{ lrResult.titleNumber }}</span>
+          </div>
+          <div v-if="lrResult?.matchResult" class="cl-lrf-row">
+            <span class="cl-lrf-l">Match result</span>
+            <span class="cl-lrf-v">{{ lrResult.matchResult }}</span>
+          </div>
+          <div v-if="lrResult?.historical" class="cl-lrf-row">
+            <span class="cl-lrf-l">Status</span>
+            <span class="cl-lrf-v">Historical proprietor</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cl-w-full" style="max-width: 360px; display: flex; gap: 8px">
+        <button class="cl-btn-ghost" style="flex: 1" @click="step = 'search'">
+          Try another property
+        </button>
+        <button class="cl-btn-brand" style="flex: 1" @click="runLrSearch()">
+          Retry
+        </button>
+      </div>
+    </div>
+
     <!-- ════════════════════════════ LR FOUND ════════════════════════════ -->
     <div v-else-if="step === 'lr-found'" class="cl-screen">
       <div class="cl-lrf-banner">
@@ -607,6 +655,7 @@ type ClaimStep =
   | 'kyc-verified'
   | 'lr-searching'
   | 'lr-found'
+  | 'lr-failed'
 
 import ClaimPassportTypeDrawer from '~/components/property/ClaimPassportTypeDrawer.vue'
 
@@ -707,7 +756,9 @@ onMounted(async () => {
 const isFullscreenStep = computed(() =>
   ['kyc-verified', 'lr-searching'].includes(step.value),
 )
-const showCta = computed(() => step.value !== 'lr-searching')
+const showCta = computed(
+  () => !['lr-searching', 'lr-failed'].includes(step.value),
+)
 
 const stepMeta: Record<
   ClaimStep,
@@ -722,6 +773,7 @@ const stepMeta: Record<
   'kyc-verified': { title: 'Identity verified', pct: 100 },
   'lr-searching': { title: 'Searching Land Registry', pct: 100 },
   'lr-found': { title: 'Ownership confirmed', pct: 100 },
+  'lr-failed': { title: 'Ownership not confirmed', pct: 100 },
 }
 const topbarTitle = computed(() => stepMeta[step.value].title)
 const topbarSub = computed(() => stepMeta[step.value].sub)
@@ -1049,16 +1101,118 @@ watch(
     if (s === 'lr-searching') runLrSearch()
   },
 )
+// Set by the real Business Gateway Online Owner Verification call below.
+interface LrCheckResult {
+  status: 'VERIFIED' | 'ADDITIONAL_INFO_NEEDED' | 'FAILED' | 'IN_PROGRESS'
+  matchResult?: string
+  titleNumber?: string
+  historical?: boolean
+  rejection?: { reason?: string; code?: string }
+  acknowledgement?: { expectedResponseDateTime?: string }
+}
+const lrResult = ref<LrCheckResult | null>(null)
+const lrErrorMessage = ref('')
+
 async function runLrSearch() {
   lrStep.value = 0
-  await new Promise((r) => setTimeout(r, 700))
-  lrStep.value = 1
-  await new Promise((r) => setTimeout(r, 800))
-  lrStep.value = 2
-  await new Promise((r) => setTimeout(r, 900))
-  lrStep.value = 3
-  await new Promise((r) => setTimeout(r, 600))
-  if (step.value === 'lr-searching') step.value = 'lr-found'
+  lrResult.value = null
+  lrErrorMessage.value = ''
+  const pId = selectedProperty.value?.id
+  if (!pId) {
+    lrErrorMessage.value = 'No property selected.'
+    step.value = 'lr-failed'
+    return
+  }
+
+  // Animate the first two pacing steps while the real call is in flight so
+  // the user never sees an idle spinner.
+  const animation = (async () => {
+    await new Promise((r) => setTimeout(r, 700))
+    if (step.value === 'lr-searching') lrStep.value = 1
+    await new Promise((r) => setTimeout(r, 800))
+    if (step.value === 'lr-searching') lrStep.value = 2
+  })()
+
+  // Real Business Gateway Online Owner Verification call.
+  let result: LrCheckResult
+  try {
+    result = await $fetch<LrCheckResult>(
+      `${base}/property/${pId}/land-registry-check`,
+      { method: 'POST', headers: authHeaders() },
+    )
+  } catch (e: any) {
+    lrErrorMessage.value =
+      e?.data?.message ||
+      e?.message ||
+      "We couldn't reach HM Land Registry. Please try again."
+    step.value = 'lr-failed'
+    return
+  }
+
+  await animation
+  lrResult.value = result
+
+  if (result.status === 'VERIFIED') {
+    lrStep.value = 3
+    await new Promise((r) => setTimeout(r, 500))
+    if (step.value === 'lr-searching') step.value = 'lr-found'
+    return
+  }
+
+  lrErrorMessage.value = describeLrFailure(result)
+  step.value = 'lr-failed'
+}
+
+function describeLrFailure(lr: LrCheckResult): string {
+  if (lr.status === 'IN_PROGRESS') {
+    const eta = lr.acknowledgement?.expectedResponseDateTime
+    return (
+      "HM Land Registry is currently out of service hours - we've queued " +
+      'your ownership check' +
+      (eta ? ` (expected back by ${eta})` : '') +
+      '. Please try again shortly.'
+    )
+  }
+  if (lr.status === 'ADDITIONAL_INFO_NEEDED') {
+    if (lr.matchResult === 'MULTIPLE_MATCHES') {
+      return (
+        'HM Land Registry returned multiple possible titles for this ' +
+        'address. Please contact support so we can confirm the right one.'
+      )
+    }
+    if (lr.historical) {
+      return (
+        'HM Land Registry shows your name on this title historically, but ' +
+        "you're no longer listed as the current owner. If you've recently " +
+        "sold or transferred this property, that's expected."
+      )
+    }
+    return (
+      "We found a partial match against HM Land Registry but couldn't " +
+      'fully confirm ownership. Double-check the name on your profile ' +
+      'matches the name on the title deeds, then try again.'
+    )
+  }
+  if (lr.status === 'FAILED') {
+    if (lr.rejection?.code === 'bg.postcode.invalid') {
+      return "HM Land Registry didn't accept the property postcode. Please correct it on the property and try again."
+    }
+    if (lr.rejection?.code === 'bg.properties.nopropertyfound') {
+      return "HM Land Registry couldn't find a title at this address. Double-check the address details."
+    }
+    if (lr.rejection?.reason) {
+      return `HM Land Registry rejected the check: ${lr.rejection.reason}`
+    }
+    if (lr.matchResult === 'NO_MATCHES') {
+      return (
+        "Your name doesn't match the registered owner of this property on " +
+        'HM Land Registry. If this is wrong (e.g. you bought it recently ' +
+        "and the register hasn't updated), please contact support."
+      )
+    }
+    return 'HM Land Registry could not confirm your ownership of this property. Please contact support.'
+  }
+  return 'Ownership check did not succeed. Please try again.'
 }
 
 // ── Issue passport (complete-verification + claim) ────────────
@@ -1069,17 +1223,21 @@ async function issuePassport() {
     issueError.value = 'No property selected.'
     return
   }
+  if (lrResult.value?.status !== 'VERIFIED') {
+    issueError.value =
+      'Ownership has not been verified against HM Land Registry yet.'
+    step.value = 'lr-failed'
+    return
+  }
   issueLoading.value = true
   try {
-    // 1) complete-verification
-    try {
-      await $fetch(`${base}/property/${pId}/complete-verification`, {
-        method: 'POST',
-        headers: authHeaders(),
-      })
-    } catch {
-      // Non-fatal: still try to claim; backend may tolerate without
-    }
+    // 1) complete-verification — only reachable once land-registry-check
+    // above has actually returned VERIFIED, matching what the backend now
+    // requires (security review 2026-09-22, C1).
+    await $fetch(`${base}/property/${pId}/complete-verification`, {
+      method: 'POST',
+      headers: authHeaders(),
+    })
 
     // 2) Gate the claim on the user's passport-type pick.
     // We deliberately do NOT short-circuit on getPassportStatus() here:
