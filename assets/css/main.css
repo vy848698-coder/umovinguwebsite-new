@@ -133,3 +133,72 @@ html {
     );
   }
 }
+
+/* HomeScore pages match the mobile app: its body type is the bundled
+   'SF Pro Display' stack (no Plus Jakarta Sans override) and its content
+   column is capped at max-w-md. Applied only on homescore routes via
+   useHead({ bodyAttrs: { class: 'hs-parity' } }) so the rest of the site
+   keeps its current typography. */
+body.hs-parity {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+body.hs-parity .mobile-container {
+  max-width: 28rem;
+}
+
+@layer components {
+  /* ── Skeleton loaders (global, used app-wide) ────────────────────
+     Originally defined inside pages/explore.vue but every page should
+     show a shimmer placeholder while async data loads. Now globally
+     available — any component can drop `<div class="skeleton-card" />`
+     into its template without redefining the keyframes. */
+  .skeletons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .skeleton-card {
+    height: 180px;
+    background: linear-gradient(90deg, #f0f0f8 25%, #e8e8f0 50%, #f0f0f8 75%);
+    background-size: 200% 100%;
+    animation: umu-shimmer 1.4s infinite;
+    border-radius: 18px;
+  }
+  /* Variants for non-card placeholder shapes. */
+  .skeleton-line {
+    height: 12px;
+    background: linear-gradient(90deg, #f0f0f8 25%, #e8e8f0 50%, #f0f0f8 75%);
+    background-size: 200% 100%;
+    animation: umu-shimmer 1.4s infinite;
+    border-radius: 6px;
+  }
+  .skeleton-circle {
+    background: linear-gradient(90deg, #f0f0f8 25%, #e8e8f0 50%, #f0f0f8 75%);
+    background-size: 200% 100%;
+    animation: umu-shimmer 1.4s infinite;
+    border-radius: 50%;
+  }
+  .skeleton-block {
+    background: linear-gradient(90deg, #f0f0f8 25%, #e8e8f0 50%, #f0f0f8 75%);
+    background-size: 200% 100%;
+    animation: umu-shimmer 1.4s infinite;
+    border-radius: 12px;
+  }
+  @keyframes umu-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-card,
+    .skeleton-line,
+    .skeleton-circle,
+    .skeleton-block {
+      animation: none;
+      background: #f0f0f8;
+    }
+  }
+}

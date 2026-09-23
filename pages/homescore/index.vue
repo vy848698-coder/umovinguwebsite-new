@@ -1,1618 +1,745 @@
 <template>
-  <div class="hs-root">
-
-    <!-- ── Web nav ──────────────────────────────────────────────────── -->
-    <header class="hs-web-nav">
-      <div class="hs-web-shell nav-inner">
-        <button class="brand" type="button" @click="navigateTo('/')">
-          <img src="/op-icons/logo.png" alt="umovingu" class="brand-logo" />
-          <span class="brand-name">umovingu</span>
-          <span class="brand-beta">BETA</span>
-        </button>
-
-        <!-- The Story/Market/Reviews links are sections of the landing page,
-             and `/` carries the guest middleware: a signed-in visitor hitting
-             it is redirected to /dashboard, so those anchors would silently
-             dump them on the dashboard. Signed in, the menu points at the
-             real app pages instead. -->
-        <nav class="web-links" aria-label="Primary navigation">
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
-          <template v-if="signedIn">
-            <button type="button" @click="navigateTo('/passport')">Passport</button>
-            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
-            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
-          </template>
-          <template v-else>
-            <button type="button" @click="navigateTo('/#passport')">Passport</button>
-            <button type="button" @click="navigateTo('/#story')">Story</button>
-            <button type="button" @click="navigateTo('/#market')">Market</button>
-            <button type="button" @click="navigateTo('/#reviews')">Reviews</button>
-          </template>
-        </nav>
-
-        <div class="web-actions">
-          <template v-if="signedIn">
-            <button class="web-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
-            <button class="web-btn solid" type="button" @click="navigateTo('/dashboard')">Dashboard</button>
-          </template>
-          <template v-else>
-            <button class="web-btn ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
-            <button class="web-btn solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
-          </template>
-        </div>
-
-        <button
-          class="web-mobile-toggle"
-          type="button"
-          aria-label="Toggle navigation menu"
-          :aria-expanded="mobileNavOpen ? 'true' : 'false'"
-          @click="mobileNavOpen = !mobileNavOpen"
+  <div class="hs-page">
+    <!-- ── Top nav: back · eyebrow pill · tour ──────────────────────── -->
+    <div class="hs-topnav">
+      <button class="hs-back" @click="router.back()" aria-label="Back">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="hs-eyebrow-pill"><span class="hs-pulse" />HomeScore</div>
+      <div class="hs-topnav-spacer" />
+    </div>
 
-      <div class="hs-web-shell">
-        <div class="web-mobile-backdrop" :class="{ open: mobileNavOpen }" @click="mobileNavOpen = false" />
-        <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
-          <template v-if="signedIn">
-            <button type="button" @click="goMobile('/passport')">Passport</button>
-            <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
-            <button type="button" @click="goMobile('/profile/learn')">Learn</button>
-            <button type="button" @click="goMobile('/profile')">Profile</button>
-            <button type="button" class="claim" @click="goMobile('/dashboard')">Dashboard</button>
-          </template>
-          <template v-else>
-            <button type="button" @click="goMobile('/#passport')">Passport</button>
-            <button type="button" @click="goMobile('/#story')">Story</button>
-            <button type="button" @click="goMobile('/#market')">Market</button>
-            <button type="button" @click="goMobile('/#reviews')">Reviews</button>
-            <button type="button" @click="goMobile('/onboarding/signin')">Sign in</button>
-            <button type="button" class="claim" @click="goMobile('/onboarding/signup')">Get started</button>
-          </template>
+    <!-- ── Hero ─────────────────────────────────────────────────────── -->
+    <div class="hs-hero">
+      <div class="hs-hero-text">
+        <div class="hs-hero-title">
+          Discover what <span class="lt-teal">any</span> UK home is really
+          telling you.
+        </div>
+        <div class="hs-hero-sub">
+          Search any UK address to compare running costs, energy performance and
+          public property insights in seconds.
         </div>
       </div>
-    </header>
+      <img
+        src="/op-icons/landing/homeScoreCard.png"
+        alt=""
+        class="hs-hero-house"
+      />
+    </div>
 
-    <main class="hs-web-shell hs-main">
-      <!-- ── Hero ───────────────────────────────────────────────────── -->
-      <section class="hs-hero">
-        <div class="hero-content">
-          <p class="section-kicker"><span class="kicker-dot" />HomeScore</p>
-          <h1>What does any UK<br class="h1-br-mobile" /> home really<br class="h1-br-mobile" /> cost to run?</h1>
-          <p class="hero-description">
-            Instantly scored from public EPC data — for any address, anyone.
-            See how a property compares to its street in seconds.
-          </p>
+    <!-- ── Search - same dropdown UI as dashboard/discover (dropped in
+         bare, no custom shell around it, so it looks identical there),
+         not the lighter-weight PropertySearchInput this page used to
+         have. Results still land on /homescore/[id] (this page's own
+         purpose), not the normal property page. -->
+    <div class="hs-search-block">
+      <PropertySearchExperienceClassic
+        placeholder="Postcode or address"
+        result-base-path="/homescore/"
+        @update:search-mode="searchMode = $event"
+      />
 
-          <div class="hs-search-wrap">
-            <PropertySearchInput
-              placeholder="Postcode or address"
-              variant="light"
-              :show-passport-status="true"
-              @select="onResultSelect"
-              @enter="onSearchEnter"
-            />
-            <button class="hs-search-go" type="button" @click="onCheckClick">
-              Check
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="13 5 19 12 13 19" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="hs-meta-row">
-            <span v-for="m in heroMeta" :key="m" class="hs-meta-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              {{ m }}
-            </span>
-          </div>
-        </div>
-
-        <aside class="hero-visual" aria-label="HomeScore preview">
-          <div class="visual-glow" />
-          <div class="house-stage">
-            <img src="/images/uk-houses/house-1.jpg" alt="Modern UK home" class="hero-house" />
-            <div class="score-card">
-              <div class="score-card-eyebrow">HomeScore</div>
-              <div class="score-ring-holder">
-                <ScoreRing :score="74" rating="Good" rating-color="#00a19a" />
-              </div>
-              <ul class="score-breakdown">
-                <li>
-                  <span class="sb-dot teal" />
-                  <span class="sb-label">Energy &amp; running costs</span>
-                  <span class="sb-value good">Good</span>
-                </li>
-                <li>
-                  <span class="sb-dot teal" />
-                  <span class="sb-label">Environmental impact</span>
-                  <span class="sb-value good">Good</span>
-                </li>
-                <li>
-                  <span class="sb-dot amber" />
-                  <span class="sb-label">Heating efficiency</span>
-                  <span class="sb-value avg">Average</span>
-                </li>
-                <li>
-                  <span class="sb-dot blue" />
-                  <span class="sb-label">Potential savings</span>
-                  <span class="sb-value">£340 / year</span>
-                </li>
-              </ul>
-              <button class="score-breakdown-btn" type="button">
-                View full breakdown
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="13 5 19 12 13 19" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </aside>
-      </section>
-
-      <!-- ── Real story + live activity ─────────────────────────────── -->
-      <section class="hs-story-section">
-        <article class="hs-real-story">
-          <div class="hs-real-story-bar" />
-          <div class="hs-real-story-icon" aria-hidden="true">&ldquo;</div>
-          <div class="hs-real-story-body">
-            <div class="hs-real-story-eyebrow">Real story</div>
-            <p class="hs-real-story-quote">
-              "My neighbour was being charged £150 a month extra — her supplier
-              thought she had a swimming pool."
-            </p>
-            <p class="hs-real-story-text">
-              Energy suppliers estimate usage based on assumptions. Those
-              assumptions are sometimes very wrong. HomeScore shows you what your
-              home should actually cost — and flags when something doesn't add up.
-            </p>
-          </div>
-          <img
-            class="hs-real-story-art"
-            src="/homescore-icon/wallet.png"
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-          />
-        </article>
-
-        <aside class="hs-activity-card">
-          <div class="hs-activity-head">
-            <span class="hs-live-pulse" />
-            <strong v-if="lastHourLoading" class="hs-activity-skel" />
-            <strong v-else>{{ lastHourCount }}</strong>
-          </div>
-          <p class="hs-activity-label">
-            {{ lastHourCount === 1 ? 'HomeScore' : 'HomeScores' }} run in the last hour
-          </p>
-          <p class="hs-activity-note">Live count, straight from the HomeScore engine.</p>
-        </aside>
-      </section>
-
-      <!-- ── How it works ───────────────────────────────────────────── -->
-      <section class="hs-how">
-        <div class="hs-how-head">
-          <p class="section-kicker center">How it works</p>
-          <h2>Getting your HomeScore is simple</h2>
-        </div>
-
-        <div class="hs-how-tabs" role="tablist">
-          <button
-            v-for="t in howTabs"
-            :key="t.id"
-            class="hs-how-tab"
-            :class="{ active: activeHow === t.id }"
-            role="tab"
-            :aria-selected="activeHow === t.id"
-            @click="activeHow = t.id"
+      <div v-if="!searchMode" class="hs-meta-row">
+        <span class="hs-meta-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            {{ t.label }}
-          </button>
-        </div>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Free
+        </span>
+        <span class="hs-meta-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Instant
+        </span>
+        <span class="hs-meta-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          No account needed
+        </span>
+      </div>
+    </div>
 
-        <div class="hs-steps-grid">
-          <article v-for="(step, i) in currentHowSteps" :key="i" class="hs-step-card">
-            <div :class="['hs-step-icon', stepTones[i]]">
-              <span class="hs-step-badge">{{ i + 1 }}</span>
-              <svg v-if="i === 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" />
-              </svg>
-              <svg v-else-if="i === 1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="6" y1="20" x2="6" y2="13" /><line x1="12" y1="20" x2="12" y2="8" /><line x1="18" y1="20" x2="18" y2="4" />
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 4H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />
-                <rect x="9" y="3" width="6" height="4" rx="1" /><polyline points="9 14 11 16 15 12" />
-              </svg>
-            </div>
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.sub }}</p>
-          </article>
+    <!-- Everything below the search is marketing content, not part of the
+         search results - hidden while a search is active, matching
+         discover.vue's own pattern for this exact component. -->
+    <template v-if="!searchMode">
+    <!-- ── Real story card ─────────────────────────────────────────── -->
+    <div ref="realStoryEl" class="hs-real-story">
+      <div class="hs-real-story-bar" />
+      <svg class="hs-real-story-leaves" viewBox="0 0 40 28" aria-hidden="true">
+        <path d="M9 2c5 0 9 5.5 9 12s-4 12-9 12S0 20.5 0 14 4 2 9 2z" />
+        <path d="M31 2c5 0 9 5.5 9 12s-4 12-9 12-9-5.5-9-12S26 2 31 2z" />
+      </svg>
+      <div class="hs-real-story-body">
+        <div class="hs-real-story-eyebrow">
+          <span class="hs-real-story-eyebrow-dot" aria-hidden="true" />
+          Real story
         </div>
-      </section>
+        <div class="hs-real-story-quote" :aria-label="realStoryQuote">
+          <span>{{ typedQuote }}</span>
+          <span v-if="!typingDone" class="hs-typer-caret" aria-hidden="true" />
+        </div>
+        <div class="hs-real-story-text">
+          Energy suppliers estimate usage using assumptions. Sometimes
+          they're wrong. HomeScore compares public EPC data and highlights
+          when something doesn't look right.
+        </div>
+      </div>
+      <img
+        src="/op-icons/homescore/wallet.png"
+        alt=""
+        class="hs-real-story-icon"
+      />
+    </div>
 
-      <!-- ── Powered by OpenProperty ────────────────────────────────── -->
-      <section class="hs-powered">
-        <div class="hs-powered-eyebrow">Powered by</div>
-        <div class="hs-powered-row">
-          <img src="/op-icons/opLogo.png" alt="OpenProperty" class="hs-powered-logo" />
-          <div>
-            <div class="hs-powered-name">OpenProperty</div>
-            <div class="hs-powered-tag">Property data infrastructure</div>
+    <!-- ── Live activity ───────────────────────────────────────────── -->
+    <div class="hs-live-row">
+      <span class="hs-live-icon" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </span>
+      <span class="hs-live-text"
+        ><strong>{{ lastHourCount }} HomeScores</strong> run in the last
+        hour</span
+      >
+    </div>
+
+    <!-- ── How it works ───────────────────────────────────────────── -->
+    <div class="hs-section-h-row">
+      <div class="hs-section-h">How it works</div>
+    </div>
+
+    <div class="hs-steps-list">
+      <div v-for="(step, i) in howSteps" :key="i" class="hs-step-row">
+        <img :src="step.icon" alt="" class="hs-step-icon" />
+        <div class="hs-step-body">
+          <div class="hs-step-title-row">
+            <span class="hs-step-num">{{ i + 1 }}</span>
+            <span class="hs-step-title">{{ step.title }}</span>
           </div>
+          <div class="hs-step-sub">{{ step.sub }}</div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
-    <!-- ── Footer (shared, matches Explore) ─────────────────────────── -->
-    <SiteFooter />
+    <!-- ── Powered by OpenProperty ─────────────────────────────────── -->
+    <div class="hs-powered-by">
+      <div class="hs-powered-eyebrow">Powered by</div>
+      <img
+        src="/op-icons/opLogo.png"
+        alt="OpenProperty"
+        class="hs-powered-logo"
+      />
+      <div class="hs-powered-name">OpenProperty</div>
+      <div class="hs-powered-tag">Property data infrastructure</div>
+    </div>
+
+    <div style="height: 24px" />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
-import ScoreRing from '~/components/homescore/ScoreRing.vue'
-import SiteFooter from '~/components/homescore/SiteFooter.vue'
+useHead({ bodyAttrs: { class: 'hs-parity' } })
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import PropertySearchExperienceClassic from '~/components/property/PropertySearchExperienceClassic.vue'
 
-const route = useRoute()
 const router = useRouter()
-const mobileNavOpen = ref(false)
+const searchMode = ref(false)
 
-// Resolved after mount because localStorage doesn't exist during SSR, so the
-// first paint shows the guest menu and the two swap on hydration — the same
-// approach WebTopNav uses.
-const signedIn = ref(false)
-onMounted(() => {
-  try {
-    signedIn.value = !!localStorage.getItem('token')
-  } catch {
-    /* private mode / blocked storage — stays signed out */
+// ── Typewriter for the "Real story" quote ────────────────────────────
+// Drives attention to the most important piece of social proof on the
+// landing page. Holds at the full string once finished. Triggered on
+// scroll-into-view so it actually animates in front of the user, not
+// silently above the fold while the page is still loading.
+const realStoryQuote =
+  '"My neighbour was being charged £150 a month extra - her supplier thought she had a swimming pool."'
+const typedQuote = ref('')
+const typingDone = ref(false)
+const realStoryEl = ref<HTMLElement | null>(null)
+let typerTimer: ReturnType<typeof setTimeout> | null = null
+let observer: IntersectionObserver | null = null
+
+function runTyper() {
+  if (typingDone.value || typedQuote.value.length > 0) return
+  let i = 0
+  const step = () => {
+    typedQuote.value = realStoryQuote.slice(0, i + 1)
+    i++
+    if (i < realStoryQuote.length) {
+      // Tiny per-char jitter so it reads as a person typing, not a tape.
+      const ch = realStoryQuote[i - 1]
+      const delay = ch === ' ' ? 18 : ch === ',' || ch === '.' ? 90 : 28
+      typerTimer = setTimeout(step, delay)
+    } else {
+      typingDone.value = true
+    }
   }
+  step()
+}
+
+onMounted(() => {
+  if (typeof IntersectionObserver === 'undefined') {
+    runTyper()
+    return
+  }
+  observer = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          runTyper()
+          observer?.disconnect()
+          observer = null
+          break
+        }
+      }
+    },
+    { threshold: 0.4 },
+  )
+  if (realStoryEl.value) observer.observe(realStoryEl.value)
 })
 
-const heroMeta = ['Free', 'Instant', 'No account needed']
-const stepTones = ['teal', 'purple', 'amber']
+onBeforeUnmount(() => {
+  if (typerTimer) clearTimeout(typerTimer)
+  observer?.disconnect()
+})
 
-// ── Real "N HomeScores run in the last hour" count ──────────────────
-// Public endpoint (no auth) — same source the deployed app reads. The
-// number used to be hardcoded at 147 alongside a decorative bar chart
-// that looked like real activity data; both were invented.
+// function onCheckClick() {
+//   const input = document.querySelector<HTMLInputElement>(
+//     '.hs-search-wrap input',
+//   )
+//   input?.focus()
+// }
+
+// ── How it works — fixed 3 steps (no audience tabs) ──────────────────
+const howSteps = [
+  {
+    title: 'Search any UK address',
+    sub: 'Enter a postcode or street name to instantly view its HomeScore.',
+    icon: '/op-icons/explore/propertySearch.png',
+  },
+  {
+    title: 'See how the property compares',
+    sub: 'Compare running costs, energy efficiency and public property information with similar homes.',
+    icon: '/op-icons/investment/growthChart.png',
+  },
+  {
+    title: 'Know more about the home',
+    sub: 'Spot potential issues, understand where money could be saved and know what to investigate next.',
+    icon: '/op-icons/homescore/clipboard.png',
+  },
+]
+
+// ── Real "N HomeScores run in the last hour" count ────────────────────
 const config = useRuntimeConfig()
 const lastHourCount = ref(0)
-const lastHourLoading = ref(true)
-
 onMounted(async () => {
   try {
-    const res: any = await $fetch(`${config.public.apiBase}/property/activity/last-hour`)
+    const res: any = await $fetch(
+      `${config.public.apiBase}/property/activity/last-hour`,
+    )
     lastHourCount.value = res?.count ?? 0
   } catch {
     /* stays at 0 on failure */
-  } finally {
-    lastHourLoading.value = false
   }
 })
-
-function onResultSelect(property: any) {
-  // HomeScore detail is the page's main purpose — go there directly.
-  router.push(`/homescore/${property.id}`)
-}
-
-function onSearchEnter(_q: string) {
-  // PropertySearchInput already opens its dropdown on enter.
-}
-
-function onCheckClick() {
-  const input = document.querySelector<HTMLInputElement>('.hs-search-wrap input')
-  input?.focus()
-}
-
-const navIsActive = (basePath: string) =>
-  route.path === basePath || route.path.startsWith(`${basePath}/`)
-
-const goMobile = (path: string) => {
-  mobileNavOpen.value = false
-  navigateTo(path)
-}
-
-watch(
-  () => route.path,
-  () => {
-    mobileNavOpen.value = false
-  },
-)
-
-// ── How it works tabs ────────────────────────────────────────────────
-type HowId = 'buyers' | 'owners' | 'curious'
-const activeHow = ref<HowId>('buyers')
-
-const howTabs: { id: HowId; label: string }[] = [
-  { id: 'buyers', label: 'Looking to buy' },
-  { id: 'owners', label: "It's my property" },
-  { id: 'curious', label: 'Just curious' },
-]
-
-const howCopy: Record<HowId, { title: string; sub: string }[]> = {
-  buyers: [
-    {
-      title: 'Search any UK address',
-      sub: 'Type a postcode or street and see how it scores against its neighbours.',
-    },
-    {
-      title: 'See running costs & risks',
-      sub: 'Energy costs, sold history, flood risk — everything public records can tell you before you make an offer.',
-    },
-    {
-      title: 'Know what to ask before you view',
-      sub: 'Get a list of questions based on what the EPC data flags — walk in already informed.',
-    },
-  ],
-  owners: [
-    {
-      title: 'Search your address',
-      sub: "See your property's estimated score from public EPC data — takes 5 seconds.",
-    },
-    {
-      title: 'See how you compare to your street',
-      sub: 'Find out if this property is costing more to run than similar homes nearby — and why.',
-    },
-    {
-      title: 'Upload bills to get your real number',
-      sub: 'Public EPC data can be years out of date. Your actual bills tell the real story — and start building your Property Passport.',
-    },
-  ],
-  curious: [
-    {
-      title: "Search any address — yours or anyone's",
-      sub: 'No account, no commitment. Just type a postcode and see what the data says.',
-    },
-    {
-      title: 'See what your street is paying',
-      sub: 'Compare running costs across nearby homes — renting or owning, the data is the same for everyone.',
-    },
-    {
-      title: 'Find out if you could be paying less',
-      sub: 'If this property is costing more than its neighbours, the HomeScore shows you exactly why — and what could change it.',
-    },
-  ],
-}
-const currentHowSteps = computed(() => howCopy[activeHow.value])
 </script>
 
 <style scoped>
-.hs-root {
-  --color-teal: #00a19a;
-  --color-blue: #2f9bdf;
-  --color-purple: #5a4cf0;
-  --color-ink: #231d45;
-  --color-muted: #6b6783;
-  --color-border: #e7ecf2;
+.hs-page {
   min-height: 100dvh;
-  color: var(--color-ink);
-  background: #f3f2ef;
-  font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  /* `clip` keeps the sticky nav working (vs `hidden`, which makes this a
-     scroll container and breaks position: sticky). */
-  overflow: clip;
-  position: relative;
-}
-
-.ambient,
-.mesh {
-  pointer-events: none;
-  position: fixed;
-}
-
-.ambient {
-  border-radius: 999px;
-  filter: blur(48px);
-  opacity: 0.16;
-}
-
-.ambient-b {
-  width: 320px;
-  height: 320px;
-  right: -120px;
-  top: 160px;
-  background: #5a4cf0;
-}
-
-.mesh {
-  inset: 0;
-  opacity: 0.02;
-  background-image:
-    linear-gradient(rgba(18, 42, 72, 0.8) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 42, 72, 0.8) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(180deg, #000, transparent 86%);
-}
-
-.hs-web-shell {
-  width: min(1260px, calc(100% - 64px));
+  background: #fff;
+  color: #231d45;
+  max-width: 28rem;
+  width: 100%;
   margin: 0 auto;
-  position: relative;
-  z-index: 2;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* ── Nav ──────────────────────────────────────────────────────────── */
-.hs-web-nav {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: rgba(243, 242, 239, 0.88);
-  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
-  backdrop-filter: blur(12px);
-}
-
-.nav-inner {
-  min-height: 68px;
+/* ── Top nav ──────────────────────────────────────────────────────── */
+.hs-topnav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 28px;
+  padding: 14px 20px 8px;
+  padding-top: calc(14px + env(safe-area-inset-top));
 }
-
-.brand,
-.web-links button,
-.footer-col button {
-  font-family: inherit;
-}
-
-.brand {
-  border: 0;
-  background: transparent;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #0d1835;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-.brand-logo {
-  width: auto;
+.hs-back {
+  width: 32px;
   height: 32px;
-  object-fit: contain;
-}
-
-.brand-name {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  color: #0d1835;
-}
-
-.brand-beta {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: #007e78;
-  background: rgba(0, 161, 154, 0.1);
-  border: 1px solid rgba(0, 161, 154, 0.3);
-  border-radius: 6px;
-  padding: 2px 7px;
-  margin-left: 2px;
-}
-
-.web-links {
-  display: flex;
-  gap: 20px;
-}
-
-.web-links button {
-  border: 0;
-  background: transparent;
-  color: #475a7b;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 10px 14px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-.web-links button:hover,
-.web-links button.active {
-  color: #0c2342;
-  background: rgba(0, 161, 154, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.25);
-}
-
-.web-actions {
-  display: inline-flex;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.web-btn {
-  min-height: 44px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 0 20px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  white-space: nowrap;
-}
-
-.web-btn:hover {
-  transform: translateY(-1px);
-}
-
-.web-btn.solid {
-  color: #fff;
-  background: #00a19a;
-  box-shadow: 0 10px 20px rgba(0, 161, 154, 0.22);
-}
-
-.web-btn.solid:hover {
-  background: #00857f;
-}
-
-.web-btn.ghost {
-  color: #231d45;
-  background: #fff;
-  border-color: #e3e1ea;
-}
-
-.web-mobile-toggle,
-.web-mobile-panel,
-.web-mobile-backdrop {
-  display: none;
-}
-
-.web-mobile-toggle {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: #fff;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 4px;
+  border-radius: 50%;
+  background: #f1f9f4;
+  border: 1px solid #e2f1ea;
+  display: grid;
+  place-items: center;
+  color: #00726c;
   cursor: pointer;
 }
-
-.web-mobile-toggle span {
-  width: 16px;
-  height: 2px;
-  border-radius: 999px;
-  background: #1c2b46;
+.hs-back svg {
+  width: 14px;
+  height: 14px;
+}
+.hs-topnav-spacer {
+  width: 32px;
 }
 
-/* ── Layout ───────────────────────────────────────────────────────── */
-.hs-main {
-  padding: 54px 0 18px;
-}
-
-.section-kicker {
+.hs-eyebrow-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 16px;
-  color: #00857f;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.16em;
+  gap: 6px;
+  background: #f1f9f4;
+  border: 1px solid #e2f1ea;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #00726c;
   text-transform: uppercase;
 }
-
-.section-kicker.center {
-  justify-content: center;
-}
-
-.kicker-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
+.hs-pulse {
+  width: 6px;
+  height: 6px;
   background: #00a19a;
-  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.16);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #e2f1ea;
 }
 
 /* ── Hero ─────────────────────────────────────────────────────────── */
 .hs-hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: clamp(40px, 5vw, 72px);
-  min-height: 500px;
-  max-width: 1260px;
-  margin: 0 auto;
-  padding: 0 clamp(24px, 4vw, 64px);
-}
-
-.hero-content {
-  max-width: 560px;
-}
-
-.hero-content h1 {
-  margin: 0;
-  color: #231d45;
-  font-size: clamp(38px, 5vw, 62px);
-  font-weight: 800;
-  line-height: 1.07;
-  letter-spacing: -0.02em;
-}
-
-/* Forced line breaks only on narrow/mobile widths; desktop wraps naturally. */
-.h1-br-mobile {
-  display: none;
-}
-
-.hero-description {
-  margin: 26px 0 0;
-  max-width: 540px;
-  color: #5b6d89;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1.65;
-}
-
-/* ── Search ───────────────────────────────────────────────────────── */
-.hs-search-wrap {
-  position: relative;
+  padding: 18px 24px 14px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 540px;
-  margin-top: 34px;
-  background: #fff;
-  border: 1.5px solid #e7ecf2;
-  border-radius: 16px;
-  padding: 6px 6px 6px 12px;
-  box-shadow: 0 14px 30px rgba(24, 52, 88, 0.08);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  align-items: flex-start;
+  gap: 14px;
 }
-
-.hs-search-wrap :deep(.psi-wrap) {
-  position: static !important;
-}
-
-.hs-search-wrap :deep(.psi-drop) {
-  left: 0;
-  right: 0;
-  width: auto;
-  top: calc(100% + 8px);
-}
-
-.hs-search-wrap:focus-within {
-  border-color: #00a19a;
-  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12), 0 14px 30px rgba(24, 52, 88, 0.08);
-}
-
-.hs-search-wrap :deep(> div),
-.hs-search-wrap :deep(.property-search) {
+.hs-hero-text {
   flex: 1;
   min-width: 0;
 }
-
-.hs-search-wrap :deep(input) {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 13px 4px 13px 38px !important;
-  font-size: 15px;
-  font-weight: 600;
+.hs-hero-house {
+  width: clamp(104px, 32vw, 164px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.hs-hero-title {
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
   color: #231d45;
-  outline: none !important;
+  margin-bottom: 12px;
 }
 
-.hs-search-wrap :deep(input::placeholder) {
-  color: #9c98ad;
+/* Narrow phones (iPhone SE / mini): the 164px image was eating ~half the
+   row and cramping the headline into a 3-4 word-per-line column. Shrink
+   the whole hero so the title reads in 2 lines and nothing overlaps. */
+@media (max-width: 380px) {
+  .hs-hero {
+    padding: 14px 18px 12px;
+    gap: 10px;
+  }
+  .hs-hero-title {
+    font-size: 1.3125rem;
+    margin-bottom: 8px;
+  }
+  .hs-hero-sub {
+    font-size: 0.8438rem;
+    line-height: 1.5;
+  }
+}
+.hs-hero-title .lt-teal {
+  color: #00726c;
+}
+.hs-hero-sub {
+  font-size: 0.9375rem;
   font-weight: 500;
+  color: #6b6783;
+  line-height: 1.55;
+  letter-spacing: -0.05px;
+}
+
+/* ── Search ───────────────────────────────────────────────────────── */
+.hs-search-block {
+  padding: 8px 24px 0;
 }
 
 .hs-search-go {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #00a19a 0%, #00b6ad 100%);
+  gap: 4px;
+  background: #00a19a;
   color: #fff;
   border: none;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 0.875rem;
   font-weight: 800;
-  padding: 12px 20px;
-  border-radius: 12px;
+  padding: 9px 14px;
+  border-radius: 10px;
   cursor: pointer;
+  letter-spacing: -0.1px;
   flex-shrink: 0;
-  box-shadow: 0 10px 20px rgba(0, 161, 154, 0.24);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: background 0.15s;
 }
-
 .hs-search-go:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 26px rgba(0, 161, 154, 0.3);
-}
-
-.hs-search-go svg {
-  width: 13px;
-  height: 13px;
+  background: #00b6ae;
 }
 
 .hs-meta-row {
   display: flex;
-  gap: 22px;
+  justify-content: center;
+  gap: 14px;
   flex-wrap: wrap;
-  font-size: 14px;
-  color: #647590;
-  font-weight: 600;
-  margin: 18px 0 0;
+  font-size: 0.8125rem;
+  color: #231d45;
+  font-weight: 700;
+  margin: 12px 0 6px;
 }
-
 .hs-meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 5px;
 }
-
 .hs-meta-item svg {
-  width: 14px;
-  height: 14px;
-  color: #00a19a;
+  width: 12px;
+  height: 12px;
+  color: #00726c;
 }
 
-/* ── Hero visual / score card ─────────────────────────────────────── */
-.hero-visual {
-  position: relative;
-  min-height: 520px;
-}
-
-.visual-glow {
-  position: absolute;
-  right: 0;
-  top: 40px;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.12), transparent 66%);
-  filter: blur(8px);
-}
-
-.house-stage {
-  position: relative;
-  /* inset: 30px 0 0 0; */
-}
-
-.hero-house {
-  position: absolute;
-  right: 41px;
-  top: 31px;
-  width: min(560px, 88%);
-  height: 410px;
-  border-radius: 24px;
-  object-fit: cover;
-  object-position: center;
-  filter: saturate(1.03) contrast(1.02);
-  box-shadow: 0 30px 56px rgba(31, 61, 98, 0.18);
-}
-
-.score-card {
-  position: relative;
-  /* left: 0; */
-  /* top: 14px; */
-  max-width: 372px;
-  padding: 26px 26px 24px;
-  border: 1px solid rgba(20, 40, 70, 0.06);
-  border-radius: 26px;
-  background: #ffffff;
-  box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.95) inset,
-    0 30px 60px rgba(23, 52, 92, 0.18),
-    0 6px 16px rgba(0, 0, 0, 0.06);
-  z-index: 2;
-}
-
-.score-card-eyebrow {
-  text-align: center;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #009b93;
-  margin-bottom: 6px;
-}
-
-.score-ring-holder {
-  display: flex;
-  justify-content: center;
-  margin: 2px 0 6px;
-}
-
-.score-ring-holder :deep(svg) {
-  width: 168px;
-  height: 168px;
-}
-
-.score-ring-holder :deep(.hs-ring-label) {
-  font-size: 12px;
-  color: #9e9ea7;
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-.score-breakdown {
-  list-style: none;
-  margin: 6px 0 18px;
-  padding: 18px 2px 0;
-  border-top: 1px solid #ebeef2;
-  display: grid;
-  gap: 16px;
-}
-
-.score-breakdown li {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  font-size: 14.5px;
-}
-
-.sb-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.sb-dot.teal { background: #12b3a6; }
-.sb-dot.amber { background: #d99a2b; }
-.sb-dot.blue { background: #8b8ff5; }
-
-.sb-label {
-  flex: 1;
-  color: #231d45;
-  font-weight: 600;
-  gap: 10px;
-  line-height: 1.5;
-}
-
-.sb-value {
-  font-weight: 800;
-  color: #1a2340;
-  white-space: nowrap;
-}
-
-.sb-value.good { color: #009b8f; }
-.sb-value.avg { color: #d6921f; }
-
-.score-breakdown-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 16px;
-  background: #d7efea;
-  color: #017a72;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 0.2s;
-  letter-spacing: 0.01em;
-}
-
-.score-breakdown-btn:hover {
-  background: #c7e8e1;
-}
-
-.score-breakdown-btn svg {
-  width: 15px;
-  height: 15px;
-}
-
-/* ── Real story + activity ────────────────────────────────────────── */
-.hs-story-section {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 26px;
-  margin-top: 28px;
-}
-
+/* ── Real story card ──────────────────────────────────────────── */
+/* Made deliberately more prominent than the plain white card it used
+   to be: gradient teal-wash background, larger scale, floating quote
+   mark decoration, animated pulse-dot eyebrow, and a subtle glow so it
+   stands out from the surrounding page. */
 .hs-real-story {
+  margin: 18px 22px 0;
+  background: linear-gradient(160deg, #e9f6f5 0%, #f5fbfa 55%, #ffffff 100%);
+  border: 1.5px solid #b7e4e1;
+  border-radius: 20px;
+  padding: 20px 20px 20px 26px;
   position: relative;
-  display: flex;
-  gap: 16px;
-  padding: 30px 32px 30px 36px;
-  border: 1px solid rgba(231, 236, 242, 0.9);
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 253, 251, 0.92));
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 18px 40px rgba(31, 61, 98, 0.08);
   overflow: hidden;
+  display: flex;
+  gap: 10px;
+  box-shadow: 0 8px 22px rgba(0, 161, 154, 0.14),
+    0 2px 6px rgba(0, 161, 154, 0.08);
 }
-
+.hs-real-story::before {
+  /* Soft teal halo in the top-right corner */
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 161, 154, 0.16),
+    transparent 70%
+  );
+  pointer-events: none;
+}
 .hs-real-story-bar {
   position: absolute;
   top: 0;
   left: 0;
   width: 5px;
   height: 100%;
-  background: linear-gradient(180deg, #00a19a, #00b6ad);
+  background: linear-gradient(180deg, #00c4bc 0%, #00a19a 60%, #007e78 100%);
+  border-radius: 5px 0 0 5px;
 }
-
+.hs-real-story-leaves {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 22px;
+  height: 16px;
+  fill: rgba(35, 29, 69, 0.1);
+  pointer-events: none;
+  z-index: 0;
+}
 .hs-real-story-icon {
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(150deg, #e4faf3, #c3f0e3);
-  color: #00857f;
-  font-size: 34px;
-  font-weight: 900;
-  line-height: 0;
-  padding-top: 14px;
-}
-
-.hs-real-story-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.hs-real-story-art {
+  width: 136px;
+  height: 136px;
+  object-fit: contain;
   flex-shrink: 0;
   align-self: center;
-  width: 116px;
-  height: auto;
-  margin-left: 6px;
-  filter: drop-shadow(0 12px 20px rgba(31, 61, 98, 0.14));
+  position: relative;
+  z-index: 1;
 }
-
+.hs-real-story-body {
+  padding-left: 6px;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
 .hs-real-story-eyebrow {
-  font-size: 11px;
-  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.625rem;
+  font-weight: 800;
   color: #007e78;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
-
-.hs-real-story-quote {
-  margin: 0 0 14px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #231d45;
-  line-height: 1.36;
-  letter-spacing: -0.01em;
-}
-
-.hs-real-story-text {
-  margin: 0;
-  font-size: 15px;
-  color: #6b6783;
-  line-height: 1.6;
-  font-weight: 500;
-}
-
-.hs-activity-card {
-  display: flex;
-  flex-direction: column;
-  padding: 26px;
-  border: 1px solid rgba(229, 244, 242, 0.9);
-  border-radius: 22px;
-  background: linear-gradient(180deg, #f4faf8, #ffffff);
-  box-shadow: 0 18px 40px rgba(31, 61, 98, 0.06);
-}
-
-.hs-activity-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hs-activity-head strong {
-  font-size: 30px;
-  font-weight: 900;
-  color: #00a19a;
-  letter-spacing: -0.02em;
-}
-
-.hs-activity-label {
-  margin: 6px 0 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #4a5570;
-  line-height: 1.4;
-}
-
-.hs-activity-skel {
-  display: inline-block;
-  width: 58px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(0, 161, 154, 0.14);
-}
-
-.hs-activity-note {
-  margin: auto 0 0;
-  padding-top: 22px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #8b8799;
-  line-height: 1.5;
-}
-
-.hs-live-pulse {
-  width: 9px;
-  height: 9px;
+.hs-real-story-eyebrow-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #00a19a;
-  position: relative;
+  box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.2);
+  animation: hsPulse 2s ease-in-out infinite;
 }
-
-.hs-live-pulse::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(0, 161, 154, 0.4);
-  animation: hs-live-pulse 1.6s ease-out infinite;
+@keyframes hsPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(0, 161, 154, 0.05);
+  }
 }
-
-@keyframes hs-live-pulse {
-  0% { transform: scale(0.6); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .hs-real-story-eyebrow-dot {
+    animation: none;
+  }
 }
-
-/* ── How it works ─────────────────────────────────────────────────── */
-.hs-how {
-  padding-top: 64px;
-  text-align: center;
-}
-
-.hs-how-head h2 {
-  margin: 0;
-  color: #1a1340;
-  font-size: clamp(32px, 3.6vw, 44px);
-  font-weight: 900;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-}
-
-.hs-how-tabs {
-  display: inline-flex;
-  background: #ffffff;
-  border: 1px solid #ece8df;
-  border-radius: 100px;
-  padding: 6px;
-  gap: 4px;
-  margin: 30px 0 44px;
-  box-shadow: 0 6px 18px rgba(26, 19, 64, 0.06);
-}
-
-.hs-how-tab {
-  white-space: nowrap;
-  border: none;
-  background: transparent;
-  color: #6b6783;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  padding: 11px 26px;
-  border-radius: 100px;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-
-.hs-how-tab:hover {
-  color: #1a1340;
-}
-
-.hs-how-tab.active {
-  background: #1a1340;
-  color: #ffffff;
+.hs-real-story-quote {
+  font-size: 0.9375rem;
   font-weight: 800;
-  box-shadow: 0 6px 16px rgba(26, 19, 64, 0.28);
+  color: #007e78;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  letter-spacing: -0.1px;
+  /* Reserve roughly two lines of vertical space while typing so the rest of
+     the page below doesn't reflow up as characters appear. */
+  min-height: 2.8em;
 }
-
-.hs-steps-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
-  position: relative;
+.hs-typer-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #00a19a;
+  margin-left: 2px;
+  vertical-align: -2px;
+  animation: hsCaretBlink 0.9s steps(1) infinite;
 }
-
-.hs-steps-grid::before {
-  content: '';
-  position: absolute;
-  left: 20%;
-  right: 20%;
-  top: 38px;
-  border-top: 2px dashed #d5e6e2;
-  z-index: 0;
+@keyframes hsCaretBlink {
+  50% {
+    opacity: 0;
+  }
 }
-
-.hs-step-card {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 0 14px;
+@media (prefers-reduced-motion: reduce) {
+  .hs-typer-caret {
+    animation: none;
+  }
 }
-
-.hs-step-icon {
-  position: relative;
-  width: 76px;
-  height: 76px;
-  border-radius: 24px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 22px;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.8),
-    0 12px 26px rgba(24, 52, 88, 0.1);
-}
-
-.hs-step-icon svg {
-  width: 30px;
-  height: 30px;
-}
-
-.hs-step-icon.teal {
-  background: linear-gradient(150deg, #e4faf3, #c3f0e3);
-  color: #00857f;
-}
-
-.hs-step-icon.purple {
-  background: linear-gradient(150deg, #f3effe, #e1d9fd);
-  color: #5a4cf0;
-}
-
-.hs-step-icon.amber {
-  background: linear-gradient(150deg, #fff6e0, #ffe9bd);
-  color: #e59100;
-}
-
-.hs-step-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: #fff;
-  color: currentColor;
-  font-size: 13px;
-  font-weight: 900;
-  box-shadow: 0 4px 12px rgba(24, 52, 88, 0.16);
-}
-
-.hs-step-card h3 {
-  margin: 0 0 10px;
-  color: #231d45;
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 1.25;
-}
-
-.hs-step-card p {
-  margin: 0;
-  max-width: 280px;
+.hs-real-story-text {
+  font-size: 0.8125rem;
   color: #6b6783;
-  font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.5;
   font-weight: 500;
 }
 
-/* ── Powered by ───────────────────────────────────────────────────── */
-.hs-powered {
-  margin-top: 58px;
-  padding: 28px 32px;
-  border: 1px solid rgba(231, 236, 242, 0.9);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.82);
+/* ── Powered by OpenProperty (footer) ─────────────────────────── */
+.hs-powered-by {
   text-align: center;
+  padding: 36px 22px 20px;
 }
-
 .hs-powered-eyebrow {
-  font-size: 11px;
-  font-weight: 900;
+  font-size: 0.5625rem;
+  font-weight: 800;
   color: #9c98ad;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
-
-.hs-powered-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  text-align: left;
-}
-
 .hs-powered-logo {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
+  display: block;
+  margin: 0 auto 8px;
+  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.2);
   object-fit: cover;
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.24);
 }
-
 .hs-powered-name {
-  font-size: 17px;
-  font-weight: 900;
+  font-size: 0.9375rem;
+  font-weight: 800;
   color: #231d45;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.2px;
 }
-
 .hs-powered-tag {
-  font-size: 14px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #6b6783;
   margin-top: 2px;
 }
 
-/* ── Footer ───────────────────────────────────────────────────────── */
-.hs-footer {
-  position: relative;
-  z-index: 2;
-  background: #231d45;
-  color: #cbd9ea;
-  padding: 56px 32px 24px;
-}
-
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1.6fr repeat(4, 1fr);
-  gap: 40px;
-  width: min(1260px, 100%);
-  margin: 0 auto 32px;
-}
-
-.footer-brand {
+/* ── Live row ─────────────────────────────────────────────────────── */
+.hs-live-row {
+  margin: 14px 24px 0;
+  padding: 10px 14px;
+  background: #f2faf8;
+  border: 1px solid #e5f4f2;
+  border-radius: 999px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.05px;
 }
-
-.footer-brand img {
-  width: 30px;
-  height: 30px;
+.hs-live-text {
+  color: #231d45;
 }
-
-.footer-brand strong {
-  color: #fff;
-  font-size: 20px;
-}
-
-.footer-intro p {
-  max-width: 280px;
-  margin: 0 0 20px;
-  color: #b8c8dc;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.footer-social {
-  display: flex;
-  gap: 10px;
-}
-
-.footer-social button {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: #cbd9ea;
-  font-family: inherit;
-  font-size: 12px;
+.hs-live-row strong {
+  color: #00726c;
   font-weight: 800;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+}
+.hs-live-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #00a19a;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.hs-live-icon svg {
+  width: 13px;
+  height: 13px;
 }
 
-.footer-social button:hover {
-  background: rgba(0, 161, 154, 0.2);
-  color: #fff;
+/* ── How it works ─────────────────────────────────────────────────── */
+.hs-section-h-row {
+  padding: 26px 24px 8px;
+}
+.hs-section-h {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #9c98ad;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
-.footer-col h5 {
-  margin: 0 0 16px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 900;
+/* Steps - icon + numbered title, connecting dotted line between numbers */
+.hs-steps-list {
+  padding: 4px 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
 }
-
-.footer-col button {
-  display: block;
-  border: 0;
-  background: transparent;
-  color: #cbd9ea;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 7px 0;
-  text-align: left;
+.hs-step-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
 }
-
-.footer-col button:hover {
-  color: #fff;
+.hs-step-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
-
-.footer-bottom {
+.hs-step-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 6px;
+}
+.hs-step-title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: min(1260px, 100%);
-  margin: 0 auto;
-  padding-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #91a3bb;
-  font-size: 12px;
+  gap: 10px;
+  position: relative;
 }
-
-.footer-made .heart {
-  color: #00b6ad;
+.hs-step-row:not(:last-child) .hs-step-num::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: 12px;
+  width: 1.5px;
+  height: 42px;
+  border-left: 1.5px dashed #cfe9e6;
 }
-
-/* ── Responsive ───────────────────────────────────────────────────── */
-@media (max-width: 1180px) {
-  .hs-hero {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-
-  .hero-content {
-    max-width: 760px;
-  }
-
-  .hero-visual {
-    min-height: 470px;
-  }
-
-  .hs-story-section {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .footer-intro {
-    grid-column: 1 / -1;
-  }
+.hs-step-num {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #00a19a;
+  color: #00726c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
 }
-
-@media (max-width: 900px) {
-  .hs-web-shell {
-    width: calc(100% - 32px);
-  }
-
-  .web-links,
-  .web-actions {
-    display: none;
-  }
-
-  .web-mobile-toggle {
-    display: inline-flex;
-  }
-
-  .web-mobile-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    background: rgba(8, 16, 47, 0.24);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .web-mobile-backdrop.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .web-mobile-panel {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    position: relative;
-    z-index: 2;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: max-height 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .web-mobile-panel.open {
-    max-height: 480px;
-    margin: 0 0 12px;
-    padding: 10px;
-    border: 1px solid #dbe7f3;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 16px 30px rgba(21, 58, 95, 0.12);
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .web-mobile-panel button {
-    border: 1px solid #dde8f3;
-    border-radius: 10px;
-    background: #fff;
-    color: #22405f;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 800;
-    padding: 12px;
-    text-align: left;
-  }
-
-  .web-mobile-panel button.active {
-    background: rgba(0, 161, 154, 0.1);
-    color: #08294b;
-  }
-
-  .web-mobile-panel button.claim {
-    border: 0;
-    color: #fff;
-    background: linear-gradient(120deg, var(--color-teal), var(--color-blue) 48%, var(--color-purple));
-  }
-
-  .hs-main {
-    padding-top: 40px;
-    padding-bottom: 48px;
-  }
-
-  .hs-steps-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-
-  .hs-steps-grid::before {
-    display: none;
-  }
-
-  .footer-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.hs-step-title {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
 }
-
-@media (max-width: 640px) {
-  .hs-web-shell {
-    width: calc(100% - 24px);
-  }
-
-  .nav-inner {
-    min-height: 62px;
-  }
-
-  .brand {
-    font-size: 17px;
-  }
-
-  .brand-logo {
-    width: auto;
-    height: 28px;
-  }
-
-  .hs-main {
-    padding-top: 26px;
-  }
-
-  .hero-content h1 {
-    font-size: 38px;
-  }
-
-  .hero-content h1 .h1-br-mobile {
-    display: inline;
-  }
-
-  .hero-description {
-    font-size: 16px;
-  }
-
-  .hs-search-wrap {
-    flex-wrap: wrap;
-  }
-
-  .hs-search-go {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .hero-visual {
-    min-height: 430px;
-  }
-
-  .hero-house {
-    width: 80%;
-    height: 280px;
-  }
-
-  .score-card {
-    width: 260px;
-  }
-
-  .hs-real-story {
-    flex-wrap: wrap;
-    padding: 24px 22px 24px 26px;
-  }
-
-  .hs-real-story-quote {
-    font-size: 19px;
-  }
-
-  .hs-real-story-art {
-    width: 86px;
-    margin: 4px 0 0 auto;
-    align-self: flex-end;
-  }
-
-  .hs-how {
-    padding-top: 48px;
-  }
-
-  .hs-how-tabs {
-    display: flex;
-    width: 100%;
-    max-width: 360px;
-    margin-left: auto;
-    margin-right: auto;
-    gap: 3px;
-    padding: 4px;
-  }
-
-  .hs-how-tab {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 9px 6px;
-    font-size: 12px;
-    white-space: normal;
-    line-height: 1.2;
-    text-align: center;
-  }
-
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-
-  .footer-bottom {
-    justify-content: center;
-    text-align: center;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .web-btn,
-  .hs-search-go,
-  .web-mobile-panel,
-  .web-mobile-backdrop {
-    transition: none;
-  }
-
-  .hs-live-pulse::after {
-    animation: none;
-  }
+.hs-step-sub {
+  font-size: 0.8438rem;
+  font-weight: 500;
+  color: #6b6783;
+  line-height: 1.5;
+  letter-spacing: -0.05px;
+  margin-top: 6px;
+  padding-left: 34px;
 }
 </style>
