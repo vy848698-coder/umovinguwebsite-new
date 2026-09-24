@@ -4,38 +4,16 @@
     <aside class="signin-aside">
       <div class="signin-aside-top">
         <div class="signin-logo">
-          <span class="signin-logo-mark"><img src="/op-icons/logo.png" alt="umu" /></span>
-          <strong>umovingu</strong>
+          <span class="signin-logo-word"><span class="signin-logo-word-a">umo</span><span class="signin-logo-word-b">vingu</span></span>
         </div>
         <p class="signin-tagline">You own the home. Own its story.</p>
       </div>
 
       <div class="signin-aside-body">
         <h1 class="signin-welcome">{{ heroTitle }}</h1>
-        <p class="signin-welcome-sub">Good to see you again — your Property Passport is right where you left it.</p>
+        <p class="signin-welcome-sub">Good to see you again. Your Property Passport is right where you left it.</p>
 
-        <div class="signin-home-card">
-          <div class="signin-home-thumb">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- roof -->
-              <path d="M24 9 8 22h32L24 9Z" fill="#231d45" />
-              <!-- house body -->
-              <path d="M11 21h26v17a1 1 0 0 1-1 1H12a1 1 0 0 1-1-1V21Z" fill="#00a19a" />
-              <!-- door -->
-              <rect x="17" y="28" width="7" height="11" rx="1" fill="#2f6df0" />
-              <!-- window -->
-              <rect x="27" y="27" width="6" height="6" rx="1" fill="#bfe6e1" />
-            </svg>
-          </div>
-          <div class="signin-home-meta">
-            <span class="signin-home-kicker">Your home</span>
-            <strong class="signin-home-addr">55, Woodfield Road</strong>
-            <div class="signin-home-tags">
-              <span class="signin-home-tag signin-home-tag--score">HomeScore 74</span>
-              <span class="signin-home-tag signin-home-tag--passport">Passport ready</span>
-            </div>
-          </div>
-        </div>
+        <img src="/umu-passport.png" alt="Property Passport" class="signin-passport-illus" />
       </div>
 
       <p class="signin-aside-foot">
@@ -258,7 +236,7 @@
           <div v-if="resetStep === 'idle'" class="signin-divider"><span>new to UMU?</span></div>
 
           <div v-if="resetStep === 'idle'" class="auth-footer signin-footer">
-            Don't have an account? <NuxtLink to="/onboarding/signup">Get started</NuxtLink>
+            New to Umovingu? <NuxtLink to="/onboarding/signup">Create an account.</NuxtLink>
           </div>
         </section>
       </div>
@@ -347,14 +325,14 @@ const heroSub = computed(() => {
 
 // Heading shown above the form (right panel)
 const formTitle = computed(() => {
-  if (resetStep.value === 'idle') return 'Sign in to UMU'
+  if (resetStep.value === 'idle') return 'Sign in'
   if (resetStep.value === 'email') return 'Reset your password'
   if (resetStep.value === 'otp') return 'Verify the code'
   if (resetStep.value === 'newPassword') return 'Set a new password'
   return ''
 })
 const formSub = computed(() => {
-  if (resetStep.value === 'idle') return 'Enter your details to pick up where you left off.'
+  if (resetStep.value === 'idle') return 'Pick up where you left off.'
   if (resetStep.value === 'email') return "Enter your email and we'll send you a code to set a new password."
   if (resetStep.value === 'otp') return 'Enter the 6-digit code we just sent you.'
   if (resetStep.value === 'newPassword') return 'At least 8 characters. Mix in a number for extra strength.'
@@ -595,28 +573,14 @@ const onPrimary = () => {
 .signin-logo {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
 }
-.signin-logo-mark {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid #00a19a;
-  background: rgba(0, 161, 154, 0.08);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.signin-logo-mark :deep(img),
-.signin-logo-mark :deep(svg),
-.signin-logo-mark img,
-.signin-logo-mark svg { width: 30px; height: auto; display: block; }
-.signin-logo strong {
-  font-size: 19px;
+.signin-logo-word {
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.3px;
-  color: #231d45;
+  letter-spacing: -0.5px;
 }
+.signin-logo-word-a { color: #231d45; }
+.signin-logo-word-b { color: #00a19a; }
 .signin-tagline {
   margin: 0;
   font-size: 13px;
@@ -650,62 +614,14 @@ const onPrimary = () => {
   max-width: 34ch;
 }
 
-/* Light home card */
-.signin-home-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 40px;
-  padding: 18px;
-  border-radius: 18px;
-  background: #fff;
-  border: 1px solid #ece9f5;
-  box-shadow: 0 10px 22px rgba(35, 29, 69, 0.06);
-}
-.signin-home-thumb {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: #f4fbfa;
-  color: #231d45;
-  display: grid;
-  place-items: center;
-}
-.signin-home-thumb svg { width: 38px; height: 38px; }
-.signin-home-meta { min-width: 0; }
-.signin-home-kicker {
+.signin-passport-illus {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
   display: block;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: #a39fb2;
-  margin-bottom: 4px;
-}
-.signin-home-addr {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  color: #231d45;
-  margin-bottom: 8px;
-}
-.signin-home-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.signin-home-tag {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 7px;
-}
-.signin-home-tag--score {
-  background: rgba(0, 161, 154, 0.12);
-  color: #00857f;
-  border: 1px solid rgba(0, 161, 154, 0.32);
-}
-.signin-home-tag--passport {
-  background: rgba(224, 164, 58, 0.16);
-  color: #c98a1e;
-  border: 1px solid rgba(224, 164, 58, 0.4);
+  margin: 32px 0 0;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(35, 29, 69, 0.16));
 }
 
 .signin-aside-foot {
@@ -876,7 +792,7 @@ const onPrimary = () => {
   .signin-tagline { display: none; }
   .signin-aside-body { justify-content: flex-start; }
   .signin-welcome { font-size: clamp(38px, 11vw, 52px); }
-  .signin-home-card { margin-top: 28px; }
+  .signin-passport-illus { max-width: 220px; margin-top: 24px; }
   .signin-aside-foot { margin-top: 32px; }
   .signin-main { padding: 32px 24px 48px; }
 }
