@@ -42,7 +42,7 @@
           <p class="ppv-kicker">Property Passport</p>
           <h1>Your Passport</h1>
           <p class="ppv-lede">
-            Manage, publish and share your property information —
+            Manage, publish and share your property information, with
             every answer ready before anyone asks.
           </p>
         </div>
@@ -180,7 +180,7 @@
             {{ readiness.missingBlockers.length }}
             required
             {{ readiness.missingBlockers.length === 1 ? 'question' : 'questions' }}
-            left before you can publish — click to see them
+            left before you can publish. Click to see them
           </span>
         </span>
         <span class="pp-ready-chev">
@@ -208,7 +208,7 @@
             {{ collaborators.length === 1 ? 'collaborator' : 'collaborators' }}
           </div>
           <div class="pp-collab-sub">
-            Invite your solicitor, agent or co-owner — control exactly who sees
+            Invite your solicitor, agent or co-owner and control exactly who sees
             what.
           </div>
         </div>
@@ -476,7 +476,7 @@
             <h2 class="pp-buyers-title">Buyers are already waiting for this home.</h2>
             <p class="pp-buyers-lede">
               As your Passport fills out, we match it to verified buyers. Reach
-              out privately and gauge interest first — then publish when you're
+              out privately and gauge interest first, then publish when you're
               ready to go public.
             </p>
           </div>
@@ -548,7 +548,7 @@
             {{
               propertyId
                 ? 'Loading matched buyers…'
-                : 'Property not linked — no buyer data available.'
+                : 'Property not linked, so no buyer data is available.'
             }}
           </p>
         </div>
@@ -567,7 +567,7 @@
             <div class="pp-empty-ic"><Icon name="i-lucide-archive" /></div>
             <p>Your vault is empty</p>
             <p style="font-size: 11.5px; margin-top: 6px; color: #94a3b8">
-              As you complete sections, the verified documents are stored here —
+              As you complete sections, the verified documents are stored here,
               and you choose who can see each one.
             </p>
           </div>
@@ -636,7 +636,7 @@
         <div class="tl-intro">
           <span class="lockico">🔐</span>
           <div>
-            An <b>immutable, time-stamped record</b> of every step — so
+            An <b>immutable, time-stamped record</b> of every step, so
             everyone in the chain can see exactly where the sale is, and trust
             nothing has been altered.
           </div>
@@ -665,7 +665,7 @@
 
           <div class="tl-list-h">Verified activity</div>
           <div v-if="timelineEvents.length === 0" class="pp-empty" style="margin: 0 18px">
-            No activity yet — events will appear here as your Passport progresses.
+            No activity yet. Events will appear here as your Passport progresses.
           </div>
           <div v-for="e in timelineEvents" :key="e.id" class="tl-item">
             <div class="tl-rail">
@@ -779,7 +779,7 @@ import BuyerDetailDrawer from '~/components/passport/BuyerDetailDrawer.vue'
 import BuyerActionDrawer from '~/components/passport/BuyerActionDrawer.vue'
 import Toast from '~/components/ui/Toast.vue'
 import { useAppToast } from '~/composables/useCustomToast'
-import { toSmartTitleCase } from '~/utils/titleCase'
+import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
 
 // Guided tour — auto-runs once per browser, replays from the "?" button.
 const passportTourRef = ref(null)
@@ -957,7 +957,7 @@ async function fetchResumeTarget() {
       for (const s of steps.value) {
         const t = s.tasks?.find((x) => x.id === resumeTarget.value.taskId)
         if (t) {
-          resumeTaskTitle.value = `${s.title} · ${t.title || 'Continue'}`
+          resumeTaskTitle.value = `${s.title} · ${toSentenceCase(t.title) || 'Continue'}`
           break
         }
       }
@@ -1025,7 +1025,7 @@ function onBuyerSelect(buyer) {
 function onBuyerAction(kind) {
   if (!selectedBuyer.value?.userId) {
     console.warn(
-      '[buyer-action] Selected buyer has no userId — cannot invite/share/message. ' +
+      '[buyer-action] Selected buyer has no userId, cannot invite/share/message. ' +
         'Backend /property/:id/matched-buyers must return { userId }.',
     )
     return
@@ -1042,10 +1042,10 @@ function onBuyerActionDone(kind, _result) {
   showToast({
     message:
       kind === 'invite'
-        ? 'Invite sent — the buyer will be notified.'
+        ? 'Invite sent. The buyer will be notified.'
         : kind === 'share'
-          ? 'Passport shared — the buyer can preview and unlock it.'
-          : 'Message sent — carry on in your inbox.',
+          ? 'Passport shared. The buyer can preview and unlock it.'
+          : 'Message sent. Carry on in your inbox.',
     iconEmoji: '✓',
     duration: 3000,
   })
@@ -1162,7 +1162,7 @@ const publishButtonLabel = computed(() => {
   if (publishLoading.value) return '…'
   if (isPublished.value) return 'Unpublish'
   if (readiness.value && !readiness.value.canPublish) {
-    return `Publish — ${readiness.value.readinessPct}% ready`
+    return `Publish · ${readiness.value.readinessPct}% ready`
   }
   return 'Publish Passport'
 })
@@ -1277,7 +1277,7 @@ const overallProgress = computed(() => {
 
 // ── Hero stat strip (HS / Docs / Sections / Ready) ───────────────
 const heroHsScore = computed(() =>
-  typeof propertyHomeScore.value === 'number' ? propertyHomeScore.value : '—',
+  typeof propertyHomeScore.value === 'number' ? propertyHomeScore.value : 'N/A',
 )
 const heroDocsCount = computed(() =>
   steps.value.reduce(
@@ -1342,14 +1342,14 @@ const getStepExpiringDoc = (step) => {
       if (diff < 0) {
         return {
           expired: true,
-          label: `${t.title || 'A document'} has expired — please re-upload`,
+          label: `${toSentenceCase(t.title) || 'A document'} has expired, please re-upload`,
         }
       }
       if (diff <= SOON_MS) {
         const days = Math.max(1, Math.ceil(diff / (24 * 60 * 60 * 1000)))
         return {
           expired: false,
-          label: `${t.title || 'A document'} expires in ${days} day${days === 1 ? '' : 's'}`,
+          label: `${toSentenceCase(t.title) || 'A document'} expires in ${days} day${days === 1 ? '' : 's'}`,
         }
       }
     }

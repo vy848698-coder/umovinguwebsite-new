@@ -21,7 +21,6 @@
           :searches-today="searchesToday"
           :watchers-count="watchersCount"
           :passport-state="passportState"
-          compact
         />
       </div>
 
@@ -30,9 +29,9 @@
       <div class="hs-noepc-cta anim-1">
         <div class="hs-noepc-cta-title">This property has no EPC</div>
         <div class="hs-noepc-cta-body">
-          No problem - answer 20 quick questions about the home and we'll build
-          an <b>estimated HomeScore</b>, the same way an assessor fills gaps
-          using the property's age.
+          No problem — answer 20 quick questions about the home and we'll
+          build an <b>estimated HomeScore</b>, the same way an assessor
+          fills gaps using the property's age.
         </div>
         <button class="hs-noepc-cta-btn" type="button" @click="$emit('refine')">
           Estimate my score →
@@ -45,17 +44,15 @@
       <div class="hs-noepc-info anim-1">
         <div class="hs-noepc-info-i">i</div>
         <div>
-          Where you're not sure, we assume what's
-          <b>typical for the property's age</b> - exactly like the official
-          RdSAP method. Every confident answer tightens your estimate.
+          Where you're not sure, we assume what's <b>typical for the
+          property's age</b> — exactly like the official RdSAP method.
+          Every confident answer tightens your estimate.
         </div>
       </div>
 
       <a
         class="hs-noepc-secondary anim-1"
-        :href="`https://find-energy-certificate.service.gov.uk/find-a-certificate/search-by-postcode?postcode=${encodeURIComponent(
-          property?.postcode ?? '',
-        )}`"
+        :href="`https://find-energy-certificate.service.gov.uk/find-a-certificate/search-by-postcode?postcode=${encodeURIComponent(property?.postcode ?? '')}`"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -64,994 +61,615 @@
     </template>
 
     <template v-if="hasEpcData">
-      <!-- ── HomeScore address card (port of prisma/homescore-card.html).
+    <!-- Desktop web layout: centred 1140px shell with a two-column grid
+         (left = address / claim / gauge · right = stats / street / EPC).
+         Collapses to a single column below 900px. -->
+    <div class="hs-report">
+    <div class="hs-cols">
+    <div class="hs-col hs-col--left">
+    <!-- ── HomeScore address card (port of prisma/homescore-card.html).
              Shared component used here AND on the owner-quiz screen so
              both surfaces show the same hero. -->
-      <div class="hs-addr-card-wrap anim-1" data-tour="addr">
-        <HomescoreAddressCard
-          :address="addrLineFull"
-          :postcode="property?.postcode ?? null"
-          :property-type="property?.propertyType ?? null"
-          :sqm="property?.floorAreaSqm ?? property?.sqm ?? null"
-          :epc-rating="epcRating"
-          :home-score="Number(score) || 0"
-          :searches-today="searchesToday"
-          :watchers-count="watchersCount"
-          :passport-state="passportState"
-          compact
-        />
+    <div class="hs-addr-card-wrap anim-1" data-tour="addr">
+      <HomescoreAddressCard
+        :address="addrLineFull"
+        :postcode="property?.postcode ?? null"
+        :property-type="property?.propertyType ?? null"
+        :sqm="property?.floorAreaSqm ?? property?.sqm ?? null"
+        :epc-rating="epcRating"
+        :home-score="Number(score) || 0"
+        :searches-today="searchesToday"
+        :watchers-count="watchersCount"
+        :passport-state="passportState"
+      />
+    </div>
+
+    <!-- Claim / Passport-state box + explainer drawers. Driven by the real
+         passport state: unclaimed → navy "This property is unclaimed" card;
+         published → the gold published-Passport card. In progress shows no
+         card, matching the mobile app. -->
+    <PassportClaimBox
+      :state="passportState"
+      :progress-pct="passportProgressPct"
+      :sections-done="passportSectionsDone"
+      :sections-total="passportSectionsTotal"
+      :property-id="property?.id ?? null"
+      @claim-passport="$emit('claim-passport')"
+      @watch="$emit('buy-passport')"
+      @buy="$emit('buy-passport')"
+    />
+
+    <!-- ── HomeScore card (animated outline + gauge + band + footer) ── -->
+    <div class="score-card anim-2" data-tour="score">
+      <div class="score-eyebrow-row">
+        <div class="score-eyebrow-mark">HomeScore<sup>™</sup></div>
+      </div>
+      <div class="score-top">
+        <div class="score-gauge">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient :id="gradientId" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#00B8B0" />
+                <stop offset="100%" stop-color="#008A84" />
+              </linearGradient>
+            </defs>
+            <circle class="g-bg" cx="60" cy="60" r="50" stroke-width="9" />
+            <circle
+              class="g-fill"
+              cx="60"
+              cy="60"
+              r="50"
+              stroke-width="9"
+              :stroke="`url(#${gradientId})`"
+              stroke-dasharray="314.16"
+              :stroke-dashoffset="gaugeOffset"
+              stroke-linecap="round"
+              fill="none"
+            />
+          </svg>
+          <div class="g-num">
+            <div class="gn-big">{{ displayScore }}</div>
+            <div class="gn-small">/ 100</div>
+          </div>
+        </div>
+        <div class="score-summary">
+          <div class="score-band">{{ scoreBandTitle }}</div>
+          <div class="score-explainer" v-html="scoreExplainer" />
+        </div>
+      </div>
+      <div class="score-footer">
+        <svg class="score-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        <div>
+          Based on a <b>{{ epcYear || '—' }} EPC</b>. Your real score may be higher if
+          improvements have been made.
+        </div>
+      </div>
+    </div>
+    <!-- ── BILLS PANEL ─────────────────────────────────────────────── -->
+    <div v-if="activePanel === 'bills'" class="score-strip-panel open">
+      <div class="ssp-head">
+        <img class="ssp-head-icon" src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />
+        <div class="ssp-head-info">
+          <div class="ssp-head-title">Annual running costs · £{{ formatNum(annualCost) }}/yr</div>
+          <div class="ssp-head-sub">EPC figure · heating, hot water &amp; lighting only</div>
+        </div>
+        <div class="ssp-head-close" @click="activePanel = null">×</div>
+      </div>
+      <div class="ssp-divider">Where it goes</div>
+      <div class="ssp-bar-row">
+        <img class="ssp-bar-icon" src="/homescore-icon/flame.png" alt="" loading="lazy" />
+        <div class="ssp-bar-label">Heating</div>
+        <div class="ssp-bar-track"><div class="ssp-bar-fill gas" :style="{ width: billsSplitDisplay.heating + '%' }" /></div>
+        <div class="ssp-bar-amt">£{{ formatNum(annualCost * billsSplitDisplay.heating / 100) }}<div class="ssp-bar-amt-pct">{{ billsSplitDisplay.heating }}%</div></div>
+      </div>
+      <div class="ssp-bar-row">
+        <img class="ssp-bar-icon" src="/homescore-icon/waterDroplet.png" alt="" loading="lazy" />
+        <div class="ssp-bar-label">Hot water</div>
+        <div class="ssp-bar-track"><div class="ssp-bar-fill hw" :style="{ width: billsSplitDisplay.hotWater + '%' }" /></div>
+        <div class="ssp-bar-amt">£{{ formatNum(annualCost * billsSplitDisplay.hotWater / 100) }}<div class="ssp-bar-amt-pct">{{ billsSplitDisplay.hotWater }}%</div></div>
+      </div>
+      <div class="ssp-bar-row">
+        <img class="ssp-bar-icon" src="/homescore-icon/lightbulb.png" alt="" loading="lazy" />
+        <div class="ssp-bar-label">Lighting</div>
+        <div class="ssp-bar-track"><div class="ssp-bar-fill elec" :style="{ width: billsSplitDisplay.lighting + '%' }" /></div>
+        <div class="ssp-bar-amt">£{{ formatNum(annualCost * billsSplitDisplay.lighting / 100) }}<div class="ssp-bar-amt-pct">{{ billsSplitDisplay.lighting }}%</div></div>
+      </div>
+      <div class="ssp-total-row">
+        <div class="ssp-total-label">Total per year</div>
+        <div class="ssp-total-num">£{{ formatNum(annualCost) }}</div>
+      </div>
+      <div class="ssp-note">
+        Standing charges, cooking and appliances are <b>not included</b> in the
+        EPC figure.
+      </div>
+      <div class="ssp-foot" @click="$emit('open-pathway')">
+        <div class="ssp-foot-text">
+          All 6 EPC steps cut bills by <b>£{{ formatNum(potentialSaving) }}/yr</b> →
+        </div>
+        <div class="ssp-foot-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- ── CO₂ PANEL ───────────────────────────────────────────────── -->
+    <div v-if="activePanel === 'co2'" class="score-strip-panel open">
+      <div class="ssp-head">
+        <img class="ssp-head-icon" src="/homescore-icon/globe.png" alt="" loading="lazy" />
+        <div class="ssp-head-info">
+          <div class="ssp-head-title">CO₂ emissions · {{ co2NowDisplay.toFixed(1) }}t/yr</div>
+          <div class="ssp-head-sub">UK average 6.0t · could drop to {{ co2Potential.toFixed(1) }}t after all 6 EPC steps</div>
+        </div>
+        <div class="ssp-head-close" @click="activePanel = null">×</div>
+      </div>
+      <div class="ssp-divider">Now vs potential</div>
+      <div class="ssp-bar-row">
+        <img class="ssp-bar-icon" src="/homescore-icon/house.png" alt="" loading="lazy" />
+        <div class="ssp-bar-label">Your home</div>
+        <div class="ssp-bar-track"><div class="ssp-bar-fill co2-heat" :style="{ width: co2NowPct + '%' }" /></div>
+        <div class="ssp-bar-amt">{{ co2NowDisplay.toFixed(1) }}t<div class="ssp-bar-amt-pct">now</div></div>
+      </div>
+      <div class="ssp-bar-row">
+        <img class="ssp-bar-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
+        <div class="ssp-bar-label">UK avg</div>
+        <div class="ssp-bar-track"><div class="ssp-bar-fill co2-elec" :style="{ width: '75%' }" /></div>
+        <div class="ssp-bar-amt">6.0t<div class="ssp-bar-amt-pct">benchmark</div></div>
+      </div>
+      <div class="ssp-bar-row">
+        <img class="ssp-bar-icon" src="/homescore-icon/target.png" alt="" loading="lazy" />
+        <div class="ssp-bar-label">Potential</div>
+        <div class="ssp-bar-track"><div class="ssp-bar-fill co2-hw" :style="{ width: co2PotentialPct + '%' }" /></div>
+        <div class="ssp-bar-amt">{{ co2Potential.toFixed(1) }}t<div class="ssp-bar-amt-pct">after</div></div>
+      </div>
+      <div class="ssp-total-row">
+        <div class="ssp-total-label">Recoverable</div>
+        <div class="ssp-total-num">–{{ (co2NowDisplay - co2Potential).toFixed(1) }}t CO₂/yr</div>
+      </div>
+      <div class="ssp-equiv">
+        <Icon name="i-lucide-car" class="ssp-equiv-icon" />
+        <div>{{ (co2NowDisplay - co2Potential).toFixed(1) }} tonnes CO₂ ≈ <b>driving 12,000 miles in a petrol car</b>.</div>
+      </div>
+      <div class="ssp-foot" @click="$emit('open-pathway')">
+        <div class="ssp-foot-text">
+          All 6 EPC steps cut emissions by <b>{{ (co2NowDisplay - co2Potential).toFixed(1) }}t/yr</b> →
+        </div>
+        <div class="ssp-foot-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- ── STREET PANEL ────────────────────────────────────────────── -->
+    <div v-if="activePanel === 'street'" class="score-strip-panel open">
+      <div class="ssp-head">
+        <img class="ssp-head-icon" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
+        <div class="ssp-head-info">
+          <div class="ssp-head-title">Your street, ranked by energy cost</div>
+          <div class="ssp-head-sub">
+            {{ property?.postcode || '—' }}<template v-if="hasStreetRank"> · {{ streetTotal }} homes</template> · estimated from EPC data
+          </div>
+        </div>
+        <div class="ssp-head-close" @click="activePanel = null">×</div>
+      </div>
+      <div class="ssp-rank-hero">
+        <div class="ssp-rank-num">{{ hasStreetRank ? `#${streetRank}` : '—' }}</div>
+        <div class="ssp-rank-info">
+          <div class="ssp-rank-label">
+            <template v-if="hasStreetRank">{{ streetRankOrdinal }} cheapest of {{ streetTotal }} homes</template>
+            <template v-else>Street ranking not available yet</template>
+          </div>
+          <div class="ssp-rank-sub">
+            <template v-if="streetDiff != null && streetAverageCost">
+              <b>£{{ formatNum(Math.abs(streetDiff)) }} {{ streetDiff <= 0 ? 'below' : 'above' }}</b>
+              the street average of £{{ formatNum(streetAverageCost) }}/yr
+            </template>
+            <template v-else>
+              Not enough neighbouring homes have EPC data to compare yet.
+            </template>
+          </div>
+        </div>
       </div>
 
-      <!-- ── HomeScore card (animated outline + gauge + band + footer) ── -->
-      <div class="score-card anim-2" data-tour="score">
-        <div class="score-eyebrow-row">
-          <div class="score-eyebrow-mark">HomeScore<sup>™</sup></div>
-        </div>
-        <div class="score-top">
-          <div class="score-gauge">
-            <svg viewBox="0 0 120 120" aria-hidden="true">
-              <defs>
-                <linearGradient :id="gradientId" x1="1" y1="0" x2="0" y2="0">
-                  <stop offset="0%" stop-color="#00BB93" />
-                  <stop offset="100%" stop-color="#016F84" />
-                </linearGradient>
-              </defs>
-              <circle class="g-bg" cx="60" cy="60" r="50" stroke-width="9" />
-              <circle
-                class="g-fill"
-                cx="60"
-                cy="60"
-                r="50"
-                stroke-width="9"
-                :stroke="`url(#${gradientId})`"
-                stroke-dasharray="314.16"
-                :stroke-dashoffset="gaugeOffset"
-                stroke-linecap="round"
-                fill="none"
-              />
+      <div class="ssp-street-legend">
+        <span class="ssp-street-legend-item">
+          <span class="ssp-street-legend-dot" style="background:#2EAB55" />Under £1,200/yr
+        </span>
+        <span class="ssp-street-legend-item">
+          <span class="ssp-street-legend-dot" style="background:#E6A23C" />£1,200–£1,800
+        </span>
+        <span class="ssp-street-legend-item">
+          <span class="ssp-street-legend-dot" style="background:#E74C5E" />Over £1,800/yr
+        </span>
+      </div>
+
+      <!-- Scrollable street scene -->
+      <div class="ssp-street-scene">
+        <div class="ssp-street-inner">
+          <svg class="ssp-street-svg" viewBox="0 0 460 180" preserveAspectRatio="xMinYMid meet" aria-label="Postcode street view">
+            <defs>
+              <linearGradient id="streetSkyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#DCEEF0" />
+                <stop offset="100%" stop-color="#BFE2E5" />
+              </linearGradient>
+            </defs>
+            <rect width="460" height="85" fill="url(#streetSkyGrad)" />
+
+            <!-- Top row -->
+            <g
+              v-for="h in topRowHouses"
+              :key="`top-${h.num}`"
+              class="ssp-street-house"
+              :class="{ you: h.isYou }"
+              @click="pickHouse(h)"
+            >
+              <!-- YOU house: bigger body + person marker -->
+              <template v-if="h.isYou">
+                <circle :cx="h.cx" cy="32" r="4.5" fill="#00A19A" />
+                <circle :cx="h.cx" cy="32" r="1.8" fill="white" />
+                <path :d="`M${h.cx} 36.5 L${h.cx - 3} 41 L${h.cx + 3} 41 Z`" fill="#00A19A" />
+                <polygon :points="`${h.cx - 14},55 ${h.cx},44 ${h.cx + 14},55`" fill="#00A19A" />
+                <rect class="ssp-house-body" :x="h.cx - 11" y="55" width="22" height="20" fill="#E5F4F2" stroke="#00A19A" stroke-width="1.4" />
+                <rect :x="h.cx - 7" y="59" width="4" height="4" fill="#6BD4CD" />
+                <rect :x="h.cx + 2" y="59" width="4" height="4" fill="#6BD4CD" />
+                <rect :x="h.cx - 2.5" y="67" width="5" height="8" fill="#231d45" />
+                <rect :x="h.cx - 16" y="57" width="4.5" height="6" :fill="h.color" rx="0.5" />
+                <text :x="h.cx - 13.8" y="61" font-size="4" font-weight="800" fill="white" text-anchor="middle">{{ h.grade }}</text>
+                <circle :cx="h.cx + 14" cy="58" r="3" :fill="h.dot" />
+                <text :x="h.cx + 14" y="60.2" font-size="4.5" font-weight="800" fill="white" text-anchor="middle">★</text>
+                <text :x="h.cx" y="82" font-size="6.5" font-weight="800" fill="#00A19A" text-anchor="middle">{{ h.num }}</text>
+              </template>
+              <!-- Regular house -->
+              <template v-else>
+                <polygon :points="`${h.cx - 11},55 ${h.cx},46 ${h.cx + 11},55`" :fill="h.roof" />
+                <rect class="ssp-house-body" :x="h.cx - 8" y="55" width="16" height="16" fill="#FAFAFA" stroke="#9C98AD" stroke-width="0.5" />
+                <rect :x="h.cx - 5" y="58" width="3" height="3" :fill="h.window" />
+                <rect :x="h.cx + 2" y="58" width="3" height="3" :fill="h.window" />
+                <rect :x="h.cx - 2" y="64" width="3" height="7" :fill="h.door" />
+                <rect :x="h.cx - 12" y="56" width="4" height="5" :fill="h.color" rx="0.5" />
+                <text :x="h.cx - 10" y="59.5" font-size="3.5" font-weight="800" fill="white" text-anchor="middle">{{ h.grade }}</text>
+                <circle :cx="h.cx + 11" cy="58" r="2.5" :fill="h.dot" />
+                <text :x="h.cx" y="80" font-size="6" font-weight="800" fill="#231d45" text-anchor="middle">{{ h.num }}</text>
+              </template>
+            </g>
+
+            <!-- Road -->
+            <rect x="0" y="85" width="460" height="25" fill="#3A3F4A" />
+            <line x1="0" y1="97.5" x2="460" y2="97.5" stroke="#E6A23C" stroke-width="1.5" stroke-dasharray="10,8" />
+            <text x="230" y="100" font-size="6.5" font-weight="800" fill="rgba(255,255,255,0.55)" text-anchor="middle" letter-spacing="2.5">
+              {{ streetName }}
+            </text>
+
+            <!-- Bottom row -->
+            <g
+              v-for="h in bottomRowHouses"
+              :key="`bot-${h.num}`"
+              class="ssp-street-house"
+              @click="pickHouse(h)"
+            >
+              <polygon :points="`${h.cx - 11},128 ${h.cx},119 ${h.cx + 11},128`" :fill="h.roof" />
+              <rect class="ssp-house-body" :x="h.cx - 8" y="128" width="16" height="16" fill="#FAFAFA" stroke="#9C98AD" stroke-width="0.5" />
+              <rect :x="h.cx - 5" y="131" width="3" height="3" :fill="h.window" />
+              <rect :x="h.cx + 2" y="131" width="3" height="3" :fill="h.window" />
+              <rect :x="h.cx - 2" y="137" width="3" height="7" :fill="h.door" />
+              <rect :x="h.cx - 12" y="129" width="4" height="5" :fill="h.color" rx="0.5" />
+              <text :x="h.cx - 10" y="132.5" font-size="3.5" font-weight="800" fill="white" text-anchor="middle">{{ h.grade }}</text>
+              <circle :cx="h.cx + 11" cy="131" r="2.5" :fill="h.dot" />
+              <text :x="h.cx" y="156" font-size="6" font-weight="800" fill="#231d45" text-anchor="middle">{{ h.num }}</text>
+            </g>
+
+            <!-- Ground -->
+            <rect x="0" y="148" width="460" height="32" fill="#B8C7B0" opacity="0.4" />
+          </svg>
+
+          <!-- Walker overlay — moves to clicked house via CSS transition -->
+          <div
+            class="ssp-street-walker walking"
+            :style="{ left: walkerX + 'px', top: walkerY + 'px' }"
+          >
+            <svg viewBox="0 0 18 26" aria-hidden="true">
+              <circle cx="9" cy="5" r="3.5" fill="#231d45" />
+              <rect x="7" y="8" width="4" height="8" rx="1" fill="#00A19A" />
+              <rect class="arm-l" x="4.5" y="9" width="2" height="6" rx="1" fill="#231d45" />
+              <rect class="arm-r" x="11.5" y="9" width="2" height="6" rx="1" fill="#231d45" />
+              <rect class="leg-l" x="6.5" y="15" width="2" height="8" rx="1" fill="#231d45" />
+              <rect class="leg-r" x="9.5" y="15" width="2" height="8" rx="1" fill="#231d45" />
             </svg>
-            <div class="g-num">
-              <div class="gn-big">{{ displayScore }}</div>
-              <div class="gn-small">/ 100</div>
-            </div>
-          </div>
-          <div class="score-summary">
-            <div class="score-band">{{ scoreBandTitle }}</div>
-            <div class="score-explainer" v-html="scoreExplainer" />
-            <div class="score-footer">
-              <svg
-                class="score-footer-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              <div>
-                Based on a <b>{{ epcYear || '-' }} EPC</b>. Made improvements
-                since then? Your actual HomeScore could be higher.
-              </div>
-            </div>
           </div>
         </div>
       </div>
+      <div class="ssp-street-scroll-hint">← swipe to see the rest of your postcode →</div>
+      <div class="ssp-street-tip">Tap any house to see its EPC and cost</div>
 
-      <!-- ── Quick stats strip (2 clickable cards) ───────────────────── -->
-      <div class="section-h-row">
-        <div class="section-h">Estimated running costs &amp; impact</div>
+      <!-- Selected house tooltip -->
+      <div class="ssp-street-tooltip" :class="{ you: selectedHouse.isYou }">
+        <span class="ssp-street-tooltip-num">
+          No. {{ selectedHouse.num }}{{ selectedHouse.isYou ? ' — You' : '' }}
+        </span>
+        <span
+          class="ssp-street-tooltip-rating"
+          :style="{ background: selectedHouse.color }"
+        >{{ selectedHouse.grade }} · {{ selectedHouse.score }}</span>
+        <span class="ssp-street-tooltip-cost" :class="selectedHouse.tier">
+          {{ selectedHouse.cost }}/yr
+        </span>
       </div>
-      <div class="score-strip-card anim-3" data-tour="overpay">
-        <div
-          class="score-strip-item clickable"
-          :class="{ active: activePanel === 'bills' }"
-          @click="togglePanel('bills')"
-         role="button" tabindex="0" @keydown.enter="togglePanel('bills')" @keydown.space.prevent="togglePanel('bills')">
-          <img
-            src="/op-icons/homescore/wallet.png"
-            alt=""
-            class="score-strip-icon"
-            loading="lazy"
-          />
+
+      <!-- Pathway projection -->
+      <div class="ssp-street-projection" @click="$emit('open-pathway')">
+        <img class="ssp-street-projection-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
+        <div class="ssp-street-projection-body">
+          <div class="ssp-street-projection-label">If you complete the EPC pathway</div>
+          <div class="ssp-street-projection-num">
+            £{{ formatNum(annualCost - potentialSaving) }}<span>/yr</span>
+          </div>
+          <div class="ssp-street-projection-sub">
+            <template v-if="epcPotentialRating">EPC <b>{{ epcPotentialRating }}</b> potential</template><template v-if="epcPotentialRating && hasStreetRank"> · </template><template v-if="hasStreetRank">up from {{ streetRankOrdinal.toLowerCase() }} of {{ streetTotal }} on your street</template>
+          </div>
+        </div>
+        <div class="ssp-street-projection-saving">
+          <div class="ssp-street-projection-saving-num">–£{{ formatNum(potentialSaving) }}</div>
+          <div class="ssp-street-projection-saving-sub">/yr saved</div>
+        </div>
+      </div>
+
+      <div class="ssp-note">
+        Higher EPCs sell faster and <b>command ~£15k more</b> on average for a
+        3-bed in {{ outwardPostcode }} (Land Reg data).
+      </div>
+    </div>
+    </div><!-- /hs-col--left -->
+
+    <div class="hs-col hs-col--right">
+    <!-- ── Quick stats strip (2 clickable cards) ───────────────────── -->
+    <div class="score-strip-h">Estimated running costs &amp; impact</div>
+    <div class="score-strip-card anim-3" data-tour="overpay">
+      <div
+        class="score-strip-item clickable"
+        :class="{ active: activePanel === 'bills' }"
+        @click="togglePanel('bills')"
+      >
+        <div class="score-strip-txt">
           <div class="score-strip-eyebrow">Est. running cost</div>
           <div class="score-strip-num">
             £{{ formatNum(annualCost) }}<span class="strip-unit">/year</span>
           </div>
-          <div class="score-strip-sub-label">Potential saving</div>
-          <div class="score-strip-sub-val">
-            £{{ formatNum(potentialSaving) }}
-            <span class="strip-unit">/year</span>
-          </div>
-        </div>
-        <div
-          class="score-strip-item clickable"
-          :class="{ active: activePanel === 'co2' }"
-          @click="togglePanel('co2')"
-         role="button" tabindex="0" @keydown.enter="togglePanel('co2')" @keydown.space.prevent="togglePanel('co2')">
-          <img
-            src="/op-icons/passportview/environmental.png"
-            alt=""
-            class="score-strip-icon"
-            loading="lazy"
-          />
-          <div class="score-strip-eyebrow">CO<sub>2</sub> emissions</div>
-          <div class="score-strip-num">
-            {{ co2NowDisplay.toFixed(1) }}
-            <span class="strip-unit">t /year</span>
-          </div>
-          <div class="score-strip-sub-label">UK average</div>
-          <div class="score-strip-sub-val">
-            6.0 <span class="strip-unit">t /year</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── STREET HERO CARD (ported 1:1 from `.hero` in the
-         umu-owner-journey prototype) ─────────────────────────────── -->
-      <div
-        class="hs-street-hero anim-3"
-        :class="{ active: activePanel === 'street' }"
-        @click="togglePanel('street')"
-       role="button" tabindex="0" @keydown.enter="togglePanel('street')" @keydown.space.prevent="togglePanel('street')">
-        <div class="hsh-eyebrow">
-          <img
-            src="/op-icons/homescore/houseSearch.png"
-            alt=""
-            class="hsh-eyebrow-ic"
-            loading="lazy"
-          />
-          How does this home compare?
-        </div>
-        <div class="hsh-rankrow">
-          <div class="hsh-rankrow-left">
-            <span class="hsh-big">#{{ streetRank ?? 8 }}</span>
-            <div class="hsh-rmeta">of {{ streetTotal || 43 }} homes</div>
-          </div>
-          <div class="hsh-preview" aria-hidden="true">
-            <div
-              v-for="(p, i) in streetHeroPins"
-              :key="i"
-              class="hsh-ph"
-              :class="{ you: p.isYou }"
-            >
-              <span v-if="p.isYou" class="hsh-pin"
-                ><img src="/op-icons/misc/addressPin.png" alt="" loading="lazy"
-              /></span>
-              <span class="hsh-cd" :style="{ background: p.dot }" />
-            </div>
-          </div>
-        </div>
-        <p class="hsh-desc">
-          This home is estimated to cost £190 less per year to run than the
-          street average.
-        </p>
-        <div class="hsh-bottom-row">
-          <span class="hsh-projchip"
-            >↑ With the suggested improvements, it could rank #2 and save around
-            £{{ formatNum(potentialSaving) }}/year.</span
-          >
-          <button
-            class="hsh-cta"
-            type="button"
-            @click.stop="togglePanel('street')"
-          >
-            Explore your street
-            <span class="hsh-cta-ar">→</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ── BILLS PANEL ─────────────────────────────────────────────── -->
-      <div v-if="activePanel === 'bills'" class="score-strip-panel open">
-        <div class="ssp-head">
-          <div class="ssp-head-icon">
-            <img
-              src="/op-icons/investment/moneyBagPound.png"
-              alt=""
-              loading="lazy"
-            />
-          </div>
-          <div class="ssp-head-info">
-            <div class="ssp-head-title">
-              Annual running costs · £{{ formatNum(annualCost) }}/yr
-            </div>
-            <div class="ssp-head-sub">
-              EPC figure · heating, hot water &amp; lighting only
-            </div>
-          </div>
-          <div class="ssp-head-close" @click="activePanel = null" role="button" tabindex="0" @keydown.enter="activePanel = null" @keydown.space.prevent="activePanel = null">×</div>
-        </div>
-        <div class="ssp-divider">Where it goes</div>
-        <div class="ssp-bar-row">
-          <div class="ssp-bar-icon">
-            <img src="/op-icons/homescore/flame.png" alt="" loading="lazy" />
-          </div>
-          <div class="ssp-bar-label">Heating</div>
-          <div class="ssp-bar-track">
-            <div
-              class="ssp-bar-fill gas"
-              :style="{ width: billsSplitDisplay.heating + '%' }"
-            />
-          </div>
-          <div class="ssp-bar-amt">
-            £{{ formatNum((annualCost * billsSplitDisplay.heating) / 100) }}
-            <div class="ssp-bar-amt-pct">{{ billsSplitDisplay.heating }}%</div>
-          </div>
-        </div>
-        <div class="ssp-bar-row">
-          <div class="ssp-bar-icon">
-            <img src="/op-icons/misc/waterDroplet.png" alt="" loading="lazy" />
-          </div>
-          <div class="ssp-bar-label">Hot water</div>
-          <div class="ssp-bar-track">
-            <div
-              class="ssp-bar-fill hw"
-              :style="{ width: billsSplitDisplay.hotWater + '%' }"
-            />
-          </div>
-          <div class="ssp-bar-amt">
-            £{{ formatNum((annualCost * billsSplitDisplay.hotWater) / 100) }}
-            <div class="ssp-bar-amt-pct">{{ billsSplitDisplay.hotWater }}%</div>
-          </div>
-        </div>
-        <div class="ssp-bar-row">
-          <div class="ssp-bar-icon">
-            <img src="/op-icons/homescore/bulb.png" alt="" loading="lazy" />
-          </div>
-          <div class="ssp-bar-label">Lighting</div>
-          <div class="ssp-bar-track">
-            <div
-              class="ssp-bar-fill elec"
-              :style="{ width: billsSplitDisplay.lighting + '%' }"
-            />
-          </div>
-          <div class="ssp-bar-amt">
-            £{{ formatNum((annualCost * billsSplitDisplay.lighting) / 100) }}
-            <div class="ssp-bar-amt-pct">{{ billsSplitDisplay.lighting }}%</div>
-          </div>
-        </div>
-        <div class="ssp-total-row">
-          <div class="ssp-total-label">Total per year</div>
-          <div class="ssp-total-num">£{{ formatNum(annualCost) }}</div>
-        </div>
-        <div class="ssp-note">
-          Standing charges, cooking and appliances are <b>not included</b> in
-          the EPC figure.
-        </div>
-        <div class="ssp-foot" @click="$emit('open-pathway')" role="button" tabindex="0" @keydown.enter="$emit('open-pathway')" @keydown.space.prevent="$emit('open-pathway')">
-          <div class="ssp-foot-text">
-            All 6 EPC steps cut bills by
-            <b>£{{ formatNum(potentialSaving) }}/yr</b> →
-          </div>
-          <div class="ssp-foot-arrow">›</div>
-        </div>
-      </div>
-
-      <!-- ── CO₂ PANEL ───────────────────────────────────────────────── -->
-      <div v-if="activePanel === 'co2'" class="score-strip-panel open">
-        <div class="ssp-head">
-          <div class="ssp-head-icon">
-            <img
-              src="/op-icons/passportview/environmental.png"
-              alt=""
-              loading="lazy"
-            />
-          </div>
-          <div class="ssp-head-info">
-            <div class="ssp-head-title">
-              CO₂ emissions · {{ co2NowDisplay.toFixed(1) }}t/yr
-            </div>
-            <div class="ssp-head-sub">
-              UK average 6.0t · could drop to {{ co2Potential.toFixed(1) }}t
-              after all 6 EPC steps
-            </div>
-          </div>
-          <div class="ssp-head-close" @click="activePanel = null" role="button" tabindex="0" @keydown.enter="activePanel = null" @keydown.space.prevent="activePanel = null">×</div>
-        </div>
-        <div class="ssp-divider">Now vs potential</div>
-        <div class="ssp-bar-row">
-          <div class="ssp-bar-icon">
-            <img src="/op-icons/homescore/house.png" alt="" loading="lazy" />
-          </div>
-          <div class="ssp-bar-label">Your home</div>
-          <div class="ssp-bar-track">
-            <div
-              class="ssp-bar-fill co2-heat"
-              :style="{ width: co2NowPct + '%' }"
-            />
-          </div>
-          <div class="ssp-bar-amt">
-            {{ co2NowDisplay.toFixed(1) }}t
-            <div class="ssp-bar-amt-pct">now</div>
-          </div>
-        </div>
-        <div class="ssp-bar-row">
-          <div class="ssp-bar-icon">📊</div>
-          <div class="ssp-bar-label">UK avg</div>
-          <div class="ssp-bar-track">
-            <div class="ssp-bar-fill co2-elec" :style="{ width: '75%' }" />
-          </div>
-          <div class="ssp-bar-amt">
-            6.0t
-            <div class="ssp-bar-amt-pct">benchmark</div>
-          </div>
-        </div>
-        <div class="ssp-bar-row">
-          <div class="ssp-bar-icon">
-            <img src="/op-icons/investment/target.png" alt="" loading="lazy" />
-          </div>
-          <div class="ssp-bar-label">Potential</div>
-          <div class="ssp-bar-track">
-            <div
-              class="ssp-bar-fill co2-hw"
-              :style="{ width: co2PotentialPct + '%' }"
-            />
-          </div>
-          <div class="ssp-bar-amt">
-            {{ co2Potential.toFixed(1) }}t
-            <div class="ssp-bar-amt-pct">after</div>
-          </div>
-        </div>
-        <div class="ssp-total-row">
-          <div class="ssp-total-label">Recoverable</div>
-          <div class="ssp-total-num">
-            –{{ (co2NowDisplay - co2Potential).toFixed(1) }}t CO₂/yr
-          </div>
-        </div>
-        <div class="ssp-equiv">
-          <div class="ssp-equiv-icon">🚗</div>
-          <div>
-            {{ (co2NowDisplay - co2Potential).toFixed(1) }} tonnes CO₂ ≈
-            <b>driving 12,000 miles in a petrol car</b>.
-          </div>
-        </div>
-        <div class="ssp-foot" @click="$emit('open-pathway')" role="button" tabindex="0" @keydown.enter="$emit('open-pathway')" @keydown.space.prevent="$emit('open-pathway')">
-          <div class="ssp-foot-text">
-            All 6 EPC steps cut emissions by
-            <b>{{ (co2NowDisplay - co2Potential).toFixed(1) }}t/yr</b> →
-          </div>
-          <div class="ssp-foot-arrow">›</div>
-        </div>
-      </div>
-
-      <!-- ── STREET PANEL ────────────────────────────────────────────── -->
-      <div v-if="activePanel === 'street'" class="score-strip-panel open">
-        <div class="ssp-head">
-          <div class="ssp-head-icon">🏘</div>
-          <div class="ssp-head-info">
-            <div class="ssp-head-title">Your street, ranked by energy cost</div>
-            <div class="ssp-head-sub">
-              {{ property?.postcode || '-' }} · {{ streetTotal || 18 }} homes ·
-              estimated from EPC data
-            </div>
-          </div>
-          <div class="ssp-head-close" @click="activePanel = null" role="button" tabindex="0" @keydown.enter="activePanel = null" @keydown.space.prevent="activePanel = null">×</div>
-        </div>
-        <div class="ssp-rank-hero">
-          <div class="ssp-rank-num">#{{ streetRank ?? 8 }}</div>
-          <div class="ssp-rank-info">
-            <div class="ssp-rank-label">
-              {{ streetRankOrdinal }} cheapest of {{ streetTotal || 18 }} homes
-            </div>
-            <div class="ssp-rank-sub">
-              <b>£190 below</b> the postcode average of £1,651/yr
-            </div>
-          </div>
-        </div>
-
-        <div class="ssp-street-legend">
-          <span class="ssp-street-legend-item">
-            <span
-              class="ssp-street-legend-dot"
-              style="background: #2eab55"
-            />Under £1,200/yr
-          </span>
-          <span class="ssp-street-legend-item">
-            <span
-              class="ssp-street-legend-dot"
-              style="background: #e6a23c"
-            />£1,200–£1,800
-          </span>
-          <span class="ssp-street-legend-item">
-            <span
-              class="ssp-street-legend-dot"
-              style="background: #e74c5e"
-            />Over £1,800/yr
-          </span>
-        </div>
-
-        <!-- Scrollable street scene -->
-        <div class="ssp-street-scene">
-          <div class="ssp-street-inner">
-            <svg
-              class="ssp-street-svg"
-              viewBox="0 0 460 180"
-              preserveAspectRatio="xMinYMid meet"
-              aria-label="Postcode street view"
-            >
-              <defs>
-                <linearGradient id="streetSkyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#DCEEF0" />
-                  <stop offset="100%" stop-color="#BFE2E5" />
-                </linearGradient>
-              </defs>
-              <rect width="460" height="85" fill="url(#streetSkyGrad)" />
-
-              <!-- Top row -->
-              <g
-                v-for="h in topRowHouses"
-                :key="`top-${h.num}`"
-                class="ssp-street-house"
-                :class="{ you: h.isYou }"
-                @click="pickHouse(h)"
-              >
-                <!-- YOU house: bigger body + person marker -->
-                <template v-if="h.isYou">
-                  <circle :cx="h.cx" cy="32" r="4.5" fill="#00A19A" />
-                  <circle :cx="h.cx" cy="32" r="1.8" fill="white" />
-                  <path
-                    :d="`M${h.cx} 36.5 L${h.cx - 3} 41 L${h.cx + 3} 41 Z`"
-                    fill="#00A19A"
-                  />
-                  <polygon
-                    :points="`${h.cx - 14},55 ${h.cx},44 ${h.cx + 14},55`"
-                    fill="#00A19A"
-                  />
-                  <rect
-                    class="ssp-house-body"
-                    :x="h.cx - 11"
-                    y="55"
-                    width="22"
-                    height="20"
-                    fill="#E5F4F2"
-                    stroke="#00A19A"
-                    stroke-width="1.4"
-                  />
-                  <rect
-                    :x="h.cx - 7"
-                    y="59"
-                    width="4"
-                    height="4"
-                    fill="#6BD4CD"
-                  />
-                  <rect
-                    :x="h.cx + 2"
-                    y="59"
-                    width="4"
-                    height="4"
-                    fill="#6BD4CD"
-                  />
-                  <rect
-                    :x="h.cx - 2.5"
-                    y="67"
-                    width="5"
-                    height="8"
-                    fill="#231d45"
-                  />
-                  <rect
-                    :x="h.cx - 16"
-                    y="57"
-                    width="4.5"
-                    height="6"
-                    :fill="h.color"
-                    rx="0.5"
-                  />
-                  <text
-                    :x="h.cx - 13.8"
-                    y="61"
-                    font-size="4"
-                    font-weight="800"
-                    fill="white"
-                    text-anchor="middle"
-                  >
-                    {{ h.grade }}
-                  </text>
-                  <circle :cx="h.cx + 14" cy="58" r="3" :fill="h.dot" />
-                  <text
-                    :x="h.cx + 14"
-                    y="60.2"
-                    font-size="4.5"
-                    font-weight="800"
-                    fill="white"
-                    text-anchor="middle"
-                  >
-                    ★
-                  </text>
-                  <text
-                    :x="h.cx"
-                    y="82"
-                    font-size="6.5"
-                    font-weight="800"
-                    fill="#00A19A"
-                    text-anchor="middle"
-                  >
-                    {{ h.num }}
-                  </text>
-                </template>
-                <!-- Regular house -->
-                <template v-else>
-                  <polygon
-                    :points="`${h.cx - 11},55 ${h.cx},46 ${h.cx + 11},55`"
-                    :fill="h.roof"
-                  />
-                  <rect
-                    class="ssp-house-body"
-                    :x="h.cx - 8"
-                    y="55"
-                    width="16"
-                    height="16"
-                    fill="#FAFAFA"
-                    stroke="#9C98AD"
-                    stroke-width="0.5"
-                  />
-                  <rect
-                    :x="h.cx - 5"
-                    y="58"
-                    width="3"
-                    height="3"
-                    :fill="h.window"
-                  />
-                  <rect
-                    :x="h.cx + 2"
-                    y="58"
-                    width="3"
-                    height="3"
-                    :fill="h.window"
-                  />
-                  <rect
-                    :x="h.cx - 2"
-                    y="64"
-                    width="3"
-                    height="7"
-                    :fill="h.door"
-                  />
-                  <rect
-                    :x="h.cx - 12"
-                    y="56"
-                    width="4"
-                    height="5"
-                    :fill="h.color"
-                    rx="0.5"
-                  />
-                  <text
-                    :x="h.cx - 10"
-                    y="59.5"
-                    font-size="3.5"
-                    font-weight="800"
-                    fill="white"
-                    text-anchor="middle"
-                  >
-                    {{ h.grade }}
-                  </text>
-                  <circle :cx="h.cx + 11" cy="58" r="2.5" :fill="h.dot" />
-                  <text
-                    :x="h.cx"
-                    y="80"
-                    font-size="6"
-                    font-weight="800"
-                    fill="#231d45"
-                    text-anchor="middle"
-                  >
-                    {{ h.num }}
-                  </text>
-                </template>
-              </g>
-
-              <!-- Road -->
-              <rect x="0" y="85" width="460" height="25" fill="#3A3F4A" />
-              <line
-                x1="0"
-                y1="97.5"
-                x2="460"
-                y2="97.5"
-                stroke="#E6A23C"
-                stroke-width="1.5"
-                stroke-dasharray="10,8"
-              />
-              <text
-                x="230"
-                y="100"
-                font-size="6.5"
-                font-weight="800"
-                fill="rgba(255,255,255,0.55)"
-                text-anchor="middle"
-                letter-spacing="2.5"
-              >
-                {{ streetName }}
-              </text>
-
-              <!-- Bottom row -->
-              <g
-                v-for="h in bottomRowHouses"
-                :key="`bot-${h.num}`"
-                class="ssp-street-house"
-                @click="pickHouse(h)"
-              >
-                <polygon
-                  :points="`${h.cx - 11},128 ${h.cx},119 ${h.cx + 11},128`"
-                  :fill="h.roof"
-                />
-                <rect
-                  class="ssp-house-body"
-                  :x="h.cx - 8"
-                  y="128"
-                  width="16"
-                  height="16"
-                  fill="#FAFAFA"
-                  stroke="#9C98AD"
-                  stroke-width="0.5"
-                />
-                <rect
-                  :x="h.cx - 5"
-                  y="131"
-                  width="3"
-                  height="3"
-                  :fill="h.window"
-                />
-                <rect
-                  :x="h.cx + 2"
-                  y="131"
-                  width="3"
-                  height="3"
-                  :fill="h.window"
-                />
-                <rect
-                  :x="h.cx - 2"
-                  y="137"
-                  width="3"
-                  height="7"
-                  :fill="h.door"
-                />
-                <rect
-                  :x="h.cx - 12"
-                  y="129"
-                  width="4"
-                  height="5"
-                  :fill="h.color"
-                  rx="0.5"
-                />
-                <text
-                  :x="h.cx - 10"
-                  y="132.5"
-                  font-size="3.5"
-                  font-weight="800"
-                  fill="white"
-                  text-anchor="middle"
-                >
-                  {{ h.grade }}
-                </text>
-                <circle :cx="h.cx + 11" cy="131" r="2.5" :fill="h.dot" />
-                <text
-                  :x="h.cx"
-                  y="156"
-                  font-size="6"
-                  font-weight="800"
-                  fill="#231d45"
-                  text-anchor="middle"
-                >
-                  {{ h.num }}
-                </text>
-              </g>
-
-              <!-- Ground -->
-              <rect
-                x="0"
-                y="148"
-                width="460"
-                height="32"
-                fill="#B8C7B0"
-                opacity="0.4"
-              />
-            </svg>
-
-            <!-- Walker overlay — moves to clicked house via CSS transition -->
-            <div
-              class="ssp-street-walker walking"
-              :style="{ left: walkerX + 'px', top: walkerY + 'px' }"
-            >
-              <svg viewBox="0 0 18 26" aria-hidden="true">
-                <circle cx="9" cy="5" r="3.5" fill="#231d45" />
-                <rect x="7" y="8" width="4" height="8" rx="1" fill="#00A19A" />
-                <rect
-                  class="arm-l"
-                  x="4.5"
-                  y="9"
-                  width="2"
-                  height="6"
-                  rx="1"
-                  fill="#231d45"
-                />
-                <rect
-                  class="arm-r"
-                  x="11.5"
-                  y="9"
-                  width="2"
-                  height="6"
-                  rx="1"
-                  fill="#231d45"
-                />
-                <rect
-                  class="leg-l"
-                  x="6.5"
-                  y="15"
-                  width="2"
-                  height="8"
-                  rx="1"
-                  fill="#231d45"
-                />
-                <rect
-                  class="leg-r"
-                  x="9.5"
-                  y="15"
-                  width="2"
-                  height="8"
-                  rx="1"
-                  fill="#231d45"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-        <div class="ssp-street-scroll-hint">
-          ← swipe to see the rest of your postcode →
-        </div>
-        <div class="ssp-street-tip">Tap any house to see its EPC and cost</div>
-
-        <!-- Selected house tooltip -->
-        <div class="ssp-street-tooltip" :class="{ you: selectedHouse.isYou }">
-          <span class="ssp-street-tooltip-num">
-            No. {{ selectedHouse.num }}{{ selectedHouse.isYou ? ' - You' : '' }}
-          </span>
-          <span
-            class="ssp-street-tooltip-rating"
-            :style="{ background: selectedHouse.color }"
-            >{{ selectedHouse.grade }} · {{ selectedHouse.score }}</span
-          >
-          <span class="ssp-street-tooltip-cost" :class="selectedHouse.tier">
-            {{ selectedHouse.cost }}/yr
-          </span>
-        </div>
-
-        <!-- Pathway projection -->
-        <div class="ssp-street-projection" @click="$emit('open-pathway')" role="button" tabindex="0" @keydown.enter="$emit('open-pathway')" @keydown.space.prevent="$emit('open-pathway')">
-          <div class="ssp-street-projection-icon">📈</div>
-          <div class="ssp-street-projection-body">
-            <div class="ssp-street-projection-label">
-              If you complete the EPC pathway
-            </div>
-            <div class="ssp-street-projection-num">
-              £{{ formatNum(annualCost - potentialSaving) }}<span>/yr</span>
-            </div>
-            <div class="ssp-street-projection-sub">
-              <b>2nd of {{ streetTotal || 18 }}</b> on your street · up from
-              {{ streetRankOrdinal.toLowerCase() }}
-            </div>
-          </div>
-          <div class="ssp-street-projection-saving">
-            <div class="ssp-street-projection-saving-num">
-              –£{{ formatNum(potentialSaving) }}
-            </div>
-            <div class="ssp-street-projection-saving-sub">/yr saved</div>
-          </div>
-        </div>
-
-        <div class="ssp-note">
-          Higher EPCs sell faster and <b>command ~£15k more</b> on average for a
-          3-bed in {{ outwardPostcode }} (Land Reg data).
-        </div>
-      </div>
-
-      <!-- ── STAT BREAKDOWN (5 rows · expandable) ─────────────────────── -->
-      <div class="section-h-row">
-        <div class="section-h section-h--accent">What's behind your score?</div>
-        <div class="section-h-sub">Points breakdown</div>
-      </div>
-      <div class="stat-card anim-4" data-tour="breakdown">
-        <template v-for="s in stats" :key="s.id">
-          <div
-            class="stat-row clickable"
-            :class="{ open: expandedStat === s.id }"
-            @click="toggleStat(s.id)"
-           role="button" tabindex="0" @keydown.enter="toggleStat(s.id)" @keydown.space.prevent="toggleStat(s.id)">
-            <div class="stat-icon">
-              <img
-                v-if="s.icon && s.icon.startsWith('/')"
-                :src="s.icon"
-                alt=""
-                loading="lazy"
-              />
-              <template v-else>{{ s.icon }}</template>
-            </div>
-            <div class="stat-label">{{ s.label }}</div>
-            <div class="stat-bar-wrap">
-              <div
-                class="stat-bar-fill"
-                :class="s.tone"
-                :style="{ width: s.pct + '%' }"
-              />
-            </div>
-            <div class="stat-value">{{ s.value }}/{{ s.max }}</div>
-            <span class="stat-row-chev">›</span>
-          </div>
-          <div v-if="expandedStat === s.id" class="stat-expand">
-            <div class="stat-expand-meta">
-              <div class="stat-expand-meta-tile">
-                <div class="stat-expand-meta-eyebrow">EPC steps</div>
-                <div
-                  class="stat-expand-meta-num"
-                  :class="s.steps > 0 ? 'cost' : 'save'"
-                >
-                  {{ s.steps > 0 ? s.steps : '-' }}
-                </div>
-                <div class="stat-expand-meta-sub">
-                  {{ s.steps > 0 ? 'recommended' : 'none recommended' }}
-                </div>
-              </div>
-              <div class="stat-expand-meta-tile">
-                <div class="stat-expand-meta-eyebrow">Could save</div>
-                <div class="stat-expand-meta-num save">
-                  <template v-if="s.saving > 0">
-                    £{{ s.saving
-                    }}<span style="font-size: 0.5625rem; color: var(--text-secondary)"
-                      >/yr</span
-                    >
-                  </template>
-                  <template v-else>-</template>
-                </div>
-                <div class="stat-expand-meta-sub">
-                  {{ s.saving > 0 ? s.savingSub : 'nothing to gain' }}
-                </div>
-              </div>
-              <div class="stat-expand-meta-tile">
-                <div class="stat-expand-meta-eyebrow">
-                  {{ s.thirdTileLabel }}
-                </div>
-                <div class="stat-expand-meta-num">
-                  {{ s.thirdTileNum || '-' }}
-                </div>
-                <div class="stat-expand-meta-sub">{{ s.thirdTileSub }}</div>
-              </div>
-            </div>
-            <div v-for="(line, i) in s.lines" :key="i" class="stat-cost-line">
-              <div class="stat-cost-bullet">
-                <img
-                  v-if="line.icon && line.icon.startsWith('/')"
-                  :src="line.icon"
-                  alt=""
-                  loading="lazy"
-                />
-                <template v-else>{{ line.icon }}</template>
-              </div>
-              <div class="stat-cost-info">
-                <div class="stat-cost-title">{{ line.title }}</div>
-                <div class="stat-cost-sub" v-html="line.sub" />
-              </div>
-              <div class="stat-cost-amt">
-                <div
-                  class="stat-cost-amt-big"
-                  :style="
-                    line.amtMuted
-                      ? { color: 'var(--text-faint)' }
-                      : line.amtGood
-                      ? { color: 'var(--accent-dark)' }
-                      : null
-                  "
-                >
-                  {{ line.amt }}
-                </div>
-                <div v-if="line.amtSub" class="stat-cost-amt-sub">
-                  {{ line.amtSub }}
-                </div>
-              </div>
-            </div>
-            <div class="stat-expand-foot" @click.stop="$emit('open-pathway')" role="button" tabindex="0" @keydown.enter="$emit('open-pathway')" @keydown.space.prevent="$emit('open-pathway')">
-              <div class="stat-expand-foot-text" v-html="s.footText" />
-              <div class="stat-expand-foot-arrow">›</div>
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <!-- ── FULL EPC DRAWER ─────────────────────────────────────────── -->
-      <div
-        ref="epcDrawerEl"
-        class="epc-drawer anim-3"
-        :class="{ open: epcDrawerOpen }"
-      >
-        <div class="epc-drawer-head" @click="toggleEpcDrawer" role="button" tabindex="0" @keydown.enter="toggleEpcDrawer" @keydown.space.prevent="toggleEpcDrawer">
-          <div class="epc-drawer-info">
-            <div class="epc-drawer-title">Full HomeScore breakdown</div>
-            <div class="epc-drawer-sub">
-              {{
-                epcDrawerOpen
-                  ? 'Tap to close'
-                  : 'Explore the public data and energy information behind this score'
-              }}
-            </div>
-          </div>
-          <div class="epc-drawer-view" :class="{ open: epcDrawerOpen }">
-            {{ epcDrawerOpen ? 'Close' : 'View breakdown' }}
-            <span class="epc-drawer-view-ar">→</span>
-          </div>
-        </div>
-        <div v-if="epcDrawerOpen" class="epc-drawer-body">
-          <!-- Summary row: current → potential -->
-          <div class="epc-summary">
-            <div class="epc-grade">
-              <div class="epc-grade-letter" :style="{ background: epcColor }">
-                {{ epcRating || '-' }}
-              </div>
-              <div class="epc-grade-sub">Current · {{ displayScore }}</div>
-            </div>
-            <div class="epc-arrow">→</div>
-            <div class="epc-grade">
-              <div
-                class="epc-grade-letter"
-                :style="{ background: epcPotentialColor }"
-              >
-                {{ epcPotentialRating || '-' }}
-              </div>
-              <div class="epc-grade-sub">
-                Potential · {{ epcPotentialScore ?? '-' }}
-              </div>
-            </div>
-            <div class="epc-saving">
-              <div class="epc-saving-num">
-                £{{ formatNum(potentialSaving) }}/yr
-              </div>
-              <div class="epc-saving-sub">potential saving</div>
-            </div>
-          </div>
-
-          <!-- 12 EPC items, each clickable to expand -->
-          <template v-for="item in epcItems" :key="item.id">
-            <div class="epc-item" @click="toggleEpcItem(item.id)" role="button" tabindex="0" @keydown.enter="toggleEpcItem(item.id)" @keydown.space.prevent="toggleEpcItem(item.id)">
-              <div class="epc-item-icon">
-                <img
-                  v-if="item.icon && item.icon.startsWith('/')"
-                  :src="item.icon"
-                  alt=""
-                  loading="lazy"
-                />
-                <template v-else>{{ item.icon }}</template>
-              </div>
-              <div class="epc-item-body">
-                <div class="epc-item-title">{{ item.title }}</div>
-                <div class="epc-item-sub" v-html="item.sub" />
-              </div>
-              <span class="epc-item-rating" :class="item.ratingClass">{{
-                item.rating
-              }}</span>
-              <span
-                class="epc-item-chev"
-                :class="{ open: expandedEpcItem === item.id }"
-                >›</span
-              >
-            </div>
-            <div v-if="expandedEpcItem === item.id" class="epc-item-expand">
-              <div class="epc-flag" :class="{ ok: item.flagOk }">
-                <div class="epc-flag-label">
-                  {{ item.flagOk ? '✓ Already strong' : "⚠ What's flagged" }}
-                </div>
-                <div class="epc-flag-text" v-html="item.flagText" />
-              </div>
-              <div v-if="item.fix" class="epc-fix">
-                <div class="epc-fix-label">{{ item.fix.label }}</div>
-                <div class="epc-fix-text" v-html="item.fix.text" />
-                <a class="epc-fix-action" @click.stop="$emit('open-pathway')"
-                  >See suppliers →</a
-                >
-              </div>
+          <template v-if="potentialSaving > 0">
+            <div class="score-strip-sub">Potential saving</div>
+            <div class="score-strip-save">
+              £{{ formatNum(potentialSaving) }}<span class="strip-unit">/year</span>
             </div>
           </template>
         </div>
+        <img
+          class="score-strip-ic"
+          src="/homescore-icon/wallet.png"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <div
+        class="score-strip-item clickable"
+        :class="{ active: activePanel === 'co2' }"
+        @click="togglePanel('co2')"
+      >
+        <div class="score-strip-txt">
+          <div class="score-strip-eyebrow">CO₂ emissions</div>
+          <div class="score-strip-num">
+            {{ co2NowDisplay.toFixed(1) }}<span class="strip-unit">t/year</span>
+          </div>
+          <div class="score-strip-sub">UK average</div>
+          <div class="score-strip-save score-strip-save--muted">
+            6.0<span class="strip-unit">t/year</span>
+          </div>
+        </div>
+        <img
+          class="score-strip-ic"
+          src="/homescore-icon/environmental.png"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+    </div>
+
+    <!-- ── STREET HERO CARD (ported 1:1 from `.hero` in the
+         umu-owner-journey prototype) ─────────────────────────────── -->
+    <div
+      class="hs-street-hero anim-3"
+      :class="{ active: activePanel === 'street' }"
+      @click="openStreetMap()"
+    >
+      <div class="hsh-eyebrow">
+        <img src="/homescore-icon/houseSearch.png" alt="" class="hsh-eyebrow-ic" loading="lazy" />
+        How does this home compare?
       </div>
 
-      <!-- ── FORK SECTION ───────────────────────────────────────────────
+      <!-- Rank on the left, the mini street strip on the right. -->
+      <div class="hsh-main">
+        <div class="hsh-rankrow">
+          <template v-if="hasStreetRank">
+            <span class="hsh-big">#{{ streetRank }}</span>
+            <span class="hsh-rmeta">of {{ streetTotal }} homes</span>
+          </template>
+          <template v-else>
+            <span class="hsh-big">—</span>
+            <span class="hsh-rmeta">street rank pending</span>
+          </template>
+        </div>
+        <div class="hsh-preview" aria-hidden="true">
+          <div
+            v-for="(p, i) in streetHeroPins"
+            :key="i"
+            class="hsh-ph"
+            :class="{ you: p.isYou }"
+          >
+            <span class="hsh-cd" :style="{ background: p.dot }" />
+          </div>
+        </div>
+      </div>
+
+      <p v-if="streetDiff != null && streetDiff !== 0" class="hsh-line">
+        This home is estimated to cost
+        <b>£{{ formatNum(Math.abs(streetDiff)) }} {{ streetDiff < 0 ? 'less' : 'more' }}</b>
+        per year to run than the street average.
+      </p>
+      <p v-else-if="streetDiff === 0" class="hsh-line">
+        This home costs about the same to run as the street average.
+      </p>
+      <p v-else class="hsh-line">
+        Not enough neighbouring homes have EPC data to compare running costs yet.
+      </p>
+
+      <div class="hsh-foot">
+        <span v-if="(potentialSaving ?? 0) > 0" class="hsh-projchip">
+          <span>
+            ↑ With the suggested improvements<template v-if="epcPotentialRating">, it could reach EPC <b>{{ epcPotentialRating }}</b></template>
+            and save around <b>£{{ formatNum(potentialSaving) }}/year</b>
+          </span>
+        </span>
+        <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
+          Explore your street
+          <span class="hsh-cta-ar">→</span>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ── STAT BREAKDOWN (5 rows · expandable) ─────────────────────── -->
+    <div class="section-h-row">
+      <div class="section-h">What's behind your score?</div>
+      <div class="section-h-sub">Points breakdown</div>
+    </div>
+    <div class="stat-card anim-4" data-tour="breakdown">
+      <template v-for="s in stats" :key="s.id">
+        <div
+          class="stat-row clickable"
+          :class="{ open: expandedStat === s.id }"
+          @click="toggleStat(s.id)"
+        >
+          <div class="stat-icon"><img v-if="isImg(s.icon)" :src="s.icon" alt="" loading="lazy" /><template v-else>{{ s.icon }}</template></div>
+          <div class="stat-label">{{ s.label }}</div>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar-fill" :class="s.tone" :style="{ width: s.pct + '%' }" />
+          </div>
+          <div class="stat-value">{{ s.value }}/{{ s.max }}</div>
+          <span class="stat-row-chev">›</span>
+        </div>
+        <div v-if="expandedStat === s.id" class="stat-expand">
+          <div class="stat-expand-meta">
+            <div class="stat-expand-meta-tile">
+              <div class="stat-expand-meta-eyebrow">EPC steps</div>
+              <div class="stat-expand-meta-num" :class="s.steps > 0 ? 'cost' : 'save'">
+                {{ s.steps > 0 ? s.steps : '—' }}
+              </div>
+              <div class="stat-expand-meta-sub">
+                {{ s.steps > 0 ? 'recommended' : 'none recommended' }}
+              </div>
+            </div>
+            <div class="stat-expand-meta-tile">
+              <div class="stat-expand-meta-eyebrow">Could save</div>
+              <div class="stat-expand-meta-num save">
+                <template v-if="s.saving > 0">
+                  £{{ s.saving
+                  }}<span style="font-size: 9px; color: var(--text-secondary)">/yr</span>
+                </template>
+                <template v-else>—</template>
+              </div>
+              <div class="stat-expand-meta-sub">
+                {{ s.saving > 0 ? s.savingSub : 'nothing to gain' }}
+              </div>
+            </div>
+            <div class="stat-expand-meta-tile">
+              <div class="stat-expand-meta-eyebrow">{{ s.thirdTileLabel }}</div>
+              <div class="stat-expand-meta-num">{{ s.thirdTileNum || '—' }}</div>
+              <div class="stat-expand-meta-sub">{{ s.thirdTileSub }}</div>
+            </div>
+          </div>
+          <div v-for="(line, i) in s.lines" :key="i" class="stat-cost-line">
+            <div class="stat-cost-bullet"><img v-if="isImg(line.icon)" :src="line.icon" alt="" loading="lazy" /><template v-else>{{ line.icon }}</template></div>
+            <div class="stat-cost-info">
+              <div class="stat-cost-title">{{ line.title }}</div>
+              <div class="stat-cost-sub" v-html="line.sub" />
+            </div>
+            <div class="stat-cost-amt">
+              <div
+                class="stat-cost-amt-big"
+                :style="line.amtMuted ? { color: 'var(--text-faint)' } : line.amtGood ? { color: 'var(--accent-dark)' } : null"
+              >{{ line.amt }}</div>
+              <div v-if="line.amtSub" class="stat-cost-amt-sub">{{ line.amtSub }}</div>
+            </div>
+          </div>
+          <div class="stat-expand-foot" @click.stop="$emit('open-pathway')">
+            <div class="stat-expand-foot-text" v-html="s.footText" />
+            <div class="stat-expand-foot-arrow">›</div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- ── FULL EPC DRAWER ─────────────────────────────────────────── -->
+    <div ref="epcDrawerEl" class="epc-drawer anim-3" :class="{ open: epcDrawerOpen }">
+      <div class="epc-drawer-head" @click="toggleEpcDrawer">
+        <div class="epc-drawer-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 4 14 11 14 11 22 20 10 13 10" fill="currentColor" />
+          </svg>
+        </div>
+        <div class="epc-drawer-info">
+          <div class="epc-drawer-title">Full EPC breakdown</div>
+          <div class="epc-drawer-sub">
+            {{ epcDrawerOpen ? 'Tap to close' : `Every line of energy detail behind your score · ${epcItems.length} items` }}
+          </div>
+        </div>
+        <div class="epc-drawer-chev" :class="{ open: epcDrawerOpen }">›</div>
+      </div>
+      <div v-if="epcDrawerOpen" class="epc-drawer-body">
+        <!-- Summary row: current → potential -->
+        <div class="epc-summary">
+          <div class="epc-grade">
+            <div class="epc-grade-letter" :style="{ background: epcColor }">{{ epcRating || '—' }}</div>
+            <div class="epc-grade-sub">Current · {{ displayScore }}</div>
+          </div>
+          <div class="epc-arrow">→</div>
+          <div class="epc-grade">
+            <div class="epc-grade-letter" :style="{ background: epcPotentialColor }">{{ epcPotentialRating || '—' }}</div>
+            <div class="epc-grade-sub">Potential · {{ epcPotentialScore ?? '—' }}</div>
+          </div>
+          <div class="epc-saving">
+            <div class="epc-saving-num">£{{ formatNum(potentialSaving) }}/yr</div>
+            <div class="epc-saving-sub">potential saving</div>
+          </div>
+        </div>
+
+        <!-- 12 EPC items, each clickable to expand -->
+        <template v-for="item in epcItems" :key="item.id">
+          <div class="epc-item" @click="toggleEpcItem(item.id)">
+            <div class="epc-item-icon"><img v-if="isImg(item.icon)" :src="item.icon" alt="" loading="lazy" /><template v-else>{{ item.icon }}</template></div>
+            <div class="epc-item-body">
+              <div class="epc-item-title">{{ item.title }}</div>
+              <div class="epc-item-sub" v-html="item.sub" />
+            </div>
+            <span class="epc-item-rating" :class="item.ratingClass">{{ item.rating }}</span>
+            <span class="epc-item-chev" :class="{ open: expandedEpcItem === item.id }">›</span>
+          </div>
+          <div v-if="expandedEpcItem === item.id" class="epc-item-expand">
+            <div class="epc-flag" :class="{ ok: item.flagOk }">
+              <div class="epc-flag-label">{{ item.flagOk ? '✓ Already strong' : '⚠ What\'s flagged' }}</div>
+              <div class="epc-flag-text" v-html="item.flagText" />
+            </div>
+            <div v-if="item.fix" class="epc-fix">
+              <div class="epc-fix-label"><Icon name="i-lucide-sparkles" />{{ item.fix.label }}</div>
+              <div class="epc-fix-text" v-html="item.fix.text" />
+              <a class="epc-fix-action" @click.stop="$emit('open-pathway')">See suppliers →</a>
+            </div>
+          </div>
+        </template>
+
+      </div>
+    </div>
+    </div><!-- /hs-col--right -->
+    </div><!-- /hs-cols -->
+
+    <!-- ── FORK SECTION ───────────────────────────────────────────────
          Branching driven by ownership + passport state:
          • IS the owner (has a passport on this property)
              → Dashboard / Pathway / Boost / Get Real HomeScore
@@ -1063,271 +681,158 @@
              AND current user isn't the owner
              → only "I'm interested" — the auth state tells us they aren't
                the owner. -->
-      <div class="fork-section anim-3" data-tour="intent">
-        <!-- Owner of this property — four destinations -->
-        <template v-if="isPropertyOwner">
-          <div class="fork-eyebrow">Pick up where you left off</div>
-          <div class="fork-options">
-            <button
-              class="fork-opt primary"
-              type="button"
-              @click="$emit('open-dashboard')"
-            >
-              <div class="fork-opt-icon">📊</div>
-              <div class="fork-opt-body">
-                <div class="fork-opt-title">Go to your dashboard</div>
-                <div class="fork-opt-sub">
-                  Your home base - Passport, docs &amp; everything in one place.
-                </div>
-              </div>
-              <div class="fork-opt-chev">›</div>
-            </button>
-            <button
-              class="fork-opt"
-              type="button"
-              @click="$emit('open-pathway')"
-            >
-              <div class="fork-opt-icon">
-                <img
-                  src="/op-icons/investment/target.png"
-                  alt=""
-                  loading="lazy"
-                />
-              </div>
-              <div class="fork-opt-body">
-                <div class="fork-opt-title">Your pathway</div>
-                <div class="fork-opt-sub">Keep climbing your HomeScore.</div>
-              </div>
-              <div class="fork-opt-chev">›</div>
-            </button>
-            <button class="fork-opt" type="button" @click="$emit('open-boost')">
-              <div class="fork-opt-icon">
-                <img
-                  src="/op-icons/homescore/lightning.png"
-                  alt=""
-                  loading="lazy"
-                />
-              </div>
-              <div class="fork-opt-body">
-                <div class="fork-opt-title">Boost your score</div>
-                <div class="fork-opt-sub">
-                  Add docs to grow your Upfront Ready &amp; Passport.
-                </div>
-              </div>
-              <div class="fork-opt-chev">›</div>
-            </button>
-            <button class="fork-opt" type="button" @click="$emit('refine')">
-              <div class="fork-opt-body">
-                <div class="fork-opt-title">Get Real HomeScore</div>
-                <div class="fork-opt-sub">
-                  Answer the owner quiz to lock in your verified score.
-                </div>
-              </div>
-              <div class="fork-opt-chev">›</div>
-            </button>
-          </div>
-        </template>
+    <div class="fork-section anim-3" data-tour="intent">
+      <!-- Owner of this property — four destinations -->
+      <template v-if="isPropertyOwner">
+        <div class="fork-eyebrow">Pick up where you left off</div>
+        <div class="fork-options">
+          <button class="fork-opt primary" type="button" @click="$emit('open-dashboard')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/growthChart.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">Go to your dashboard</div>
+              <div class="fork-opt-sub">Your home base — Passport, docs &amp; everything in one place.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+          <button class="fork-opt" type="button" @click="$emit('open-pathway')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/targetPathway.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">Your pathway</div>
+              <div class="fork-opt-sub">Keep climbing your HomeScore.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+          <button class="fork-opt" type="button" @click="$emit('open-boost')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/boostBolt.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">Boost your score</div>
+              <div class="fork-opt-sub">Add docs to grow your Upfront Ready &amp; Passport.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+          <button class="fork-opt" type="button" @click="$emit('refine')">
+            <!-- Checklist + magnifier: the owner quiz that verifies the score. -->
+            <div class="fork-opt-icon"><img src="/homescore-icon/clipboard.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">Get Real HomeScore</div>
+              <div class="fork-opt-sub">Answer the owner quiz to lock in your verified score.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+        </div>
+      </template>
 
-        <!-- Logged-in non-owner viewing a property that someone else has
+      <!-- Logged-in non-owner viewing a property that someone else has
            already claimed (in-progress / published). Only the buyer-side
            option here — the "I own this property" CTA is hidden because
            the property already has a verified owner. -->
-        <template v-else-if="isLoggedIn && passportState !== 'unclaimed'">
-          <div class="fork-eyebrow">What you can do here</div>
-          <div class="fork-options">
-            <!-- Same navy styling + icon + copy as the buyer tile below
-                 (.fork-tile--buyer), just laid out full-width/horizontal
-                 (icon left, text right) since there's only one option here
-                 - no "I own this property" tile to sit beside. -->
-            <button
-              class="fork-opt buyer"
-              type="button"
-              @click="$emit('interested')"
-            >
-              <div class="fork-opt-icon">
-                <img
-                  src="/op-icons/homescore/houseSearch.png"
-                  alt=""
-                  loading="lazy"
-                />
-              </div>
-              <div class="fork-opt-body">
-                <div class="fork-opt-title">
-                  I'm interested in this property
-                </div>
-                <div class="fork-opt-sub">
-                  Explore its running costs, risks and the questions worth
-                  asking before you buy.
-                </div>
-              </div>
-              <div class="fork-opt-chev">›</div>
-            </button>
-          </div>
-        </template>
+      <template v-else-if="isLoggedIn && passportState !== 'unclaimed'">
+        <div class="fork-eyebrow">What you can do here</div>
+        <div class="fork-options">
+          <button class="fork-opt primary" type="button" @click="$emit('interested')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">I'm interested in this property</div>
+              <div class="fork-opt-sub">Full running costs, risks and questions to ask before you offer.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+        </div>
+      </template>
 
-        <!-- Unclaimed property OR guest visitor — keep both options. Even a
+      <!-- Unclaimed property OR guest visitor — keep both options. Even a
            signed-in user might be the owner of an unclaimed home that
            hasn't been claimed yet, so we still surface "I own this
            property". The claim CTA auth-gates on tap if needed. -->
-        <template v-else>
-          <div class="fork-eyebrow">
-            What's your connection to this property?
-          </div>
-          <div class="fork-grid">
-            <button
-              class="fork-tile fork-tile--owner"
-              type="button"
-              @click="$emit('claim')"
-            >
-              <img
-                src="/op-icons/landing/homeScoreCard.png"
-                alt=""
-                class="fork-tile-icon-top"
-                loading="lazy"
-              />
-              <div class="fork-tile-title">I own this property</div>
-              <div class="fork-tile-sub">
-                Take the HomeScore quiz to tell us what's changed, unlock a more
-                accurate score and start building your Property Passport.
-              </div>
-              <div class="fork-tile-bottom-row">
-                <span class="fork-tile-lock">🔒 Secure &amp; private</span>
-                <span class="fork-tile-arrow fork-tile-arrow--owner">→</span>
-              </div>
-            </button>
-            <button
-              class="fork-tile fork-tile--buyer"
-              type="button"
-              @click="$emit('interested')"
-            >
-              <img
-                src="/op-icons/homescore/houseSearch.png"
-                alt=""
-                class="fork-tile-icon-top"
-                loading="lazy"
-              />
-              <div class="fork-tile-title fork-tile-title--buyer">
-                I'm interested in this property
-              </div>
-              <div class="fork-tile-sub fork-tile-sub--buyer">
-                Explore its running costs, risks and the questions worth asking
-                before you buy.
-              </div>
-              <div class="fork-tile-bottom-row fork-tile-bottom-row--buyer">
-                <span class="fork-tile-arrow fork-tile-arrow--buyer">→</span>
-              </div>
-            </button>
-          </div>
-        </template>
-      </div>
-
-      <div class="hs-trust-note">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          width="13"
-          height="13"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        Your data is private and secure. We'll never share your information
-        without your permission.
-      </div> </template
-    ><!-- /hasEpcData -->
+      <template v-else>
+        <div class="fork-eyebrow">What's your connection to this property?</div>
+        <div class="fork-options">
+          <button class="fork-opt primary" type="button" @click="$emit('claim')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/house.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">I own this property</div>
+              <div class="fork-opt-sub">Take the quiz to level up your stats and get your real score.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+          <button class="fork-opt" type="button" @click="$emit('interested')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></div>
+            <div class="fork-opt-body">
+              <div class="fork-opt-title">I'm interested in this property</div>
+              <div class="fork-opt-sub">Full running costs, risks and questions to ask before you offer.</div>
+            </div>
+            <div class="fork-opt-chev">›</div>
+          </button>
+        </div>
+      </template>
+    </div>
+    </div><!-- /hs-report -->
+    </template><!-- /hasEpcData -->
 
     <div style="height: 32px" />
 
     <!-- ── Claim-it-free explainer modal (teleported to body so it
          escapes any parent overflow/transform stacking context) ─── -->
     <Teleport to="body">
-      <Transition name="claim-modal">
-        <div
-          v-if="claimModalOpen"
-          class="claim-overlay"
-          @click.self="claimModalOpen = false"
-        >
-          <div class="claim-sheet" @click.stop>
-            <div class="claim-grip" />
-            <div class="claim-icon">
-              <img
-                src="/op-icons/buyer-profile-build/idCard.png"
-                alt=""
-                loading="lazy"
-              />
-            </div>
-            <div class="claim-title">Claim this property</div>
-            <div class="claim-sub">
-              You'll verify you own <b>{{ addrLineFull }}</b> and unlock your
-              HomeScore, Upfront Ready % and Property Passport.
-            </div>
-            <div class="claim-steps">
-              <div class="claim-step">
-                <div class="claim-step-num">1</div>
-                <div class="claim-step-body">
-                  <div class="claim-step-title">Verify your ID</div>
-                  <div class="claim-step-sub">
-                    Onfido · photo + selfie · ~60 seconds
-                  </div>
-                </div>
-              </div>
-              <div class="claim-step">
-                <div class="claim-step-num">2</div>
-                <div class="claim-step-body">
-                  <div class="claim-step-title">Confirm ownership</div>
-                  <div class="claim-step-sub">
-                    HM Land Registry cross-check · automatic
-                  </div>
-                </div>
-              </div>
-              <div class="claim-step">
-                <div class="claim-step-num">3</div>
-                <div class="claim-step-body">
-                  <div class="claim-step-title">Take the owner quiz</div>
-                  <div class="claim-step-sub">
-                    6–8 EPC questions · earns your real HomeScore
-                  </div>
-                </div>
+    <Transition name="claim-modal">
+      <div v-if="claimModalOpen" class="claim-overlay" @click.self="claimModalOpen = false">
+        <div class="claim-sheet" @click.stop>
+          <div class="claim-grip" />
+          <img class="claim-icon" src="/homescore-icon/idCard.png" alt="" loading="lazy" />
+          <div class="claim-title">Claim this property</div>
+          <div class="claim-sub">
+            You'll verify you own <b>{{ addrLineFull }}</b> and unlock your
+            HomeScore, Upfront Ready % and Property Passport.
+          </div>
+          <div class="claim-steps">
+            <div class="claim-step">
+              <div class="claim-step-num">1</div>
+              <div class="claim-step-body">
+                <div class="claim-step-title">Verify your ID</div>
+                <div class="claim-step-sub">Onfido · photo + selfie · ~60 seconds</div>
               </div>
             </div>
-            <div class="claim-cta-row">
-              <button
-                type="button"
-                class="claim-btn ghost"
-                @click="claimModalOpen = false"
-              >
-                Not now
-              </button>
-              <button
-                type="button"
-                class="claim-btn primary"
-                @click="claimModalOpen = false; $emit('claim')"
-              >
-                Start verification →
-              </button>
+            <div class="claim-step">
+              <div class="claim-step-num">2</div>
+              <div class="claim-step-body">
+                <div class="claim-step-title">Confirm ownership</div>
+                <div class="claim-step-sub">HM Land Registry cross-check · automatic</div>
+              </div>
             </div>
-            <div class="claim-privacy">
-              <span class="claim-privacy-ic"
-                ><img
-                  src="/op-icons/investment/padlock.png"
-                  alt=""
-                  loading="lazy"
-              /></span>
-              <span>Free · no card needed · we'll never sell your data.</span>
+            <div class="claim-step">
+              <div class="claim-step-num">3</div>
+              <div class="claim-step-body">
+                <div class="claim-step-title">Take the owner quiz</div>
+                <div class="claim-step-sub">6–8 EPC questions · earns your real HomeScore</div>
+              </div>
             </div>
           </div>
+          <div class="claim-cta-row">
+            <button type="button" class="claim-btn ghost" @click="claimModalOpen = false">
+              Not now
+            </button>
+            <button
+              type="button"
+              class="claim-btn primary"
+              @click="claimModalOpen = false; $emit('claim')"
+            >
+              Start verification →
+            </button>
+          </div>
+          <div class="claim-privacy">
+            <img class="hs-lock-ic" src="/homescore-icon/padlock.png" alt="" loading="lazy" />
+            <span>Free · no card needed · we'll never sell your data.</span>
+          </div>
         </div>
-      </Transition>
+      </div>
+    </Transition>
     </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import PassportClaimBox from '~/components/property/PassportClaimBox.vue'
 import HomescoreAddressCard from '~/components/homescore/HomescoreAddressCard.vue'
 
 const props = withDefaults(
@@ -1349,14 +854,16 @@ const props = withDefaults(
     /** Street rank (1 = cheapest, N = most expensive) */
     streetRank?: number | null
     streetTotal?: number | null
+    /** Street average annual energy cost from /street-energy-rank. */
+    streetAverageCost?: number | null
     /** Real searches today from PropertySearchLog */
     searchesToday?: number
     /** Number of users actively watching this property (wishlist + saved).
      *  Drives the "people watching" social-proof row under the address. */
     watchersCount?: number
-    /** Passport status of the property - drives the claim box so we don't
+    /** Passport status of the property — drives the claim box so we don't
      *  pitch "claim" on a home that's already claimed. */
-    passportState?: 'unclaimed' | 'private' | 'partiallyPublic' | 'public'
+    passportState?: 'unclaimed' | 'inProgress' | 'published'
     /** Passport build progress (drives the in-progress ring + drawer). */
     passportProgressPct?: number
     passportSectionsDone?: number
@@ -1364,18 +871,19 @@ const props = withDefaults(
     /** Set by parent to auto-pop the claim drawer (e.g. when the user
      *  has just returned from sign-in with ?claim=1) */
     autoOpenClaim?: boolean
-    /** Auth + ownership flags - drive the fork-section branching at the
+    /** Auth + ownership flags — drive the fork-section branching at the
      *  bottom of the score view (guest / owner / non-owner). */
     isLoggedIn?: boolean
     isPropertyOwner?: boolean
   }>(),
   {
-    potentialSaving: 445,
+    potentialSaving: 0,
     co2Now: null,
     co2Potential: null,
     billsSplit: null,
     streetRank: null,
     streetTotal: null,
+    streetAverageCost: null,
     searchesToday: 0,
     watchersCount: 0,
     passportState: 'unclaimed',
@@ -1418,7 +926,7 @@ const billsSplitDisplay = computed(() => {
 const streetRankLabel = computed(() => {
   const r = props.streetRank
   const t = props.streetTotal
-  if (r == null || t == null || t <= 0) return '-'
+  if (r == null || t == null || t <= 0) return '—'
   const ratio = r / t
   if (ratio <= 0.33) return 'top of street'
   if (ratio <= 0.5) return 'above avg'
@@ -1430,15 +938,7 @@ const co2NowDisplay = computed(() => {
   const v = props.co2Now
   if (v != null && Number.isFinite(v)) return v
   // Estimate from EPC rating when no real value is present.
-  const map: Record<string, number> = {
-    A: 1.8,
-    B: 2.6,
-    C: 3.8,
-    D: 5.2,
-    E: 6.4,
-    F: 8.1,
-    G: 9.6,
-  }
+  const map: Record<string, number> = { A: 1.8, B: 2.6, C: 3.8, D: 5.2, E: 6.4, F: 8.1, G: 9.6 }
   const r = (props.epcRating || '').toUpperCase()
   return map[r] ?? 6.4
 })
@@ -1452,11 +952,11 @@ const emit = defineEmits<{
   (e: 'open-pathway'): void
   (e: 'see-running-costs'): void
   (e: 'see-street'): void
-  /** Property already claimed - parent navigates to the passport/property. */
+  /** Property already claimed — parent navigates to the passport/property. */
   (e: 'view-passport'): void
   /** Open the £99 unlock drawer on the property page (in-progress/published). */
   (e: 'buy-passport'): void
-  /** "This property is unclaimed" arrow / cxUnclaimed drawer CTA -
+  /** "This property is unclaimed" arrow / cxUnclaimed drawer CTA —
    *  login (if needed) → property page with the Choose Passport drawer. */
   (e: 'claim-passport'): void
   /** Fires when the user dismisses the claim modal so the parent can
@@ -1476,9 +976,7 @@ const gradientId = `hs-v6-grad-${Math.random().toString(36).slice(2, 8)}`
 // The meta sub-line (postcode · type · bedrooms) reveals instantly,
 // the headline address types out one character at a time for a "this
 // is YOUR home" beat. Mirrors the prototype's #addrLine / #addrLineCaret.
-const addrLineFull = computed(
-  () => props.property?.addressLine1 || 'Your property',
-)
+const addrLineFull = computed(() => props.property?.addressLine1 || 'Your property')
 const addrMetaFull = computed(() => {
   const p = props.property
   if (!p) return ''
@@ -1558,67 +1056,55 @@ const displayScore = computed(() => Math.round(animatedScore.value))
 
 // Gauge stroke-dashoffset: full circle is 2π·50 = 314.16. We start at
 // 314.16 (empty), tick down to 314.16 · (1 - score/100).
-const gaugeOffset = computed(
-  () => 314.16 - (animatedScore.value / 100) * 314.16,
-)
+const gaugeOffset = computed(() => 314.16 - (animatedScore.value / 100) * 314.16)
 
 // ── Score band copy (drives the big headline next to the gauge) ──
 const scoreBandTitle = computed(() => {
   const s = props.score
-  if (s >= 92) return 'Top of the class'
-  if (s >= 81) return 'Excellent'
-  if (s >= 69) return 'Above average'
-  if (s >= 55) return 'Average'
-  if (s >= 39) return 'Room to climb'
-  if (s >= 21) return 'Plenty to gain'
-  return 'Critical'
+  if (s >= 92) return 'Top of the class · A'
+  if (s >= 81) return 'Excellent · B'
+  if (s >= 69) return 'Above average · C'
+  if (s >= 55) return 'Average · D'
+  if (s >= 39) return 'Room to climb · E → C'
+  if (s >= 21) return 'Plenty to gain · F → C'
+  return 'Critical · G → D'
 })
 const scoreExplainer = computed(() => {
   const saving = formatNum(props.potentialSaving ?? 0)
-  // Real count from the EPC certificate's recommendations, not a fixed
-  // number — was hardcoded to "6 improvements" regardless of how many
-  // steps the actual certificate listed (often 3-5).
+  // Real count from the EPC certificate's recommendations (was fixed at 6).
   const count = (props.property as any)?.epcRecommendations?.length ?? 0
-  const improvements =
+  const steps =
     count > 0 ? `${count} improvement${count === 1 ? '' : 's'}` : 'improvements'
-  return `Public data suggests <b>${improvements}</b> that could reduce estimated running costs by around <b>£${saving}/year</b>.`
+  return `Public data suggests <b>${steps}</b> that could reduce estimated running costs by around <b>£${saving}/year</b>.`
 })
 
 // ── EPC letter pill colour ───────────────────────────────────────
-const EPC_BAND_COLORS: Record<string, string> = {
-  A: '#008060',
-  B: '#2EAB55',
-  C: '#7AB040',
-  D: '#E6A23C',
-  E: '#D86F4A',
-  F: '#C73E36',
-  G: '#7A2A20',
-}
-const epcColor = computed(
-  () => EPC_BAND_COLORS[(props.epcRating || '').toUpperCase()] || '#9c98ad',
-)
-
-// Real potential rating/score from the EPC certificate — was hardcoded to
-// "C" / "75" regardless of what the actual certificate said (e.g. a real
-// potential of 81/B showed as 75/C, matching only the *first* improvement
-// step's result rather than the certificate's true overall potential).
-const epcPotentialScore = computed<number | null>(() => {
-  const v = (props.property as any)?.epcScorePotential
-  return typeof v === 'number' && Number.isFinite(v) ? v : null
+const epcColor = computed(() => {
+  const map: Record<string, string> = {
+    A: '#008060',
+    B: '#2EAB55',
+    C: '#7AB040',
+    D: '#E6A23C',
+    E: '#D86F4A',
+    F: '#C73E36',
+    G: '#7A2A20',
+  }
+  return map[(props.epcRating || '').toUpperCase()] || '#9c98ad'
 })
-const epcPotentialRating = computed<string | null>(
-  () => (props.property as any)?.epcRatingPotential || null,
-)
-const epcPotentialColor = computed(
-  () =>
-    EPC_BAND_COLORS[(epcPotentialRating.value || '').toUpperCase()] ||
-    '#9c98ad',
-)
 
 // ── Quick stats strip — popout panel toggle ──────────────────────
 const activePanel = ref<'bills' | 'co2' | 'street' | null>(null)
 function togglePanel(p: 'bills' | 'co2' | 'street') {
   activePanel.value = activePanel.value === p ? null : p
+}
+
+// "Explore your street map" — the street panel opens in the left column and
+// is much taller than the right one, which left a blank gutter next to it.
+// Opening the full EPC breakdown at the same time fills that space.
+function openStreetMap() {
+  const opening = activePanel.value !== 'street'
+  activePanel.value = opening ? 'street' : null
+  if (opening) epcDrawerOpen.value = true
 }
 
 // ── CO₂ panel maths ──────────────────────────────────────────────
@@ -1630,12 +1116,8 @@ const co2Potential = computed(() => {
   return Math.max(1.4, co2NowDisplay.value * 0.53)
 })
 // Bars are sized relative to a 10t maximum so they're comparable.
-const co2NowPct = computed(() =>
-  Math.min(100, (co2NowDisplay.value / 10) * 125),
-)
-const co2PotentialPct = computed(() =>
-  Math.min(100, (co2Potential.value / 10) * 125),
-)
+const co2NowPct = computed(() => Math.min(100, (co2NowDisplay.value / 10) * 125))
+const co2PotentialPct = computed(() => Math.min(100, (co2Potential.value / 10) * 125))
 
 // ── Street panel ────────────────────────────────────────────────
 // House data lifted from the prototype's hand-drawn 18-house SVG. Each
@@ -1677,7 +1159,7 @@ function buildStreetHouses(): { top: StreetHouse[]; bottom: StreetHouse[] } {
   // Mock palette for the 17 neighbours — until backend exposes per-house
   // EPC data, we cycle through a plausible spread of grades/costs.
   const palette: Array<[string, number, string, 'good' | 'warn' | 'high']> = [
-    ['A', 92, '£945', 'good'],
+    ['A', 92, '£945',   'good'],
     ['B', 84, '£1,108', 'good'],
     ['C', 76, '£1,193', 'good'],
     ['C', 72, '£1,265', 'warn'],
@@ -1737,9 +1219,7 @@ function buildStreetHouses(): { top: StreetHouse[]; bottom: StreetHouse[] } {
 }
 
 const topRowHouses = computed<StreetHouse[]>(() => buildStreetHouses().top)
-const bottomRowHouses = computed<StreetHouse[]>(
-  () => buildStreetHouses().bottom,
-)
+const bottomRowHouses = computed<StreetHouse[]>(() => buildStreetHouses().bottom)
 
 function mkHouse(
   num: string,
@@ -1757,55 +1237,13 @@ function mkHouse(
     string,
     { color: string; roof: string; door: string; window: string; dot: string }
   > = {
-    A: {
-      color: '#00A19A',
-      roof: '#2EAB55',
-      door: '#2EAB55',
-      window: '#A8E6C4',
-      dot: '#2EAB55',
-    },
-    B: {
-      color: '#2EAB55',
-      roof: '#2EAB55',
-      door: '#2EAB55',
-      window: '#A8E6C4',
-      dot: '#2EAB55',
-    },
-    C: {
-      color: '#7AB040',
-      roof: '#7AB040',
-      door: '#2EAB55',
-      window: '#C7E8E4',
-      dot: '#2EAB55',
-    },
-    D: {
-      color: '#E6A23C',
-      roof: '#E6A23C',
-      door: '#A0683E',
-      window: '#C7E8E4',
-      dot: '#E6A23C',
-    },
-    E: {
-      color: '#D86F4A',
-      roof: '#D86F4A',
-      door: '#7C8B9C',
-      window: '#A4B4C2',
-      dot: '#E6A23C',
-    },
-    F: {
-      color: '#C73E36',
-      roof: '#C73E36',
-      door: '#7C8B9C',
-      window: '#A4B4C2',
-      dot: '#E74C5E',
-    },
-    G: {
-      color: '#C73E36',
-      roof: '#C73E36',
-      door: '#7C8B9C',
-      window: '#A4B4C2',
-      dot: '#E74C5E',
-    },
+    A: { color: '#00A19A', roof: '#2EAB55', door: '#2EAB55', window: '#A8E6C4', dot: '#2EAB55' },
+    B: { color: '#2EAB55', roof: '#2EAB55', door: '#2EAB55', window: '#A8E6C4', dot: '#2EAB55' },
+    C: { color: '#7AB040', roof: '#7AB040', door: '#2EAB55', window: '#C7E8E4', dot: '#2EAB55' },
+    D: { color: '#E6A23C', roof: '#E6A23C', door: '#A0683E', window: '#C7E8E4', dot: '#E6A23C' },
+    E: { color: '#D86F4A', roof: '#D86F4A', door: '#7C8B9C', window: '#A4B4C2', dot: '#E6A23C' },
+    F: { color: '#C73E36', roof: '#C73E36', door: '#7C8B9C', window: '#A4B4C2', dot: '#E74C5E' },
+    G: { color: '#C73E36', roof: '#C73E36', door: '#7C8B9C', window: '#A4B4C2', dot: '#E74C5E' },
   }
   const p = palette[grade] ?? palette.E
   return {
@@ -1830,7 +1268,7 @@ function mkHouse(
 // drive off this state. Clicking any house re-points everything.
 const selectedHouse = ref<StreetHouse>(
   mkHouse(
-    '15',
+    String(youHouseNum.value),
     props.epcRating || 'E',
     Math.round(props.score),
     `£${formatNum(props.annualCost)}`,
@@ -1858,17 +1296,19 @@ const streetName = computed(() => {
 // Title-cased version used in the eyebrow of the street hero card
 // (the prototype shows "Woodfield Road", not all-caps).
 const streetNameTitle = computed(() =>
-  streetName.value.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
+  streetName.value
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase()),
 )
 
 // Static pin layout that mirrors the prototype's `.preview` mini-strip —
 // 7 houses spread across the road, with the "you" pin highlighted with
 // a teal halo. Colours mirror the band legend.
 const streetHeroPins = [
-  { left: 0, isYou: false, dot: '#37B27A' },
+  { left: 0,  isYou: false, dot: '#37B27A' },
   { left: 14, isYou: false, dot: '#E0584F' },
   { left: 28, isYou: false, dot: '#E8A33A' },
-  { left: 43, isYou: true, dot: '#E8A33A' },
+  { left: 43, isYou: true,  dot: '#E8A33A' },
   { left: 60, isYou: false, dot: '#37B27A' },
   { left: 74, isYou: false, dot: '#E0584F' },
   { left: 88, isYou: false, dot: '#E8A33A' },
@@ -1880,20 +1320,56 @@ const outwardPostcode = computed(() => {
   return pc.split(/\s+/)[0]
 })
 
+// Real street comparison — only when the backend has ranked this home
+// against at least one neighbour; otherwise the rank UI is hidden.
+const hasStreetRank = computed(
+  () => props.streetRank != null && (props.streetTotal ?? 0) > 1,
+)
+// £ this home costs vs the street average (+ = costs more). null when the
+// backend has no average yet.
+const streetDiff = computed<number | null>(() => {
+  const avg = Number(props.streetAverageCost)
+  if (!avg || !Number.isFinite(avg) || !props.annualCost) return null
+  return Math.round(props.annualCost - avg)
+})
+
+// Real potential rating/score from the EPC certificate (was fixed at C/75).
+const epcPotentialScore = computed<number | null>(() => {
+  const v = Number(
+    (props.property as any)?.epcScorePotential ??
+      (props.property as any)?.epcCert?.potentialScore,
+  )
+  return Number.isFinite(v) && v > 0 ? v : null
+})
+const epcPotentialRating = computed<string | null>(
+  () =>
+    (props.property as any)?.epcRatingPotential ||
+    (props.property as any)?.epcCert?.potentialRating ||
+    null,
+)
+const epcPotentialColor = computed(() => {
+  const map: Record<string, string> = {
+    A: '#008060',
+    B: '#2EAB55',
+    C: '#7AB040',
+    D: '#E6A23C',
+    E: '#D86F4A',
+    F: '#C73E36',
+    G: '#7A2A20',
+  }
+  return map[(epcPotentialRating.value || '').toUpperCase()] || '#9c98ad'
+})
+
 // Ordinal suffix for the street-rank label (8 → "8th", 1 → "1st", etc.)
 const streetRankOrdinal = computed(() => {
-  const r = props.streetRank ?? 8
+  const r = props.streetRank ?? 0
   const v = r % 100
   if (v >= 11 && v <= 13) return `${r}th`
   switch (r % 10) {
-    case 1:
-      return `${r}st`
-    case 2:
-      return `${r}nd`
-    case 3:
-      return `${r}rd`
-    default:
-      return `${r}th`
+    case 1: return `${r}st`
+    case 2: return `${r}nd`
+    case 3: return `${r}rd`
+    default: return `${r}th`
   }
 })
 
@@ -1939,9 +1415,7 @@ function effToScore(eff: string | null | undefined): number {
   if (e === 'very poor') return 0.2
   return 0.5
 }
-function effRating(
-  eff: string | null | undefined,
-): 'Good' | 'Average' | 'Poor' | 'N/A' {
+function effRating(eff: string | null | undefined): 'Good' | 'Average' | 'Poor' | 'N/A' {
   const e = (eff || '').toLowerCase().trim()
   if (!e || e === 'n/a' || e === 'na') return 'N/A'
   if (e.includes('very good') || e === 'good') return 'Good'
@@ -1965,16 +1439,13 @@ function effTone(eff: string | null | undefined): 'high' | 'mid' | 'low' {
 const epc = computed<any>(() => {
   const p = (props.property as any) || {}
   const cert = p.epcCert || {}
-  return new Proxy(
-    {},
-    {
-      get(_t, key: string) {
-        const top = p[key]
-        if (top != null && top !== '') return top
-        return cert[key]
-      },
+  return new Proxy({}, {
+    get(_t, key: string) {
+      const top = p[key]
+      if (top != null && top !== '') return top
+      return cert[key]
     },
-  )
+  })
 })
 
 function fmtSaving(rec: any | null): string {
@@ -2026,27 +1497,17 @@ const stats = computed<StatRow[]>(() => {
   // Blend the % into the lighting eff rating so a 100% LED home beats a 15%.
   const effScore = effLightScore * 0.6 + (ledPct / 100) * 0.4
   const effVal = Math.round(effScore * 15)
-  const effRecs = recs.filter((r) =>
-    /(led|lighting|light)/i.test(`${r?.title ?? ''}`),
-  )
-  const effSaving = effRecs.reduce(
-    (s, r) => s + (Number(r?.typicalSaving) || 0),
-    0,
-  )
+  const effRecs = recs.filter((r) => /(led|lighting|light)/i.test(`${r?.title ?? ''}`))
+  const effSaving = effRecs.reduce((s, r) => s + (Number(r?.typicalSaving) || 0), 0)
 
   // ── Electrics: solar PV present? ──
   const elecRecs = recs.filter((r) =>
-    /(solar pv|photovoltaic|electric)/i.test(
-      `${r?.title ?? ''} ${r?.improvementType ?? ''}`,
-    ),
+    /(solar pv|photovoltaic|electric)/i.test(`${r?.title ?? ''} ${r?.improvementType ?? ''}`),
   )
   // If solar PV is recommended, the property doesn't have it. Score 50%.
   const elecScore = elecRecs.length > 0 ? 0.5 : 0.8
   const elecVal = Math.round(elecScore * 20)
-  const elecSaving = elecRecs.reduce(
-    (s, r) => s + (Number(r?.typicalSaving) || 0),
-    0,
-  )
+  const elecSaving = elecRecs.reduce((s, r) => s + (Number(r?.typicalSaving) || 0), 0)
 
   // ── Plumbing: hot water + ventilation ──
   const plumbScore = effToScore(e.hotWaterEnergyEff)
@@ -2054,10 +1515,7 @@ const stats = computed<StatRow[]>(() => {
   const plumbRecs = recs.filter((r) =>
     /(solar (?:water|thermal)|hot water|cylinder)/i.test(`${r?.title ?? ''}`),
   )
-  const plumbSaving = plumbRecs.reduce(
-    (s, r) => s + (Number(r?.typicalSaving) || 0),
-    0,
-  )
+  const plumbSaving = plumbRecs.reduce((s, r) => s + (Number(r?.typicalSaving) || 0), 0)
 
   const heatRating = effRating(heatEff)
   const wallsRating = effRating(e.wallsEnergyEff)
@@ -2067,7 +1525,7 @@ const stats = computed<StatRow[]>(() => {
   return [
     {
       id: 'heating',
-      icon: '/op-icons/homescore/house.png',
+      icon: '/homescore-icon/house.png',
       label: 'Heating & insulation',
       value: heatVal,
       max: 20,
@@ -2075,22 +1533,20 @@ const stats = computed<StatRow[]>(() => {
       tone: effTone(heatEff),
       steps: heatRecs.length,
       saving: Math.round(heatSaving),
-      savingSub: heatRecs.length
-        ? `${heatRecs.length} step${heatRecs.length > 1 ? 's' : ''}`
-        : 'nothing to fix',
+      savingSub: heatRecs.length ? `${heatRecs.length} step${heatRecs.length > 1 ? 's' : ''}` : 'nothing to fix',
       thirdTileLabel: 'EPC rating',
       thirdTileNum: heatRating,
       thirdTileSub: `mainheat ${effRating(heatEff)}`,
       lines: [
         {
-          icon: '/op-icons/homescore/boiler.png',
+          icon: '/homescore-icon/boiler.png',
           title: e.mainheatDescription || 'Main heating system',
           sub: `Rated <b>${effRating(heatEff)}</b> on the EPC.`,
           amt: effRating(heatEff),
           amtGood: effToScore(heatEff) >= 0.7,
         },
         {
-          icon: '/op-icons/homescore/heatingControls.png',
+          icon: '/homescore-icon/heatingControls.png',
           title: e.mainheatcontDescription || 'Heating controls',
           sub: `Rated <b>${effRating(heatcEff)}</b> on the EPC.`,
           amt: effRating(heatcEff),
@@ -2098,64 +1554,47 @@ const stats = computed<StatRow[]>(() => {
         },
       ],
       footText: heatRecs.length
-        ? `<b>${heatRecs.length} EPC step${
-            heatRecs.length > 1 ? 's' : ''
-          }</b> can lift heating →`
-        : '<b>Your strongest stat.</b> No EPC recommendations live here - heating is sorted.',
+        ? `<b>${heatRecs.length} EPC step${heatRecs.length > 1 ? 's' : ''}</b> can lift heating →`
+        : '<b>Your strongest stat.</b> No EPC recommendations live here — heating is sorted.',
     },
     {
       id: 'structure',
-      icon: '/op-icons/homescore/bricks.png',
+      icon: '/homescore-icon/bricks.png',
       label: 'Building fabric',
       value: structVal,
       max: 25,
       pct: Math.round(structScore * 100),
-      tone: structScore >= 0.7 ? 'high' : structScore >= 0.5 ? 'mid' : 'low',
+      tone:
+        structScore >= 0.7 ? 'high' : structScore >= 0.5 ? 'mid' : 'low',
       steps: structRecs.length,
       saving: Math.round(structSaving),
-      savingSub: structRecs.length
-        ? `${structRecs.length} step${structRecs.length > 1 ? 's' : ''}`
-        : 'all good',
+      savingSub: structRecs.length ? `${structRecs.length} step${structRecs.length > 1 ? 's' : ''}` : 'all good',
       thirdTileLabel: 'Walls EPC',
       thirdTileNum: wallsRating,
       thirdTileSub: e.builtForm || '',
       lines: [
         {
-          icon: '/op-icons/homescore/walls.png',
+          icon: '/homescore-icon/walls.png',
           title: e.wallsDescription || 'Walls',
           sub: `Walls rated <b>${effRating(e.wallsEnergyEff)}</b> on the EPC.`,
-          amt:
-            fmtSaving(
-              structRecs.find((r) => /wall|cavity/i.test(r?.title ?? '')),
-            ) || effRating(e.wallsEnergyEff),
-          amtSub:
-            structRecs.find((r) => /wall|cavity/i.test(r?.title ?? ''))
-              ?.costRange || '',
+          amt: fmtSaving(structRecs.find((r) => /wall|cavity/i.test(r?.title ?? ''))) || effRating(e.wallsEnergyEff),
+          amtSub: structRecs.find((r) => /wall|cavity/i.test(r?.title ?? ''))?.costRange || '',
           amtGood: !structRecs.find((r) => /wall|cavity/i.test(r?.title ?? '')),
         },
         {
-          icon: '/op-icons/homescore/roof.png',
+          icon: '/homescore-icon/roof.png',
           title: e.roofDescription || 'Roof',
           sub: `Roof rated <b>${effRating(e.roofEnergyEff)}</b> on the EPC.`,
-          amt:
-            fmtSaving(
-              structRecs.find((r) => /loft|roof/i.test(r?.title ?? '')),
-            ) || effRating(e.roofEnergyEff),
-          amtSub:
-            structRecs.find((r) => /loft|roof/i.test(r?.title ?? ''))
-              ?.costRange || '',
+          amt: fmtSaving(structRecs.find((r) => /loft|roof/i.test(r?.title ?? ''))) || effRating(e.roofEnergyEff),
+          amtSub: structRecs.find((r) => /loft|roof/i.test(r?.title ?? ''))?.costRange || '',
           amtGood: !structRecs.find((r) => /loft|roof/i.test(r?.title ?? '')),
         },
         {
-          icon: '/op-icons/homescore/floor.png',
+          icon: '/homescore-icon/floor.png',
           title: e.floorDescription || 'Floor',
           sub: `Floor rated <b>${effRating(e.floorEnergyEff)}</b> on the EPC.`,
-          amt:
-            fmtSaving(structRecs.find((r) => /floor/i.test(r?.title ?? ''))) ||
-            effRating(e.floorEnergyEff),
-          amtSub:
-            structRecs.find((r) => /floor/i.test(r?.title ?? ''))?.costRange ||
-            '',
+          amt: fmtSaving(structRecs.find((r) => /floor/i.test(r?.title ?? ''))) || effRating(e.floorEnergyEff),
+          amtSub: structRecs.find((r) => /floor/i.test(r?.title ?? ''))?.costRange || '',
           amtGood: !structRecs.find((r) => /floor/i.test(r?.title ?? '')),
         },
       ],
@@ -2165,7 +1604,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'efficiency',
-      icon: '/op-icons/homescore/lightbulb.png',
+      icon: '/homescore-icon/bulb.png',
       label: 'Energy efficiency',
       value: effVal,
       max: 15,
@@ -2179,19 +1618,15 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: 'of fixed outlets',
       lines: [
         {
-          icon: '/op-icons/homescore/bulb.png',
+          icon: '/homescore-icon/lightbulb.png',
           title: 'Low energy lighting',
-          sub: `<b>${Math.round(
-            ledPct,
-          )}%</b> of fixed outlets · rated <b>${effRating(
-            e.lightingEnergyEff,
-          )}</b>.`,
+          sub: `<b>${Math.round(ledPct)}%</b> of fixed outlets · rated <b>${effRating(e.lightingEnergyEff)}</b>.`,
           amt: fmtSaving(effRecs[0]) || effRating(e.lightingEnergyEff),
           amtSub: effRecs[0]?.costRange || '',
           amtGood: !effRecs[0],
         },
         {
-          icon: '/op-icons/homescore/windows.png',
+          icon: '/homescore-icon/windows.png',
           title: e.windowsDescription || 'Windows',
           sub: `Glazing rated <b>${effRating(e.windowsEnergyEff)}</b>.`,
           amt: effRating(e.windowsEnergyEff),
@@ -2204,7 +1639,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'electrics',
-      icon: '/op-icons/homescore/lightning.png',
+      icon: '/homescore-icon/lightning.png',
       label: 'Electrical systems',
       value: elecVal,
       max: 20,
@@ -2219,18 +1654,16 @@ const stats = computed<StatRow[]>(() => {
       lines: elecRecs.length
         ? [
             {
-              icon: '/op-icons/misc/sun.png',
+              icon: '/homescore-icon/lightning.png',
               title: elecRecs[0]?.title || 'Solar PV panels',
-              sub:
-                elecRecs[0]?.description ||
-                "EPC's final step. Crosses you into Band C.",
-              amt: fmtSaving(elecRecs[0]) || '-',
+              sub: elecRecs[0]?.description || "EPC's final step. Crosses you into Band C.",
+              amt: fmtSaving(elecRecs[0]) || '—',
               amtSub: elecRecs[0]?.costRange || '',
             },
           ]
         : [
             {
-              icon: '/op-icons/homescore/lightning.png',
+              icon: '/homescore-icon/lightning.png',
               title: 'Standard electrical setup',
               sub: 'No EPC recommendations for electrics.',
               amt: 'OK',
@@ -2243,7 +1676,7 @@ const stats = computed<StatRow[]>(() => {
     },
     {
       id: 'plumbing',
-      icon: '/op-icons/homescore/tap.png',
+      icon: '/homescore-icon/tap.png',
       label: 'Water & plumbing',
       value: plumbVal,
       max: 20,
@@ -2257,23 +1690,19 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: 'EPC rating',
       lines: [
         {
-          icon: '/op-icons/misc/waterDroplet.png',
+          icon: '/homescore-icon/tap.png',
           title: e.hotwaterDescription || 'Hot water',
-          sub: `Hot water rated <b>${effRating(
-            e.hotWaterEnergyEff,
-          )}</b> on the EPC.`,
+          sub: `Hot water rated <b>${effRating(e.hotWaterEnergyEff)}</b> on the EPC.`,
           amt: effRating(e.hotWaterEnergyEff),
           amtGood: effToScore(e.hotWaterEnergyEff) >= 0.7,
         },
         ...(plumbRecs.length
           ? [
               {
-                icon: '/op-icons/misc/sun.png',
+                icon: '/homescore-icon/tap.png',
                 title: plumbRecs[0]?.title || 'Solar water heating',
-                sub:
-                  plumbRecs[0]?.description ||
-                  'Roof collector pre-heats water from the sun.',
-                amt: fmtSaving(plumbRecs[0]) || '-',
+                sub: plumbRecs[0]?.description || 'Roof collector pre-heats water from the sun.',
+                amt: fmtSaving(plumbRecs[0]) || '—',
                 amtSub: plumbRecs[0]?.costRange || '',
               },
             ]
@@ -2325,9 +1754,7 @@ interface EpcItem {
   flagText: string
   fix?: { label: string; text: string }
 }
-function ratingClassFor(
-  eff: string | null | undefined,
-): 'good' | 'poor' | 'average' | 'nodata' {
+function ratingClassFor(eff: string | null | undefined): 'good' | 'poor' | 'average' | 'nodata' {
   const e = (eff || '').toLowerCase().trim()
   if (!e || e === 'n/a' || e === 'na') return 'nodata'
   if (e.includes('very good') || e === 'good') return 'good'
@@ -2338,11 +1765,7 @@ function ratingClassFor(
 function findRec(pattern: RegExp): any | null {
   const recs: any[] = (props.property as any)?.epcRecommendations
   if (!Array.isArray(recs)) return null
-  return (
-    recs.find((r) =>
-      pattern.test(`${r?.title ?? ''} ${r?.improvementType ?? ''}`),
-    ) ?? null
-  )
+  return recs.find((r) => pattern.test(`${r?.title ?? ''} ${r?.improvementType ?? ''}`)) ?? null
 }
 
 const epcItems = computed<EpcItem[]>(() => {
@@ -2353,7 +1776,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const mainHeatRec = findRec(/(boiler|heat pump|main heat)/i)
   items.push({
     id: 'main-heating',
-    icon: '/op-icons/homescore/flame.png',
+    icon: '/homescore-icon/boiler.png',
     title: 'Main heating',
     sub: e.mainheatDescription || 'Heating system',
     rating: effRating(e.mainheatEnergyEff),
@@ -2361,19 +1784,11 @@ const epcItems = computed<EpcItem[]>(() => {
     flagOk: !mainHeatRec,
     flagText: mainHeatRec
       ? `EPC flags: <b>${mainHeatRec.title}</b>`
-      : `Heating rated <b>${effRating(
-          e.mainheatEnergyEff,
-        )}</b>. No upgrade on this EPC.`,
+      : `Heating rated <b>${effRating(e.mainheatEnergyEff)}</b>. No upgrade on this EPC.`,
     fix: mainHeatRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${mainHeatRec.description || mainHeatRec.title}. ${
-            mainHeatRec.typicalSaving
-              ? `Saves <b>£${mainHeatRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${
-            mainHeatRec.costRange ? `Cost <b>${mainHeatRec.costRange}</b>.` : ''
-          }`,
+          label: 'EPC recommendation',
+          text: `${mainHeatRec.description || mainHeatRec.title}. ${mainHeatRec.typicalSaving ? `Saves <b>£${mainHeatRec.typicalSaving}/yr</b>.` : ''} ${mainHeatRec.costRange ? `Cost <b>${mainHeatRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2382,7 +1797,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const controlsRec = findRec(/(controls|thermostat|programmer)/i)
   items.push({
     id: 'heating-controls',
-    icon: '/op-icons/homescore/heatingControls.png',
+    icon: '/homescore-icon/heatingControls.png',
     title: 'Heating controls',
     sub: e.mainheatcontDescription || 'Controls',
     rating: effRating(e.mainheatcEnergyEff),
@@ -2393,14 +1808,8 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Heating controls rated <b>${effRating(e.mainheatcEnergyEff)}</b>.`,
     fix: controlsRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${controlsRec.title}. ${
-            controlsRec.typicalSaving
-              ? `Saves <b>£${controlsRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${
-            controlsRec.costRange ? `Cost <b>${controlsRec.costRange}</b>.` : ''
-          }`,
+          label: 'EPC recommendation',
+          text: `${controlsRec.title}. ${controlsRec.typicalSaving ? `Saves <b>£${controlsRec.typicalSaving}/yr</b>.` : ''} ${controlsRec.costRange ? `Cost <b>${controlsRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2409,7 +1818,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const hwRec = findRec(/(hot water|cylinder|solar water|solar thermal)/i)
   items.push({
     id: 'hot-water',
-    icon: '/op-icons/homescore/tap.png',
+    icon: '/homescore-icon/tap.png',
     title: 'Hot water',
     sub: e.hotwaterDescription || 'Hot water system',
     rating: effRating(e.hotWaterEnergyEff),
@@ -2420,12 +1829,8 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Hot water rated <b>${effRating(e.hotWaterEnergyEff)}</b>.`,
     fix: hwRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${hwRec.description || hwRec.title}. ${
-            hwRec.typicalSaving
-              ? `Saves <b>£${hwRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${hwRec.costRange ? `Cost <b>${hwRec.costRange}</b>.` : ''}`,
+          label: 'EPC recommendation',
+          text: `${hwRec.description || hwRec.title}. ${hwRec.typicalSaving ? `Saves <b>£${hwRec.typicalSaving}/yr</b>.` : ''} ${hwRec.costRange ? `Cost <b>${hwRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2434,7 +1839,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const wallsRec = findRec(/(cavity|wall insulation|external wall)/i)
   items.push({
     id: 'walls',
-    icon: '/op-icons/homescore/walls.png',
+    icon: '/homescore-icon/walls.png',
     title: 'Walls',
     sub: e.wallsDescription || 'Walls',
     rating: effRating(e.wallsEnergyEff),
@@ -2445,12 +1850,8 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Walls rated <b>${effRating(e.wallsEnergyEff)}</b>.`,
     fix: wallsRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${wallsRec.description || wallsRec.title}. ${
-            wallsRec.typicalSaving
-              ? `Saves <b>£${wallsRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${wallsRec.costRange ? `Cost <b>${wallsRec.costRange}</b>.` : ''}`,
+          label: 'EPC recommendation',
+          text: `${wallsRec.description || wallsRec.title}. ${wallsRec.typicalSaving ? `Saves <b>£${wallsRec.typicalSaving}/yr</b>.` : ''} ${wallsRec.costRange ? `Cost <b>${wallsRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2459,7 +1860,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const roofRec = findRec(/(loft|roof insulation|increase loft)/i)
   items.push({
     id: 'roof',
-    icon: '/op-icons/homescore/roof.png',
+    icon: '/homescore-icon/roof.png',
     title: 'Roof · loft insulation',
     sub: e.roofDescription || 'Roof',
     rating: effRating(e.roofEnergyEff),
@@ -2470,12 +1871,8 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Roof rated <b>${effRating(e.roofEnergyEff)}</b>.`,
     fix: roofRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${roofRec.description || roofRec.title}. ${
-            roofRec.typicalSaving
-              ? `Saves <b>£${roofRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${roofRec.costRange ? `Cost <b>${roofRec.costRange}</b>.` : ''}`,
+          label: 'EPC recommendation',
+          text: `${roofRec.description || roofRec.title}. ${roofRec.typicalSaving ? `Saves <b>£${roofRec.typicalSaving}/yr</b>.` : ''} ${roofRec.costRange ? `Cost <b>${roofRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2484,7 +1881,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const floorRec = findRec(/floor insulation/i)
   items.push({
     id: 'floor',
-    icon: '/op-icons/homescore/floor.png',
+    icon: '/homescore-icon/floor.png',
     title: 'Floor',
     sub: e.floorDescription || 'Floor',
     rating: effRating(e.floorEnergyEff),
@@ -2495,12 +1892,8 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Floor rated <b>${effRating(e.floorEnergyEff)}</b>.`,
     fix: floorRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${floorRec.description || floorRec.title}. ${
-            floorRec.typicalSaving
-              ? `Saves <b>£${floorRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${floorRec.costRange ? `Cost <b>${floorRec.costRange}</b>.` : ''}`,
+          label: 'EPC recommendation',
+          text: `${floorRec.description || floorRec.title}. ${floorRec.typicalSaving ? `Saves <b>£${floorRec.typicalSaving}/yr</b>.` : ''} ${floorRec.costRange ? `Cost <b>${floorRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2509,7 +1902,7 @@ const epcItems = computed<EpcItem[]>(() => {
   const windowsRec = findRec(/(window|glaz)/i)
   items.push({
     id: 'windows',
-    icon: '/op-icons/homescore/windows.png',
+    icon: '/homescore-icon/windows.png',
     title: 'Windows',
     sub: e.windowsDescription || 'Windows',
     rating: effRating(e.windowsEnergyEff),
@@ -2520,14 +1913,8 @@ const epcItems = computed<EpcItem[]>(() => {
       : `Windows rated <b>${effRating(e.windowsEnergyEff)}</b>.`,
     fix: windowsRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${windowsRec.description || windowsRec.title}. ${
-            windowsRec.typicalSaving
-              ? `Saves <b>£${windowsRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${
-            windowsRec.costRange ? `Cost <b>${windowsRec.costRange}</b>.` : ''
-          }`,
+          label: 'EPC recommendation',
+          text: `${windowsRec.description || windowsRec.title}. ${windowsRec.typicalSaving ? `Saves <b>£${windowsRec.typicalSaving}/yr</b>.` : ''} ${windowsRec.costRange ? `Cost <b>${windowsRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2537,29 +1924,19 @@ const epcItems = computed<EpcItem[]>(() => {
   const lightingRec = findRec(/(led|lighting|light)/i)
   items.push({
     id: 'lighting',
-    icon: '/op-icons/homescore/bulb.png',
+    icon: '/homescore-icon/lightbulb.png',
     title: 'Lighting',
     sub: `Low energy in <b>${Math.round(ledPct)}%</b> of fixed outlets`,
     rating: effRating(e.lightingEnergyEff),
     ratingClass: ratingClassFor(e.lightingEnergyEff),
     flagOk: !lightingRec,
     flagText: lightingRec
-      ? `Only ${Math.round(
-          ledPct,
-        )}% of outlets are low-energy. Rated <b>${effRating(
-          e.lightingEnergyEff,
-        )}</b>.`
+      ? `Only ${Math.round(ledPct)}% of outlets are low-energy. Rated <b>${effRating(e.lightingEnergyEff)}</b>.`
       : `Lighting rated <b>${effRating(e.lightingEnergyEff)}</b>.`,
     fix: lightingRec
       ? {
-          label: '✨ EPC recommendation',
-          text: `${lightingRec.title}. ${
-            lightingRec.typicalSaving
-              ? `Saves <b>£${lightingRec.typicalSaving}/yr</b>.`
-              : ''
-          } ${
-            lightingRec.costRange ? `Cost <b>${lightingRec.costRange}</b>.` : ''
-          }`,
+          label: 'EPC recommendation',
+          text: `${lightingRec.title}. ${lightingRec.typicalSaving ? `Saves <b>£${lightingRec.typicalSaving}/yr</b>.` : ''} ${lightingRec.costRange ? `Cost <b>${lightingRec.costRange}</b>.` : ''}`,
         }
       : undefined,
   })
@@ -2569,7 +1946,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (swhRec) {
     items.push({
       id: 'solar-water',
-      icon: '/op-icons/misc/sun.png',
+      icon: '/homescore-icon/tap.png',
       title: 'Solar water heating',
       sub: 'Not present · recommended on EPC',
       rating: 'Not installed',
@@ -2577,12 +1954,8 @@ const epcItems = computed<EpcItem[]>(() => {
       flagOk: false,
       flagText: 'Listed as a recommended improvement on the EPC.',
       fix: {
-        label: '✨ EPC recommendation',
-        text: `${swhRec.description || swhRec.title}. ${
-          swhRec.typicalSaving
-            ? `Saves <b>£${swhRec.typicalSaving}/yr</b>.`
-            : ''
-        } ${swhRec.costRange ? `Cost <b>${swhRec.costRange}</b>.` : ''}`,
+        label: 'EPC recommendation',
+        text: `${swhRec.description || swhRec.title}. ${swhRec.typicalSaving ? `Saves <b>£${swhRec.typicalSaving}/yr</b>.` : ''} ${swhRec.costRange ? `Cost <b>${swhRec.costRange}</b>.` : ''}`,
       },
     })
   }
@@ -2592,19 +1965,16 @@ const epcItems = computed<EpcItem[]>(() => {
   if (pvRec) {
     items.push({
       id: 'solar-pv',
-      icon: '/op-icons/homescore/lightning.png',
+      icon: '/homescore-icon/lightning.png',
       title: 'Solar PV panels',
       sub: 'Not present · recommended on EPC',
       rating: 'Not installed',
       ratingClass: 'nodata',
       flagOk: false,
-      flagText:
-        'Listed as a recommended improvement - generates electricity from sunlight.',
+      flagText: 'Listed as a recommended improvement — generates electricity from sunlight.',
       fix: {
-        label: '✨ EPC recommendation',
-        text: `${pvRec.description || pvRec.title}. ${
-          pvRec.typicalSaving ? `Saves <b>£${pvRec.typicalSaving}/yr</b>.` : ''
-        } ${pvRec.costRange ? `Cost <b>${pvRec.costRange}</b>.` : ''}`,
+        label: 'EPC recommendation',
+        text: `${pvRec.description || pvRec.title}. ${pvRec.typicalSaving ? `Saves <b>£${pvRec.typicalSaving}/yr</b>.` : ''} ${pvRec.costRange ? `Cost <b>${pvRec.costRange}</b>.` : ''}`,
       },
     })
   }
@@ -2613,7 +1983,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (e.secondheatDescription && !/none/i.test(e.secondheatDescription)) {
     items.push({
       id: 'secondary-heating',
-      icon: '/op-icons/homescore/flame.png',
+      icon: '/homescore-icon/flame.png',
       title: 'Secondary heating',
       sub: e.secondheatDescription,
       rating: 'N/A',
@@ -2627,7 +1997,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (e.mechanicalVentilation) {
     items.push({
       id: 'ventilation',
-      icon: '💨',
+      icon: '/homescore-icon/windows.png',
       title: 'Ventilation',
       sub: e.mechanicalVentilation,
       rating: 'N/A',
@@ -2666,6 +2036,9 @@ function toggleEpcDrawer() {
 function formatNum(n: number): string {
   return new Intl.NumberFormat('en-GB').format(Math.round(n))
 }
+// True when an icon value is an image path (starts with "/") rather than an
+// emoji, so the template can render an <img> for the real homescore icons.
+const isImg = (s: unknown): s is string => typeof s === 'string' && s.startsWith('/')
 const searchesTodayDisplay = computed(() => {
   const n = props.searchesToday ?? 0
   return `${n} ${n === 1 ? 'person' : 'people'}`
@@ -2714,38 +2087,16 @@ const watchersDisplay = computed(() => {
    Soften the prototype's heavy 800-weights to match the rest of the
    app (max weight ~700 to match the SF Pro 600/700 scale used in the
    global header and other pages). */
-.hs-v6-score
-  :is(
-    .app-header-title,
-    .hs-addr-line,
-    .score-band,
-    .gn-big,
-    .ssp-head-title,
-    .ssp-bar-amt,
-    .ssp-total-num,
-    .ssp-cell-num,
-    .stat-cost-title,
-    .epc-grade-letter,
-    .epc-saving-num,
-    .fork-opt-title
-  ) {
+.hs-v6-score :is(.app-header-title, .hs-addr-line, .score-band, .gn-big,
+  .ssp-head-title, .ssp-bar-amt, .ssp-total-num, .ssp-cell-num,
+  .stat-cost-title, .epc-grade-letter, .epc-saving-num,
+  .fork-opt-title) {
   font-weight: 700;
 }
-.hs-v6-score
-  :is(
-    .app-header-sub,
-    .hs-addr-meta,
-    .score-explainer,
-    .score-footer,
-    .ssp-bar-label,
-    .ssp-bar-amt-pct,
-    .ssp-total-label,
-    .stat-cost-sub,
-    .epc-grade-sub,
-    .epc-saving-sub,
-    .epc-item-sub,
-    .fork-opt-sub
-  ) {
+.hs-v6-score :is(.app-header-sub, .hs-addr-meta, .score-explainer,
+  .score-footer, .ssp-bar-label, .ssp-bar-amt-pct, .ssp-total-label,
+  .stat-cost-sub, .epc-grade-sub, .epc-saving-sub, .epc-item-sub,
+  .fork-opt-sub) {
   font-weight: 500;
 }
 
@@ -2793,14 +2144,14 @@ const watchersDisplay = computed(() => {
   min-width: 0;
 }
 .app-header-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.2px;
   line-height: 1.15;
 }
 .app-header-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-top: 1px;
@@ -2808,71 +2159,30 @@ const watchersDisplay = computed(() => {
 
 /* ── Animations ───────────────────────────────────────────────── */
 @keyframes hs-v6-pulse {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
+  0% { transform: scale(0.6); opacity: 0.5; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
 @keyframes hs-v6-fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 @keyframes hs-v6-caretBlink {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-  }
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }
 @keyframes hs-v6-scoreRing {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  70% {
-    transform: scale(1.05);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1.06);
-    opacity: 0;
-  }
+  0% { transform: scale(1); opacity: 0.6; }
+  70% { transform: scale(1.05); opacity: 0; }
+  100% { transform: scale(1.06); opacity: 0; }
 }
-.anim-1 {
-  animation: hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.anim-2 {
-  animation: hs-v6-fadeUp 0.35s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.anim-3 {
-  animation: hs-v6-fadeUp 0.35s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.anim-4 {
-  animation: hs-v6-fadeUp 0.35s 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
+.anim-1 { animation: hs-v6-fadeUp 0.35s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-2 { animation: hs-v6-fadeUp 0.35s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-3 { animation: hs-v6-fadeUp 0.35s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-4 { animation: hs-v6-fadeUp 0.35s 0.38s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .tw-caret {
   display: inline-block;
@@ -2901,7 +2211,8 @@ const watchersDisplay = computed(() => {
   background: linear-gradient(135deg, #f0a030 0%, #c67c18 50%, #8b4e0a 100%);
   border: none;
   border-radius: 14px;
-  box-shadow: 0 12px 32px -8px rgba(180, 100, 20, 0.4),
+  box-shadow:
+    0 12px 32px -8px rgba(180, 100, 20, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
   color: white;
   position: relative;
@@ -2915,11 +2226,7 @@ const watchersDisplay = computed(() => {
   width: 260px;
   height: 260px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 65%);
   pointer-events: none;
 }
 .hs-addr-card > * {
@@ -2946,7 +2253,7 @@ const watchersDisplay = computed(() => {
   min-width: 0;
 }
 .hs-addr-line {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 800;
   color: white;
   letter-spacing: -0.5px;
@@ -2954,7 +2261,7 @@ const watchersDisplay = computed(() => {
   margin-bottom: 2px;
 }
 .hs-addr-meta {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -2970,7 +2277,7 @@ const watchersDisplay = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 800;
   padding: 5px 10px 5px 7px;
   border-radius: 100px;
@@ -2990,7 +2297,7 @@ const watchersDisplay = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
 }
 .claim-cta-btn {
@@ -3003,7 +2310,7 @@ const watchersDisplay = computed(() => {
   border: none;
   color: white;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   align-items: center;
@@ -3016,7 +2323,7 @@ const watchersDisplay = computed(() => {
 .claim-cta-btn:hover {
   filter: brightness(1.06);
 }
-/* Already-claimed variants - informational, not a "claim" pitch. */
+/* Already-claimed variants — informational, not a "claim" pitch. */
 .claim-cta-btn.published {
   background: white;
   color: #8b4e0a;
@@ -3032,16 +2339,14 @@ const watchersDisplay = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   margin-top: 14px;
   flex-wrap: wrap;
 }
 /* Stack the two social-proof rows tighter so they read as a pair. */
-.hs-addr-stat-row + .hs-addr-stat-row {
-  margin-top: 6px;
-}
+.hs-addr-stat-row + .hs-addr-stat-row { margin-top: 6px; }
 .hs-addr-stat-row .pulse-dot {
   background: var(--accent-light);
 }
@@ -3091,38 +2396,18 @@ const watchersDisplay = computed(() => {
   transform-origin: bottom;
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
 }
-.hs-live-bar:nth-child(1) {
-  height: 5px;
-  animation-delay: 0s;
-}
-.hs-live-bar:nth-child(2) {
-  height: 9px;
-  animation-delay: 0.15s;
-}
-.hs-live-bar:nth-child(3) {
-  height: 13px;
-  animation-delay: 0.3s;
-}
+.hs-live-bar:nth-child(1) { height: 5px;  animation-delay: 0s; }
+.hs-live-bar:nth-child(2) { height: 9px;  animation-delay: 0.15s; }
+.hs-live-bar:nth-child(3) { height: 13px; animation-delay: 0.3s; }
 @keyframes hsLiveBars {
-  0%,
-  100% {
-    transform: scaleY(0.55);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scaleY(1);
-    opacity: 1;
-  }
+  0%, 100% { transform: scaleY(0.55); opacity: 0.55; }
+  50%      { transform: scaleY(1);    opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hs-live-bar {
-    animation: none;
-    transform: scaleY(1);
-    opacity: 0.9;
-  }
+  .hs-live-bar { animation: none; transform: scaleY(1); opacity: 0.9; }
 }
 .hs-live-text {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: -0.05px;
   line-height: 1.25;
@@ -3159,12 +2444,12 @@ const watchersDisplay = computed(() => {
 /* ── HomeScore card ─────────────────────────────────────────────── */
 .score-card {
   margin: 14px 20px 0;
-  padding: 22px 20px 18px;
-  background: var(--card);
-  border: 1.5px solid var(--accent);
-  border-radius: 16px;
+  padding: 20px 20px 18px;
+  background: linear-gradient(180deg, var(--accent-paler) 0%, var(--card) 60%);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
   position: relative;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 4px 16px rgba(0, 161, 154, 0.12);
 }
 .score-card::before {
   content: '';
@@ -3183,27 +2468,27 @@ const watchersDisplay = computed(() => {
   margin-bottom: 14px;
 }
 .score-eyebrow-mark {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
-  color: var(--accent-dark);
+  color: var(--text-secondary);
   letter-spacing: 1.4px;
   text-transform: uppercase;
 }
 .score-eyebrow-mark sup {
   color: var(--accent);
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0;
 }
 .score-top {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 18px;
 }
 .score-gauge {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 104px;
+  height: 104px;
   flex-shrink: 0;
 }
 .score-gauge svg {
@@ -3212,7 +2497,7 @@ const watchersDisplay = computed(() => {
   transform: rotate(-90deg);
 }
 .g-bg {
-  stroke: #ededf3;
+  stroke: var(--border-soft);
   fill: none;
 }
 .g-fill {
@@ -3229,33 +2514,33 @@ const watchersDisplay = computed(() => {
   justify-content: center;
 }
 .gn-big {
-  font-size: 2.75rem;
+  font-size: 34px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -1.4px;
+  letter-spacing: -1.2px;
   line-height: 1;
   font-feature-settings: 'tnum';
 }
 .gn-small {
-  font-size: 0.75rem;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-faint);
-  margin-top: 3px;
+  margin-top: 2px;
 }
 .score-summary {
   flex: 1;
   min-width: 0;
 }
 .score-band {
-  font-size: 1.375rem;
+  font-size: 19px;
   font-weight: 800;
-  color: var(--accent-dark);
-  letter-spacing: -0.5px;
-  margin-bottom: 7px;
+  color: var(--text);
+  letter-spacing: -0.4px;
+  margin-bottom: 6px;
   line-height: 1.1;
 }
 .score-explainer {
-  font-size: 0.8125rem;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.5;
@@ -3267,9 +2552,11 @@ const watchersDisplay = computed(() => {
 .score-footer {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  margin-top: 10px;
-  font-size: 0.7188rem;
+  gap: 8px;
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.5;
@@ -3293,70 +2580,92 @@ const watchersDisplay = computed(() => {
 }
 
 /* ── Quick stats strip ────────────────────────────────────────── */
+/* Section header above the two stat tiles. */
+.score-strip-h {
+  margin: 14px 20px 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
 .score-strip-card {
   display: flex;
   gap: 10px;
-  margin: 0 20px 0;
+  margin: 0 20px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
+/* Tile: text column on the left, illustrated icon on the right. */
 .score-strip-item {
   flex: 1;
   min-width: 0;
-  padding: 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
   border-radius: 14px;
-  box-shadow: var(--shadow-card);
   text-align: left;
-  position: relative;
 }
-.score-strip-icon {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  width: 85px;
-  height: 80px;
+.score-strip-txt {
+  flex: 1;
+  min-width: 0;
+}
+.score-strip-ic {
+  width: 58px;
+  height: 58px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 .score-strip-eyebrow {
-  font-size: 0.5625rem;
+  font-size: 9.5px;
   font-weight: 800;
-  color: var(--primary);
-  letter-spacing: 0.6px;
+  color: var(--text-faint);
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  margin-bottom: 10px;
-  padding-right: 56px;
+  margin-bottom: 4px;
 }
 .score-strip-num {
-  font-size: 1.1875rem;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
   line-height: 1.1;
-  margin-bottom: 10px;
-  /* Same right-hand reserve as .score-strip-eyebrow below — on a narrow
-     screen (two of these side by side eat into a small share of the
-     viewport each) the value text is long enough (e.g. "12.0 t /year")
-     to run under the absolutely-positioned icon without this. */
-  padding-right: 56px;
+}
+.score-strip-num.warn {
+  color: var(--error);
+}
+.score-strip-num.good {
+  color: var(--accent-dark);
 }
 .strip-unit {
   font-weight: 600;
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: var(--text-secondary);
 }
-.score-strip-sub-label {
-  font-size: 0.625rem;
+.score-strip-sub {
+  font-size: 10.5px;
+  color: var(--text-secondary);
   font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-  padding-right: 56px;
+  margin-top: 7px;
 }
-.score-strip-sub-val {
-  font-size: 0.8125rem;
+/* Second figure under the headline number — the saving (teal) or the
+   benchmark it's compared against (muted). */
+.score-strip-save {
+  font-size: 14px;
   font-weight: 800;
   color: var(--accent-dark);
-  padding-right: 56px;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+  margin-top: 1px;
+}
+.score-strip-save--muted {
+  color: var(--text-secondary);
 }
 .score-strip-item.clickable {
   cursor: pointer;
@@ -3367,28 +2676,20 @@ const watchersDisplay = computed(() => {
      panel) and on hover so it doesn't fight the interaction state. */
   animation: scoreStripPulse 2.8s ease-in-out infinite;
 }
-.score-strip-item.clickable:nth-child(2) {
-  animation-delay: 0.45s;
-}
-.score-strip-item.clickable:nth-child(3) {
-  animation-delay: 0.9s;
-}
+.score-strip-item.clickable:nth-child(2) { animation-delay: 0.45s; }
+.score-strip-item.clickable:nth-child(3) { animation-delay: 0.9s; }
 @keyframes scoreStripPulse {
-  0%,
-  100% {
+  0%, 100% {
     box-shadow: 0 0 0 0 rgba(0, 161, 154, 0);
     border-color: var(--border-soft);
   }
   45% {
-    box-shadow: 0 0 0 4px rgba(0, 161, 154, 0),
-      0 0 14px 2px rgba(0, 161, 154, 0.18);
+    box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.0), 0 0 14px 2px rgba(0, 161, 154, 0.18);
     border-color: rgba(0, 161, 154, 0.45);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .score-strip-item.clickable {
-    animation: none;
-  }
+  .score-strip-item.clickable { animation: none; }
 }
 .score-strip-item.clickable:hover {
   border-color: var(--accent-pale);
@@ -3396,9 +2697,7 @@ const watchersDisplay = computed(() => {
   transform: translateY(-1px);
   animation: none;
 }
-.score-strip-item.clickable.active {
-  animation: none;
-}
+.score-strip-item.clickable.active { animation: none; }
 .score-strip-item.clickable.active {
   border-color: var(--accent);
   background: var(--accent-paler);
@@ -3436,27 +2735,24 @@ const watchersDisplay = computed(() => {
   border-bottom: 1px solid var(--border-soft);
 }
 .ssp-head-icon {
+  box-sizing: border-box;
   width: 34px;
   height: 34px;
+  padding: 5px;
   border-radius: 10px;
   background: var(--accent-paler);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
+  object-fit: contain;
   flex-shrink: 0;
 }
-.ssp-head-info {
-  flex: 1;
-}
+.ssp-head-info { flex: 1; }
 .ssp-head-title {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.2px;
 }
 .ssp-head-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 2px;
@@ -3470,7 +2766,7 @@ const watchersDisplay = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
@@ -3482,7 +2778,7 @@ const watchersDisplay = computed(() => {
   color: var(--error);
 }
 .ssp-divider {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 800;
   color: var(--text-faint);
   letter-spacing: 1.2px;
@@ -3496,17 +2792,17 @@ const watchersDisplay = computed(() => {
   align-items: center;
   gap: 10px;
   padding: 6px 0;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
 }
 .ssp-bar-icon {
-  font-size: 0.875rem;
   width: 20px;
-  text-align: center;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ssp-bar-label {
   width: 80px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
@@ -3533,17 +2829,11 @@ const watchersDisplay = computed(() => {
 .ssp-bar-fill.elec {
   background: linear-gradient(90deg, #ffd700, #e6be00);
 }
-.ssp-bar-fill.co2-heat {
-  background: #8b4e0a;
-}
-.ssp-bar-fill.co2-hw {
-  background: #4a9fcf;
-}
-.ssp-bar-fill.co2-elec {
-  background: var(--warning);
-}
+.ssp-bar-fill.co2-heat { background: #8b4e0a; }
+.ssp-bar-fill.co2-hw   { background: #4a9fcf; }
+.ssp-bar-fill.co2-elec { background: var(--warning); }
 .ssp-bar-amt {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text);
   width: 62px;
@@ -3551,7 +2841,7 @@ const watchersDisplay = computed(() => {
   flex-shrink: 0;
 }
 .ssp-bar-amt-pct {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-faint);
   margin-top: 1px;
@@ -3567,14 +2857,14 @@ const watchersDisplay = computed(() => {
   border-radius: 10px;
 }
 .ssp-total-label {
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 800;
   color: var(--text-secondary);
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 .ssp-total-num {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.2px;
@@ -3585,15 +2875,12 @@ const watchersDisplay = computed(() => {
   background: var(--bg);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.4;
 }
-.ssp-note b {
-  color: var(--text);
-  font-weight: 800;
-}
+.ssp-note b { color: var(--text); font-weight: 800; }
 .ssp-equiv {
   display: flex;
   align-items: center;
@@ -3603,12 +2890,19 @@ const watchersDisplay = computed(() => {
   background: #f5f0e8;
   border: 1px solid #e8dec8;
   border-radius: 10px;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 600;
   color: #7a5500;
 }
 .ssp-equiv-icon {
-  font-size: 1rem;
+  font-size: 18px;
+  color: var(--accent, #00a19a);
+  flex-shrink: 0;
+}
+.hs-lock-ic {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .ssp-foot {
@@ -3629,17 +2923,15 @@ const watchersDisplay = computed(() => {
 }
 .ssp-foot-text {
   flex: 1;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--accent-dark);
   line-height: 1.35;
 }
-.ssp-foot-text :deep(b) {
-  font-weight: 800;
-}
+.ssp-foot-text :deep(b) { font-weight: 800; }
 .ssp-foot-arrow {
   color: var(--accent-dark);
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   flex-shrink: 0;
 }
@@ -3656,33 +2948,28 @@ const watchersDisplay = computed(() => {
   border-radius: 10px;
 }
 .ssp-rank-num {
-  font-size: 1.75rem;
+  font-size: 28px;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: -1px;
   line-height: 1;
 }
-.ssp-rank-info {
-  flex: 1;
-}
+.ssp-rank-info { flex: 1; }
 .ssp-rank-label {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.1px;
   line-height: 1.1;
 }
 .ssp-rank-sub {
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 2px;
   line-height: 1.35;
 }
-.ssp-rank-sub :deep(b) {
-  color: var(--text);
-  font-weight: 800;
-}
+.ssp-rank-sub :deep(b) { color: var(--text); font-weight: 800; }
 
 .ssp-street-legend {
   display: flex;
@@ -3695,7 +2982,7 @@ const watchersDisplay = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--text-secondary);
 }
@@ -3707,22 +2994,36 @@ const watchersDisplay = computed(() => {
 }
 
 .ssp-street-scene {
-  margin: 10px -6px 8px;
+  position: relative;
+  /* Full-bleed to the card's left/right edges so the road can reach them. */
+  margin: 10px -16px 8px;
   background: linear-gradient(180deg, #dceef0 0%, #bfe2e5 60%, #a8c3c6 100%);
-  border-radius: 10px;
+  border-radius: 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 4px 0 2px;
-  border: 1px solid var(--border-soft);
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
-.ssp-street-scene::-webkit-scrollbar {
-  height: 5px;
+
+/* Extend ONLY the dark road strip to the full card width, behind the map.
+   The map (houses + walking boy) keeps its size and is centred on top; this
+   band fills the road colour out to both card edges. Its geometry matches the
+   SVG road rect: 4px scene padding + road at y 85–110 of the 180px map. */
+.ssp-street-scene::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 89px;
+  height: 25px;
+  background: #3a3f4a;
+  z-index: 0;
 }
-.ssp-street-scene::-webkit-scrollbar-track {
-  background: transparent;
-}
+.ssp-street-scene::-webkit-scrollbar { height: 5px; }
+.ssp-street-scene::-webkit-scrollbar-track { background: transparent; }
 .ssp-street-scene::-webkit-scrollbar-thumb {
   background: rgba(35, 29, 69, 0.18);
   border-radius: 100px;
@@ -3732,6 +3033,10 @@ const watchersDisplay = computed(() => {
   width: 460px;
   height: 180px;
   flex-shrink: 0;
+  /* Centre the fixed-size map so the extended road band reaches both edges
+     evenly. On mobile the map is wider than the scene, so it scrolls instead. */
+  margin: 0 auto;
+  z-index: 1;
 }
 .ssp-street-svg {
   width: 460px;
@@ -3740,9 +3045,7 @@ const watchersDisplay = computed(() => {
   position: absolute;
   inset: 0;
 }
-.ssp-street-house {
-  cursor: pointer;
-}
+.ssp-street-house { cursor: pointer; }
 .ssp-street-house:hover .ssp-house-body {
   stroke: var(--accent-dark);
   stroke-width: 1.2;
@@ -3752,7 +3055,7 @@ const watchersDisplay = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--text-faint);
   margin-top: -2px;
@@ -3760,7 +3063,7 @@ const watchersDisplay = computed(() => {
 }
 .ssp-street-tip {
   text-align: center;
-  font-size: 0.625rem;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-faint);
   margin-top: -2px;
@@ -3768,7 +3071,7 @@ const watchersDisplay = computed(() => {
   font-style: italic;
 }
 
-/* Walking figure overlay - animates between selected houses */
+/* Walking figure overlay — animates between selected houses */
 .ssp-street-walker {
   position: absolute;
   pointer-events: none;
@@ -3776,7 +3079,8 @@ const watchersDisplay = computed(() => {
   width: 18px;
   height: 26px;
   transform: translate(-50%, -50%);
-  transition: left 0.85s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    left 0.85s cubic-bezier(0.4, 0, 0.2, 1),
     top 0.85s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ssp-street-walker svg {
@@ -3807,40 +3111,20 @@ const watchersDisplay = computed(() => {
   transform-origin: 50% 0%;
 }
 @keyframes hs-v6-wlk-leg-l {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(35deg);
-  }
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(35deg); }
 }
 @keyframes hs-v6-wlk-leg-r {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(-35deg);
-  }
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-35deg); }
 }
 @keyframes hs-v6-wlk-arm-l {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(-30deg);
-  }
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-30deg); }
 }
 @keyframes hs-v6-wlk-arm-r {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(30deg);
-  }
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(30deg); }
 }
 
 /* Selected house tooltip */
@@ -3861,13 +3145,13 @@ const watchersDisplay = computed(() => {
   background: var(--accent-paler);
 }
 .ssp-street-tooltip-num {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.2px;
 }
 .ssp-street-tooltip-rating {
-  font-size: 0.625rem;
+  font-size: 10px;
   font-weight: 800;
   padding: 3px 8px;
   border-radius: 6px;
@@ -3878,20 +3162,14 @@ const watchersDisplay = computed(() => {
 }
 .ssp-street-tooltip-cost {
   margin-left: auto;
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.3px;
 }
-.ssp-street-tooltip-cost.good {
-  color: var(--accent-dark);
-}
-.ssp-street-tooltip-cost.warn {
-  color: var(--warning-deep);
-}
-.ssp-street-tooltip-cost.high {
-  color: var(--error);
-}
+.ssp-street-tooltip-cost.good { color: var(--accent-dark); }
+.ssp-street-tooltip-cost.warn { color: var(--warning-deep); }
+.ssp-street-tooltip-cost.high { color: var(--error); }
 
 /* Pathway projection card */
 .ssp-street-projection {
@@ -3906,11 +3184,9 @@ const watchersDisplay = computed(() => {
   cursor: pointer;
   transition: filter 0.15s;
 }
-.ssp-street-projection:hover {
-  filter: brightness(0.98);
-}
+.ssp-street-projection:hover { filter: brightness(0.98); }
 .ssp-street-projection-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
   flex-shrink: 0;
   width: 38px;
   height: 38px;
@@ -3926,7 +3202,7 @@ const watchersDisplay = computed(() => {
   min-width: 0;
 }
 .ssp-street-projection-label {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: 1px;
@@ -3934,7 +3210,7 @@ const watchersDisplay = computed(() => {
   line-height: 1.1;
 }
 .ssp-street-projection-num {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.4px;
@@ -3942,13 +3218,13 @@ const watchersDisplay = computed(() => {
   margin-top: 3px;
 }
 .ssp-street-projection-num span {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-left: 1px;
 }
 .ssp-street-projection-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-top: 2px;
@@ -3965,14 +3241,14 @@ const watchersDisplay = computed(() => {
   border-left: 1px solid var(--accent-pale);
 }
 .ssp-street-projection-saving-num {
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: -0.4px;
   line-height: 1;
 }
 .ssp-street-projection-saving-sub {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--accent-dark);
   margin-top: 2px;
@@ -3984,21 +3260,18 @@ const watchersDisplay = computed(() => {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 18px 20px 5px;
+  padding: 18px 20px 10px;
 }
 .section-h {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
-  color: var(--primary);
+  color: var(--text-secondary);
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 .section-h-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--accent-dark);
-}
-.section-h--accent {
   color: var(--accent-dark);
 }
 
@@ -4018,24 +3291,18 @@ const watchersDisplay = computed(() => {
   padding: 5px 0;
 }
 .stat-icon {
-  font-size: 0.875rem;
-  width: 34px;
-  height: 34px;
+  font-size: 14px;
+  width: 26px;
   text-align: center;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-.stat-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
+.stat-icon img { width: 26px; height: 26px; object-fit: contain; display: block; }
 .stat-label {
-  width: 70px;
-  font-size: 0.6875rem;
+  /* Wide enough for the two-word labels to wrap to two tidy lines rather
+     than breaking mid-word. */
+  width: 96px;
+  font-size: 11.5px;
+  line-height: 1.3;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
@@ -4066,7 +3333,7 @@ const watchersDisplay = computed(() => {
 .stat-value {
   width: 46px;
   text-align: right;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text);
   flex-shrink: 0;
@@ -4082,7 +3349,7 @@ const watchersDisplay = computed(() => {
   background: var(--accent-paler);
 }
 .stat-row-chev {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: var(--text-faint);
   transition: transform 0.2s;
   flex-shrink: 0;
@@ -4113,7 +3380,7 @@ const watchersDisplay = computed(() => {
   text-align: center;
 }
 .stat-expand-meta-eyebrow {
-  font-size: 0.5313rem;
+  font-size: 8.5px;
   font-weight: 800;
   color: var(--text-faint);
   letter-spacing: 0.7px;
@@ -4122,7 +3389,7 @@ const watchersDisplay = computed(() => {
   margin-bottom: 3px;
 }
 .stat-expand-meta-num {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.2px;
@@ -4135,7 +3402,7 @@ const watchersDisplay = computed(() => {
   color: var(--text);
 }
 .stat-expand-meta-sub {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-top: 2px;
@@ -4151,41 +3418,32 @@ const watchersDisplay = computed(() => {
   border-top: 1px solid var(--border-soft);
 }
 .stat-cost-bullet {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
   background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   flex-shrink: 0;
   margin-top: 1px;
+  overflow: hidden;
 }
-/* Illustrated variant - 3D icon fills the slot cleanly; drop the pale
-   grey card background so the illustration's own pedestal reads. */
-.stat-cost-bullet:has(> img) {
-  background: transparent;
-}
-.stat-cost-bullet img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
+.stat-cost-bullet img { width: 20px; height: 20px; object-fit: contain; }
 .stat-cost-info {
   flex: 1;
   min-width: 0;
 }
 .stat-cost-title {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 800;
   color: var(--text);
   margin-bottom: 2px;
   letter-spacing: -0.1px;
 }
 .stat-cost-sub {
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.4;
@@ -4199,7 +3457,7 @@ const watchersDisplay = computed(() => {
   flex-shrink: 0;
 }
 .stat-cost-amt-big {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: -0.2px;
@@ -4207,7 +3465,7 @@ const watchersDisplay = computed(() => {
   white-space: nowrap;
 }
 .stat-cost-amt-sub {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 600;
   color: var(--text-faint);
   margin-top: 2px;
@@ -4231,7 +3489,7 @@ const watchersDisplay = computed(() => {
 }
 .stat-expand-foot-text {
   flex: 1;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--accent-dark);
   line-height: 1.35;
@@ -4241,14 +3499,14 @@ const watchersDisplay = computed(() => {
 }
 .stat-expand-foot-arrow {
   color: var(--accent-dark);
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   flex-shrink: 0;
 }
 
 /* ── Full EPC drawer ───────────────────────────────────────────── */
 .epc-drawer {
-  margin: 8px 20px 0;
+  margin: 14px 20px 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -4266,38 +3524,46 @@ const watchersDisplay = computed(() => {
 .epc-drawer-head:hover {
   background: var(--accent-paler);
 }
+.epc-drawer-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-paler);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent-dark);
+}
+.epc-drawer-icon svg {
+  width: 18px;
+  height: 18px;
+}
 .epc-drawer-info {
   flex: 1;
   min-width: 0;
 }
 .epc-drawer-title {
-  font-size: 0.9375rem;
+  font-size: 13.5px;
   font-weight: 800;
-  color: var(--accent-dark);
+  color: var(--text);
   letter-spacing: -0.2px;
 }
 .epc-drawer-sub {
-  font-size: 0.7188rem;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
-  margin-top: 3px;
-  line-height: 1.4;
+  margin-top: 2px;
 }
-.epc-drawer-view {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  font-size: 0.7813rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  white-space: nowrap;
-}
-.epc-drawer-view-ar {
+.epc-drawer-chev {
+  font-size: 20px;
+  color: var(--text-faint);
   transition: transform 0.2s;
+  line-height: 1;
 }
-.epc-drawer-view.open .epc-drawer-view-ar {
+.epc-drawer-chev.open {
   transform: rotate(90deg);
+  color: var(--accent-dark);
 }
 .epc-drawer-body {
   padding: 0 16px 14px;
@@ -4324,12 +3590,12 @@ const watchersDisplay = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 800;
   color: white;
 }
 .epc-grade-sub {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   color: var(--text-secondary);
   letter-spacing: 0.6px;
@@ -4337,7 +3603,7 @@ const watchersDisplay = computed(() => {
 }
 .epc-arrow {
   color: var(--text-faint);
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 600;
 }
 .epc-saving {
@@ -4345,13 +3611,13 @@ const watchersDisplay = computed(() => {
   text-align: right;
 }
 .epc-saving-num {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: -0.2px;
 }
 .epc-saving-sub {
-  font-size: 0.625rem;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-top: 1px;
@@ -4372,41 +3638,32 @@ const watchersDisplay = computed(() => {
   background: var(--accent-paler);
 }
 .epc-item-icon {
-  font-size: 1rem;
-  width: 34px;
-  height: 34px;
+  font-size: 16px;
+  width: 28px;
   text-align: center;
   flex-shrink: 0;
-  padding-top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding-top: 1px;
 }
-.epc-item-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
+.epc-item-icon img { width: 28px; height: 28px; object-fit: contain; display: block; }
 .epc-item-body {
   flex: 1;
   min-width: 0;
   padding-right: 6px;
 }
 .epc-item-title {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--text);
   margin-bottom: 2px;
 }
 .epc-item-sub {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.4;
 }
 .epc-item-rating {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 800;
   padding: 3px 8px;
   border-radius: 100px;
@@ -4435,7 +3692,7 @@ const watchersDisplay = computed(() => {
   border: 1px solid var(--border);
 }
 .epc-item-chev {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: var(--text-faint);
   transition: transform 0.2s;
   flex-shrink: 0;
@@ -4454,7 +3711,7 @@ const watchersDisplay = computed(() => {
   padding: 10px 12px;
   border-radius: 10px;
   margin-bottom: 8px;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   line-height: 1.55;
 }
 .epc-flag {
@@ -4474,7 +3731,7 @@ const watchersDisplay = computed(() => {
 }
 .epc-flag-label,
 .epc-fix-label {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -4501,7 +3758,7 @@ const watchersDisplay = computed(() => {
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 800;
   color: var(--accent-dark);
   cursor: pointer;
@@ -4526,7 +3783,7 @@ const watchersDisplay = computed(() => {
 }
 .epc-drawer-cta-text {
   flex: 1;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: var(--accent-dark);
   line-height: 1.4;
@@ -4536,7 +3793,7 @@ const watchersDisplay = computed(() => {
 }
 .epc-drawer-cta-arrow {
   color: var(--accent-dark);
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -4545,12 +3802,12 @@ const watchersDisplay = computed(() => {
   padding: 20px 20px 0;
 }
 .fork-eyebrow {
-  font-size: 0.75rem;
+  font-size: 11px;
   font-weight: 800;
-  color: var(--text);
-  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  text-align: left;
+  text-align: center;
   margin-bottom: 14px;
 }
 .fork-options {
@@ -4586,44 +3843,28 @@ const watchersDisplay = computed(() => {
 .fork-opt.primary:hover {
   filter: brightness(1.04);
 }
-.fork-opt.buyer {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
-}
-.fork-opt.buyer:hover {
-  filter: brightness(1.08);
-}
-.fork-opt.buyer .fork-opt-title {
-  color: white;
-}
-.fork-opt.buyer .fork-opt-sub {
-  color: rgba(255, 255, 255, 0.75);
-}
-.fork-opt.buyer .fork-opt-chev {
-  color: rgba(255, 255, 255, 0.7);
-}
 .fork-opt-icon {
-  font-size: 1.375rem;
-  width: 56px;
-  height: 56px;
+  font-size: 22px;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--accent-paler);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
-.fork-opt-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
+.fork-opt-icon img { width: 40px; height: 40px; object-fit: contain; }
+.fork-opt.primary .fork-opt-icon {
+  background: rgba(255, 255, 255, 0.18);
 }
 .fork-opt-body {
   flex: 1;
   min-width: 0;
 }
 .fork-opt-title {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.2px;
   margin-bottom: 3px;
@@ -4633,7 +3874,7 @@ const watchersDisplay = computed(() => {
   color: white;
 }
 .fork-opt-sub {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.4;
@@ -4642,120 +3883,12 @@ const watchersDisplay = computed(() => {
   color: rgba(255, 255, 255, 0.85);
 }
 .fork-opt-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   color: var(--text-faint);
   flex-shrink: 0;
 }
 .fork-opt.primary .fork-opt-chev {
   color: rgba(255, 255, 255, 0.7);
-}
-
-/* ── Fork grid (guest/unclaimed): two tiles side by side ─────────── */
-.fork-grid {
-  display: flex;
-  gap: 10px;
-  align-items: stretch;
-}
-.fork-tile {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  overflow: visible;
-  text-align: left;
-  border-radius: 16px;
-  border: none;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.15s;
-}
-.fork-tile:hover {
-  transform: translateY(-1px);
-}
-.fork-tile--owner {
-  background: var(--accent-paler);
-  padding: 16px 14px;
-}
-.fork-tile--buyer {
-  background: var(--primary);
-  padding: 16px 14px;
-}
-.fork-tile-icon-top {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  display: block;
-  margin: auto;
-  margin-bottom: 10px;
-}
-.fork-tile-bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 12px;
-}
-.fork-tile-bottom-row--buyer {
-  justify-content: flex-end;
-}
-.fork-tile-title {
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.25;
-  margin-bottom: 6px;
-}
-.fork-tile-title--buyer {
-  color: #fff;
-}
-.fork-tile-sub {
-  font-size: 0.7188rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  padding-right: 4px;
-}
-.fork-tile-sub--buyer {
-  color: rgba(255, 255, 255, 0.75);
-}
-.fork-tile-lock {
-  font-size: 0.5938rem;
-  font-weight: 700;
-  color: var(--accent-dark);
-}
-.fork-tile-arrow {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 0.9375rem;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-.fork-tile-arrow--owner {
-  background: var(--accent-dark);
-}
-.fork-tile-arrow--buyer {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.hs-trust-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin: 16px 24px 0;
-  padding-bottom: 4px;
-  font-size: 0.6563rem;
-  font-weight: 500;
-  color: var(--text-faint);
-  text-align: center;
-}
-.hs-trust-note svg {
-  flex-shrink: 0;
 }
 
 /* ── EPC NOT AVAILABLE empty state ──────────────────────────── */
@@ -4779,18 +3912,15 @@ const watchersDisplay = computed(() => {
   background: var(--accent);
   flex-shrink: 0;
 }
-.hs-noepc-prop-block {
-  flex: 1;
-  min-width: 0;
-}
+.hs-noepc-prop-block { flex: 1; min-width: 0; }
 .hs-noepc-prop-line {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.2px;
 }
 .hs-noepc-prop-meta {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 2px;
@@ -4806,12 +3936,12 @@ const watchersDisplay = computed(() => {
   text-align: center;
 }
 .hs-noepc-icon {
-  font-size: 2.375rem;
+  font-size: 38px;
   line-height: 1;
   margin-bottom: 10px;
 }
 .hs-noepc-title {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.3px;
@@ -4819,7 +3949,7 @@ const watchersDisplay = computed(() => {
   line-height: 1.25;
 }
 .hs-noepc-sub {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.55;
@@ -4840,7 +3970,7 @@ const watchersDisplay = computed(() => {
   padding: 13px 14px;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   text-align: center;
@@ -4864,7 +3994,7 @@ const watchersDisplay = computed(() => {
   color: var(--accent-dark);
 }
 .hs-noepc-help {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text-faint);
   line-height: 1.5;
@@ -4872,7 +4002,7 @@ const watchersDisplay = computed(() => {
   border-top: 1px solid var(--border-soft);
 }
 
-/* ── No-EPC - prototype UX (amber hero + navy CTA + quiz entry) ──
+/* ── No-EPC — prototype UX (amber hero + navy CTA + quiz entry) ──
    Ported from prisma/homescore-no-epc-prototype.html so the empty
    state feels like a considered path, not an error. */
 .hs-noepc-hero {
@@ -4886,16 +4016,16 @@ const watchersDisplay = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.3px;
 }
 .hs-noepc-hero-pin {
-  font-size: 1rem;
+  font-size: 16px;
   opacity: 0.9;
 }
 .hs-noepc-hero-meta {
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   opacity: 0.9;
   margin: 4px 0 14px;
 }
@@ -4916,7 +4046,7 @@ const watchersDisplay = computed(() => {
   padding: 14px;
 }
 .hs-noepc-hero-tile-lbl {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   opacity: 0.95;
   margin-bottom: 10px;
@@ -4926,21 +4056,21 @@ const watchersDisplay = computed(() => {
   padding: 3px 10px;
   border-radius: 7px;
   font-weight: 800;
-  font-size: 0.9375rem;
+  font-size: 15px;
   background: rgba(255, 255, 255, 0.25);
   color: #fff;
 }
 .hs-noepc-hero-tile-big {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 800;
 }
 .hs-noepc-hero-tile-big small {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   opacity: 0.8;
 }
 .hs-noepc-hero-tile-cap {
-  font-size: 0.75rem;
+  font-size: 12px;
   opacity: 0.85;
   margin-top: 8px;
 }
@@ -4953,13 +4083,13 @@ const watchersDisplay = computed(() => {
   color: #fff;
 }
 .hs-noepc-cta-title {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   margin-bottom: 6px;
   letter-spacing: -0.3px;
 }
 .hs-noepc-cta-body {
-  font-size: 0.875rem;
+  font-size: 14px;
   opacity: 0.9;
   line-height: 1.45;
 }
@@ -4971,7 +4101,7 @@ const watchersDisplay = computed(() => {
   display: block;
   width: 100%;
   padding: 16px;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
   border: none;
   border-radius: 999px;
@@ -4985,7 +4115,7 @@ const watchersDisplay = computed(() => {
   transform: scale(0.99);
 }
 .hs-noepc-cta-note {
-  font-size: 0.75rem;
+  font-size: 12px;
   text-align: center;
   opacity: 0.7;
   margin-top: 10px;
@@ -4999,7 +4129,7 @@ const watchersDisplay = computed(() => {
   padding: 12px 14px;
   background: var(--card);
   border-radius: 14px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.45;
   box-shadow: var(--shadow-card);
@@ -5010,7 +4140,7 @@ const watchersDisplay = computed(() => {
   height: 20px;
   border-radius: 50%;
   border: 1.5px solid var(--text-secondary);
-  font-size: 0.6875rem;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5026,7 +4156,7 @@ const watchersDisplay = computed(() => {
   margin: 14px 24px 24px;
   padding: 12px;
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent-dark);
   text-decoration: none;
@@ -5035,7 +4165,7 @@ const watchersDisplay = computed(() => {
 
 /* ── Claim-it-free modal ────────────────────────────────────── */
 .claim-overlay {
-  /* Re-declare design tokens locally - the modal is teleported to
+  /* Re-declare design tokens locally — the modal is teleported to
      <body> so it loses access to the CSS custom properties defined on
      `.hs-v6-score`. Without these, the white sheet renders transparent. */
   --accent: #00a19a;
@@ -5059,8 +4189,8 @@ const watchersDisplay = computed(() => {
   align-items: flex-end;
   justify-content: center;
   backdrop-filter: blur(2px);
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, sans-serif;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   color: var(--text);
 }
@@ -5082,13 +4212,14 @@ const watchersDisplay = computed(() => {
   margin: 0 auto 14px;
 }
 .claim-icon {
-  font-size: 2.5rem;
-  line-height: 1;
-  text-align: center;
-  margin-bottom: 8px;
+  display: block;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  margin: 0 auto 8px;
 }
 .claim-title {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.4px;
@@ -5096,7 +4227,7 @@ const watchersDisplay = computed(() => {
   margin-bottom: 6px;
 }
 .claim-sub {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.55;
@@ -5128,25 +4259,22 @@ const watchersDisplay = computed(() => {
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: white;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.claim-step-body {
-  flex: 1;
-  min-width: 0;
-}
+.claim-step-body { flex: 1; min-width: 0; }
 .claim-step-title {
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.2px;
 }
 .claim-step-sub {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-top: 2px;
@@ -5161,7 +4289,7 @@ const watchersDisplay = computed(() => {
   padding: 14px;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   border: none;
@@ -5181,7 +4309,7 @@ const watchersDisplay = computed(() => {
   gap: 6px;
   align-items: center;
   justify-content: center;
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 500;
   color: var(--text-faint);
 }
@@ -5208,20 +4336,13 @@ const watchersDisplay = computed(() => {
 .hs-street-hero {
   position: relative;
   overflow: hidden;
-  margin: 22px 20px 0;
+  margin: 12px 20px 0;
   padding: 17px;
   border-radius: 18px;
-  background: radial-gradient(
-      circle at 88% 12%,
-      rgba(25, 199, 166, 0.22),
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at 10% 90%,
-      rgba(193, 138, 56, 0.14),
-      transparent 40%
-    ),
-    linear-gradient(150deg, #231d45, #33285c);
+  background:
+    radial-gradient(circle at 88% 12%, rgba(25, 199, 166, 0.22), transparent 42%),
+    radial-gradient(circle at 10% 90%, rgba(193, 138, 56, 0.14), transparent 40%),
+    linear-gradient(150deg, #231D45, #33285C);
   color: #fff;
   box-shadow: 0 14px 34px rgba(20, 14, 50, 0.45);
   cursor: pointer;
@@ -5231,37 +4352,22 @@ const watchersDisplay = computed(() => {
   position: absolute;
   inset: 0;
   opacity: 0.5;
-  background: repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.04),
-      rgba(255, 255, 255, 0.04) 1px,
-      transparent 1px,
-      transparent 22px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.04),
-      rgba(255, 255, 255, 0.04) 1px,
-      transparent 1px,
-      transparent 22px
-    );
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 22px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 22px);
   pointer-events: none;
 }
-.hs-street-hero > * {
-  position: relative;
-  z-index: 1;
-}
+.hs-street-hero > * { position: relative; z-index: 1; }
 .hs-street-hero.active {
-  box-shadow: 0 0 0 2px rgba(0, 161, 154, 0.5),
-    0 14px 34px rgba(20, 14, 50, 0.45);
+  box-shadow: 0 0 0 2px rgba(0, 161, 154, 0.5), 0 14px 34px rgba(20, 14, 50, 0.45);
 }
 
 .hsh-eyebrow {
-  font-size: 0.625rem;
+  font-size: 10px;
   letter-spacing: 1.3px;
   text-transform: uppercase;
   font-weight: 800;
-  color: #9defdb;
+  color: #9DEFDB;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -5272,136 +4378,132 @@ const watchersDisplay = computed(() => {
   object-fit: contain;
   flex-shrink: 0;
 }
-.hsh-rankrow {
+/* Rank block and the mini street strip share one row. */
+.hsh-main {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 14px;
   margin-top: 10px;
 }
-.hsh-rankrow-left {
+.hsh-rankrow {
   display: flex;
-  align-items: flex-end;
-  gap: 10px;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
 }
 .hsh-big {
-  font-size: 2.5rem;
+  font-size: 40px;
   font-weight: 800;
   letter-spacing: -2px;
   line-height: 0.9;
 }
 .hsh-rmeta {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
 }
 
+/* Sentence between the rank row and the footer. */
+.hsh-line {
+  margin-top: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
+}
+.hsh-line b {
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Mini street strip — plain row of house glyphs, no road. */
 .hsh-preview {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  padding: 6px 0 8px;
-  margin-top: 4px;
-  border-bottom: 2px dashed rgba(232, 163, 58, 0.5);
+  gap: 6px;
+  flex: none;
 }
 .hsh-ph {
   position: relative;
-  width: 24px;
-  height: 24px;
-  border-radius: 3px 3px 1px 1px;
+  width: 22px;
+  height: 20px;
+  border-radius: 4px 4px 2px 2px;
   background: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  flex-shrink: 0;
 }
 .hsh-ph::before {
   content: '';
   position: absolute;
-  top: -5px;
+  top: -6px;
   left: -1px;
   right: -1px;
-  height: 7px;
+  height: 8px;
   background: inherit;
   clip-path: polygon(0 100%, 50% 0, 100% 100%);
 }
 .hsh-cd {
   position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 4px;
-  height: 4px;
+  bottom: 2px;
+  right: 2px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
 }
 .hsh-ph.you {
-  width: 19px;
-  height: 17px;
-  background: #9defdb;
-  box-shadow: 0 0 0 3px rgba(25, 199, 166, 0.3);
+  width: 26px;
+  height: 24px;
+  background: #9DEFDB;
+  box-shadow: 0 0 0 4px rgba(25, 199, 166, 0.3);
   animation: hshPulse 2.2s ease-out infinite;
 }
-.hsh-ph.you .hsh-pin {
-  position: absolute;
-  top: -13px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 10px;
-  height: 10px;
-}
 @keyframes hshPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(25, 199, 166, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 11px rgba(25, 199, 166, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(25, 199, 166, 0);
-  }
+  0%   { box-shadow: 0 0 0 0 rgba(25, 199, 166, 0.4); }
+  70%  { box-shadow: 0 0 0 11px rgba(25, 199, 166, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(25, 199, 166, 0); }
 }
 
-.hsh-desc {
-  font-size: 0.7813rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.5;
-  margin-top: 10px;
-}
-
-.hsh-bottom-row {
-  display: flex;
+/* Footer: projection panel beside the CTA. */
+.hsh-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: stretch;
-  gap: 8px;
+  gap: 10px;
   margin-top: 13px;
 }
 .hsh-projchip {
-  flex: 1;
   display: flex;
   align-items: center;
-  font-size: 0.6875rem;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.4;
-  color: #0c1f1a;
-  background: linear-gradient(135deg, #9defdb, #19c7a6);
+  color: #d8fff5;
+  background: rgba(25, 199, 166, 0.16);
+  border: 1px solid rgba(157, 239, 219, 0.35);
   padding: 10px 12px;
   border-radius: 12px;
+}
+.hsh-projchip b {
+  color: #fff;
+  font-weight: 800;
 }
 
 .hsh-cta {
   position: relative;
   overflow: hidden;
   display: flex;
-  flex: 1;
-  margin-top: 0;
-  padding: 10px 12px;
+  width: 100%;
+  padding: 13px;
   border: none;
   border-radius: 12px;
   background: #fff;
-  color: #231d45;
+  color: #231D45;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 14px;
   font-weight: 800;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
 }
 .hsh-cta::after {
@@ -5411,12 +4513,7 @@ const watchersDisplay = computed(() => {
   bottom: 0;
   left: 0;
   width: 40%;
-  background: linear-gradient(
-    100deg,
-    transparent,
-    rgba(25, 199, 166, 0.25),
-    transparent
-  );
+  background: linear-gradient(100deg, transparent, rgba(25, 199, 166, 0.25), transparent);
   transform: translateX(-200%) skewX(-18deg);
   animation: hshSheen 4.4s ease-in-out 1.2s infinite;
 }
@@ -5424,85 +4521,85 @@ const watchersDisplay = computed(() => {
   animation: hshNudge 1.5s ease-in-out infinite;
 }
 @keyframes hshSheen {
-  0% {
-    transform: translateX(-200%) skewX(-18deg);
-  }
-  30%,
-  100% {
-    transform: translateX(360%) skewX(-18deg);
-  }
+  0%        { transform: translateX(-200%) skewX(-18deg); }
+  30%, 100% { transform: translateX(360%) skewX(-18deg); }
 }
 @keyframes hshNudge {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(4px);
-  }
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hsh-cta::after,
   .hsh-cta-ar,
-  .hsh-ph.you {
-    animation: none;
+  .hsh-ph.you { animation: none; }
+}
+
+/* ══ Desktop web layout — two-column HomeScore snapshot ═══════════
+   The ported view is a single mobile column; on the web canvas we lay
+   it out as a centred 1140px shell with the address / claim / gauge in
+   the left column and stats / street / EPC in the right, then the
+   connection fork spanning full width beneath. Collapses to one column
+   (mobile rhythm intact) below 900px. */
+.hs-report {
+  width: min(1140px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0 56px;
+}
+
+.hs-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.hs-col {
+  min-width: 0;
+}
+
+/* Cards fill their column — drop the mobile 20px side gutters. */
+.hs-col > * {
+  margin-inline: 0;
+}
+
+/* Connection fork spans both columns; its intent cards sit side by side. */
+.hs-report > .fork-section {
+  margin: 26px 0 0;
+}
+
+/* Even 2-column grid for the intent cards — 2×2 for the owner's four
+   options, 1×2 for the guest / non-owner pair. Rows stretch so cards in a
+   row match height even when copy wraps to two lines. */
+.hs-report > .fork-section .fork-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.hs-report > .fork-section .fork-opt {
+  height: 100%;
+  align-items: center;
+}
+
+@media (min-width: 901px) {
+  /* Align the tops of both columns cleanly. */
+  .hs-col > *:first-child {
+    margin-top: 0;
   }
 }
 
-/* 3D icon images that replaced flat emoji inside icon wrappers */
-.hsh-pin {
-  display: inline-flex;
-  width: 16px;
-  height: 16px;
-}
-.hsh-pin img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.ssp-head-icon img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  display: block;
-}
-.ssp-bar-icon {
-  height: 20px;
-}
-.ssp-bar-icon img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-}
-.fork-opt-icon img {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  display: block;
-}
-.claim-icon {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 8px;
-}
-.claim-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.claim-privacy-ic {
-  display: inline-flex;
-  width: 14px;
-  height: 14px;
-}
-.claim-privacy-ic img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
+@media (max-width: 900px) {
+  .hs-report {
+    width: min(520px, calc(100% - 32px));
+    padding: 8px 0 40px;
+  }
+  .hs-cols {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .hs-report > .fork-section .fork-options {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

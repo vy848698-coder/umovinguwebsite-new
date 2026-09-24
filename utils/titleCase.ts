@@ -35,3 +35,37 @@ function capitaliseFirst(word: string): string {
   if (word.length > 1 && word === word.toUpperCase()) return word
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
 }
+
+// Sentence case for task names, which the backend builds by capitalising
+// every word of the task key ("Name Of Sellers And Address Of The Property").
+// Task names read as phrases, not headings, so only the first word keeps its
+// capital: "Name of sellers and address of the property". Acronyms (EPC, TA6,
+// UK) and the proper names below keep theirs.
+const PROPER_PHRASES = [
+  'HM Land Registry',
+  'Land Registry',
+  'Ordnance Survey',
+  'Party Wall Act',
+  'Property Passport',
+  'Japanese',
+  'England',
+  'Wales',
+]
+
+export function toSentenceCase(input: string | null | undefined): string {
+  if (!input) return ''
+  const words = input.trim().split(/\s+/)
+  let out = words
+    .map((word, i) => {
+      // Acronyms and codes (EPC, TA6, HMLR) stay exactly as written.
+      if (/[A-Z]/.test(word) && word.length > 1 && word === word.toUpperCase()) return word
+      const lower = word.toLowerCase()
+      return i === 0 ? lower.charAt(0).toUpperCase() + lower.slice(1) : lower
+    })
+    .join(' ')
+  for (const phrase of PROPER_PHRASES) {
+    const re = new RegExp('\\b' + phrase.replace(/ /g, '\\s+') + '\\b', 'gi')
+    out = out.replace(re, phrase)
+  }
+  return out
+}

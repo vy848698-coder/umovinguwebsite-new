@@ -1,5 +1,7 @@
 <template>
   <div class="rd-page">
+   <div class="rd-shell">
+    <div class="rd-col rd-col-main">
     <!-- ── Teal address card ───────────────────────────────────── -->
     <div class="rd-addr-card" data-tour="addr">
       <div class="rd-addr-top">
@@ -103,13 +105,7 @@
       </div>
       <div class="rd-score-gauge-wrap">
         <div class="rd-gauge">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
-            <defs>
-              <linearGradient id="rdGrad" x1="1" y1="0" x2="0" y2="0">
-                <stop offset="0%" stop-color="#00BB93" />
-                <stop offset="100%" stop-color="#016F84" />
-              </linearGradient>
-            </defs>
+          <svg viewBox="0 0 120 120">
             <circle
               class="g-bg"
               cx="60"
@@ -124,7 +120,7 @@
               cy="60"
               r="50"
               fill="none"
-              stroke="url(#rdGrad)"
+              :stroke="gaugeColor"
               stroke-width="9"
               stroke-linecap="round"
               stroke-dasharray="314.16"
@@ -183,11 +179,16 @@
         type="button"
         @click="$emit('see-running-costs')"
       >
-        <span class="rd-cta-emoji">📊</span>
+        <img
+          class="rd-cta-emoji"
+          src="/homescore-icon/utilityBills.png"
+          alt=""
+          loading="lazy"
+        />
         <span class="rd-cta-text">
           <span class="rd-cta-label">See full running costs</span>
           <span class="rd-cta-sub"
-            >Heating, hot water &amp; lighting - monthly and annual
+            >Heating, hot water &amp; lighting — monthly and annual
             breakdowns</span
           >
         </span>
@@ -210,7 +211,12 @@
         type="button"
         @click="$emit('see-street')"
       >
-        <span class="rd-cta-emoji">🏘️</span>
+        <img
+          class="rd-cta-emoji"
+          src="/homescore-icon/houseSearch.png"
+          alt=""
+          loading="lazy"
+        />
         <span class="rd-cta-text">
           <span class="rd-cta-label">See your street comparison</span>
           <span class="rd-cta-sub"
@@ -233,6 +239,8 @@
       </button>
     </div>
 
+    </div>
+    <div class="rd-col rd-col-side">
     <!-- ── EPC & breakdown card ───────────────────────────────── -->
     <div class="rd-breakdown" data-tour="breakdown">
       <!-- EPC rating row -->
@@ -244,7 +252,7 @@
               <span
                 class="rd-epc-letter-big"
                 :style="{ background: epcColor }"
-                >{{ epcRating || '-' }}</span
+                >{{ epcRating || '—' }}</span
               >
               <span class="rd-epc-text">Current · {{ epcCurrentSap }} SAP</span>
             </div>
@@ -288,7 +296,10 @@
 
       <!-- Environmental impact -->
       <div class="rd-env">
-        <div class="rd-env-eyebrow">🌍 Environmental impact</div>
+        <div class="rd-env-eyebrow">
+          <img src="/homescore-icon/environmental.png" alt="" loading="lazy" />Environmental
+          impact
+        </div>
         <div class="rd-env-row">
           <div>
             <div class="rd-env-num">{{ co2Now.toFixed(1) }}t</div>
@@ -313,6 +324,178 @@
       </div>
     </div>
 
+    <!-- ── Score pillar breakdown (Heating / Structure / …) ───── -->
+    <div v-if="pillars.length" class="rd-pillars-card" data-tour="pillars">
+      <div class="rd-pillars-head">
+        <div class="rd-pillars-title">Score breakdown</div>
+        <div class="rd-pillars-sub">Across five pillars · EPC stats</div>
+      </div>
+      <div class="rd-pillars-list">
+        <div v-for="p in pillars" :key="p.id" class="rd-pillar-row">
+          <span class="rd-pillar-dot" :style="{ background: p.color }" />
+          <span class="rd-pillar-name">{{ p.label }}</span>
+          <div class="rd-pillar-track">
+            <div
+              class="rd-pillar-bar"
+              :style="{ width: `${(p.value / p.max) * 100}%`, background: p.color }"
+            />
+          </div>
+          <span class="rd-pillar-score">
+            {{ p.value }}<span class="rd-pillar-max"> / {{ p.max }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Full EPC breakdown (collapsible) ───────────────────── -->
+    <div class="rd-epcfull-card" data-tour="epcfull">
+      <button
+        type="button"
+        class="rd-epcfull-head"
+        :aria-expanded="epcOpen ? 'true' : 'false'"
+        @click="epcOpen = !epcOpen"
+      >
+        <img
+          class="rd-epcfull-ic"
+          src="/homescore-icon/lightning.png"
+          alt=""
+          loading="lazy"
+        />
+        <span class="rd-epcfull-head-text">
+          <span class="rd-epcfull-title">Full EPC breakdown</span>
+          <span class="rd-epcfull-sub">
+            Every line behind your score · {{ epcLines.length }} items
+          </span>
+        </span>
+        <svg
+          class="rd-epcfull-chev"
+          :class="{ open: epcOpen }"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      <div v-if="epcOpen" class="rd-epcfull-body">
+        <!-- Current → potential summary -->
+        <div class="rd-epcfull-summary">
+          <div class="rd-epcfull-grade">
+            <span class="rd-epc-letter-big" :style="{ background: epcColor }">{{ epcRating || '—' }}</span>
+            <span class="rd-epcfull-grade-meta">Current · {{ epcCurrentSap }}</span>
+          </div>
+          <span class="rd-epcfull-arrow">→</span>
+          <div class="rd-epcfull-grade">
+            <span class="rd-epc-letter-big" :style="{ background: '#7AB040' }">{{ epcPotentialLetter }}</span>
+            <span class="rd-epcfull-grade-meta">Potential · {{ epcPotentialSap }}</span>
+          </div>
+          <div class="rd-epcfull-saving">
+            <div class="rd-epcfull-saving-num">£{{ formatNum(potentialSaving) }}<span>/yr</span></div>
+            <div class="rd-epcfull-saving-meta">potential saving</div>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <div class="rd-epcfull-lines">
+          <div v-for="l in epcLines" :key="l.label" class="rd-epcfull-line">
+            <img
+              class="rd-epcfull-line-ic"
+              :src="l.icon"
+              alt=""
+              loading="lazy"
+            />
+            <span class="rd-epcfull-line-body">
+              <span class="rd-epcfull-line-label">{{ l.label }}</span>
+              <span class="rd-epcfull-line-sub">{{ l.sub }}</span>
+            </span>
+            <span class="rd-epcfull-line-rating" :style="{ color: l.color, borderColor: l.color }">
+              {{ l.rating }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Your street (rank + inline map) ────────────────────── -->
+    <div class="rd-street-card" data-tour="street">
+      <div class="rd-street-eyebrow">
+        <img src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />Your
+        street · {{ streetName }}
+      </div>
+      <div class="rd-street-rankrow">
+        <div class="rd-street-rank">#{{ streetRank }}</div>
+        <div class="rd-street-rank-text">
+          <div class="rd-street-of">of {{ streetHomes.length }} homes</div>
+          <div class="rd-street-delta" :class="streetSaving >= 0 ? 'good' : 'bad'">
+            {{ streetSavingAbs }} {{ streetSaving >= 0 ? 'cheaper than' : 'more than' }} the street average
+          </div>
+        </div>
+      </div>
+
+      <!-- House row -->
+      <div class="rd-street-houses">
+        <div
+          v-for="(h, i) in streetHomes"
+          :key="i"
+          class="rd-street-house"
+          :class="[h.tone, { you: h.you }]"
+          :title="h.you ? 'This property' : `£${formatNum(h.cost)}/yr`"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3 L21 10 L19 10 L19 20 L14 20 L14 14 L10 14 L10 20 L5 20 L5 10 L3 10 Z" />
+          </svg>
+        </div>
+      </div>
+
+      <button type="button" class="rd-street-toggle" @click="streetOpen = !streetOpen">
+        {{ streetOpen ? 'Hide street map' : 'Explore your street map' }}
+        <span class="rd-street-toggle-arrow" :class="{ open: streetOpen }">›</span>
+      </button>
+
+      <!-- Expanded detail -->
+      <div v-if="streetOpen" class="rd-street-detail">
+        <div class="rd-street-list">
+          <div
+            v-for="h in rankedHomes"
+            :key="h.addr"
+            class="rd-street-li"
+            :class="{ you: h.you }"
+          >
+            <span class="rd-street-li-rank">{{ h.rank }}</span>
+            <span class="rd-street-li-body">
+              <span class="rd-street-li-addr">{{ h.addr }}<template v-if="h.you"> — you</template></span>
+              <span class="rd-street-li-meta">{{ h.meta }}</span>
+            </span>
+            <span class="rd-street-li-cost" :style="{ color: toneColor(h.tone) }">
+              £{{ formatNum(h.cost) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="rd-street-legend">
+          <span><i style="background:#00a19a" />Under £1,500</span>
+          <span><i style="background:#d99a2b" />£1,500–2,000</span>
+          <span><i style="background:#dc2626" />Over £2,000</span>
+        </div>
+
+        <!-- EPC pathway projection -->
+        <div class="rd-street-pathway">
+          <div class="rd-street-pathway-label">If you complete the EPC pathway</div>
+          <div class="rd-street-pathway-row">
+            <div class="rd-street-pathway-cost">£{{ formatNum(pathwayCost) }}<span>/yr</span></div>
+            <div class="rd-street-pathway-meta">
+              #{{ pathwayRank }} of {{ streetHomes.length }} · up from #{{ streetRank }}
+            </div>
+            <div class="rd-street-pathway-save">−£{{ formatNum(pathwaySaving) }}/yr</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Intent picker ─────────────────────────────────────── -->
     <div class="rd-intent" data-tour="intent">
       <div class="rd-intent-eyebrow">
@@ -328,11 +511,16 @@
           type="button"
           @click="$emit('claim')"
         >
-          <span class="rd-intent-icon"><img src="/op-icons/homescore/house.png" alt="" loading="lazy" /></span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/house.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">I own this property</span>
             <span class="rd-intent-sub"
-              >Tell us what's been done since the EPC - we'll update the score
+              >Tell us what's been done since the EPC — we'll update the score
               and cut your estimated bills.</span
             >
           </span>
@@ -344,15 +532,20 @@
           type="button"
           @click="$emit('owner-dashboard')"
         >
-          <span class="rd-intent-icon"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" loading="lazy" /></span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/homeScoreCard.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">Go to my dashboard</span>
             <span class="rd-intent-sub">
               <template v-if="state === 'published'"
-                >Your Passport is published - manage your record.</template
+                >Your Passport is published — manage your record.</template
               >
               <template v-else
-                >Your Passport is in progress - pick up where you left
+                >Your Passport is in progress — pick up where you left
                 off.</template
               >
             </span>
@@ -366,11 +559,16 @@
           type="button"
           @click="$emit('refine-score')"
         >
-          <span class="rd-intent-icon"><img src="/op-icons/calendar/pen.png" alt="" loading="lazy" /></span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/clipboardChecklist.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">Refine my HomeScore</span>
             <span class="rd-intent-sub">
-              Retake the {{ '2-min' }} quiz - tell us what's been done since the
+              Retake the {{ '2-min' }} quiz — tell us what's been done since the
               EPC to update your saved score.
             </span>
           </span>
@@ -382,16 +580,21 @@
           type="button"
           @click="$emit('interested')"
         >
-          <span class="rd-intent-icon"><img src="/op-icons/homescore/magnifier.png" alt="" loading="lazy" /></span>
+          <img
+            class="rd-intent-icon"
+            src="/homescore-icon/magnifier.png"
+            alt=""
+            loading="lazy"
+          />
           <span class="rd-intent-body">
             <span class="rd-intent-title">I'm interested in this property</span>
             <span class="rd-intent-sub">
               <template v-if="state === 'published'"
-                >The verified Passport is live - purchase access to see
+                >The verified Passport is live — purchase access to see
                 everything.</template
               >
               <template v-else-if="state === 'inProgress'"
-                >Save it - we'll notify you when the Passport is
+                >Save it — we'll notify you when the Passport is
                 published.</template
               >
               <template v-else
@@ -416,12 +619,17 @@
       </div>
     </div>
 
+    </div>
+   </div>
+
     <div style="height: 28px" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import type { Pillar } from '~/types/homescore'
+import { calculateScore, getPrefillFromProperty, getPillarMax } from '~/utils/homescoreScoring'
 
 // ── Tween helper: counts up from 0 → target with ease-out cubic on mount,
 // and re-tweens when the source changes (e.g. once real EPC data resolves).
@@ -519,6 +727,122 @@ defineEmits<{
   (e: 'see-running-costs'): void
   (e: 'refine-score'): void
 }>()
+
+// ── Score pillar breakdown (Heating / Structure / Efficiency / Electrics / Plumbing)
+// Derived from public EPC data via the shared V1 scoring model (same one the
+// owner quiz refines), so it stays consistent across the app.
+const PILLAR_META: { id: Pillar; label: string; color: string }[] = [
+  { id: 'heating', label: 'Heating', color: '#ef4444' },
+  { id: 'structure', label: 'Structure', color: '#f59e0b' },
+  { id: 'efficiency', label: 'Efficiency', color: '#22c55e' },
+  { id: 'electrics', label: 'Electrics', color: '#3b82f6' },
+  { id: 'plumbing', label: 'Plumbing', color: '#8b5cf6' },
+]
+const pillars = computed(() => {
+  if (!props.property) return []
+  const breakdown = calculateScore(getPrefillFromProperty(props.property)).breakdown
+  return PILLAR_META.map((m) => ({
+    ...m,
+    value: breakdown[m.id],
+    max: getPillarMax(m.id),
+  }))
+})
+
+// ── Full EPC breakdown accordion ─────────────────────────────────────
+const epcOpen = ref(false)
+
+// Map an EPC efficiency label ("Good", "Very Poor", …) to a display colour.
+function effColor(label: string): string {
+  const l = label.toLowerCase()
+  if (l.includes('very good')) return '#16a34a'
+  if (l.includes('good')) return '#65a30d'
+  if (l.includes('average')) return '#d99a2b'
+  if (l.includes('very poor')) return '#dc2626'
+  if (l.includes('poor')) return '#e0684b'
+  return '#9c98ad' // N/A / unknown
+}
+
+const EPC_LINE_META: { key: string; label: string; sub: string; icon: string }[] = [
+  { key: 'mainheatEnergyEff', label: 'Main heating', sub: 'Heating system', icon: '/homescore-icon/boiler.png' },
+  { key: 'mainheatcEnergyEff', label: 'Heating controls', sub: 'Controls', icon: '/homescore-icon/heatingControls.png' },
+  { key: 'hotWaterEnergyEff', label: 'Hot water', sub: 'Hot water system', icon: '/homescore-icon/tap.png' },
+  { key: 'wallsEnergyEff', label: 'Walls', sub: 'Walls', icon: '/homescore-icon/walls.png' },
+  { key: 'roofEnergyEff', label: 'Roof · loft insulation', sub: 'Roof', icon: '/homescore-icon/roof.png' },
+  { key: 'floorEnergyEff', label: 'Floor', sub: 'Floor', icon: '/homescore-icon/floor.png' },
+  { key: 'windowsEnergyEff', label: 'Windows', sub: 'Windows', icon: '/homescore-icon/windows.png' },
+  { key: 'lightingEnergyEff', label: 'Lighting', sub: 'Lighting', icon: '/homescore-icon/lightbulb.png' },
+]
+const epcLines = computed(() =>
+  EPC_LINE_META.map((m) => {
+    const raw = props.property?.[m.key]
+    const rating = raw ? String(raw) : 'N/A'
+    return { ...m, rating, color: raw ? effColor(rating) : '#9c98ad' }
+  }),
+)
+
+// ── Your street: rank card + inline map ──────────────────────────────
+// Neighbour costs are derived illustratively from the subject property + street
+// average (same approach as pages/homescore/street/[id].vue) — public EPC data
+// doesn't expose per-neighbour bills, so this is a modelled comparison.
+const streetOpen = ref(false)
+const streetAvg = computed(() => Number(props.streetAvgCost) || 1673)
+const youCost = computed(() => Number(props.estimatedAnnualCost) || streetAvg.value)
+const streetName = computed(() => {
+  const a: string = props.property?.addressLine1 || ''
+  const m = a.match(/^\d+[a-z]?,?\s*(.+)$/i)
+  return m ? m[1] : a || 'this street'
+})
+function toneOf(cost: number): 'low' | 'mid' | 'high' {
+  return cost < 1500 ? 'low' : cost < 2000 ? 'mid' : 'high'
+}
+function toneColor(t: string): string {
+  return t === 'low' ? '#00a19a' : t === 'mid' ? '#d99a2b' : '#dc2626'
+}
+function metaFor(cost: number): string {
+  if (cost < 1400) return 'Filled cavity · modern glazing · EPC C'
+  if (cost < 1700) return 'Part-insulated · EPC D'
+  if (cost < 2100) return 'Older glazing · EPC D/E'
+  return 'No insulation · single glazing · EPC F'
+}
+const streetHomes = computed(() => {
+  const avg = streetAvg.value
+  const rel = [0.76, 0.82, 0.86, 0.92, 0.97, 1.03, 1.09, 1.18, 1.31, 1.46]
+  const homes = rel.map((r, i) => {
+    const cost = Math.round((avg * r) / 10) * 10
+    return {
+      cost,
+      tone: toneOf(cost),
+      you: false,
+      addr: `${i * 2 + 1} ${streetName.value}`,
+      meta: metaFor(cost),
+    }
+  })
+  homes.push({
+    cost: youCost.value,
+    tone: toneOf(youCost.value),
+    you: true,
+    addr: props.property?.addressLine1 || 'This property',
+    meta: 'Your property · public EPC estimate',
+  })
+  return homes.sort((a, b) => a.cost - b.cost)
+})
+const rankedHomes = computed(() =>
+  streetHomes.value.map((h, i) => ({ ...h, rank: i + 1 })),
+)
+const streetRank = computed(
+  () => rankedHomes.value.find((h) => h.you)?.rank ?? 0,
+)
+// Positive = cheaper than the street average.
+const streetSaving = computed(() => streetAvg.value - youCost.value)
+const streetSavingAbs = computed(() => `£${formatNum(Math.abs(streetSaving.value))}`)
+const pathwaySaving = computed(() => Math.round(youCost.value * 0.28))
+const pathwayCost = computed(() => youCost.value - pathwaySaving.value)
+const pathwayRank = computed(() => {
+  const c = pathwayCost.value
+  let r = 1
+  for (const h of streetHomes.value) if (!h.you && h.cost < c) r++
+  return r
+})
 
 // ── Derived numbers ──
 const overpayDiff = computed(() =>
@@ -717,12 +1041,12 @@ const scoreExplainer = computed(() => {
     return 'Better than most UK homes. A few targeted upgrades could push this into the top tier.'
   if (props.score >= 40)
     return 'Plenty of room to improve. Targeted upgrades could meaningfully cut your bills.'
-  return 'This puts the property in the <b>bottom 15%</b> for energy efficiency. Significant room to improve - and to save.'
+  return 'This puts the property in the <b>bottom 15%</b> for energy efficiency. Significant room to improve — and to save.'
 })
 const dataNote = computed(() => {
   if (props.state === 'published') return null
   if (props.state === 'inProgress')
-    return 'Verified Passport not yet published - refining as the owner adds data.'
+    return 'Verified Passport not yet published — refining as the owner adds data.'
   if (props.epcYear)
     return `Based on a <b>${props.epcYear} EPC</b>. The real score may be higher if improvements have been made since.`
   return 'Based on public EPC data. The real score may be higher if improvements have been made since the EPC was lodged.'
@@ -749,9 +1073,98 @@ function formatNum(n: number): string {
 <style scoped>
 .rd-page {
   background: #fafafa;
-  /* No horizontal padding here - each card sets its own 22px side margin
+  /* No horizontal padding here — each card sets its own 22px side margin
      to match the prototype's per-card spacing rhythm. */
   padding: 4px 0 0;
+}
+
+/* On mobile the shell/columns are transparent passthroughs, so the cards keep
+   their original 22px side margins and single-column stacking — no visual
+   change. On wider screens the shell becomes a centered two-column dashboard. */
+@media (min-width: 900px) {
+  .rd-page {
+    background: transparent;
+    padding: 14px 0 0;
+  }
+  .rd-shell {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    grid-auto-rows: min-content;
+    gap: 20px 24px;
+    align-items: start;
+    /* Balanced premium dashboard — tall cards paired with tall, the EPC drawer
+       and street/intent run full-width as bands so no column trails long. */
+    grid-template-areas:
+      'addr    score'
+      'cost    brk'
+      'pillars street'
+      'epc     epc'
+      'intent  intent';
+  }
+  /* Promote each column wrapper's children into the shell grid so every card
+     can be placed individually via grid-area (no template restructuring). */
+  .rd-shell .rd-col {
+    display: contents;
+  }
+  .rd-shell .rd-addr-card {
+    grid-area: addr;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .rd-shell .rd-score-card {
+    grid-area: score;
+  }
+  .rd-shell .rd-overpay {
+    grid-area: cost;
+  }
+  .rd-shell .rd-breakdown {
+    grid-area: brk;
+  }
+  .rd-shell .rd-pillars-card {
+    grid-area: pillars;
+  }
+  .rd-shell .rd-epcfull-card {
+    grid-area: epc;
+  }
+  .rd-shell .rd-street-card {
+    grid-area: street;
+  }
+  .rd-shell .rd-intent {
+    grid-area: intent;
+  }
+  /* Grid gap handles all spacing now — drop the per-card side/bottom margins. */
+  .rd-shell .rd-addr-card,
+  .rd-shell .rd-score-card,
+  .rd-shell .rd-overpay,
+  .rd-shell .rd-breakdown,
+  .rd-shell .rd-pillars-card,
+  .rd-shell .rd-epcfull-card,
+  .rd-shell .rd-street-card,
+  .rd-shell .rd-intent {
+    margin: 0;
+  }
+  /* Intent options fan out across the full-width band on desktop. */
+  .rd-shell .rd-intent-opts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+  }
+  .rd-shell .rd-intent-opt {
+    height: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .rd-shell {
+    max-width: 1200px;
+    gap: 22px 28px;
+  }
 }
 
 /* ── Amber address card (prototype-exact: margins, pin size, spacing) ── */
@@ -808,7 +1221,7 @@ function formatNum(n: number): string {
   min-width: 0;
 }
 .rd-addr-line {
-  font-size: 1.1875rem;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.2;
@@ -827,7 +1240,7 @@ function formatNum(n: number): string {
   }
 }
 .rd-addr-meta {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.78);
   margin-top: 2px;
@@ -849,7 +1262,7 @@ function formatNum(n: number): string {
   color: #fff;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: -0.05px;
 }
@@ -863,7 +1276,7 @@ function formatNum(n: number): string {
   height: 18px;
   border-radius: 4px;
   color: #fff;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
 }
 .rd-state-unclaimed {
@@ -887,7 +1300,7 @@ function formatNum(n: number): string {
   color: #00514d;
 }
 .rd-arrow {
-  font-size: 0.8125rem;
+  font-size: 13px;
 }
 
 .rd-addr-stats {
@@ -900,7 +1313,7 @@ function formatNum(n: number): string {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.92);
 }
@@ -950,7 +1363,7 @@ function formatNum(n: number): string {
 }
 
 /* ── Overpay hero ──────────────────────────────────────────── */
-/* Overpay hero - prototype-exact vibrant 3-stop teal gradient. */
+/* Overpay hero — prototype-exact vibrant 3-stop teal gradient. */
 .rd-overpay {
   background: linear-gradient(140deg, #00b6ae 0%, #00a19a 50%, #00514d 100%);
   color: #fff;
@@ -999,7 +1412,7 @@ function formatNum(n: number): string {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.85);
   letter-spacing: 1.2px;
@@ -1014,7 +1427,7 @@ function formatNum(n: number): string {
   box-shadow: 0 0 0 3px rgba(107, 212, 205, 0.25);
 }
 .rd-overpay-num {
-  font-size: 2.75rem;
+  font-size: 44px;
   font-weight: 800;
   letter-spacing: -1.6px;
   line-height: 1;
@@ -1022,14 +1435,14 @@ function formatNum(n: number): string {
   font-feature-settings: 'tnum';
 }
 .rd-overpay-num .rd-unit {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.78);
   letter-spacing: -0.5px;
   margin-left: 2px;
 }
 .rd-overpay-sub {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
@@ -1076,8 +1489,9 @@ function formatNum(n: number): string {
   transform: scale(0.99);
 }
 .rd-cta-emoji {
-  font-size: 1.125rem;
-  line-height: 1;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .rd-cta-text {
@@ -1088,13 +1502,13 @@ function formatNum(n: number): string {
   min-width: 0;
 }
 .rd-cta-label {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.1px;
   line-height: 1.2;
 }
 .rd-cta-sub {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -1154,10 +1568,10 @@ function formatNum(n: number): string {
   justify-content: space-between;
   margin-bottom: 14px;
 }
-/* "HOMESCORE" eyebrow - uppercase, teal-dark, with a green rounded
+/* "HOMESCORE" eyebrow — uppercase, teal-dark, with a green rounded
    gradient square to the left of the text (prototype-exact). */
 .rd-score-eyebrow .left {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.4px;
   text-transform: uppercase;
@@ -1176,7 +1590,7 @@ function formatNum(n: number): string {
   flex-shrink: 0;
 }
 .rd-score-eyebrow .right {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 700;
   color: #6b6783;
   background: #fafafa;
@@ -1218,7 +1632,7 @@ function formatNum(n: number): string {
   justify-content: center;
 }
 .rd-g-num .gn-big {
-  font-size: 3.125rem;
+  font-size: 50px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -1.6px;
@@ -1226,7 +1640,7 @@ function formatNum(n: number): string {
   font-feature-settings: 'tnum';
 }
 .rd-g-num .gn-small {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   color: #9c98ad;
   letter-spacing: 1.2px;
@@ -1238,13 +1652,13 @@ function formatNum(n: number): string {
   min-width: 0;
 }
 .rd-score-band {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.3px;
   margin-bottom: 4px;
 }
-/* Score-band tone - mirrors prototype's `.score-card.low/.mid/.high .score-band`. */
+/* Score-band tone — mirrors prototype's `.score-card.low/.mid/.high .score-band`. */
 .rd-score-card.low .rd-score-band {
   color: #c73e36;
 }
@@ -1255,7 +1669,7 @@ function formatNum(n: number): string {
   color: #007e78;
 }
 .rd-score-explainer {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: #6b6783;
   margin-top: 5px;
@@ -1273,7 +1687,7 @@ function formatNum(n: number): string {
   padding: 10px 12px;
   background: #fafafa;
   border-radius: 10px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
   color: #6b6783;
   line-height: 1.45;
@@ -1301,6 +1715,475 @@ function formatNum(n: number): string {
   transition: all 0.18s;
   animation: rd-fadeSlideUp 0.45s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* ── Score pillar breakdown ─────────────────────────────────────────── */
+.rd-pillars-card {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  padding: 18px;
+  margin: 0 22px 12px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+  animation: rd-fadeSlideUp 0.45s 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rd-pillars-head {
+  margin-bottom: 14px;
+}
+.rd-pillars-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #231d45;
+  letter-spacing: -0.01em;
+}
+.rd-pillars-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9c98ad;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.rd-pillars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.rd-pillar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rd-pillar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rd-pillar-name {
+  width: 74px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #231d45;
+}
+.rd-pillar-track {
+  flex: 1;
+  height: 8px;
+  background: #f2f2f7;
+  border-radius: 100px;
+  overflow: hidden;
+}
+.rd-pillar-bar {
+  height: 100%;
+  border-radius: 100px;
+  min-width: 4px;
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rd-pillar-score {
+  flex-shrink: 0;
+  min-width: 46px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  color: #231d45;
+  font-feature-settings: 'tnum';
+}
+.rd-pillar-max {
+  font-weight: 500;
+  color: #aeaeb2;
+}
+
+/* ── Full EPC breakdown accordion ───────────────────────────────────── */
+.rd-epcfull-card {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  margin: 0 22px 12px;
+  box-shadow: 0 4px 16px rgba(24, 52, 88, 0.06);
+  overflow: hidden;
+  animation: rd-fadeSlideUp 0.45s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rd-epcfull-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.rd-epcfull-ic {
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  padding: 5px;
+  border-radius: 10px;
+  background: #eafaf6;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.rd-epcfull-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.rd-epcfull-title {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #231d45;
+}
+.rd-epcfull-sub {
+  display: block;
+  font-size: 12px;
+  color: #9c98ad;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.rd-epcfull-chev {
+  width: 18px;
+  height: 18px;
+  color: #9c98ad;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.rd-epcfull-chev.open {
+  transform: rotate(180deg);
+}
+.rd-epcfull-body {
+  padding: 0 18px 16px;
+  border-top: 1px solid #f3f4f7;
+}
+.rd-epcfull-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f7;
+  margin-bottom: 8px;
+}
+.rd-epcfull-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rd-epcfull-grade-meta {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #6b6783;
+}
+.rd-epcfull-arrow {
+  color: #c4c2d0;
+  font-weight: 800;
+}
+.rd-epcfull-saving {
+  margin-left: auto;
+  text-align: right;
+}
+.rd-epcfull-saving-num {
+  font-size: 18px;
+  font-weight: 900;
+  color: #00857f;
+  letter-spacing: -0.02em;
+}
+.rd-epcfull-saving-num span {
+  font-size: 12px;
+  font-weight: 700;
+}
+.rd-epcfull-saving-meta {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #9c98ad;
+}
+.rd-epcfull-lines {
+  display: flex;
+  flex-direction: column;
+}
+.rd-epcfull-line {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f5f5f7;
+}
+.rd-epcfull-line:last-child {
+  border-bottom: none;
+}
+.rd-epcfull-line-ic {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.rd-epcfull-line-body {
+  flex: 1;
+  min-width: 0;
+}
+.rd-epcfull-line-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #231d45;
+}
+.rd-epcfull-line-sub {
+  display: block;
+  font-size: 11px;
+  color: #9c98ad;
+  margin-top: 1px;
+}
+.rd-epcfull-line-rating {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid;
+  background: #fff;
+  white-space: nowrap;
+}
+
+/* ── Your street card ───────────────────────────────────────────────── */
+.rd-street-card {
+  margin: 0 22px 12px;
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #231d45 0%, #2f2769 100%);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(35, 29, 69, 0.24);
+  animation: rd-fadeSlideUp 0.45s 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rd-street-eyebrow img,
+.rd-env-eyebrow img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.rd-street-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a9a3d6;
+  margin-bottom: 12px;
+}
+.rd-street-rankrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.rd-street-rank {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.rd-street-of {
+  font-size: 14px;
+  font-weight: 700;
+  color: #efeefb;
+}
+.rd-street-delta {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.rd-street-delta.good {
+  color: #6ee7c8;
+}
+.rd-street-delta.bad {
+  color: #ff9d8a;
+}
+.rd-street-houses {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 16px 0 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.16);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rd-street-houses::-webkit-scrollbar {
+  display: none;
+}
+.rd-street-house {
+  flex: 1 0 auto;
+  min-width: 22px;
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+}
+.rd-street-house svg {
+  width: 22px;
+  height: 22px;
+}
+.rd-street-house.low {
+  color: #4fd1b0;
+}
+.rd-street-house.mid {
+  color: #e6b45a;
+}
+.rd-street-house.high {
+  color: #f2846f;
+}
+.rd-street-house.you {
+  transform: translateY(-4px) scale(1.18);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+  opacity: 1;
+}
+.rd-street-toggle {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.rd-street-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.rd-street-toggle-arrow {
+  transition: transform 0.2s ease;
+  font-size: 18px;
+}
+.rd-street-toggle-arrow.open {
+  transform: rotate(90deg);
+}
+.rd-street-detail {
+  margin-top: 14px;
+}
+.rd-street-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rd-street-li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.rd-street-li.you {
+  background: rgba(0, 161, 154, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 200, 0.5);
+}
+.rd-street-li-rank {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 11px;
+  font-weight: 800;
+}
+.rd-street-li-body {
+  flex: 1;
+  min-width: 0;
+}
+.rd-street-li-addr {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rd-street-li-meta {
+  display: block;
+  font-size: 11px;
+  color: #b7b2dd;
+  margin-top: 1px;
+}
+.rd-street-li-cost {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 900;
+  font-feature-settings: 'tnum';
+}
+.rd-street-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 2px 0;
+  font-size: 11px;
+  color: #cfcbe9;
+  font-weight: 600;
+}
+.rd-street-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.rd-street-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.rd-street-pathway {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(0, 161, 154, 0.16);
+  border: 1px solid rgba(110, 231, 200, 0.3);
+}
+.rd-street-pathway-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6ee7c8;
+  margin-bottom: 8px;
+}
+.rd-street-pathway-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rd-street-pathway-cost {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.rd-street-pathway-cost span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cfcbe9;
+}
+.rd-street-pathway-meta {
+  flex: 1;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #cfcbe9;
+  line-height: 1.3;
+}
+.rd-street-pathway-save {
+  font-size: 14px;
+  font-weight: 900;
+  color: #6ee7c8;
+  white-space: nowrap;
+}
 .rd-breakdown:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 26px rgba(230, 162, 60, 0.16);
@@ -1317,7 +2200,7 @@ function formatNum(n: number): string {
   flex: 1;
 }
 .rd-epc-label {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   color: #9c98ad;
   letter-spacing: 0.08em;
@@ -1340,13 +2223,13 @@ function formatNum(n: number): string {
   justify-content: center;
   border-radius: 6px;
   color: #fff;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   padding: 3px 10px;
   line-height: 1;
 }
 .rd-epc-text {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   color: #6b6783;
 }
@@ -1359,13 +2242,13 @@ function formatNum(n: number): string {
   flex-shrink: 0;
 }
 .rd-epc-saving-num {
-  font-size: 1.375rem;
+  font-size: 22px;
   font-weight: 800;
   color: #007e78;
   letter-spacing: -0.5px;
 }
 .rd-epc-saving-meta {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: #6b6783;
 }
 
@@ -1384,7 +2267,7 @@ function formatNum(n: number): string {
   border-left: 1px solid #f5f5f7;
 }
 .rd-energy-eyebrow {
-  font-size: 0.5625rem;
+  font-size: 9px;
   font-weight: 800;
   color: #9c98ad;
   letter-spacing: 0.08em;
@@ -1392,7 +2275,7 @@ function formatNum(n: number): string {
   margin-bottom: 3px;
 }
 .rd-energy-num {
-  font-size: 1.0625rem;
+  font-size: 17px;
   font-weight: 800;
 }
 .rd-energy-num.red {
@@ -1402,7 +2285,7 @@ function formatNum(n: number): string {
   color: #231d45;
 }
 .rd-energy-meta {
-  font-size: 0.5625rem;
+  font-size: 9px;
   color: #6b6783;
   margin-top: 1px;
 }
@@ -1414,7 +2297,10 @@ function formatNum(n: number): string {
   padding: 13px 14px;
 }
 .rd-env-eyebrow {
-  font-size: 0.5625rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
   font-weight: 800;
   color: #007e78;
   letter-spacing: 0.08em;
@@ -1428,7 +2314,7 @@ function formatNum(n: number): string {
   gap: 8px;
 }
 .rd-env-num {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.5px;
@@ -1438,7 +2324,7 @@ function formatNum(n: number): string {
   color: #007e78;
 }
 .rd-env-meta {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: #6b6783;
   margin-top: 2px;
 }
@@ -1447,7 +2333,7 @@ function formatNum(n: number): string {
   font-weight: 700;
 }
 .rd-env-arrow {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #9c98ad;
   align-self: center;
 }
@@ -1465,14 +2351,14 @@ function formatNum(n: number): string {
   transition: width 0.5s ease;
 }
 .rd-env-foot {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: #007e78;
   margin-top: 5px;
   font-weight: 700;
 }
 
 /* ── Intent picker ─────────────────────────────────────────── */
-/* Intent card - 2px navy border, soft navy-tinted gradient (prototype-exact). */
+/* Intent card — 2px navy border, soft navy-tinted gradient (prototype-exact). */
 .rd-intent {
   background:
     radial-gradient(
@@ -1547,7 +2433,7 @@ function formatNum(n: number): string {
 }
 /* Eyebrow: centered, uppercase, letter-spaced (prototype-exact). */
 .rd-intent-eyebrow {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 800;
   color: #6b6783;
   letter-spacing: 1.5px;
@@ -1596,22 +2482,14 @@ function formatNum(n: number): string {
 }
 /* Icon now sits in a rounded 36x36 tile, prototype-exact. */
 .rd-intent-icon {
+  box-sizing: border-box;
   width: 36px;
   height: 36px;
+  padding: 5px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 1.125rem;
-  line-height: 1;
-}
-.rd-intent-icon img {
-  width: 24px;
-  height: 24px;
   object-fit: contain;
-  display: block;
+  flex-shrink: 0;
 }
 .rd-intent-opt.outline .rd-intent-icon {
   background: #f2faf8;
@@ -1623,14 +2501,14 @@ function formatNum(n: number): string {
 }
 .rd-intent-title {
   display: block;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.2px;
   margin-bottom: 1px;
 }
 .rd-intent-sub {
   display: block;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.05px;
   line-height: 1.35;
@@ -1649,7 +2527,7 @@ function formatNum(n: number): string {
   color: #6b6783;
 }
 .rd-intent-chev {
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 600;
   opacity: 0.6;
   flex-shrink: 0;
@@ -1662,7 +2540,7 @@ function formatNum(n: number): string {
   padding: 10px 12px;
   background: #fafafa;
   border-radius: 10px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: #6b6783;
 }

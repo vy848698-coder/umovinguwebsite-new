@@ -21,7 +21,7 @@
       <div v-if="displayedHelp" class="help-section">
         <div class="help-content">
           <h4 class="help-title">
-            <span class="help-icon">💡</span>What is this?
+            <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
           </h4>
           <p class="help-text">
             {{ displayedHelp }}
@@ -48,7 +48,7 @@
           class="side left-side"
           @click="openSelector('left')"
           :class="{ selected: selections.left }"
-        >
+         role="button" tabindex="0" @keydown.enter="openSelector('left')" @keydown.space.prevent="openSelector('left')">
           <span class="side-label">
             {{ selections.left ? formatLabel(selections.left) : 'LEFT' }}
           </span>
@@ -59,7 +59,7 @@
           class="side right-side"
           @click="openSelector('right')"
           :class="{ selected: selections.right }"
-        >
+         role="button" tabindex="0" @keydown.enter="openSelector('right')" @keydown.space.prevent="openSelector('right')">
           <span class="side-label">
             {{ selections.right ? formatLabel(selections.right) : 'RIGHT' }}
           </span>
@@ -75,7 +75,7 @@
           class="side rear-side"
           @click="openSelector('rear')"
           :class="{ selected: selections.rear }"
-        >
+         role="button" tabindex="0" @keydown.enter="openSelector('rear')" @keydown.space.prevent="openSelector('rear')">
           <span class="side-label">
             {{ selections.rear ? formatLabel(selections.rear) : 'REAR' }}
           </span>
@@ -86,7 +86,7 @@
           class="side front-side"
           @click="openSelector('front')"
           :class="{ selected: selections.front }"
-        >
+         role="button" tabindex="0" @keydown.enter="openSelector('front')" @keydown.space.prevent="openSelector('front')">
           <span class="side-label">
             {{ selections.front ? formatLabel(selections.front) : 'FRONT' }}
           </span>
@@ -715,6 +715,16 @@ const emitUpdate = () => {
 .checkmark {
   font-size: 18px;
   font-weight: 700;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 </style>
 

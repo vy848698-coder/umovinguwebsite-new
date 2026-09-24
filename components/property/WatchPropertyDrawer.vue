@@ -76,11 +76,12 @@
               Maybe later
             </button>
             <button class="watch-btn primary" type="button" :disabled="submitting" @click="onSubmit">
-              {{ submitting ? 'Saving…' : '👁 Watch this property' }}
+              <template v-if="submitting">Saving…</template>
+              <template v-else><Icon name="i-lucide-eye" class="watch-btn-ic" /> Watch this property</template>
             </button>
           </div>
           <div class="watch-privacy">
-            <span class="watch-privacy-icon">🔒</span>
+            <Icon name="i-lucide-lock" class="watch-privacy-icon" />
             <span>Saved to your account. Watching is private.</span>
           </div>
         </div>
@@ -225,7 +226,24 @@ function onSubmit() {
   box-shadow: 0 -8px 30px rgba(35, 29, 69, 0.25);
   max-height: 90dvh;
   overflow-y: auto;
+  /* Thin, low-key scrollbar: enough to hint there's more below. */
+  scrollbar-width: thin;
+  scrollbar-color: #c9ccd8 transparent;
   padding-bottom: env(safe-area-inset-bottom);
+}
+.watch-sheet::-webkit-scrollbar {
+  width: 5px;
+}
+.watch-sheet::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 22px 0;
+}
+.watch-sheet::-webkit-scrollbar-thumb {
+  background: #c9ccd8;
+  border-radius: 999px;
+}
+.watch-sheet::-webkit-scrollbar-thumb:hover {
+  background: #a9adbf;
 }
 .watch-grip {
   width: 42px;
@@ -384,6 +402,11 @@ function onSubmit() {
   cursor: pointer;
   transition: all 0.15s;
   border: none;
+}
+.watch-btn-ic {
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
 }
 .watch-btn.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));

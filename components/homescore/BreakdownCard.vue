@@ -27,7 +27,7 @@ defineProps<{ breakdown: PillarBreakdown }>()
 const pillars = [
   { id: 'heating' as const, label: 'Heating', max: 20, color: '#ef4444' },
   { id: 'structure' as const, label: 'Structure', max: 25, color: '#f59e0b' },
-  { id: 'efficiency' as const, label: 'Efficiency', max: 20, color: '#00a19a' },
+  { id: 'efficiency' as const, label: 'Efficiency', max: 20, color: '#22c55e' },
   { id: 'electrics' as const, label: 'Electrics', max: 20, color: '#3b82f6' },
   { id: 'plumbing' as const, label: 'Plumbing', max: 15, color: '#8b5cf6' },
 ]
@@ -41,7 +41,7 @@ const pillars = [
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .hs-card-title {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 16px;
@@ -65,12 +65,12 @@ const pillars = [
 }
 .hs-pillar-name {
   flex: 1;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 500;
   color: #1a1a1a;
 }
 .hs-pillar-score {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: #1a1a1a;
 }
