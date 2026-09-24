@@ -1,421 +1,285 @@
 <template>
-  <div class="bpp-page">
-    <!-- Header -->
-    <div class="app-header">
-      <button
-        class="app-icon-btn"
-        type="button"
-        @click="router.back()"
-        aria-label="Back"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <div class="app-header-info">
-        <div class="app-header-title">Build your Property Passport</div>
-        <div class="app-header-sub">
-          Turn what you know about your home into a verified record.
-        </div>
-      </div>
-      <button
-        class="app-icon-btn"
-        type="button"
-        aria-label="How this works"
-        @click="tour.restart()"
-      >
-        ?
-      </button>
-    </div>
+  <div class="pb-shell">
+    <WebTopNav>
+      <template #actions>
+        <button class="pb-nav-back" type="button" @click="onBack">
+          <Icon name="i-lucide-arrow-left" /> Back
+        </button>
+      </template>
+    </WebTopNav>
 
-    <!-- Tour overlay (renders only when active) -->
-    <TourCoach :tour="tour" />
-
-    <!-- Passport progress card -->
-    <div class="bpp-progress-card anim-1" data-tour="progress">
-      <div class="bpp-progress-eyebrow-row">
-        <div class="bpp-progress-eyebrow">
-          <!-- <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M12 2l8 3.5v5.3c0 4.9-3.4 9.4-8 10.7-4.6-1.3-8-5.8-8-10.7V5.5L12 2z"
-            />
-          </svg> -->
-          Your Passport progress
-        </div>
-        <div class="bpp-progress-pill">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          Updates as you add docs
+    <div class="pb-page">
+      <!-- ── Page head ─────────────────────────────────────────────── -->
+      <div class="pb-head anim-1">
+        <div class="pb-head-eyebrow">Your passport dashboard</div>
+        <h1 class="pb-head-title">Build your Property Passport</h1>
+        <div class="pb-head-sub">
+          <Icon name="i-lucide-map-pin" /> {{ addressLine }}
         </div>
       </div>
 
-      <div class="bpp-progress-row">
-        <div class="bpp-progress-col">
-          <div class="bpp-circle-wrap">
-            <svg
-              class="bpp-circle-svg"
-              viewBox="0 0 120 120"
-              aria-hidden="true"
-            >
-              <defs>
-                <linearGradient id="bppScoreGrad" x1="1" y1="0" x2="0" y2="0">
-                  <stop offset="0%" stop-color="#00BB93" />
-                  <stop offset="100%" stop-color="#016F84" />
-                </linearGradient>
-              </defs>
-              <circle class="bppc-bg" cx="60" cy="60" r="50" stroke-width="9" />
-              <circle
-                class="bppc-fill bppc-fill--score"
-                cx="60"
-                cy="60"
-                r="50"
-                stroke-width="9"
-                stroke="url(#bppScoreGrad)"
-                stroke-dasharray="314.16"
-                :stroke-dashoffset="scoreRingOffset"
-                stroke-linecap="round"
-                fill="none"
-              />
-            </svg>
-            <div class="bpp-circle-num">
-              <div class="bppc-big">{{ toScore }}</div>
+      <div class="pb-cols">
+        <div class="pb-main">
+      <!-- ── Hero: the two scores + what moves them ───────────────── -->
+      <section class="pb-hero anim-1">
+        <div class="pb-hero-top">
+          <div class="pb-hero-eyebrow">
+            <Icon name="i-lucide-shield" />
+            Your passport progress
+          </div>
+          <span class="pb-hero-chip">
+            <Icon name="i-lucide-bell" /> Updates as you add docs
+          </span>
+        </div>
+
+        <div class="pb-hero-main">
+          <div class="pb-hero-rings">
+            <div class="pb-ring-block">
+              <span class="pb-ring">
+                <svg viewBox="0 0 72 72" aria-hidden="true">
+                  <circle class="pb-ring-track" cx="36" cy="36" r="30" />
+                  <circle
+                    class="pb-ring-fill"
+                    cx="36"
+                    cy="36"
+                    r="30"
+                    stroke-dasharray="188.5"
+                    :stroke-dashoffset="188.5 - (188.5 * homeScorePct) / 100"
+                  />
+                </svg>
+                <span class="pb-ring-val"><b>{{ homeScore || '—' }}</b></span>
+              </span>
+              <span class="pb-ring-cap">HomeScore</span>
+              <span class="pb-ring-sub accent">{{ homeScoreBand }}</span>
+            </div>
+
+            <div class="pb-ring-block">
+              <span class="pb-ring">
+                <svg viewBox="0 0 72 72" aria-hidden="true">
+                  <circle class="pb-ring-track" cx="36" cy="36" r="30" />
+                  <circle
+                    class="pb-ring-fill accent"
+                    cx="36"
+                    cy="36"
+                    r="30"
+                    stroke-dasharray="188.5"
+                    :stroke-dashoffset="188.5 - (188.5 * passportPct) / 100"
+                  />
+                </svg>
+                <span class="pb-ring-val"><b>{{ passportPct }}</b><i>%</i></span>
+              </span>
+              <span class="pb-ring-cap">Passport</span>
+              <span class="pb-ring-sub">
+                {{ ownsPassport ? 'Add your documents' : 'Not started yet' }}
+              </span>
             </div>
           </div>
-          <div class="bpp-col-label">HOMESCORE</div>
-          <div class="bpp-col-hook bpp-col-hook--score">{{ scoreHook }}</div>
-        </div>
-        <div class="bpp-progress-divider" />
-        <div class="bpp-progress-col">
-          <div class="bpp-circle-wrap">
-            <svg
-              class="bpp-circle-svg"
-              viewBox="0 0 120 120"
-              aria-hidden="true"
-            >
-              <circle class="bppc-bg" cx="60" cy="60" r="50" stroke-width="9" />
-              <circle
-                class="bppc-fill bppc-fill--passport"
-                cx="60"
-                cy="60"
-                r="50"
-                stroke-width="9"
-                stroke-dasharray="314.16"
-                :stroke-dashoffset="passportRingOffset"
-                stroke-linecap="round"
-                fill="none"
-              />
-            </svg>
-            <div class="bpp-circle-num">
-              <div class="bppc-big">{{ passportPct }}%</div>
-            </div>
-          </div>
-          <div class="bpp-col-label">PASSPORT</div>
-          <div class="bpp-col-hook bpp-col-hook--passport">Not started yet</div>
-        </div>
-        <div class="bpp-progress-copy">
-          <p>
-            Add key documents to reach <b>60%</b> and unlock
-            <b>Upfront Ready</b>.
-          </p>
-          <!-- <a class="bpp-milestones-btn" href="#professional-evidence">
-            See milestones
-            <span>→</span>
-          </a> -->
-        </div>
-      </div>
 
-      <div class="bpp-progress-banner">
-        <span class="bpp-progress-banner-ic" aria-hidden="true">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="12" y1="20" x2="12" y2="10" />
-            <line x1="18" y1="20" x2="18" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="16" />
-          </svg>
-        </span>
-        <span>
+          <div class="pb-hero-right">
+            <p class="pb-hero-note">
+              Add key documents to reach <b>60%</b> and unlock
+              <b>Upfront Ready</b>.
+            </p>
+            <button class="pb-hero-btn" type="button" @click="goToMilestones">
+              See milestones <Icon name="i-lucide-arrow-right" />
+            </button>
+          </div>
+        </div>
+
+        <div class="pb-hero-foot">
+          <span class="pb-hero-foot-ic"><Icon name="i-lucide-bar-chart-3" /></span>
           Add documents and evidence to build your Passport and unlock
           <b>Upfront Ready</b>.
-        </span>
-      </div>
-    </div>
+        </div>
+      </section>
 
-    <!-- EPC age card -->
-    <div v-if="epcYear" class="bpp-epc-card anim-1">
-      <img
-        src="/op-icons/calendar/document.png"
-        alt=""
-        class="bpp-epc-ic"
-        loading="lazy"
-      />
-      <div class="bpp-epc-body">
-        <div class="bpp-epc-title">Your EPC is from {{ epcYear }}</div>
-        <div class="bpp-epc-sub">
-          An updated EPC brings your public energy record up to date and
-          strengthens your Passport.
+      <!-- ── EPC age nudge ────────────────────────────────────────── -->
+      <section v-if="epcYear" class="pb-epc anim-2">
+        <img class="pb-epc-ic" src="/op-icons/calendar/document.png" alt="" loading="lazy" />
+        <div class="pb-epc-body">
+          <div class="pb-epc-title">Your EPC is from {{ epcYear }}</div>
+          <p class="pb-epc-sub">
+            An updated EPC brings your public energy record up to date and
+            strengthens your Passport.
+          </p>
+        </div>
+        <button class="pb-epc-btn" type="button" @click="openInstallerSheet('epc')">
+          Arrange a new EPC
+          <Icon name="i-lucide-arrow-right" />
+        </button>
+      </section>
+
+      <!-- ── Add to your passport ─────────────────────── -->
+      <div class="pb-section-h">
+        <Icon name="i-lucide-paperclip" />
+        Add to your Passport
+        <span v-if="!ownsPassport">(after claiming your property)</span>
+      </div>
+      <div class="pb-doc-grid anim-2">
+        <div
+          v-for="d in docTiles"
+          :key="d.title"
+          class="pb-doc-card"
+          :class="{ locked: !ownsPassport }"
+        >
+          <img class="pb-doc-ic" :src="d.icon" alt="" loading="lazy" />
+          <div class="pb-doc-title">{{ d.title }}</div>
+          <div class="pb-doc-sub">{{ d.sub }}</div>
+          <span v-if="!ownsPassport" class="pb-doc-lock" aria-hidden="true">
+            <img src="/op-icons/claim/padlock.png" alt="" loading="lazy" />
+          </span>
         </div>
       </div>
-      <button
-        type="button"
-        class="bpp-epc-btn"
-        @click="openInstallerSheet('epc')"
-      >
-        Arrange a new EPC
-        <span>→</span>
-      </button>
-    </div>
+      <p v-if="!ownsPassport" class="pb-note">
+        <Icon name="i-lucide-lock" />
+        You'll be able to add these once you've claimed your property.
+      </p>
 
-    <!-- Add to your Passport -->
-    <div class="section-h-row">
-      <div class="section-h">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
-          />
-        </svg>
-        Add to your Passport (after claiming your property)
+      <!-- ── Professional evidence ───────────────────── -->
+      <div class="pb-section-h">
+        <Icon name="i-lucide-user-round" />
+        Hire a professional
       </div>
-    </div>
-    <div class="bpp-tile-grid anim-2" data-tour="add">
-      <div v-for="t in addTiles" :key="t.title" class="bpp-tile">
-        <img :src="t.icon" alt="" class="bpp-tile-ic" loading="lazy" />
-        <div class="bpp-tile-title">{{ t.title }}</div>
-        <div class="bpp-tile-sub">{{ t.sub }}</div>
-        <span class="bpp-tile-lock" aria-hidden="true">
+      <div class="pb-pro-card anim-3">
+        <button
+          v-for="p in proServices"
+          :key="p.title"
+          class="pb-pro-row"
+          type="button"
+          @click="openInstallerSheet(p.kind, p.measure)"
+        >
+          <img class="pb-pro-ic" :src="p.icon" alt="" loading="lazy" />
+          <span class="pb-pro-body">
+            <span class="pb-pro-title">{{ p.title }}</span>
+            <span class="pb-pro-sub">{{ p.sub }}</span>
+          </span>
+          <Icon name="i-lucide-chevron-right" class="pb-pro-chev" />
+        </button>
+      </div>
+      <p class="pb-note">
+        <Icon name="i-lucide-lock" />
+        Professional bookings link to your Passport once claimed.
+      </p>
+
+        </div><!-- /pb-main -->
+
+        <aside class="pb-side">
+      <!-- ── Claim / open CTA ─────────────────────────────
+           Same card either way — only the copy and the destination change,
+           so an already-claimed property never reads "claim to get started". -->
+      <section class="pb-claim anim-4">
+        <span class="pb-claim-art">
+          <!-- The clone's 3D passport-with-documents, in both states.
+               umu-passport.png is a flat book cover and read as a different,
+               plainer asset next to the 3D icons below it. -->
           <img
-            src="/op-icons/claim/padlock.png"
-            alt=""
-            class="bpp-tile-lock-img"
+            src="/op-icons/passportview/passportClaim.png"
+            alt="Property Passport"
             loading="lazy"
           />
         </span>
-      </div>
-    </div>
-    <div class="bpp-note">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <rect x="3" y="11" width="18" height="11" rx="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
-      You'll be able to add these once you've claimed your property.
-    </div>
 
-    <!-- Get professional evidence -->
-    <div id="professional-evidence" class="section-h-row">
-      <div class="section-h">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        <h2 class="pb-claim-title">
+          {{ ownsPassport ? 'Your Passport is ready to build' : 'Claim your Passport to get started' }}
+        </h2>
+        <p class="pb-claim-lede">
+          <template v-if="ownsPassport">
+            Your Passport is live for this property. Open it to add documents,
+            invite your solicitor or agent, and publish it when you're ready.
+          </template>
+          <template v-else>
+            Your Passport is free. To confirm you own this property, you'll
+            need to verify ownership and complete ID checks. This one-off step
+            keeps your Passport secure and trusted.
+          </template>
+        </p>
+
+        <ul class="pb-claim-points">
+          <li v-for="c in claimPoints" :key="c.title">
+            <span class="pb-claim-tick" aria-hidden="true">
+              <img :src="c.icon" alt="" loading="lazy" />
+            </span>
+            <span class="pb-claim-point-txt">
+              <b>{{ c.title }}</b>
+              <span>{{ c.sub }}</span>
+            </span>
+          </li>
+        </ul>
+
+        <button
+          class="pb-claim-btn"
+          type="button"
+          @click="ownsPassport ? goToPassportView() : goToClaim()"
         >
-          <circle cx="12" cy="7" r="4" />
-          <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
-        </svg>
-        Hire a professional
-      </div>
-    </div>
-    <div class="bpp-list anim-2" data-tour="evidence">
-      <button
-        v-for="b in evidenceBookings"
-        :key="b.title"
-        class="bpp-list-row"
-        type="button"
-        @click="openInstallerSheet(b.kind as InstallerKind)"
-      >
-        <img :src="b.icon" alt="" class="bpp-list-ic" loading="lazy" />
-        <div class="bpp-list-body">
-          <div class="bpp-list-title">{{ b.title }}</div>
-          <div class="bpp-list-sub">{{ b.sub }}</div>
-        </div>
-        <span class="bpp-list-chev">›</span>
-      </button>
-    </div>
-    <div class="bpp-note">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <rect x="3" y="11" width="18" height="11" rx="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
-      Professional bookings link to your Passport once claimed.
+          <span class="pb-claim-btn-main">
+            <Icon :name="ownsPassport ? 'i-lucide-book-open' : 'i-lucide-lock'" />
+            {{ ownsPassport ? 'Open my Passport' : 'Claim my Passport' }}
+          </span>
+          <span class="pb-claim-btn-note">
+            {{ ownsPassport ? 'Add documents & publish' : 'One-off fee to verify ownership' }}
+            <Icon name="i-lucide-arrow-right" />
+          </span>
+        </button>
+
+        <button
+          v-if="!ownsPassport"
+          class="pb-claim-link"
+          type="button"
+          @click="navigateTo('/onboarding/signin')"
+        >
+          I already have an account →
+        </button>
+      </section>
+
+      <p class="pb-privacy">
+        <Icon name="i-lucide-shield" />
+        Your data is secure. Your Passport is private and only shared when you
+        choose.
+      </p>
+        </aside>
+      </div><!-- /pb-cols -->
     </div>
 
-    <!-- Claim your Passport -->
-    <div class="bpp-claim-card anim-2" data-tour="claim">
-      <div class="bpp-claim-top">
-        <img
-          src="/op-icons/passportview/passportClaim.png"
-          alt=""
-          class="bpp-claim-ic"
-          loading="lazy"
-        />
-        <div class="bpp-claim-top-text">
-          <div class="bpp-claim-title">Claim your Passport to get started</div>
-          <div class="bpp-claim-sub">
-            Your Passport is free. To confirm you own this property, you'll need
-            to verify ownership and complete ID checks. This one-off step keeps
-            your Passport secure and trusted.
-          </div>
-        </div>
-      </div>
-      <div class="bpp-claim-checks">
-        <div class="bpp-claim-check">
-          <span class="bpp-claim-check-ic">
-            <img
-              src="/op-icons/claim/ownershipCheck.png"
-              alt=""
-              class="bpp-claim-check-ic-img"
-              loading="lazy"
-            />
-          </span>
-          <div class="bpp-claim-check-title">Confirm ownership</div>
-          <div class="bpp-claim-check-sub">Verify you own this property</div>
-        </div>
-        <div class="bpp-claim-check">
-          <span class="bpp-claim-check-ic">
-            <img
-              src="/op-icons/verify-identity/idBadge.png"
-              alt=""
-              class="bpp-claim-check-ic-img"
-              loading="lazy"
-            />
-          </span>
-          <div class="bpp-claim-check-title">ID &amp; security step</div>
-          <div class="bpp-claim-check-sub">
-            Quick &amp; secure identity check
-          </div>
-        </div>
-        <div class="bpp-claim-check">
-          <span class="bpp-claim-check-ic">
-            <img
-              src="/op-icons/verify-identity/shield.png"
-              alt=""
-              class="bpp-claim-check-ic-img"
-              loading="lazy"
-            />
-          </span>
-          <div class="bpp-claim-check-title">Secure &amp; private</div>
-          <div class="bpp-claim-check-sub">
-            Your data is protected and only you control it
-          </div>
-        </div>
-      </div>
-      <button class="bpp-claim-btn" type="button" @click="onClaimClick">
-        <span class="bpp-claim-btn-left">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          Claim my Passport
-        </span>
-        <span class="bpp-claim-btn-right">
-          One-off fee to verify ownership
-          <span>→</span>
-        </span>
-      </button>
-      <a class="bpp-claim-login" href="/onboarding/signin">
-        I already have an account
-        <span>→</span>
-      </a>
-    </div>
+    <SiteFooter />
 
-    <!-- ── Auth-required popup ─────────────────────────────────────
-         Guests tapping "Claim my Passport" get this choice instead of
-         being routed straight into the claim flow. Same pattern as
-         PassportClaimBox.vue's authd-* prompt. -->
+    <!-- ── Auth-required popup ───────────────────────────────────────
+         A guest tapping "Claim my Passport" gets this choice rather than
+         being dropped into the claim flow and bounced by the middleware. -->
     <Teleport to="body">
-      <Transition name="authd">
+      <Transition name="pbauth">
         <div
           v-if="authPromptOpen"
-          class="authd-overlay"
+          class="pbauth-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pbauth-title"
           @click.self="authPromptOpen = false"
         >
-          <div class="authd-card" @click.stop>
-            <div class="authd-icon">
+          <div class="pbauth-card" @click.stop>
+            <button
+              class="pbauth-close"
+              type="button"
+              aria-label="Close"
+              @click="authPromptOpen = false"
+            >
+              <Icon name="i-lucide-x" />
+            </button>
+            <span class="pbauth-icon">
               <img src="/op-icons/claim/padlock.png" alt="" loading="lazy" />
-            </div>
-            <div class="authd-title">Sign in to claim this property</div>
-            <div class="authd-body">
+            </span>
+            <h2 id="pbauth-title" class="pbauth-title">Sign in to claim this property</h2>
+            <p class="pbauth-body">
               You'll need a free account to verify ownership and build your
               Passport. Takes about a minute.
-            </div>
-            <div class="authd-actions">
-              <button
-                class="authd-btn primary"
-                type="button"
-                @click="goAuth('signup')"
-              >
+            </p>
+            <div class="pbauth-actions">
+              <button class="pbauth-btn primary" type="button" @click="goAuth('signup')">
                 Create free account
               </button>
-              <button
-                class="authd-btn secondary"
-                type="button"
-                @click="goAuth('signin')"
-              >
+              <button class="pbauth-btn secondary" type="button" @click="goAuth('signin')">
                 I already have an account
               </button>
-              <button
-                class="authd-btn ghost"
-                type="button"
-                @click="authPromptOpen = false"
-              >
+              <button class="pbauth-btn ghost" type="button" @click="authPromptOpen = false">
                 Not now
               </button>
             </div>
@@ -424,27 +288,7 @@
       </Transition>
     </Teleport>
 
-    <div class="bpp-trust-note">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        width="13"
-        height="13"
-      >
-        <path
-          d="M12 2l8 3.5v5.3c0 4.9-3.4 9.4-8 10.7-4.6-1.3-8-5.8-8-10.7V5.5L12 2z"
-        />
-      </svg>
-      Your data is secure. Your Passport is private to you and only shared when
-      you choose.
-    </div>
-
-    <div style="height: 32px" />
-
+    <!-- Booking flow for the EPC nudge and the professional rows. -->
     <InstallerFlowSheet
       v-model:open="installerSheetOpen"
       :kind="installerKind"
@@ -457,893 +301,957 @@
 </template>
 
 <script setup lang="ts">
-useHead({ bodyAttrs: { class: 'hs-parity' } })
 import { computed, onMounted, ref } from 'vue'
+import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import InstallerFlowSheet from '~/components/homescore/InstallerFlowSheet.vue'
-import TourCoach from '~/components/homescore/TourCoach.vue'
-import { useHomescoreTour } from '~/composables/useHomescoreTour'
+
+type InstallerKind = 'gas' | 'electrician' | 'epc' | 'other'
 
 const router = useRouter()
 const route = useRoute()
+const config = useRuntimeConfig()
 const propertyId = computed(() => String(route.params.id))
 
-// ── Guided tour — the "?" button had no handler at all (client feedback:
-// "the tour here does not work"). Same TourCoach/useHomescoreTour pattern
-// as the other homescore/* pages (e.g. street/[id].vue).
-const tour = useHomescoreTour({
-  storageKey: `umu-tour-bpp-${propertyId.value}`,
-  autoStart: true,
-  steps: [
-    {
-      sel: '[data-tour="progress"]',
-      title: 'Your Passport progress',
-      body: 'The left ring is your HomeScore, the right is how much of your Passport is built. Add documents to raise it and unlock Upfront Ready.',
-    },
-    {
-      sel: '[data-tour="add"]',
-      title: 'What you can add',
-      body: "These slots unlock once you've claimed the property - certificates, warranties and other evidence that build out your Passport.",
-    },
-    {
-      sel: '[data-tour="evidence"]',
-      title: 'Hire a professional',
-      body: "Don't have a document yet? Book a certified professional here and it links straight to your Passport once claimed.",
-    },
-    {
-      sel: '[data-tour="claim"]',
-      title: 'Claim your Passport',
-      body: 'A one-off ownership and ID check activates everything above - your Passport, free, verified and yours to control.',
-    },
-  ],
-})
+const property = ref<any>(null)
 
-const { property, loadProperty, epcField } = useHomeScorePropertyData()
-
-onMounted(() => {
-  loadProperty(propertyId.value)
-})
-
-const toScore = computed(() => {
-  const p: any = property.value
-  const raw =
-    Number(
-      p?.epcScorePotential ?? p?.epcCert?.potentialScore ?? p?.epcScore ?? 0,
-    ) || 0
-  return raw
-})
-const scoreHook = computed(() => {
-  const s = toScore.value
-  if (s >= 80) return 'Top of the street'
-  if (s >= 60) return 'Great start!'
-  if (s >= 40) return 'Room to grow'
-  return 'Just getting started'
-})
-
-// No Passport exists yet on an unclaimed property — this page is only
-// ever reached pre-claim, so 0% is always accurate here (not a
-// placeholder). Once claimed, the user lands on the real Passport
-// dashboard instead of this page.
-const passportPct = 0
-
-const CIRCUMFERENCE = 2 * Math.PI * 50
-const scoreRingOffset = computed(
-  () =>
-    CIRCUMFERENCE -
-    (Math.max(0, Math.min(100, toScore.value)) / 100) * CIRCUMFERENCE,
-)
-const passportRingOffset = computed(
-  () => CIRCUMFERENCE - (passportPct / 100) * CIRCUMFERENCE,
-)
-
-const epcYear = computed(() => {
-  const raw = epcField('lodgementDate')
-  if (!raw) return null
-  const year = String(raw).slice(0, 4)
-  return /^\d{4}$/.test(year) ? year : null
+onMounted(async () => {
+  try {
+    const res = await fetch(
+      `${config.public.apiBase}/property/${propertyId.value}`,
+    )
+    if (res.ok) property.value = await res.json()
+  } catch {
+    /* keep null — the page degrades to its empty-state copy */
+  }
 })
 
 const addressLine = computed(() => {
   const p: any = property.value
-  return p?.addressLine1 || 'Your property'
-})
-const propertyPostcode = computed<string>(() => {
-  const p: any = property.value
-  return (p?.postcode || p?.epcCert?.postcode || '') as string
+  if (!p) return 'Your property'
+  return [p.addressLine1 ?? p.address, p.postcode].filter(Boolean).join(' · ')
 })
 
-// Demand-capture drawer — same InstallerFlowSheet used on the pathway
-// page. "Get professional evidence" bookings and "Arrange a new EPC"
-// open straight into it instead of routing through the claim flow,
-// since none of this needs a claimed Passport to capture demand.
-type InstallerKind =
-  | 'insulation'
-  | 'solarpv'
-  | 'gas'
-  | 'electrician'
-  | 'epc'
-  | 'other'
+// HomeScore comes straight off the EPC — no estimate, no placeholder.
+const homeScore = computed(() => {
+  const p: any = property.value
+  return Number(p?.epcScore ?? p?.epcCert?.epcScore ?? 0) || 0
+})
+const homeScorePct = computed(() =>
+  Math.max(0, Math.min(100, homeScore.value)),
+)
+
+const epcYear = computed(() => {
+  const p: any = property.value
+  const raw = p?.lodgementDate ?? p?.epcCert?.lodgementDate ?? p?.epcLodgementDate ?? null
+  if (!raw) return null
+  const y = new Date(raw).getFullYear()
+  return Number.isFinite(y) ? y : null
+})
+
+// The property record's own `hasPassport` says that SOMEONE has claimed this
+// address — it is true for every property in this dataset, which is why the
+// claim card never used to appear. What decides the card is whether THIS
+// viewer can build the passport, which only the authenticated
+// passport-status endpoint knows (same source the HomeScore page uses).
+const passportStatus = ref<{
+  hasPassport: boolean
+  passportId: string | null
+  isOwner: boolean
+  isCollaborator: boolean
+  canAccess?: boolean
+} | null>(null)
+
+const ownsPassport = computed(() => {
+  const s = passportStatus.value
+  if (!s?.hasPassport || !s.passportId) return false
+  return Boolean(s.isOwner || s.isCollaborator || s.canAccess)
+})
+// Nothing has been uploaded before the property is claimed, so this is a
+// real 0 rather than a stand-in. Once a passport exists the backend owns
+// the number — until that endpoint lands we show the claimed state instead
+// of inventing a percentage.
+const passportPct = computed(() => (ownsPassport.value ? 0 : 0))
+
+// Band label under the HomeScore ring — same wording the score view uses.
+const homeScoreBand = computed(() => {
+  const v = homeScore.value
+  if (!v) return 'No EPC on record'
+  if (v >= 80) return 'Top of the street'
+  if (v >= 60) return 'Above average'
+  if (v >= 40) return 'Around average'
+  return 'Below average'
+})
+
+const docTiles = [
+  {
+    icon: '/homescore-icon/utilityBills.png',
+    title: 'Utility bills',
+    sub: 'Show your real energy use',
+  },
+  {
+    icon: '/homescore-icon/clipboardChecklist.png',
+    title: 'Certificates & reports',
+    sub: 'EPC, warranties, inspections & more',
+  },
+  {
+    icon: '/homescore-icon/house.png',
+    title: 'Property documents',
+    sub: 'Deeds, plans, guarantees & more',
+  },
+  {
+    icon: '/homescore-icon/camera.png',
+    title: 'Photos & evidence',
+    sub: 'Add photos to support your record',
+  },
+]
+
+const proServices: Array<{
+  icon: string
+  title: string
+  sub: string
+  kind: InstallerKind
+  measure: string
+}> = [
+  {
+    icon: '/homescore-icon/gasSafety.png',
+    title: 'Book a Gas Safe engineer',
+    sub: 'Service your boiler · cert auto-lands in your Passport',
+    kind: 'gas',
+    measure: 'Gas safety check (CP12)',
+  },
+  {
+    icon: '/homescore-icon/electrician.png',
+    title: 'Book an electrician (EICR)',
+    sub: 'Electrical inspection · from £150',
+    kind: 'electrician',
+    measure: 'EICR · Electrical safety report',
+  },
+  {
+    icon: '/homescore-icon/epcAssessment.png',
+    title: 'New EPC assessment',
+    sub: 'From £60 · required if yours is 10+ years old',
+    kind: 'epc',
+    measure: 'EPC assessment',
+  },
+]
+
+// ── Booking sheet ──────────────────────────────────────────────────
 const installerSheetOpen = ref(false)
 const installerKind = ref<InstallerKind>('other')
 const installerMeasureTitle = ref('')
+const propertyPostcode = computed(() => property.value?.postcode ?? '')
 
-function openInstallerSheet(kind: InstallerKind, measureTitle = '') {
+function openInstallerSheet(kind: InstallerKind, measure = '') {
   installerKind.value = kind
-  installerMeasureTitle.value = measureTitle
+  installerMeasureTitle.value = measure
   installerSheetOpen.value = true
 }
 
-const addTiles = [
-  {
-    title: 'Utility bills',
-    sub: 'Show your real energy use',
-    icon: '/op-icons/boostYourScore/utilityBills.png',
-  },
-  {
-    title: 'Certificates & reports',
-    sub: 'EPC, warranties, inspections & more',
-    icon: '/op-icons/investment/clipboardChecklist.png',
-  },
-  {
-    title: 'Property documents',
-    sub: 'Deeds, plans, guarantees & more',
-    icon: '/op-icons/homescore/house.png',
-  },
-  {
-    title: 'Photos & evidence',
-    sub: 'Add photos to support your record',
-    icon: '/op-icons/misc/camera.png',
-  },
-]
-
-const evidenceBookings = [
-  {
-    title: 'Book a Gas Safe engineer',
-    sub: 'Service your boiler · cert auto-lands in your Passport',
-    icon: '/op-icons/boostYourScore/gasSafety.png',
-    kind: 'gas',
-  },
-  {
-    title: 'Book an electrician (EICR)',
-    sub: 'Electrical inspection · from £150',
-    icon: '/op-icons/boostYourScore/electrician.png',
-    kind: 'electrician',
-  },
-  {
-    title: 'New EPC assessment',
-    sub: 'From £60 · required if yours is 10+ years old',
-    icon: '/op-icons/boostYourScore/epcAssessment.png',
-    kind: 'epc',
-  },
-]
-
-// Logged in → straight into the claim flow. Guest → the auth-required
-// popup, which itself remembers this target and returns here after
-// sign-in/sign-up (see goAuth below).
+// ── Guest gate on the claim button ─────────────────────────────────
 const authPromptOpen = ref(false)
-
-function onClaimClick() {
-  const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
-  if (token) {
-    router.push(`/claim/${propertyId.value}`)
-    return
+const signedIn = ref(false)
+onMounted(async () => {
+  try {
+    signedIn.value = !!localStorage.getItem('token')
+  } catch {
+    /* blocked storage — treated as signed out */
   }
-  authPromptOpen.value = true
-}
+  // A guest can't own anything, so the claim card is the right card and
+  // there is nothing to ask the backend.
+  if (!signedIn.value) return
+  const { getPassportStatus } = usePassportClaim()
+  passportStatus.value = await getPassportStatus(propertyId.value)
+})
 
 function goAuth(mode: 'signin' | 'signup') {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('redirectAfterLogin', `/claim/${propertyId.value}`)
-  }
   authPromptOpen.value = false
-  navigateTo(mode === 'signup' ? '/onboarding/signup' : '/onboarding/signin')
+  try {
+    localStorage.setItem('redirectAfterLogin', `/claim/${propertyId.value}`)
+  } catch {
+    /* non-fatal: they just land on the dashboard after signing in */
+  }
+  router.push(`/onboarding/${mode}`)
+}
+
+const claimPoints = computed(() =>
+  ownsPassport.value
+    ? [
+        {
+          icon: '/homescore-icon/clipboardChecklist.png',
+          title: 'Add your documents',
+          sub: 'Bills, certificates, deeds and photos',
+        },
+        {
+          icon: '/homescore-icon/people.png',
+          title: 'Invite collaborators',
+          sub: 'Your solicitor, agent or co-owner',
+        },
+        {
+          icon: '/homescore-icon/shield.png',
+          title: 'Publish when ready',
+          sub: 'You control what buyers can see',
+        },
+      ]
+    : [
+        {
+          icon: '/op-icons/claim/ownershipCheck.png',
+          title: 'Confirm ownership',
+          sub: 'Verify you own this property',
+        },
+        {
+          icon: '/op-icons/verify-identity/idBadge.png',
+          title: 'ID & security step',
+          sub: 'Quick & secure identity check',
+        },
+        {
+          icon: '/op-icons/verify-identity/shield.png',
+          title: 'Secure & private',
+          sub: 'Your data is encrypted and only you control it',
+        },
+      ],
+)
+
+function goToClaim() {
+  // Guests get the sign-in choice first; the claim route is auth-gated, so
+  // sending them straight there just bounces them to the sign-in screen.
+  if (!signedIn.value) {
+    authPromptOpen.value = true
+    return
+  }
+  router.push(`/claim/${propertyId.value}`)
+}
+function goToPassportView() {
+  // /passportview expects the passport's id, not the property's.
+  const id = passportStatus.value?.passportId ?? propertyId.value
+  router.push(`/passportview/${id}`)
+}
+function goToPathway() {
+  router.push(`/homescore/pathway/${propertyId.value}?from=landing`)
+}
+function goToMilestones() {
+  router.push(`/homescore/pathway/${propertyId.value}?from=landing`)
+}
+function goToMarketplace() {
+  router.push('/marketplace')
+}
+function onBack() {
+  router.back()
 }
 </script>
 
 <style scoped>
-.bpp-page {
-  --primary: #231d45;
-  --accent: #00a19a;
-  --accent-dark: #008a84;
-  --accent-light: #00b8b0;
-  --accent-pale: #e5f4f2;
-  --accent-paler: #f2faf8;
-  --bg: #f5f6fa;
-  --card: #ffffff;
-  --text: #231d45;
-  --text-secondary: #6b7089;
-  --text-faint: #a8a9ad;
-  --border: #e4e5ed;
-  --border-soft: #f0f1f5;
-  --shadow-card: 0 2px 8px rgba(35, 29, 69, 0.05);
-
-  background: var(--bg);
-  color: var(--text);
+.pb-shell {
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
-  font-family: inherit;
-  -webkit-font-smoothing: antialiased;
-  max-width: 28rem;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #231d45;
+}
+.pb-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #f3f2ef;
+  pointer-events: none;
+}
+.pb-page {
+  flex: 1 0 auto;
+  width: min(1240px, calc(100% - 48px));
   margin: 0 auto;
+  padding: 28px 0 64px;
 }
 
-@keyframes bpp-fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+/* Left column scrolls, right column sticks alongside it. */
+.pb-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+@media (min-width: 1000px) {
+  .pb-cols {
+    grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.85fr);
+    gap: 26px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .pb-side {
+    position: sticky;
+    /* Clears the sticky site nav. */
+    top: 92px;
+  }
+  /* Too short to hold the panel — let it scroll with the page instead of
+     giving the column its own scrollbar. */
+  @media (max-height: 820px) {
+    .pb-side { position: static; }
   }
 }
-.anim-1 {
-  animation: bpp-fadeUp 0.35s 0.06s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.anim-2 {
-  animation: bpp-fadeUp 0.35s 0.14s cubic-bezier(0.22, 1, 0.36, 1) both;
+.pb-main { min-width: 0; }
+.pb-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 
-/* Header */
-.app-header {
-  display: flex;
+.pb-nav-back {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 14px 18px 10px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-}
-.app-icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid var(--border);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 7px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #00a19a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
 }
-.app-icon-btn svg {
-  width: 16px;
-  height: 16px;
-}
-.app-header-info {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-}
-.app-header-title {
-  font-size: 1.0625rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.3px;
-  line-height: 1.2;
-}
-.app-header-sub {
-  font-size: 0.7188rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: 3px;
-  line-height: 1.4;
-}
+.pb-nav-back :deep(svg) { width: 15px; height: 15px; }
 
-/* Passport progress card */
-.bpp-progress-card {
-  margin: 6px 20px 0;
-  padding: 18px;
-  background: var(--primary);
-  border-radius: 18px;
-  color: #fff;
+/* ── Page head ─────────────────────────────────────────────────────── */
+.pb-head { margin-bottom: 18px; }
+.pb-head-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #00867f;
 }
-.bpp-progress-eyebrow-row {
+.pb-head-title {
+  margin: 8px 0 6px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+.pb-head-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b6880;
+}
+.pb-head-sub :deep(svg) { width: 14px; height: 14px; color: #9c98ad; }
+
+/* ── Hero ──────────────────────────────────────────── */
+.pb-hero {
+  padding: 22px 24px;
+  border-radius: 20px;
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(0, 212, 195, 0.22), transparent 58%),
+    linear-gradient(135deg, #2b2450, #221c41);
+  box-shadow: 0 12px 30px rgba(23, 18, 48, 0.22);
+}
+.pb-hero-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 14px;
+  flex-wrap: wrap;
 }
-.bpp-progress-eyebrow {
-  display: flex;
+.pb-hero-eyebrow {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.6875rem;
+  gap: 8px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.6px;
+  letter-spacing: 1.3px;
   text-transform: uppercase;
+}
+.pb-hero-eyebrow :deep(svg) { width: 16px; height: 16px; color: #2fd0c6; }
+.pb-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 11.5px;
+  font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
 }
-.bpp-progress-eyebrow svg {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-light);
+.pb-hero-chip :deep(svg) { width: 13px; height: 13px; }
+
+.pb-hero-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  margin-top: 20px;
 }
-.bpp-progress-pill {
+@media (min-width: 820px) {
+  .pb-hero-main {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 28px;
+  }
+}
+.pb-hero-rings {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 100px;
-  font-size: 0.5938rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
+  align-items: flex-start;
+  gap: 30px;
 }
-.bpp-progress-pill svg {
-  width: 11px;
-  height: 11px;
-}
-.bpp-progress-row {
+.pb-ring-block {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-}
-.bpp-progress-col {
   text-align: center;
-  flex-shrink: 0;
+  gap: 8px;
 }
-.bpp-circle-wrap {
+.pb-ring {
   position: relative;
-  width: 88px;
-  height: 88px;
-  margin: 0 auto;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  flex: none;
 }
-.bpp-circle-svg {
+.pb-ring svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
 }
-.bppc-bg {
+.pb-ring-track { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 7; }
+.pb-ring-fill {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.14);
+  stroke: #2fd0c6;
+  stroke-width: 7;
+  stroke-linecap: round;
 }
-.bppc-fill {
-  fill: none;
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.bppc-fill--passport {
-  stroke: #7c6fb0;
-}
-.bpp-circle-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.bppc-big {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.6px;
-}
-.bpp-col-label {
-  font-size: 0.5625rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 8px;
-}
-.bpp-col-hook {
-  font-size: 0.6563rem;
-  font-weight: 700;
-  margin-top: 2px;
-}
-.bpp-col-hook--score {
-  color: var(--accent-light);
-}
-.bpp-col-hook--passport {
-  color: #b3a8de;
-}
-.bpp-progress-divider {
-  width: 1px;
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.16);
-  flex-shrink: 0;
-}
-.bpp-progress-copy {
-  flex: 1;
-  min-width: 0;
-}
-.bpp-progress-copy p {
-  margin: 0;
-  font-size: 1.0313rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.45;
-}
-.bpp-progress-copy p b {
-  color: #fff;
+.pb-ring-fill.accent { stroke: #6f6a9c; }
+.pb-ring-val { font-weight: 800; line-height: 1; }
+.pb-ring-val b { font-size: 27px; font-weight: 800; }
+.pb-ring-val i {
+  font-style: normal;
+  font-size: 15px;
   font-weight: 800;
 }
-.bpp-milestones-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 100px;
-  color: #fff;
-  font-size: 0.7188rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-.bpp-progress-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  font-size: 0.7188rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.4;
-}
-.bpp-progress-banner b {
-  color: var(--accent-light);
+.pb-ring-cap {
+  font-size: 9.5px;
   font-weight: 800;
-}
-.bpp-progress-banner-ic {
-  flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.6);
-}
-.bpp-progress-banner-ic svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* EPC age card */
-.bpp-epc-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 12px 20px 0;
-  padding: 14px 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-}
-.bpp-epc-ic {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-.bpp-epc-body {
-  flex: 1;
-  min-width: 0;
-}
-.bpp-epc-title {
-  font-size: 0.8438rem;
-  font-weight: 800;
-  color: var(--text);
-}
-.bpp-epc-sub {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: 3px;
-  line-height: 1.4;
-}
-.bpp-epc-btn {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 9px 12px;
-  background: transparent;
-  border: 1.5px solid var(--accent);
-  border-radius: 100px;
-  color: var(--accent-dark);
-  font-size: 0.6875rem;
-  font-weight: 800;
-  font-family: inherit;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-/* Section heading */
-.section-h-row {
-  padding: 20px 20px 10px;
-}
-.section-h {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: var(--text-secondary);
   letter-spacing: 1px;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
 }
-.section-h svg {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-dark);
-  flex-shrink: 0;
+.pb-ring-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.62);
 }
+.pb-ring-sub.accent { color: #2fd0c6; }
 
-/* Add-to-passport tile grid */
-.bpp-tile-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: 0 20px;
-}
-.bpp-tile {
-  position: relative;
-  padding: 16px 12px 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  text-align: center;
-}
-.bpp-tile-ic {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-  margin: 0 auto 8px;
-  display: block;
-}
-.bpp-tile-title {
-  font-size: 0.7813rem;
-  font-weight: 800;
-  color: var(--text);
-  line-height: 1.25;
-  margin-bottom: 3px;
-}
-.bpp-tile-sub {
-  font-size: 0.625rem;
+.pb-hero-note {
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.35;
-  margin-bottom: 10px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
 }
-.bpp-tile-lock {
+.pb-hero-note b { color: #fff; font-weight: 800; }
+.pb-hero-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 11px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
 }
-.bpp-tile-lock-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+.pb-hero-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.pb-hero-btn :deep(svg) { width: 15px; height: 15px; }
 
-.bpp-note {
+.pb-hero-foot {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 20px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+.pb-hero-foot b { color: #2fd0c6; font-weight: 800; }
+.pb-hero-foot-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.1);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pb-hero-foot-ic :deep(svg) { width: 15px; height: 15px; color: #2fd0c6; }
+
+/* ── EPC nudge ─────────────────────────────────────────────────────── */
+.pb-epc {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e9e7f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.05);
+}
+.pb-epc-ic { width: 42px; height: 42px; object-fit: contain; flex: none; }
+.pb-epc-body { flex: 1; min-width: 0; }
+.pb-epc-title { font-size: 14px; font-weight: 800; }
+.pb-epc-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b6880;
+  line-height: 1.5;
+}
+.pb-epc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  padding: 11px 18px;
+  border: 1.5px solid #00a19a;
+  border-radius: 999px;
+  background: #fff;
+  color: #00867f;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.pb-epc-btn:hover { background: #00a19a; color: #fff; }
+.pb-epc-btn :deep(svg) { width: 15px; height: 15px; }
+
+/* ── Section headings + notes ────────────────────────── */
+.pb-section-h {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 12px 20px 0;
-  padding: 10px 14px;
-  background: var(--accent-paler);
-  border: 1px solid var(--accent-pale);
-  border-radius: 100px;
-  font-size: 0.6563rem;
-  font-weight: 600;
-  color: var(--accent-dark);
+  margin: 26px 0 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #231d45;
 }
-.bpp-note svg {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
+.pb-section-h :deep(svg) { width: 15px; height: 15px; color: #00a19a; }
+.pb-section-h span {
+  font-weight: 700;
+  color: #9c98ad;
+  letter-spacing: 0.2px;
+  text-transform: none;
 }
-
-/* Professional evidence list */
-.bpp-list {
-  margin: 0 20px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-}
-.bpp-list-row {
-  width: 100%;
+/* Mint info strip under each locked section. */
+.pb-note {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: none;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #eefaf6;
+  border: 1px solid #cfeee4;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0d7c6d;
+}
+.pb-note :deep(svg) { width: 15px; height: 15px; color: #0d7c6d; flex: none; }
+
+/* ── Document tiles ────────────────────────────────────────────────── */
+/* Two columns, not auto-fit: there are four tiles, and a three-wide row
+   left the fourth stranded on a line of its own. */
+.pb-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 560px) {
+  .pb-doc-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.pb-doc-card {
+  position: relative;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #e9e7f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.05);
+}
+.pb-doc-card.locked { background: #fff; }
+.pb-doc-ic { width: 46px; height: 46px; object-fit: contain; }
+.pb-doc-title {
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 800;
+}
+.pb-doc-sub {
+  margin-top: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b6880;
+  line-height: 1.5;
+}
+.pb-doc-lock {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1eefa;
+  display: grid;
+  place-items: center;
+}
+.pb-doc-lock { width: 30px; height: 30px; background: transparent; }
+.pb-doc-lock img { width: 26px; height: 26px; object-fit: contain; }
+
+/* ── Professional evidence ──────────────────────────── */
+.pb-pro-card {
+  background: #fff;
+  border: 1px solid #e9e7f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(35, 29, 69, 0.04);
+  overflow: hidden;
+}
+.pb-pro-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
   border: none;
-  border-bottom: 1px solid var(--border-soft);
+  background: none;
   text-align: left;
   font-family: inherit;
   cursor: pointer;
+  transition: background 0.15s;
 }
-.bpp-list-row:last-child {
-  border-bottom: none;
-}
-.bpp-list-row:hover {
-  background: var(--accent-paler);
-}
-.bpp-list-ic {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-.bpp-list-body {
-  flex: 1;
-  min-width: 0;
-}
-.bpp-list-title {
-  font-size: 0.8438rem;
+.pb-pro-row + .pb-pro-row { border-top: 1px solid #f0eef6; }
+.pb-pro-row:hover { background: #fafaf9; }
+.pb-pro-ic { width: 40px; height: 40px; object-fit: contain; flex: none; }
+.pb-pro-body { flex: 1; min-width: 0; }
+.pb-pro-title {
+  display: block;
+  font-size: 14px;
   font-weight: 800;
-  color: var(--text);
+  color: #231d45;
 }
-.bpp-list-sub {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--text-secondary);
+.pb-pro-sub {
+  display: block;
   margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b6880;
 }
-.bpp-list-chev {
-  font-size: 1.125rem;
-  color: var(--text-faint);
-  flex-shrink: 0;
-}
+.pb-pro-chev { width: 17px; height: 17px; color: #b8b4c6; flex: none; }
 
-/* Claim card */
-.bpp-claim-card {
-  margin: 16px 20px 0;
-  padding: 20px 18px;
-  background: var(--card);
-  border: 1.5px solid #c9b0f0;
-  border-radius: 18px;
+/* ── Claim card ──────────────────────────────────── */
+.pb-claim {
+  padding: 26px 24px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #e6e2f3;
+  border-radius: 22px;
+  box-shadow: 0 10px 28px rgba(35, 29, 69, 0.06);
 }
-.bpp-claim-top {
+/* Passport artwork on a soft mint plinth. */
+.pb-claim-art {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: 10px 26px 0;
+}
+.pb-claim-art::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 132px;
+  height: 92px;
+  border-radius: 50%;
+  background: rgba(0, 161, 154, 0.1);
+  filter: blur(2px);
+}
+.pb-claim-art img {
+  position: relative;
+  width: 104px;
+  height: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 14px 22px rgba(0, 122, 114, 0.28));
+}
+.pb-claim-title {
+  margin: 16px 0 10px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+.pb-claim-lede {
+  margin: 0 auto;
+  max-width: 42ch;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #6b6880;
+}
+/* Tick list — left aligned inside the centred card. */
+.pb-claim-points {
+  list-style: none;
+  margin: 22px 0;
+  padding: 0;
+  text-align: left;
+}
+.pb-claim-points li {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
 }
-.bpp-claim-ic {
-  width: 76px;
-  flex-shrink: 0;
-  object-fit: contain;
+.pb-claim-points li + li { margin-top: 15px; }
+.pb-claim-tick {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-top: 1px;
+}
+.pb-claim-tick img { width: 32px; height: 32px; object-fit: contain; }
+.pb-claim-point-txt { min-width: 0; }
+.pb-claim-points b {
   display: block;
-  filter: drop-shadow(0 8px 12px rgba(35, 29, 69, 0.18));
-}
-.bpp-claim-top-text {
-  flex: 1;
-  min-width: 0;
-}
-.bpp-claim-title {
-  font-size: 1rem;
+  font-size: 13.5px;
   font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.3px;
-  line-height: 1.25;
 }
-.bpp-claim-sub {
-  font-size: 0.75rem;
+.pb-claim-points span span,
+.pb-claim-point-txt span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-top: 6px;
+  color: #6b6880;
 }
-.bpp-claim-checks {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-.bpp-claim-check {
-  flex: 1;
-  min-width: 0;
+/* Stacked, not side by side: in a 340px sidebar the label and the fee note
+   competed for one row and "Claim my Passport" broke across two lines. */
+.pb-claim-btn {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-.bpp-claim-check-ic {
-  width: 32px;
-  height: 32px;
-  display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-.bpp-claim-check-ic-img {
+  gap: 3px;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.bpp-claim-check-title {
-  font-size: 0.7188rem;
-  font-weight: 800;
-  color: var(--text);
-  line-height: 1.25;
-}
-.bpp-claim-check-sub {
-  font-size: 0.5938rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.3;
-}
-.bpp-claim-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 18px;
-  padding: 15px 16px;
-  background: #5b3795;
+  padding: 13px 18px;
   border: none;
   border-radius: 14px;
+  background: #5b3795;
   color: #fff;
   font-family: inherit;
   cursor: pointer;
+  box-shadow: 0 10px 22px rgba(91, 55, 149, 0.26);
+  transition: background 0.15s;
 }
-.bpp-claim-btn-left {
-  display: flex;
+.pb-claim-btn:hover { background: #4b2c7d; }
+.pb-claim-btn-main {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.9063rem;
+  gap: 9px;
+  font-size: 14.5px;
   font-weight: 800;
+  white-space: nowrap;
 }
-.bpp-claim-btn-left svg {
-  width: 16px;
-  height: 16px;
-}
-.bpp-claim-btn-right {
-  display: flex;
+.pb-claim-btn-main :deep(svg) { width: 16px; height: 16px; }
+.pb-claim-btn-note {
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.6563rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  text-align: right;
-}
-.bpp-claim-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: fit-content;
-  margin: 12px auto 0;
-  color: #5b3795;
-  font-size: 0.7813rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.bpp-trust-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 6px;
-  margin: 18px 24px 0;
-  font-size: 0.6563rem;
-  font-weight: 500;
-  color: var(--text-faint);
-  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
 }
-.bpp-trust-note svg {
-  flex-shrink: 0;
-  color: var(--accent-dark);
+.pb-claim-btn-note :deep(svg) { width: 14px; height: 14px; }
+.pb-claim-link {
+  display: block;
+  margin: 16px auto 0;
+  border: none;
+  background: none;
+  color: #5b3795;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-/* Auth-required popup - mirrors PassportClaimBox.vue's authd-* prompt */
-.authd-overlay {
+/* Privacy reassurance under the claim card. */
+/* Sits as its own card under the claim panel in the sidebar. */
+.pb-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #eceaf4;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #8b8799;
+}
+.pb-privacy :deep(svg) { width: 15px; height: 15px; margin-top: 1px; color: #00a19a; flex: none; }
+
+/* ── Entry animations ──────────────────────────────────────────────── */
+.anim-1, .anim-2, .anim-3, .anim-4 {
+  animation: pbFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.anim-2 { animation-delay: 0.06s; }
+.anim-3 { animation-delay: 0.12s; }
+.anim-4 { animation-delay: 0.18s; }
+@keyframes pbFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-1, .anim-2, .anim-3, .anim-4 { animation: none; }
+}
+
+@media (max-width: 680px) {
+  .pb-page { width: calc(100% - 32px); }
+  .pb-head-title { font-size: 22px; }
+  .pb-hero-rings { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .pb-epc { flex-wrap: wrap; }
+  .pb-epc-btn { width: 100%; justify-content: center; }
+  .pb-hero-rings { gap: 20px; }
+  .pb-claim { padding: 22px 18px; }
+  .pb-claim-btn { flex-direction: column; align-items: stretch; gap: 6px; }
+  .pb-claim-btn-main, .pb-claim-btn-note { justify-content: center; }
+}
+
+/* ── Auth-required popup ──────────────────────────────── */
+.pbauth-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(20, 17, 42, 0.62);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 200;
+  display: grid;
+  place-items: center;
   padding: 20px;
+  background: rgba(35, 29, 69, 0.45);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
-.authd-card {
-  width: 100%;
-  max-width: 22rem;
+.pbauth-card {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 32px 28px 26px;
+  border-radius: 24px;
   background: #fff;
-  border-radius: 18px;
-  padding: 22px 22px 18px;
-  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.45);
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  box-shadow: 0 36px 80px rgba(35, 29, 69, 0.3);
   text-align: center;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #231d45;
 }
-.authd-icon {
-  width: 85px;
-  height: 85px;
+.pbauth-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #f0fdfa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 14px;
-  overflow: hidden;
+  border: 1px solid rgba(35, 29, 69, 0.1);
+  background: #fff;
+  color: #6b6880;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
 }
-.authd-icon img {
-  width: 65px;
-  height: 65px;
-  object-fit: contain;
-  display: block;
+.pbauth-close:hover { background: #f3f2f7; color: #231d45; }
+.pbauth-close :deep(svg) { width: 16px; height: 16px; }
+.pbauth-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
 }
-.authd-title {
-  font-size: 1.0625rem;
+.pbauth-icon img { width: 64px; height: 64px; object-fit: contain; }
+.pbauth-title {
+  margin: 0;
+  font-size: 19px;
   font-weight: 800;
-  letter-spacing: -0.3px;
-  margin-bottom: 8px;
-  line-height: 1.25;
+  letter-spacing: -0.4px;
+  line-height: 1.3;
 }
-.authd-body {
-  font-size: 0.8125rem;
+.pbauth-body {
+  margin: 8px 0 0;
+  font-size: 13.5px;
   font-weight: 500;
-  color: #6b7089;
-  line-height: 1.55;
-  margin-bottom: 18px;
+  line-height: 1.6;
+  color: #6b6880;
 }
-.authd-actions {
+.pbauth-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
+  margin-top: 22px;
 }
-.authd-btn {
+.pbauth-btn {
   width: 100%;
-  padding: 13px;
+  padding: 13px 16px;
+  border-radius: 13px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 800;
-  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.15s;
-  border: none;
-  letter-spacing: -0.1px;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
 }
-.authd-btn.primary {
-  background: linear-gradient(135deg, #00a19a, #008a84);
+.pbauth-btn:hover { transform: translateY(-1px); }
+.pbauth-btn.primary {
+  border: 0;
+  background: linear-gradient(135deg, #5b3795, #3f2470);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(0, 161, 154, 0.3);
+  box-shadow: 0 10px 22px rgba(91, 55, 149, 0.28);
 }
-.authd-btn.primary:hover {
-  filter: brightness(1.06);
-}
-.authd-btn.secondary {
+.pbauth-btn.secondary {
+  border: 1px solid #ded9ee;
   background: #fff;
-  border: 1.5px solid #e4e5ed;
   color: #231d45;
 }
-.authd-btn.secondary:hover {
-  background: #f5f6fa;
-}
-.authd-btn.ghost {
+.pbauth-btn.secondary:hover { border-color: #c3b9e4; }
+.pbauth-btn.ghost {
+  border: 0;
   background: transparent;
-  color: #6b7089;
+  color: #6b6880;
   font-weight: 700;
-  padding: 8px;
 }
-.authd-btn.ghost:hover {
-  color: #231d45;
-}
-.authd-enter-active,
-.authd-leave-active {
-  transition: opacity 0.22s ease;
-}
-.authd-enter-active .authd-card,
-.authd-leave-active .authd-card {
-  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.authd-enter-from,
-.authd-leave-to {
-  opacity: 0;
-}
-.authd-enter-from .authd-card,
-.authd-leave-to .authd-card {
-  transform: scale(0.94);
+.pbauth-btn.ghost:hover { color: #231d45; }
+
+.pbauth-enter-active,
+.pbauth-leave-active { transition: opacity 0.2s ease; }
+.pbauth-enter-active .pbauth-card,
+.pbauth-leave-active .pbauth-card { transition: transform 0.22s ease, opacity 0.22s ease; }
+.pbauth-enter-from,
+.pbauth-leave-to { opacity: 0; }
+.pbauth-enter-from .pbauth-card,
+.pbauth-leave-to .pbauth-card { opacity: 0; transform: translateY(12px) scale(0.98); }
+@media (prefers-reduced-motion: reduce) {
+  .pbauth-enter-active,
+  .pbauth-leave-active,
+  .pbauth-enter-active .pbauth-card,
+  .pbauth-leave-active .pbauth-card { transition: none; }
 }
 </style>

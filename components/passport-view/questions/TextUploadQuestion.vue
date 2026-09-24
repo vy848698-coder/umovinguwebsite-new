@@ -22,7 +22,10 @@
         "
         class="text-input"
         rows="6"
-      ></textarea>
+       :aria-label="
+          question.placeholder ||
+          'E.g., The irregular boundary near the stream at the rear of the property is owned by...'
+        "></textarea>
 
       <div class="or-divider"></div>
 
@@ -33,7 +36,7 @@
           /></span>
           <span>Upload from Files</span>
         </button>
-        <button class="upload-btn camera">
+        <button class="upload-btn camera" type="button" :disabled="uploading" @click="showScanner = true">
           <span class="upload-icon"
             ><OPIcon name="scan" class="w-[20px] h-[20px]"
           /></span>
@@ -45,9 +48,14 @@
         ref="fileInput"
         type="file"
         multiple
+        accept="image/*,.pdf"
         @change="handleFileSelect"
         style="display: none"
       />
+
+      <CameraScanModal :open="showScanner" @close="showScanner = false" @capture="onCameraCapture" />
+
+      <p v-if="uploadError" class="upload-error">{{ uploadError }}</p>
 
       <div v-if="uploadedFiles.length > 0" class="uploaded-files">
         <h4 class="files-title">Uploaded Files ({{ uploadedFiles.length }})</h4>
@@ -99,7 +107,7 @@
           <div v-if="displayedHelp" class="help-section">
             <div class="help-content">
               <h4 class="help-title">
-                <span class="help-icon">💡</span>What is this?
+                <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
               </h4>
               <p class="help-text">
                 {{ displayedHelp }}
@@ -122,7 +130,10 @@
           "
           class="text-input"
           rows="6"
-        ></textarea>
+         :aria-label="
+            question.placeholder ||
+            'E.g., Back fence in the garden has been moved back 2 yards...'
+          "></textarea>
       </div>
     </template>
 
@@ -146,7 +157,7 @@
           <div v-if="displayedHelp" class="help-section">
             <div class="help-content">
               <h4 class="help-title">
-                <span class="help-icon">💡</span>What is this?
+                <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
               </h4>
               <p class="help-text">
                 {{ displayedHelp }}
@@ -171,7 +182,7 @@
             /></span>
             <span>Upload from Files</span>
           </button>
-          <button class="upload-btn camera">
+          <button class="upload-btn camera" type="button" :disabled="uploading" @click="showScanner = true">
             <span class="upload-icon"
               ><OPIcon name="scan" class="w-[20px] h-[20px]"
             /></span>
@@ -183,9 +194,14 @@
           ref="fileInput"
           type="file"
           multiple
+          accept="image/*,.pdf"
           @change="handleFileSelect"
           style="display: none"
         />
+
+        <CameraScanModal :open="showScanner" @close="showScanner = false" @capture="onCameraCapture" />
+
+        <p v-if="uploadError" class="upload-error">{{ uploadError }}</p>
 
         <div v-if="uploadedFiles.length > 0" class="uploaded-files">
           <h4 class="files-title">
@@ -208,6 +224,7 @@
 
 <script setup>
 import OPIcon from '~/components/ui/OPIcon.vue'
+import CameraScanModal from '~/components/ui/CameraScanModal.vue'
 const props = defineProps({
   question: { type: Object, default: 'Test Question' },
   answer: { type: [String, Array, Object], default: '' },
@@ -247,6 +264,11 @@ const emit = defineEmits(['update'])
 const config = useRuntimeConfig()
 const fileInput = ref(null)
 const uploading = ref(false)
+const showScanner = ref(false)
+
+const onCameraCapture = async (file) => {
+  await handleFileSelect({ target: { files: [file], value: '' } })
+}
 
 const displayMode = computed(() => {
   // Build a raw candidate for the display mode from props or question metadata
@@ -321,34 +343,56 @@ const triggerFileUpload = () => {
   fileInput.value?.click()
 }
 
+const uploadError = ref('')
+
 const handleFileSelect = async (event) => {
   const files = Array.from(event.target.files || [])
   event.target.value = ''
   if (!files.length) return
 
   const questionId = props.question?.id
+  if (!questionId) {
+    uploadError.value = "Couldn't identify this question. Please refresh and try again."
+    return
+  }
+
+  // Part of a MULTIPART question (see MultipartQuestion.vue's
+  // buildPartQuestion): the parent question's real id is used to store
+  // the file, but on the endpoint that only returns a URL rather than
+  // overwriting the parent's whole answer with this one part.
+  const endpoint = props.question?.uploadOnly ? 'upload-part' : 'upload'
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
   uploading.value = true
+  uploadError.value = ''
   const results = []
+  let failures = 0
   for (const file of files) {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const res = await $fetch(`${config.public.apiBase}/questions/${questionId}/upload`, {
+      const res = await $fetch(`${config.public.apiBase}/questions/${questionId}/${endpoint}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       })
       results.push({ name: res.name || file.name, url: res.url, size: file.size, type: file.type })
     } catch {
-      results.push({ name: file.name, size: file.size, type: file.type, url: '' })
+      failures += 1
     }
   }
   uploading.value = false
+  if (failures > 0) {
+    uploadError.value =
+      failures === files.length
+        ? 'Upload failed. Please try again.'
+        : `${failures} file(s) failed to upload. Please try again.`
+  }
 
-  uploadedFiles.value = [...(uploadedFiles.value || []), ...results]
-  emitUpdate()
+  if (results.length) {
+    uploadedFiles.value = [...(uploadedFiles.value || []), ...results]
+    emitUpdate()
+  }
 }
 
 const removeFile = (index) => {
@@ -684,6 +728,23 @@ onMounted(() => {
 .remove-btn:hover {
   background: rgba(255, 59, 48, 0.1);
   color: #ff3b30;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
+}
+
+.upload-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b4231a;
 }
 </style>
 

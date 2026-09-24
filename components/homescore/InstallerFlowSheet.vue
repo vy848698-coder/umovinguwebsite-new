@@ -1,37 +1,20 @@
 <template>
   <Teleport to="body">
-    <Transition name="ifs" appear>
     <div v-if="open" class="ifs-overlay" @click.self="close">
-      <div
-        class="ifs-sheet"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="sheetTitle"
-        :style="dragStyle"
-        @touchstart.passive="onTouchStart"
-        @touchmove="onTouchMove"
-        @touchend="onTouchEnd"
-        @touchcancel="onTouchEnd"
-      >
+      <div class="ifs-sheet" role="dialog" aria-modal="true">
         <div class="ifs-handle" />
         <div class="ifs-scroll">
+
           <!-- STATE: routes (per-measure entry) -->
           <div v-if="state === 'routes'" class="ifs-state">
             <div class="ifs-eyebrow">{{ trade.eyebrow }}</div>
-            <h3 id="ifs-sheet-title" class="ifs-title">{{ trade.title }}</h3>
+            <h3 class="ifs-title">{{ trade.title }}</h3>
             <p class="ifs-lede">
-              We're building our vetted network in your area. Here's what you
-              can do right now for this measure.
+              We're building our vetted network in your area. Here's what
+              you can do right now for this measure.
             </p>
             <div class="ifs-acc">
-              <span class="ifs-acc-ic">
-                <img
-                  src="/op-icons/explore/safetyCheck.png"
-                  alt=""
-                  class="ifs-acc-img"
-                  loading="lazy"
-                />
-              </span>
+              <span class="ifs-acc-ic"><img src="/property-cards/safetyCheck.png" alt="" loading="lazy" /></span>
               <p v-html="trade.acc" />
             </div>
 
@@ -42,49 +25,25 @@
                 type="button"
                 @click="startElig"
               >
-                <span class="ifs-r-ic">
-                  <img
-                    src="/op-icons/explore/claim.png"
-                    alt=""
-                    class="ifs-r-img"
-                    loading="lazy"
-                  />
-                </span>
+                <span class="ifs-r-ic"><img src="/property-cards/claim.png" alt="" loading="lazy" /></span>
                 <span class="ifs-r-body">
                   <span class="ifs-r-title">
                     Check if grants could cover this
                     <span class="ifs-badge ifs-badge--money">Free</span>
                   </span>
-                  <span class="ifs-r-sub"
-                    >3 quick questions. See which schemes you may qualify for
-                    before you get quotes.</span
-                  >
+                  <span class="ifs-r-sub">3 quick questions. See which schemes you may qualify for before you get quotes.</span>
                 </span>
                 <span class="ifs-r-arrow">›</span>
               </button>
 
-              <button
-                class="ifs-route ifs-route--match"
-                type="button"
-                @click="goForm"
-              >
-                <span class="ifs-r-ic">
-                  <img
-                    src="/op-icons/explore/getMatched.png"
-                    alt=""
-                    class="ifs-r-img"
-                    loading="lazy"
-                  />
-                </span>
+              <button class="ifs-route ifs-route--match" type="button" @click="goForm">
+                <span class="ifs-r-ic"><img src="/property-cards/getMatched.png" alt="" loading="lazy" /></span>
                 <span class="ifs-r-body">
                   <span class="ifs-r-title">
                     Get matched
                     <span class="ifs-badge ifs-badge--free">Free</span>
                   </span>
-                  <span class="ifs-r-sub"
-                    >Leave your details and we'll line up vetted installers for
-                    this measure.</span
-                  >
+                  <span class="ifs-r-sub">Leave your details and we'll line up vetted installers for this measure.</span>
                 </span>
                 <span class="ifs-r-arrow">›</span>
               </button>
@@ -95,14 +54,7 @@
                 rel="noopener"
                 class="ifs-route ifs-route--self"
               >
-                <span class="ifs-r-ic">
-                  <img
-                    src="/op-icons/explore/searchYourself.png"
-                    alt=""
-                    class="ifs-r-img"
-                    loading="lazy"
-                  />
-                </span>
+                <span class="ifs-r-ic"><img src="/property-cards/searchYourself.png" alt="" loading="lazy" /></span>
                 <span class="ifs-r-body">
                   <span class="ifs-r-title">{{ trade.self.t }}</span>
                   <span class="ifs-r-sub">{{ trade.self.s }}</span>
@@ -110,9 +62,7 @@
                 <span class="ifs-r-arrow">›</span>
               </a>
             </div>
-            <p class="ifs-foot">
-              Every request helps us bring installers to your postcode faster.
-            </p>
+            <p class="ifs-foot">Every request helps us bring installers to your postcode faster.</p>
           </div>
 
           <!-- STATE: eligibility Qs -->
@@ -126,92 +76,54 @@
 
             <div v-if="eligStep === 1" class="ifs-q">
               <h4>Do you own or rent this home?</h4>
-              <p class="ifs-qhint">
-                Different schemes apply to owners, private and social tenants.
-              </p>
+              <p class="ifs-qhint">Different schemes apply to owners, private and social tenants.</p>
               <div class="ifs-opts">
-                <button class="ifs-opt" @click="answer('tenure', 'own')">
-                  Own it
-                </button>
-                <button class="ifs-opt" @click="answer('tenure', 'private')">
-                  Private rental
-                </button>
-                <button class="ifs-opt" @click="answer('tenure', 'social')">
-                  Social / council rental
-                </button>
+                <button class="ifs-opt" @click="answer('tenure', 'own')">Own it</button>
+                <button class="ifs-opt" @click="answer('tenure', 'private')">Private rental</button>
+                <button class="ifs-opt" @click="answer('tenure', 'social')">Social / council rental</button>
               </div>
             </div>
 
             <div v-else-if="eligStep === 2" class="ifs-q">
               <h4>Does anyone in the home get means-tested benefits?</h4>
-              <p class="ifs-qhint">
-                e.g. Universal Credit, Pension Credit, income-based JSA/ESA.
-              </p>
+              <p class="ifs-qhint">e.g. Universal Credit, Pension Credit, income-based JSA/ESA.</p>
               <div class="ifs-opts">
-                <button class="ifs-opt" @click="answer('benefits', 'yes')">
-                  Yes
-                </button>
-                <button class="ifs-opt" @click="answer('benefits', 'no')">
-                  No
-                </button>
-                <button class="ifs-opt" @click="answer('benefits', 'unsure')">
-                  Not sure
-                </button>
+                <button class="ifs-opt" @click="answer('benefits', 'yes')">Yes</button>
+                <button class="ifs-opt" @click="answer('benefits', 'no')">No</button>
+                <button class="ifs-opt" @click="answer('benefits', 'unsure')">Not sure</button>
               </div>
             </div>
 
             <div v-else class="ifs-q">
               <h4>Roughly, what's the household income?</h4>
-              <p class="ifs-qhint">
-                Before tax. Helps flag income-capped schemes.
-              </p>
+              <p class="ifs-qhint">Before tax. Helps flag income-capped schemes.</p>
               <div class="ifs-opts">
-                <button class="ifs-opt" @click="answer('income', 'low')">
-                  Under £31,000
-                </button>
-                <button class="ifs-opt" @click="answer('income', 'high')">
-                  £31,000 or more
-                </button>
-                <button class="ifs-opt" @click="answer('income', 'skip')">
-                  Prefer not to say
-                </button>
+                <button class="ifs-opt" @click="answer('income', 'low')">Under £31,000</button>
+                <button class="ifs-opt" @click="answer('income', 'high')">£31,000 or more</button>
+                <button class="ifs-opt" @click="answer('income', 'skip')">Prefer not to say</button>
               </div>
             </div>
 
-            <span class="ifs-indicative"
-              >⚠️ Indicative only - your installer confirms at survey</span
-            >
-            <button class="ifs-back-link" @click="backFromElig">
-              ‹ Back
-            </button>
+            <span class="ifs-indicative"><Icon name="i-lucide-triangle-alert" /> Indicative only — your installer confirms at survey</span>
+            <button class="ifs-back-link" @click="state = 'routes'">‹ Back</button>
           </div>
 
           <!-- STATE: eligibility result -->
           <div v-else-if="state === 'result'" class="ifs-state">
             <div v-if="grants.length" class="ifs-result-hero">
-              <div class="ifs-rh-ic ifs-rh-ic-img"><img src="/op-icons/congratulations/gift.png" alt="" loading="lazy" /></div>
+              <img class="ifs-rh-ic" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
               <h3>You may qualify for funding</h3>
-              <p>
-                Based on your answers, these schemes could cover part or all of
-                this measure. Your installer confirms eligibility at survey.
-              </p>
+              <p>Based on your answers, these schemes could cover part or all of this measure. Your installer confirms eligibility at survey.</p>
             </div>
             <div v-else class="ifs-result-hero ifs-result-hero--none">
-              <div class="ifs-rh-ic">🔍</div>
+              <img class="ifs-rh-ic" src="/homescore-icon/magnifier.png" alt="" loading="lazy" />
               <h3>No means-tested grants flagged</h3>
-              <p>
-                You may not qualify for the income-based schemes, but installers
-                can still check local offers - and paying direct is always an
-                option. We'll match either way.
-              </p>
+              <p>You may not qualify for the income-based schemes, but installers can still check local offers — and paying direct is always an option. We'll match either way.</p>
             </div>
 
             <div v-if="grants.length" class="ifs-grant-list">
               <div v-for="g in grants" :key="g.name" class="ifs-grant-item">
-                <div class="ifs-gi-ic">
-                  <img v-if="g.ic.startsWith('/')" :src="g.ic" alt="" loading="lazy" />
-                  <template v-else>{{ g.ic }}</template>
-                </div>
+                <img class="ifs-gi-ic" :src="g.ic" alt="" loading="lazy" />
                 <div class="ifs-gi-body">
                   <div class="ifs-gi-name">{{ g.name }}</div>
                   <div class="ifs-gi-desc">{{ g.desc }}</div>
@@ -221,65 +133,42 @@
             </div>
 
             <div class="ifs-prop-lock">
-              <img src="/op-icons/homescore/houseSearch.png" alt="" class="ifs-pl-ic" loading="lazy" />
+              <img src="/homescore-icon/houseSearch.png" alt="" class="ifs-pl-ic" loading="lazy" />
               <div>
                 <div class="ifs-pl-label">Measure · Property</div>
-                <div class="ifs-pl-val">
-                  {{ trade.measure }} · {{ address }}
-                </div>
+                <div class="ifs-pl-val">{{ trade.measure }} · {{ address }}</div>
               </div>
             </div>
 
-            <button class="ifs-submit" @click="goForm">
-              Get matched with eligible installers
-            </button>
-            <button class="ifs-back-link" @click="startOverFromResult">
-              ‹ Start over
-            </button>
+            <button class="ifs-submit" @click="goForm">Get matched with eligible installers</button>
+            <button class="ifs-back-link" @click="state = 'routes'">‹ Start over</button>
           </div>
 
           <!-- STATE: capture form -->
           <div v-else-if="state === 'form'" class="ifs-state">
             <div class="ifs-eyebrow">Get matched</div>
-            <h3 id="ifs-sheet-title" class="ifs-title">Line up installers</h3>
-            <p class="ifs-lede">
-              Just the basics - we'll come back with vetted installers. No
-              obligation.
-            </p>
+            <h3 class="ifs-title">Line up installers</h3>
+            <p class="ifs-lede">Just the basics — we'll come back with vetted installers. No obligation.</p>
 
             <div class="ifs-prop-lock">
-              <img src="/op-icons/homescore/houseSearch.png" alt="" class="ifs-pl-ic" loading="lazy" />
+              <img src="/homescore-icon/houseSearch.png" alt="" class="ifs-pl-ic" loading="lazy" />
               <div>
                 <div class="ifs-pl-label">Measure · Property</div>
-                <div class="ifs-pl-val">
-                  {{ trade.measure }} · {{ address }}
-                </div>
+                <div class="ifs-pl-val">{{ trade.measure }} · {{ address }}</div>
               </div>
             </div>
 
             <div class="ifs-field">
-              <label for="a11y-field-InstallerFlowSheet-63">Your name</label>
-              <input
-                v-model="formName"
-                type="text"
-                placeholder="e.g. Maxine Wilson"
-               aria-label="e.g. Maxine Wilson"  id="a11y-field-InstallerFlowSheet-63"/>
+              <label>Your name</label>
+              <input v-model="formName" type="text" placeholder="e.g. Maxine Wilson" />
             </div>
             <div class="ifs-field">
-              <label for="a11y-field-InstallerFlowSheet-64">Email or mobile</label>
-              <input
-                v-model="formContact"
-                type="text"
-                placeholder="So installers can reach you"
-               aria-label="So installers can reach you"  id="a11y-field-InstallerFlowSheet-64"/>
+              <label>Email or mobile</label>
+              <input v-model="formContact" type="text" placeholder="So installers can reach you" />
             </div>
 
-            <button class="ifs-submit" @click="goConfirm">
-              Request matches
-            </button>
-            <button class="ifs-back-link" @click="backFromForm">
-              ‹ Back
-            </button>
+            <button class="ifs-submit" @click="goConfirm">Request matches</button>
+            <button class="ifs-back-link" @click="state = 'routes'">‹ Back</button>
           </div>
 
           <!-- STATE: match confirm -->
@@ -287,52 +176,38 @@
             <div class="ifs-confirm">
               <div class="ifs-tick">
                 <span class="ifs-ring" />
-                <svg viewBox="0 0 24 24">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
               </div>
               <h3>You're on the list</h3>
               <p>
                 We'll be in touch with vetted installers for
-                <b>{{ trade.measure.toLowerCase() }}</b> at <b>{{ address }}</b
-                >{{ grantLine }}.
+                <b>{{ trade.measure.toLowerCase() }}</b> at <b>{{ address }}</b>{{ grantLine }}.
               </p>
               <div class="ifs-passport">
-                <span class="ifs-passport-ic"><img src="/op-icons/misc/book.png" alt="" loading="lazy" /></span>
-                <p>
-                  Every match request helps us bring installers to
-                  <b>{{ postcode || 'your area' }}</b> faster.
-                </p>
+                <img class="ifs-passport-ic" src="/homescore-icon/homeScoreCard.png" alt="" loading="lazy" />
+                <p>Every match request helps us bring installers to <b>{{ postcode || 'your area' }}</b> faster.</p>
               </div>
-              <button class="ifs-primary" @click="afterConfirm">
-                View my requests
-              </button>
+              <button class="ifs-primary" @click="afterConfirm">See your requests</button>
             </div>
           </div>
 
           <!-- STATE: requests tracker -->
           <div v-else-if="state === 'tracker'" class="ifs-state">
             <div class="ifs-eyebrow">Your requests</div>
-            <h3 id="ifs-sheet-title" class="ifs-title">Match requests</h3>
-            <p class="ifs-lede">
-              Where each of your match requests has got to. We're sourcing
-              vetted installers for these measures.
-            </p>
+            <h3 class="ifs-title">Match requests</h3>
+            <p class="ifs-lede">Where each of your match requests has got to. We're sourcing vetted installers for these measures.</p>
 
             <div v-if="requests.length === 0" class="ifs-empty">
-              <div class="ifs-empty-ic"><img src="/op-icons/misc/wrench.png" alt="" loading="lazy" /></div>
+              <div class="ifs-empty-ic">
+                <img src="/homescore-icon/wrench.png" alt="" loading="lazy" />
+              </div>
               <h4>No requests yet</h4>
-              <p>
-                Tap <b>Find installers</b> on any measure and we'll start
-                sourcing vetted trades for you.
-              </p>
+              <p>Tap <b>Find installers</b> on any measure and we'll start sourcing vetted trades for you.</p>
             </div>
             <div v-else class="ifs-track">
               <div v-for="(r, i) in requests" :key="i" class="ifs-track-item">
                 <div class="ifs-track-top">
-                  <div class="ifs-t-ic">
-                    <img :src="iconForRequest(r.measure)" alt="" loading="lazy" />
-                  </div>
+                  <img class="ifs-t-ic" src="/homescore-icon/wrench.png" alt="" loading="lazy" />
                   <div>
                     <div class="ifs-t-name">{{ r.measure }}</div>
                     <div class="ifs-t-date">{{ r.date }}</div>
@@ -342,10 +217,7 @@
                   <span class="ifs-pill ifs-pill--sourcing">
                     <span class="ifs-dot" />Sourcing installers
                   </span>
-                  <span v-if="r.grant" class="ifs-pill ifs-pill--grant">
-                    <img src="/op-icons/congratulations/gift.png" alt="" class="ifs-pill-ic" loading="lazy" />
-                    {{ r.grant }}
-                  </span>
+                  <span v-if="r.grant" class="ifs-pill ifs-pill--grant"><img src="/homescore-icon/gift.png" alt="" loading="lazy" />{{ r.grant }}</span>
                 </div>
               </div>
             </div>
@@ -355,89 +227,67 @@
           <div v-else-if="state === 'market'" class="ifs-state">
             <div class="ifs-ea-hero">
               <div class="ifs-ea-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="9" cy="21" r="1" />
                   <circle cx="20" cy="21" r="1" />
-                  <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
               </div>
-              <h3>Marketplace - early access</h3>
-              <p>
-                We're building your local marketplace around real homeowner
-                demand. Join early access and we'll let you know as soon as
-                vetted professionals are available for
-                <b>{{ postcode || 'your area' }}</b>.
-              </p>
+              <h3>Marketplace — early access</h3>
+              <p>We're onboarding vetted local trades right now. Join early access and we'll open your marketplace the moment installers cover {{ postcode || 'your area' }}.</p>
             </div>
             <div class="ifs-promise">
               <div class="ifs-promise-row">
-                <div class="ifs-p-ic ifs-p-ic--svg">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2l8 3.5v5.3c0 4.9-3.4 9.4-8 10.7-4.6-1.3-8-5.8-8-10.7V5.5L12 2z" />
-                    <polyline points="9 12 11 14 15.5 9.5" />
-                  </svg>
+                <div class="ifs-p-ic">
+                  <img src="/homescore-icon/shield.png" alt="" loading="lazy" />
                 </div>
                 <div>
-                  <div class="ifs-p-title">UMU-verified professionals</div>
-                  <div class="ifs-p-sub">
-                    Identity, insurance and relevant accreditations checked
-                    before they appear.
-                  </div>
+                  <div class="ifs-p-title">UMU-verified suppliers</div>
+                  <div class="ifs-p-sub">ID, insurance and accreditation checked before they list.</div>
                 </div>
               </div>
               <div class="ifs-promise-row">
-                <div class="ifs-p-ic ifs-p-ic--img">
-                  <img src="/op-icons/onboarding/trustPadlock.png" alt="" loading="lazy" />
+                <div class="ifs-p-ic">
+                  <img src="/homescore-icon/trustPadlock.png" alt="" loading="lazy" />
                 </div>
                 <div>
-                  <div class="ifs-p-title">Protected payments</div>
-                  <div class="ifs-p-sub">
-                    Where available, payments can be held securely until work
-                    is signed off.
-                  </div>
+                  <div class="ifs-p-title">Payments in escrow</div>
+                  <div class="ifs-p-sub">Held via UProtect, released when work's signed off.</div>
                 </div>
               </div>
               <div class="ifs-promise-row">
-                <div class="ifs-p-ic ifs-p-ic--img">
-                  <img src="/op-icons/congratulations/gift.png" alt="" loading="lazy" />
+                <div class="ifs-p-ic">
+                  <img src="/homescore-icon/gift.png" alt="" loading="lazy" />
                 </div>
                 <div>
-                  <div class="ifs-p-title">Funding-aware matching</div>
-                  <div class="ifs-p-sub">
-                    We'll prioritise appropriately registered professionals
-                    where funded work requires it.
-                  </div>
+                  <div class="ifs-p-title">Grant-ready</div>
+                  <div class="ifs-p-sub">TrustMark & ECO4-registered trades for funded work.</div>
                 </div>
               </div>
             </div>
-            <button class="ifs-submit" @click="state = 'ea-form'">
-              Join early access
-            </button>
+            <button class="ifs-submit" @click="state = 'ea-form'">Join early access</button>
             <button class="ifs-back-link" @click="close">‹ Not now</button>
           </div>
 
           <!-- STATE: early-access form -->
           <div v-else-if="state === 'ea-form'" class="ifs-state">
             <div class="ifs-eyebrow">Early access</div>
-            <h3 id="ifs-sheet-title" class="ifs-title">
-              Help us build the right network for
-              {{ postcode || 'your area' }}
-            </h3>
-            <p class="ifs-lede">
-              Tell us which professionals matter most to you. We'll use local
-              demand to prioritise who we onboard first and let you know when
-              matching is available.
-            </p>
+            <h3 class="ifs-title">Get in the queue for {{ postcode || 'your area' }}</h3>
+            <p class="ifs-lede">We'll open your marketplace the moment vetted trades cover your postcode. Tell us what to prioritise.</p>
 
             <div class="ifs-prop-lock">
-              <img src="/op-icons/misc/addressPin.png" alt="" class="ifs-pl-ic" loading="lazy" />
+              <span class="ifs-pl-ic ifs-pl-ic--pin">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a7 7 0 017 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 017-7zm0 4.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" />
+                </svg>
+              </span>
               <div>
                 <div class="ifs-pl-label">Postcode area</div>
-                <div class="ifs-pl-val">{{ postcode || '-' }}</div>
+                <div class="ifs-pl-val">{{ postcode || '—' }}</div>
               </div>
             </div>
 
-            <div class="ifs-ea-q">Which professionals matter most to you?</div>
+            <div class="ifs-ea-q">Which trades matter most to you?</div>
             <div class="ifs-ea-chips">
               <button
                 v-for="c in interestChoices"
@@ -447,148 +297,75 @@
                 type="button"
                 @click="toggleInterest(c.value)"
               >
-                <img v-if="c.icon" :src="c.icon" alt="" class="ifs-ea-chip-ic" loading="lazy" />
-                <svg v-else-if="c.svg === 'wrench'" class="ifs-ea-chip-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                </svg>
-                {{ c.label }}
+                <img class="ifs-chip-ic" :src="c.icon" alt="" loading="lazy" />{{ c.label }}
               </button>
             </div>
 
-            <div class="ifs-ea-q">How should we contact you?</div>
-            <div class="ifs-contact-toggle">
-              <button
-                type="button"
-                class="ifs-contact-opt"
-                :class="{ on: contactMethod === 'email' }"
-                @click="contactMethod = 'email'"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="M2 7l10 6 10-6" />
-                </svg>
-                Email
-              </button>
-              <button
-                type="button"
-                class="ifs-contact-opt"
-                :class="{ on: contactMethod === 'mobile' }"
-                @click="contactMethod = 'mobile'"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="6" y="2" width="12" height="20" rx="2" />
-                  <line x1="11" y1="18" x2="13" y2="18" />
-                </svg>
-                Mobile
-              </button>
+            <div class="ifs-field">
+              <label>Your name</label>
+              <input v-model="eaName" type="text" placeholder="e.g. Maxine Wilson" />
             </div>
             <div class="ifs-field">
-              <input
-                v-model="eaContact"
-                :type="contactMethod === 'email' ? 'email' : 'tel'"
-                :placeholder="contactMethod === 'email' ? 'e.g. maxine.wilson@email.com' : 'e.g. 07700 900123'"
-               aria-label="contactMethod === 'email' ? 'e.g. maxine.wilson@email.com' : 'e.g. 07700 900123'" />
+              <label>Email or mobile</label>
+              <input v-model="eaContact" type="text" placeholder="We'll tell you when it opens" />
             </div>
 
-            <button class="ifs-submit" @click="submitEarly">
-              Join early access
-            </button>
-            <button class="ifs-back-link" @click="state = 'market'">
-              ‹ Back
-            </button>
+            <button class="ifs-submit" @click="submitEarly">Join early access</button>
+            <button class="ifs-back-link" @click="state = 'market'">‹ Back</button>
           </div>
 
           <!-- STATE: early-access confirm -->
           <div v-else-if="state === 'ea-confirm'" class="ifs-state">
             <div class="ifs-confirm">
-              <div class="ifs-tick ifs-tick--sparkly">
-                <svg class="ifs-tick-sparkle ifs-tick-sparkle--1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>
-                <svg class="ifs-tick-sparkle ifs-tick-sparkle--2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>
-                <svg class="ifs-tick-sparkle ifs-tick-sparkle--3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>
+              <div class="ifs-tick">
                 <span class="ifs-ring" />
-                <svg viewBox="0 0 24 24">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
               </div>
-              <h3>You're on the early access list!</h3>
+              <h3>You're on the early list</h3>
               <p>
-                We'll contact you as soon as suitable vetted professionals
-                are available for
+                We'll email you the moment vetted trades cover
                 <b>{{ postcode || 'your area' }}</b>.
-                <span v-if="interests.length"
-                  >We'll prioritise
-                  <b>{{ interests.join(', ').toLowerCase() }}</b> for your
-                  area.</span
-                >
+                <span v-if="interests.length">We'll prioritise <b>{{ interests.join(', ').toLowerCase() }}</b> for your area.</span>
               </p>
               <div class="ifs-passport">
-                <span class="ifs-passport-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                    <polyline points="16 7 22 7 22 13" />
-                  </svg>
-                </span>
-                <div>
-                  <div class="ifs-passport-title">Your request helps shape the marketplace</div>
-                  <p>
-                    The more demand we see for a trade in your area, the
-                    sooner we can prioritise onboarding suitable
-                    professionals.
-                  </p>
-                </div>
+                <img class="ifs-passport-ic" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
+                <p>Your interest helps us decide <b>which trades to onboard first</b> — the more demand in {{ postcode || 'your area' }}, the sooner it opens.</p>
               </div>
-              <button class="ifs-primary" @click="close">
-                Back to pathway
-              </button>
+              <button class="ifs-primary" @click="close">Back to pathway</button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
-    </Transition>
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useCaptureEvent } from '~/composables/useCaptureEvent'
 
 type Kind = 'insulation' | 'solarpv' | 'gas' | 'electrician' | 'epc' | 'other'
 type StateName =
-  | 'routes'
-  | 'elig'
-  | 'result'
-  | 'form'
-  | 'confirm'
-  | 'tracker'
-  | 'market'
-  | 'ea-form'
-  | 'ea-confirm'
+  | 'routes' | 'elig' | 'result' | 'form' | 'confirm'
+  | 'tracker' | 'market' | 'ea-form' | 'ea-confirm'
 
-const props = withDefaults(
-  defineProps<{
-    open: boolean
-    kind?: Kind
-    measureTitle?: string
-    propertyId?: string | null
-    postcode?: string | null
-    address?: string
-    initialState?: StateName
-    /** When true, this sheet only ever shows the grant-check flow (elig →
-     *  result → its "get matched" continuation) - there's no 'routes'
-     *  screen to fall back to, so back/start-over stay within that flow
-     *  instead of surfacing the generic measure/installer options. */
-    hideRoutes?: boolean
-  }>(),
-  {
-    kind: 'other',
-    measureTitle: '',
-    propertyId: null,
-    postcode: '',
-    address: '',
-    initialState: 'routes',
-    hideRoutes: false,
-  },
-)
+const props = withDefaults(defineProps<{
+  open: boolean
+  kind?: Kind
+  measureTitle?: string
+  propertyId?: string | null
+  postcode?: string | null
+  address?: string
+  initialState?: StateName
+}>(), {
+  kind: 'other',
+  measureTitle: '',
+  propertyId: null,
+  postcode: '',
+  address: '',
+  initialState: 'routes',
+})
 
 const emit = defineEmits<{
   (e: 'update:open', v: boolean): void
@@ -596,37 +373,12 @@ const emit = defineEmits<{
 }>()
 
 const state = ref<StateName>('routes')
-// Static per-state aria-label for the sheet's role="dialog" - safer than
-// aria-labelledby pointing at a heading inside the active v-if branch,
-// since several states (elig/result/confirm/market/ea-confirm) don't have
-// a heading with a stable id, which would leave the dialog with a
-// dangling IDREF and no accessible name in those states.
-const SHEET_STATE_TITLES: Record<StateName, string> = {
-  routes: '',
-  elig: 'Grant eligibility check',
-  result: '',
-  form: 'Line up installers',
-  confirm: "You're on the list",
-  tracker: 'Match requests',
-  market: 'Marketplace - early access',
-  'ea-form': 'Early access',
-  'ea-confirm': "You're on the early access list",
-}
-const sheetTitle = computed(() => {
-  if (state.value === 'routes') return trade.value.title
-  if (state.value === 'result') return grants.value.length ? 'You may qualify for funding' : 'Funding results'
-  return SHEET_STATE_TITLES[state.value]
-})
 const eligStep = ref(1)
-const answers = reactive<{
-  tenure?: string
-  benefits?: string
-  income?: string
-}>({})
+const answers = reactive<{ tenure?: string; benefits?: string; income?: string }>({})
 const formName = ref('')
 const formContact = ref('')
+const eaName = ref('')
 const eaContact = ref('')
-const contactMethod = ref<'email' | 'mobile'>('email')
 const interests = ref<string[]>([])
 
 // Match requests survive: (a) sheet close/reopen — the outer `v-if`
@@ -640,24 +392,6 @@ interface TrackedRequest {
   status: 'sourcing'
   grant: string | null
 }
-
-// Same measure-keyword → icon mapping as the pathway page's `iconForRec`
-// (the request's `measure` string is that page's mission title, passed
-// through as-is), so a tracked request shows the same icon the mission
-// card it came from used, instead of a generic wrench for everything.
-function iconForRequest(measure: string): string {
-  const t = (measure ?? '').toLowerCase()
-  if (/solar pv|photovoltaic/.test(t)) return '/op-icons/homescore/lightning.png'
-  if (/solar (?:water|thermal)/.test(t)) return '/op-icons/misc/sun.png'
-  if (/(loft|roof)/.test(t)) return '/op-icons/homescore/roof.png'
-  if (/(cavity|wall)/.test(t)) return '/op-icons/homescore/walls.png'
-  if (/floor/.test(t)) return '/op-icons/homescore/floor.png'
-  if (/(led|light)/.test(t)) return '/op-icons/homescore/bulb.png'
-  if (/(boiler|heat pump|heating)/.test(t)) return '/op-icons/homescore/flame.png'
-  if (/thermostat|controls/.test(t)) return '/op-icons/homescore/heatingControls.png'
-  if (/hot water|cylinder/.test(t)) return '/op-icons/homescore/tap.png'
-  return '/op-icons/misc/wrench.png'
-}
 const REQUESTS_LS_KEY = 'umu.installer.requests'
 const requests = useState<TrackedRequest[]>('installer-requests', () => [])
 onMounted(() => {
@@ -668,30 +402,12 @@ onMounted(() => {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) requests.value = parsed as TrackedRequest[]
     }
-  } catch {
-    /* corrupt LS is fine - leave empty */
-  }
+  } catch { /* corrupt LS is fine — leave empty */ }
 })
 function persistRequests() {
-  try {
-    localStorage.setItem(REQUESTS_LS_KEY, JSON.stringify(requests.value))
-  } catch {}
+  try { localStorage.setItem(REQUESTS_LS_KEY, JSON.stringify(requests.value)) } catch {}
 }
 
-// Whether the user has already joined marketplace early access — read by
-// the pathway page to swap "Join marketplace early access" for "Request
-// another professional" once they're already on the list. Same
-// useState+localStorage mirror pattern as `requests` above.
-const EARLY_ACCESS_LS_KEY = 'umu.installer.earlyAccessJoined'
-const earlyAccessJoined = useState<boolean>('installer-early-access-joined', () => false)
-onMounted(() => {
-  if (earlyAccessJoined.value) return
-  try {
-    earlyAccessJoined.value = localStorage.getItem(EARLY_ACCESS_LS_KEY) === '1'
-  } catch {
-    /* corrupt/inaccessible LS is fine - leave false */
-  }
-})
 
 const { send: sendCapture } = useCaptureEvent()
 
@@ -703,7 +419,7 @@ const TRADES = {
     code: 'insulation',
     accreditation: 'TrustMark',
     grant: true,
-    acc: '<b>Grant-funded work must use a TrustMark-registered installer.</b> Checking funding first keeps you eligible.',
+    acc: "<b>Grant-funded work must use a TrustMark-registered installer.</b> Checking funding first keeps you eligible.",
     self: {
       t: 'Search TrustMark yourself',
       s: 'Government-endorsed scheme. Opens TrustMark, filtered near you.',
@@ -773,7 +489,7 @@ const TRADES = {
     code: 'other',
     accreditation: 'UMU-verified',
     grant: true,
-    acc: '<b>Grant-funded work must use a TrustMark-registered installer.</b> Checking funding first keeps you eligible.',
+    acc: "<b>Grant-funded work must use a TrustMark-registered installer.</b> Checking funding first keeps you eligible.",
     self: {
       t: 'Search TrustMark yourself',
       s: 'Government-endorsed scheme. Opens TrustMark, filtered near you.',
@@ -790,20 +506,16 @@ const trade = computed(() => {
   return base
 })
 
-// Trade chips: an `icon` path renders the 3D illustration, an
-// `svg` string renders inline SVG (used for wrench — no 3D asset).
 const interestChoices = [
-  { value: 'Insulation',       label: 'Insulation',       icon: '/op-icons/homescore/walls.png' },
-  { value: 'Solar & battery',  label: 'Solar & battery',  icon: '/op-icons/homescore/lightning.png' },
-  { value: 'Heat pumps',       label: 'Heat pumps',       icon: '/op-icons/homescore/flame.png' },
-  { value: 'Windows & doors',  label: 'Windows & doors',  icon: '/op-icons/homescore/windows.png' },
-  { value: 'General trades',   label: 'General trades',   svg: 'wrench' },
+  { value: 'Insulation', label: 'Insulation', icon: '/homescore-icon/bricks.png' },
+  { value: 'Solar & battery', label: 'Solar & battery', icon: '/homescore-icon/lightning.png' },
+  { value: 'Heat pumps', label: 'Heat pumps', icon: '/homescore-icon/boiler.png' },
+  { value: 'Windows & doors', label: 'Windows & doors', icon: '/homescore-icon/windows.png' },
+  { value: 'General trades', label: 'General trades', icon: '/homescore-icon/wrench.png' },
 ]
 
 // --- eligibility engine (illustrative) ---
-const grants = ref<
-  Array<{ ic: string; name: string; desc: string; tag: string }>
->([])
+const grants = ref<Array<{ ic: string; name: string; desc: string; tag: string }>>([])
 let lastGrantContext: string | null = null
 
 function computeGrants() {
@@ -812,25 +524,10 @@ function computeGrants() {
   const eligibleTenure = tenure === 'own' || tenure === 'private'
   const g: typeof grants.value = []
   if (eligibleTenure && lowNeed) {
-    g.push({
-      ic: '/op-icons/homescore/houseSearch.png',
-      name: 'Warm Homes: Local Grant',
-      desc: 'Up to £15k for insulation & heating in low-EPC homes.',
-      tag: 'Likely',
-    })
-    g.push({
-      ic: '/op-icons/homescore/lightning.png',
-      name: 'ECO4',
-      desc: 'Supplier-funded upgrades for eligible households.',
-      tag: 'Likely',
-    })
+    g.push({ ic: '/homescore-icon/house.png', name: 'Warm Homes: Local Grant', desc: 'Up to £15k for insulation & heating in low-EPC homes.', tag: 'Likely' })
+    g.push({ ic: '/homescore-icon/lightning.png', name: 'ECO4', desc: 'Supplier-funded upgrades for eligible households.', tag: 'Likely' })
   } else if (eligibleTenure && income === 'high' && benefits === 'no') {
-    g.push({
-      ic: '/op-icons/homescore/houseSearch.png',
-      name: 'Great British Insulation Scheme',
-      desc: 'Not fully means-tested - Council Tax band & EPC based.',
-      tag: 'Possible',
-    })
+    g.push({ ic: '/homescore-icon/bricks.png', name: 'Great British Insulation Scheme', desc: 'Not fully means-tested — Council Tax band & EPC based.', tag: 'Possible' })
   }
   grants.value = g
   lastGrantContext = g.length ? g.map((x) => x.name).join(', ') : null
@@ -838,7 +535,7 @@ function computeGrants() {
 
 const grantLine = computed(() =>
   answers.tenure && (answers.benefits === 'yes' || answers.income === 'low')
-    ? " - and we'll factor in the grants you may qualify for"
+    ? " — and we'll factor in the grants you may qualify for"
     : '',
 )
 
@@ -851,24 +548,6 @@ function startElig() {
   state.value = 'elig'
 }
 
-// Grant-check-only entry (props.hideRoutes): there's no 'routes' screen to
-// return to, so "back" closes the sheet and "start over" restarts the quiz.
-function backFromElig() {
-  if (props.hideRoutes) close()
-  else state.value = 'routes'
-}
-function startOverFromResult() {
-  if (props.hideRoutes) startElig()
-  else state.value = 'routes'
-}
-function backFromForm() {
-  // In hideRoutes mode 'form' can only have been reached via the grant
-  // check's "Get matched with eligible installers" — go back to 'result',
-  // not the (hidden) generic routes screen.
-  if (props.hideRoutes) state.value = 'result'
-  else state.value = 'routes'
-}
-
 function answer(key: 'tenure' | 'benefits' | 'income', value: string) {
   answers[key] = value
   if (key === 'tenure') eligStep.value = 2
@@ -878,10 +557,7 @@ function answer(key: 'tenure' | 'benefits' | 'income', value: string) {
 
 function showResult() {
   computeGrants()
-  const flagged = grants.value.map((g) => ({
-    scheme: g.name,
-    likelihood: g.tag.toLowerCase(),
-  }))
+  const flagged = grants.value.map((g) => ({ scheme: g.name, likelihood: g.tag.toLowerCase() }))
   sendCapture({
     type: 'grant_check',
     source: 'pathway.grant_check',
@@ -899,9 +575,7 @@ function showResult() {
   state.value = 'result'
 }
 
-function goForm() {
-  state.value = 'form'
-}
+function goForm() { state.value = 'form' }
 
 function goConfirm() {
   sendCapture({
@@ -926,10 +600,9 @@ function goConfirm() {
       measure: trade.value.measure,
       date: 'Requested just now',
       status: 'sourcing',
-      grant:
-        answers.benefits === 'yes' || answers.income === 'low'
-          ? 'Grant check · likely'
-          : null,
+      grant: (answers.benefits === 'yes' || answers.income === 'low')
+        ? 'Grant check · likely'
+        : null,
     },
     ...requests.value,
   ]
@@ -938,9 +611,7 @@ function goConfirm() {
   state.value = 'confirm'
 }
 
-function afterConfirm() {
-  state.value = 'tracker'
-}
+function afterConfirm() { state.value = 'tracker' }
 
 function toggleInterest(v: string) {
   const i = interests.value.indexOf(v)
@@ -955,15 +626,12 @@ function submitEarly() {
     propertyId: null,
     postcode: props.postcode || null,
     contact: {
+      name: eaName.value || undefined,
       contact: eaContact.value || undefined,
       consentToContact: true,
     },
-    data: { interests: [...interests.value], contactMethod: contactMethod.value },
+    data: { interests: [...interests.value] },
   })
-  earlyAccessJoined.value = true
-  try {
-    localStorage.setItem(EARLY_ACCESS_LS_KEY, '1')
-  } catch {}
   state.value = 'ea-confirm'
 }
 
@@ -972,30 +640,21 @@ function close() {
   emit('close')
 }
 
-const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
-  onDismiss: close,
-  handleSelector: '.ifs-handle',
-  contentSelector: '.ifs-scroll',
-})
-
 // Reset to the caller's chosen initial state each time the sheet opens.
 // Without this the sheet would re-open on whichever state it last held,
 // which surprises the user (e.g. they closed on ea-confirm, tap "Find
 // installers" and land back on the confirm page).
-watch(
-  () => props.open,
-  (o) => {
-    if (o) {
-      state.value = props.initialState
-      // Only wipe form fields on a fresh routes open — reopening the
-      // tracker or market state shouldn't lose in-progress form input.
-      if (props.initialState === 'routes') {
-        formName.value = ''
-        formContact.value = ''
-      }
+watch(() => props.open, (o) => {
+  if (o) {
+    state.value = props.initialState
+    // Only wipe form fields on a fresh routes open — reopening the
+    // tracker or market state shouldn't lose in-progress form input.
+    if (props.initialState === 'routes') {
+      formName.value = ''
+      formContact.value = ''
     }
-  },
-)
+  }
+})
 </script>
 
 <style scoped>
@@ -1017,27 +676,9 @@ watch(
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  animation: ifs-fade 0.24s ease;
 }
-
-/* ── Enter/leave - Transition wrapper so the sheet slides down and the
-   scrim fades out on close instead of vanishing instantly. Symmetric
-   with the enter animation so open/close feel the same. ── */
-.ifs-enter-active,
-.ifs-leave-active {
-  transition: background-color 0.28s ease;
-}
-.ifs-enter-active .ifs-sheet,
-.ifs-leave-active .ifs-sheet {
-  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0.24, 1);
-}
-.ifs-enter-from,
-.ifs-leave-to {
-  background-color: transparent !important;
-}
-.ifs-enter-from .ifs-sheet,
-.ifs-leave-to .ifs-sheet {
-  transform: translateY(100%) !important;
-}
+@keyframes ifs-fade { from { opacity: 0 } to { opacity: 1 } }
 
 .ifs-sheet {
   width: 100%;
@@ -1045,24 +686,46 @@ watch(
   background: #fff;
   border-radius: 26px 26px 0 0;
   box-shadow: 0 -12px 40px rgba(35, 29, 69, 0.2);
-  /* dvh = dynamic viewport height, respects mobile browser chrome -
+  /* dvh = dynamic viewport height, respects mobile browser chrome —
      avoids the drawer being clipped below the address bar which is
      what vh reports on iOS Safari. */
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
+  animation: ifs-slide 0.34s cubic-bezier(.22, 1, .36, 1);
   font-family: inherit;
   color: #231d45;
   /* Leave room for the iOS home indicator inside the scrollable
-     content area - the sheet itself sits flush at the bottom. */
+     content area — the sheet itself sits flush at the bottom. */
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
+@keyframes ifs-slide { from { transform: translateY(100%) } to { transform: translateY(0) } }
+@keyframes ifs-dialog-in { from { transform: translateY(14px) scale(0.97); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
+
+/* ── Desktop: centred dialog instead of a phone bottom-sheet ──────── */
+@media (min-width: 768px) {
+  .ifs-overlay {
+    align-items: center;
+    padding: 32px;
+    backdrop-filter: blur(4px);
+  }
+  .ifs-sheet {
+    border-radius: 26px;
+    max-height: min(85dvh, 780px);
+    box-shadow: 0 32px 72px -20px rgba(35, 29, 69, 0.4),
+      0 12px 28px -12px rgba(35, 29, 69, 0.22);
+    animation: ifs-dialog-in 0.3s cubic-bezier(.22, 1, .36, 1);
+  }
+  .ifs-handle {
+    display: none;
+  }
+}
+
 .ifs-handle {
   width: 40px;
   height: 5px;
   border-radius: 3px;
   background: #dbd8e6;
-  touch-action: none;
   margin: 12px auto 4px;
   flex-shrink: 0;
 }
@@ -1070,13 +733,26 @@ watch(
   overflow-y: auto;
   padding: 6px 22px 30px;
   flex: 1;
+  /* A slim pill rather than no bar at all, so it stays visible that the
+     sheet scrolls. Matches PassportEcosystemDrawer. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(35, 29, 69, 0.22) transparent;
 }
-.ifs-scroll::-webkit-scrollbar {
-  display: none;
+.ifs-scroll::-webkit-scrollbar { width: 10px }
+.ifs-scroll::-webkit-scrollbar-track { background: transparent; margin: 12px 0 }
+.ifs-scroll::-webkit-scrollbar-thumb {
+  background: rgba(35, 29, 69, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.ifs-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 161, 154, 0.55);
+  background-clip: padding-box;
 }
 
 .ifs-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
   color: #00857f;
@@ -1084,14 +760,14 @@ watch(
   margin-bottom: 6px;
 }
 .ifs-title {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.2;
   color: #231d45;
 }
 .ifs-lede {
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   color: #6b6880;
   font-weight: 500;
   line-height: 1.55;
@@ -1107,31 +783,10 @@ watch(
   padding: 13px 14px;
   margin-top: 16px;
 }
-.ifs-acc-ic {
-  font-size: 1.125rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-/* Illustration inside the accreditation-notice icon slot. Slightly
-   larger than the emoji it replaces so the shield artwork reads
-   without being cramped. */
-.ifs-acc-img {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-  display: block;
-}
-.ifs-acc p {
-  font-size: 0.7813rem;
-  color: #4a3f6b;
-  font-weight: 500;
-  line-height: 1.5;
-}
-.ifs-acc :deep(b) {
-  color: #231d45;
-}
+.ifs-acc-ic { font-size: 18px; flex-shrink: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center }
+.ifs-acc-ic img { width: 100%; height: 100%; object-fit: contain }
+.ifs-acc p { font-size: 12.5px; color: #4a3f6b; font-weight: 500; line-height: 1.5 }
+.ifs-acc :deep(b) { color: #231d45 }
 
 .ifs-routes {
   display: flex;
@@ -1155,51 +810,23 @@ watch(
   color: inherit;
   transition: border-color 0.14s, box-shadow 0.14s, transform 0.12s;
 }
-.ifs-route:hover {
-  border-color: #00a19a;
-  box-shadow: 0 6px 18px rgba(0, 161, 154, 0.12);
-}
-.ifs-route:active {
-  transform: scale(0.99);
-}
+.ifs-route:hover { border-color: #00a19a; box-shadow: 0 6px 18px rgba(0, 161, 154, 0.12) }
+.ifs-route:active { transform: scale(0.99) }
 .ifs-r-ic {
-  width: 46px;
-  height: 46px;
+  width: 46px; height: 46px;
   border-radius: 13px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.375rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  overflow: hidden;
 }
-.ifs-route--grant .ifs-r-ic {
-  background: #e4f4ec;
-}
-.ifs-route--match .ifs-r-ic {
-  background: #e6f5f4;
-}
-.ifs-route--self .ifs-r-ic {
-  background: #fbf1e1;
-}
-/* When the icon slot holds a real illustration (not an emoji) drop
-   the pastel background - the artwork carries its own tile look. */
-.ifs-r-ic:has(.ifs-r-img) {
-  background: transparent;
-}
-.ifs-r-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.ifs-r-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
+.ifs-r-ic img { width: 100%; height: 100%; object-fit: contain }
+.ifs-route--grant .ifs-r-ic,
+.ifs-route--match .ifs-r-ic,
+.ifs-route--self  .ifs-r-ic { background: transparent }
+.ifs-r-body { flex: 1; min-width: 0; display: flex; flex-direction: column }
 .ifs-r-title {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.01em;
   display: inline-flex;
@@ -1208,38 +835,26 @@ watch(
   color: #231d45;
 }
 .ifs-badge {
-  font-size: 0.5938rem;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.05em;
   padding: 3px 7px;
   border-radius: 10px;
   text-transform: uppercase;
 }
-.ifs-badge--free {
-  background: #00a19a;
-  color: #fff;
-}
-.ifs-badge--money {
-  background: #2e9e6b;
-  color: #fff;
-}
+.ifs-badge--free  { background: #00a19a; color: #fff }
+.ifs-badge--money { background: #2e9e6b; color: #fff }
 .ifs-r-sub {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   color: #6b6880;
   font-weight: 500;
   margin-top: 3px;
   line-height: 1.45;
 }
-.ifs-r-arrow {
-  color: #bdb8cc;
-  font-size: 1.25rem;
-  flex-shrink: 0;
-}
-.ifs-route:hover .ifs-r-arrow {
-  color: #00726c;
-}
+.ifs-r-arrow { color: #bdb8cc; font-size: 20px; flex-shrink: 0 }
+.ifs-route:hover .ifs-r-arrow { color: #00a19a }
 .ifs-foot {
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   color: #9994ab;
   text-align: center;
   margin-top: 18px;
@@ -1248,44 +863,18 @@ watch(
 }
 
 /* eligibility */
-.ifs-progress {
-  display: flex;
-  gap: 6px;
-  margin: 16px 0 4px;
-}
-.ifs-progress span {
-  flex: 1;
-  height: 5px;
-  border-radius: 3px;
-  background: #e9e7f0;
-}
-.ifs-progress span.on {
-  background: #00a19a;
-}
-.ifs-q h4 {
-  font-size: 1.0625rem;
-  font-weight: 800;
-  margin-top: 18px;
-  letter-spacing: -0.01em;
-}
-.ifs-qhint {
-  font-size: 0.7813rem;
-  color: #6b6880;
-  font-weight: 500;
-  margin-top: 5px;
-}
-.ifs-opts {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
-}
+.ifs-progress { display: flex; gap: 6px; margin: 16px 0 4px }
+.ifs-progress span { flex: 1; height: 5px; border-radius: 3px; background: #e9e7f0 }
+.ifs-progress span.on { background: #00a19a }
+.ifs-q h4 { font-size: 17px; font-weight: 800; margin-top: 18px; letter-spacing: -0.01em }
+.ifs-qhint { font-size: 12.5px; color: #6b6880; font-weight: 500; margin-top: 5px }
+.ifs-opts { display: flex; flex-direction: column; gap: 10px; margin-top: 16px }
 .ifs-opt {
   border: 1.5px solid #e9e7f0;
   border-radius: 14px;
   padding: 15px 16px;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 700;
   color: #231d45;
   background: #fff;
@@ -1293,20 +882,15 @@ watch(
   text-align: left;
   transition: border-color 0.14s, background 0.14s;
 }
-.ifs-opt:hover {
-  border-color: #00a19a;
-  background: #fbfefe;
-}
-.ifs-opt:active {
-  transform: scale(0.99);
-}
+.ifs-opt:hover { border-color: #00a19a; background: #fbfefe }
+.ifs-opt:active { transform: scale(0.99) }
 .ifs-indicative {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: #fff7e8;
   color: #c18a38;
-  font-size: 0.6875rem;
+  font-size: 11px;
   font-weight: 800;
   padding: 5px 10px;
   border-radius: 20px;
@@ -1316,7 +900,7 @@ watch(
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   font-weight: 700;
   color: #6b6880;
   cursor: pointer;
@@ -1326,9 +910,7 @@ watch(
   gap: 6px;
   padding: 0;
 }
-.ifs-back-link:hover {
-  color: #231d45;
-}
+.ifs-back-link:hover { color: #231d45 }
 
 /* result */
 .ifs-result-hero {
@@ -1338,42 +920,17 @@ watch(
   color: #fff;
   margin-top: 6px;
 }
-.ifs-result-hero--none {
-  background: linear-gradient(135deg, #6b6880, #4a4760);
-}
-.ifs-rh-ic {
-  font-size: 1.875rem;
-}
-.ifs-rh-ic-img {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto;
-}
-.ifs-rh-ic-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.ifs-result-hero h3 {
-  color: #fff;
-  font-size: 1.25rem;
-  margin-top: 10px;
-  font-weight: 800;
-}
+.ifs-result-hero--none { background: linear-gradient(135deg, #6b6880, #4a4760) }
+.ifs-rh-ic { width: 44px; height: 44px; object-fit: contain }
+.ifs-result-hero h3 { color: #fff; font-size: 20px; margin-top: 10px; font-weight: 800 }
 .ifs-result-hero p {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   line-height: 1.5;
   margin-top: 6px;
 }
-.ifs-grant-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
-}
+.ifs-grant-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px }
 .ifs-grant-item {
   display: flex;
   gap: 12px;
@@ -1384,40 +941,19 @@ watch(
   padding: 13px 14px;
 }
 .ifs-gi-ic {
-  width: 38px;
-  height: 38px;
+  box-sizing: border-box;
+  width: 38px; height: 38px;
+  padding: 6px;
   border-radius: 11px;
   background: #e4f4ec;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-.ifs-gi-ic img {
-  width: 100%;
-  height: 100%;
   object-fit: contain;
-  display: block;
+  flex-shrink: 0;
 }
-.ifs-gi-body {
-  flex: 1;
-  min-width: 0;
-}
-.ifs-gi-name {
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: #231d45;
-}
-.ifs-gi-desc {
-  font-size: 0.7188rem;
-  color: #6b6880;
-  font-weight: 500;
-  margin-top: 2px;
-}
+.ifs-gi-body { flex: 1; min-width: 0 }
+.ifs-gi-name { font-size: 14px; font-weight: 800; color: #231d45 }
+.ifs-gi-desc { font-size: 11.5px; color: #6b6880; font-weight: 500; margin-top: 2px }
 .ifs-gi-tag {
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 800;
   color: #2e9e6b;
   background: #e4f4ec;
@@ -1442,26 +978,35 @@ watch(
   object-fit: contain;
   flex-shrink: 0;
 }
+.ifs-pl-ic--pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: #DC2626;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ifs-pl-ic--pin svg { width: 18px; height: 18px; }
 .ifs-pl-label {
-  font-size: 0.6563rem;
+  font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: #00857f;
   text-transform: uppercase;
 }
 .ifs-pl-val {
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   font-weight: 700;
   color: #231d45;
   margin-top: 1px;
 }
 
 /* form fields */
-.ifs-field {
-  margin-top: 14px;
-}
+.ifs-field { margin-top: 14px }
 .ifs-field label {
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   font-weight: 700;
   color: #231d45;
   display: block;
@@ -1473,20 +1018,13 @@ watch(
   border-radius: 13px;
   padding: 14px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 15px;
   font-weight: 600;
   color: #231d45;
   background: #fbfafe;
 }
-.ifs-field input:focus {
-  outline: none;
-  border-color: #00a19a;
-  background: #fff;
-}
-.ifs-field input::placeholder {
-  color: #b4afc4;
-  font-weight: 500;
-}
+.ifs-field input:focus { outline: none; border-color: #00a19a; background: #fff }
+.ifs-field input::placeholder { color: #b4afc4; font-weight: 500 }
 
 /* primary CTAs */
 .ifs-submit,
@@ -1497,45 +1035,29 @@ watch(
   border-radius: 15px;
   padding: 16px;
   font-family: inherit;
-  font-size: 0.9688rem;
+  font-size: 15.5px;
   font-weight: 800;
   cursor: pointer;
   margin-top: 20px;
 }
-.ifs-submit {
-  background: #00a19a;
-}
-.ifs-submit:hover {
-  background: #00857f;
-}
-.ifs-primary {
-  background: #231d45;
-  margin-top: 22px;
-}
+.ifs-submit { background: #00a19a }
+.ifs-submit:hover { background: #00857f }
+.ifs-primary { background: #231d45; margin-top: 22px }
 .ifs-submit:active,
-.ifs-primary:active {
-  transform: scale(0.99);
-}
+.ifs-primary:active { transform: scale(0.99) }
 
 /* confirm state */
-.ifs-confirm {
-  text-align: center;
-  padding: 16px 4px 8px;
-}
+.ifs-confirm { text-align: center; padding: 16px 4px 8px }
 .ifs-tick {
-  width: 76px;
-  height: 76px;
+  width: 76px; height: 76px;
   border-radius: 50%;
   background: #e6f5f4;
   margin: 6px auto 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   position: relative;
 }
 .ifs-tick svg {
-  width: 34px;
-  height: 34px;
+  width: 34px; height: 34px;
   stroke: #00a19a;
   stroke-width: 3;
   fill: none;
@@ -1543,11 +1065,7 @@ watch(
   stroke-dashoffset: 48;
   animation: ifs-draw 0.5s ease 0.15s forwards;
 }
-@keyframes ifs-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
+@keyframes ifs-draw { to { stroke-dashoffset: 0 } }
 .ifs-ring {
   position: absolute;
   inset: -6px;
@@ -1556,59 +1074,20 @@ watch(
   opacity: 0;
   animation: ifs-pulse 0.6s ease 0.1s;
 }
-.ifs-tick--sparkly {
-  overflow: visible;
-}
-.ifs-tick-sparkle {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  color: #7c6fb0;
-  opacity: 0.85;
-}
-.ifs-tick-sparkle--1 {
-  top: -10px;
-  left: -14px;
-  color: #00726c;
-}
-.ifs-tick-sparkle--2 {
-  bottom: -6px;
-  right: -18px;
-  width: 9px;
-  height: 9px;
-}
-.ifs-tick-sparkle--3 {
-  top: 8px;
-  right: -22px;
-  width: 7px;
-  height: 7px;
-  color: #00726c;
-}
 @keyframes ifs-pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(1.25);
-    opacity: 0;
-  }
+  0% { transform: scale(0.8); opacity: 0.6 }
+  100% { transform: scale(1.25); opacity: 0 }
 }
-.ifs-confirm h3 {
-  font-size: 1.3125rem;
-  font-weight: 800;
-}
+.ifs-confirm h3 { font-size: 21px; font-weight: 800 }
 .ifs-confirm p {
-  font-size: 0.8438rem;
+  font-size: 13.5px;
   color: #6b6880;
   font-weight: 500;
   line-height: 1.6;
   margin-top: 10px;
   padding: 0 6px;
 }
-.ifs-confirm p b {
-  color: #231d45;
-}
+.ifs-confirm p b { color: #231d45 }
 .ifs-passport {
   display: flex;
   gap: 11px;
@@ -1620,141 +1099,66 @@ watch(
   padding: 14px;
   margin-top: 20px;
 }
-.ifs-passport-ic {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: #EEE8FB;
-  color: #6B4E9F;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-.ifs-passport-ic svg { width: 18px; height: 18px; }
-.ifs-passport-ic img { width: 22px; height: 22px; object-fit: contain; display: block; }
+.ifs-passport-ic { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0 }
+.ifs-chip-ic { width: 16px; height: 16px; object-fit: contain; margin-right: 6px; vertical-align: -3px }
+.ifs-pill--grant img { width: 14px; height: 14px; object-fit: contain; margin-right: 4px; vertical-align: -2px }
 .ifs-passport p {
   margin: 0;
-  font-size: 0.7813rem;
+  font-size: 12.5px;
   color: #4a3f6b;
   line-height: 1.5;
   font-weight: 500;
 }
-.ifs-passport p b {
-  color: #231d45;
-}
-.ifs-passport-title {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: #231d45;
-  margin-bottom: 3px;
-}
+.ifs-passport p b { color: #231d45 }
 
 /* tracker */
-.ifs-track {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
+.ifs-track { display: flex; flex-direction: column; gap: 12px; margin-top: 16px }
 .ifs-track-item {
   border: 1.5px solid #e9e7f0;
   border-radius: 16px;
   padding: 15px;
 }
-.ifs-track-top {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
+.ifs-track-top { display: flex; gap: 12px; align-items: flex-start }
 .ifs-t-ic {
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
+  width: 42px; height: 42px;
+  padding: 7px;
+  border-radius: 12px;
+  background: #e6f5f4;
+  object-fit: contain;
   flex-shrink: 0;
 }
-.ifs-t-ic img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.ifs-t-name {
-  font-size: 0.9063rem;
-  font-weight: 800;
-  color: #231d45;
-}
-.ifs-t-date {
-  font-size: 0.7188rem;
-  color: #6b6880;
-  font-weight: 600;
-  margin-top: 2px;
-}
+.ifs-t-name { font-size: 14.5px; font-weight: 800; color: #231d45 }
+.ifs-t-date { font-size: 11.5px; color: #6b6880; font-weight: 600; margin-top: 2px }
 .ifs-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.7188rem;
+  font-size: 11.5px;
   font-weight: 800;
   padding: 5px 10px;
   border-radius: 20px;
   margin-top: 12px;
 }
-.ifs-pill-ic {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-.ifs-pill--sourcing {
-  background: #fff7e8;
-  color: #c18a38;
-}
-.ifs-pill--grant {
-  background: #f3effb;
-  color: #6a4fb5;
-  margin-left: 8px;
-}
+.ifs-pill--sourcing { background: #fff7e8; color: #c18a38 }
+.ifs-pill--grant { background: #f3effb; color: #6a4fb5; margin-left: 8px }
 .ifs-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  width: 7px; height: 7px; border-radius: 50%;
   background: currentColor;
 }
-.ifs-empty {
-  text-align: center;
-  padding: 30px 10px;
-}
-.ifs-empty-ic {
-  font-size: 2.5rem;
-  width: 48px;
-  height: 48px;
-  margin: 0 auto;
-}
-.ifs-empty-ic img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.ifs-empty h4 {
-  font-size: 1rem;
-  font-weight: 800;
-  margin-top: 12px;
-}
+.ifs-empty { text-align: center; padding: 30px 10px }
+.ifs-empty-ic { font-size: 40px; color: #9aa0b0; line-height: 0 }
+.ifs-empty-ic svg { width: 44px; height: 44px }
+.ifs-empty-ic img { width: 64px; height: 64px; object-fit: contain; display: inline-block }
+.ifs-empty h4 { font-size: 16px; font-weight: 800; margin-top: 12px }
 .ifs-empty p {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: #6b6880;
   font-weight: 500;
   margin-top: 6px;
   line-height: 1.5;
 }
-.ifs-empty p b {
-  color: #231d45;
-}
+.ifs-empty p b { color: #231d45 }
 
 /* early access */
 .ifs-ea-hero {
@@ -1765,160 +1169,50 @@ watch(
   text-align: center;
   margin-top: 4px;
 }
-.ifs-ea-ic {
-  font-size: 2.25rem;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.ifs-ea-ic svg { width: 46px; height: 46px; }
-.ifs-ea-hero h3 {
-  color: #fff;
-  font-size: 1.3125rem;
-  margin-top: 12px;
-  font-weight: 800;
-}
+.ifs-ea-ic { font-size: 36px; color: #fff; line-height: 0 }
+.ifs-ea-ic svg { width: 40px; height: 40px }
+.ifs-ea-hero h3 { color: #fff; font-size: 21px; margin-top: 12px; font-weight: 800 }
 .ifs-ea-hero p {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
   line-height: 1.55;
   margin-top: 8px;
 }
-.ifs-promise {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
-}
-.ifs-promise-row {
-  display: flex;
-  gap: 13px;
-  align-items: center;
-}
+.ifs-promise { display: flex; flex-direction: column; gap: 12px; margin-top: 20px }
+.ifs-promise-row { display: flex; gap: 13px; align-items: center }
 .ifs-p-ic {
-  width: 42px;
-  height: 42px;
+  width: 42px; height: 42px;
   border-radius: 12px;
   background: #e4f4ec;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
+  color: #0f766e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
   flex-shrink: 0;
 }
-.ifs-p-ic--img {
-  background: transparent;
-}
-.ifs-p-ic--img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.ifs-p-ic--svg {
-  background: #DCFCE7;
-  color: #059669;
-}
-.ifs-p-ic--svg svg {
-  width: 22px;
-  height: 22px;
-}
-.ifs-p-title {
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: #231d45;
-}
-.ifs-p-sub {
-  font-size: 0.75rem;
-  color: #6b6880;
-  font-weight: 500;
-  margin-top: 2px;
-}
-.ifs-ea-q {
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: #231d45;
-  margin-top: 20px;
-}
-.ifs-ea-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 12px;
-}
+.ifs-p-ic svg { width: 22px; height: 22px }
+.ifs-p-ic img { width: 28px; height: 28px; object-fit: contain; display: block }
+.ifs-p-title { font-size: 14px; font-weight: 800; color: #231d45 }
+.ifs-p-sub { font-size: 12px; color: #6b6880; font-weight: 500; margin-top: 2px }
+.ifs-ea-q { font-size: 14px; font-weight: 800; color: #231d45; margin-top: 20px }
+.ifs-ea-chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px }
 .ifs-ea-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   border: 1.5px solid #e9e7f0;
   background: #fff;
   border-radius: 22px;
-  padding: 8px 14px 8px 10px;
+  padding: 10px 14px;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 700;
   color: #231d45;
   cursor: pointer;
   transition: all 0.14s;
 }
-.ifs-ea-chip-ic {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-.ifs-ea-chip-svg {
-  width: 18px;
-  height: 18px;
-  color: #00817C;
-  flex-shrink: 0;
-}
-.ifs-ea-chip.on .ifs-ea-chip-svg { color: #fff; }
-.ifs-ea-chip:hover {
-  border-color: #00a19a;
-}
+.ifs-ea-chip:hover { border-color: #00a19a }
 .ifs-ea-chip.on {
   background: #00a19a;
   border-color: #00a19a;
   color: #fff;
 }
-.ifs-ea-chip:active {
-  transform: scale(0.97);
-}
-.ifs-contact-toggle {
-  display: flex;
-  margin-top: 12px;
-  background: #f4f2fa;
-  border-radius: 12px;
-  padding: 4px;
-  gap: 4px;
-}
-.ifs-contact-opt {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px;
-  border: none;
-  border-radius: 9px;
-  background: transparent;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: #6b6880;
-  cursor: pointer;
-  transition: all 0.14s;
-}
-.ifs-contact-opt svg {
-  width: 15px;
-  height: 15px;
-}
-.ifs-contact-opt.on {
-  background: #fff;
-  color: #231d45;
-  box-shadow: 0 2px 6px rgba(35, 29, 69, 0.1);
-}
+.ifs-ea-chip:active { transform: scale(0.97) }
 </style>

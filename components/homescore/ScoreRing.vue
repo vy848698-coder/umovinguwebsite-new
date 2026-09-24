@@ -1,45 +1,32 @@
 <template>
-  <div
-    class="hs-ring-wrap"
-    role="img"
-    :aria-label="`Home Score: ${score} out of 100. Rating: ${rating}.`"
-  >
-    <svg viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
-      <defs>
-        <linearGradient id="hsRingGrad" x1="1" y1="0" x2="0" y2="0">
-          <stop offset="0%" stop-color="#00BB93" />
-          <stop offset="100%" stop-color="#016F84" />
-        </linearGradient>
-      </defs>
-      <!-- Track — full circle, top-start (12 o'clock), clockwise, matching
-           every other HomeScore ring in the app (this one previously used
-           a 270°-arc "speedometer" style, the one outlier). -->
-      <circle cx="100" cy="100" r="80" fill="none" stroke="#EDEDF3" stroke-width="18" transform="rotate(-90 100 100)" />
+  <div class="hs-ring-wrap">
+    <svg viewBox="0 0 200 200" width="200" height="200">
+      <!-- Track -->
+      <circle cx="100" cy="100" r="82" fill="none" stroke="#e7e4dc" stroke-width="13" />
       <!-- Progress -->
       <circle
-        cx="100" cy="100" r="80" fill="none"
-        stroke="url(#hsRingGrad)"
-        stroke-width="18"
-        stroke-dasharray="502.65"
-        :stroke-dashoffset="502.65 - (displayScore / 100) * 502.65"
+        cx="100" cy="100" r="82" fill="none"
+        :stroke="ratingColor"
+        stroke-width="13"
+        :stroke-dasharray="`${progressArc} ${circumference}`"
         stroke-linecap="round"
         transform="rotate(-90 100 100)"
-        style="transition: stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
+        style="transition: stroke-dasharray 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
       />
       <!-- Score -->
-      <text x="100" y="90" text-anchor="middle" :font-size="score >= 100 ? 38 : 46" font-weight="800" fill="#0a0f2c" font-family="sans-serif">
+      <text x="100" y="96" text-anchor="middle" :font-size="score >= 100 ? 46 : 58" font-weight="800" :fill="scoreColor" font-family="'Plus Jakarta Sans', sans-serif" letter-spacing="-2">
         {{ displayScore }}
       </text>
-      <text x="100" y="115" text-anchor="middle" font-size="15" fill="#8e8e93" font-family="sans-serif" font-weight="500">
+      <text x="100" y="126" text-anchor="middle" font-size="16" fill="#6b7280" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500">
         {{ rating }}
       </text>
     </svg>
-    <p class="hs-ring-label" aria-hidden="true">out of 100</p>
+    <p class="hs-ring-label">out of 100</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const props = defineProps<{
   score: number
@@ -47,7 +34,21 @@ const props = defineProps<{
   ratingColor: string
 }>()
 
+const circumference = 2 * Math.PI * 82 // ≈ 515.22
+
 const displayScore = ref(0)
+const progressArc = computed(() => (displayScore.value / 100) * circumference)
+
+// Darker shade of the rating colour for the big number, to match the design.
+const scoreColor = computed(() => {
+  const c = props.ratingColor
+  if (!/^#[0-9a-f]{6}$/i.test(c)) return c
+  const f = 0.62 // mix toward black
+  const r = Math.round(parseInt(c.slice(1, 3), 16) * f)
+  const g = Math.round(parseInt(c.slice(3, 5), 16) * f)
+  const b = Math.round(parseInt(c.slice(5, 7), 16) * f)
+  return `rgb(${r}, ${g}, ${b})`
+})
 
 onMounted(() => {
   setTimeout(() => {
@@ -73,8 +74,10 @@ onMounted(() => {
   align-items: center;
 }
 .hs-ring-label {
-  font-size: 0.75rem;
-  color: #aeaeb2;
-  margin-top: -8px;
+  font-size: 12px;
+  color: #b0b0bc;
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
 }
 </style>

@@ -26,7 +26,7 @@
           </div>
         </template>
         <div v-else class="uprn-empty">
-          UPRN and title number are still being confirmed — we'll add them
+          UPRN and title number are still being confirmed. We'll add them
           once the property has been through Land Registry lookup.
         </div>
       </div>

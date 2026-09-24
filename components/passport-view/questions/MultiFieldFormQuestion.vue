@@ -54,7 +54,7 @@
             :key="field.key"
             class="form-field"
           >
-            <label class="field-label">{{ field.label }}</label>
+            <label class="field-label" :for="`mff-${formIndex}-${field.key}`">{{ field.label }}</label>
             <input
               :value="getFieldValue(formIndex, field.key)"
               type="text"
@@ -63,6 +63,7 @@
               @input="
                 updateFieldValue(formIndex, field.key, $event.target.value)
               "
+            :id="`mff-${formIndex}-${field.key}`"
             />
           </div>
         </div>

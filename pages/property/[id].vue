@@ -366,8 +366,15 @@
         >
           <div class="pps-score-main">
             <div class="pps-score-top">
-              <div class="pps-gauge-wrap">
-                <svg class="pps-gauge-svg" viewBox="0 0 100 100">
+              <!-- The score only exists as a drawn arc plus two spans, so
+                   without this it reads out as a bare "55 /100" with no clue
+                   what was scored. -->
+              <div
+                class="pps-gauge-wrap"
+                role="img"
+                :aria-label="`HomeScore: ${homescore} out of 100. Rating: ${scoreVerdict}.`"
+              >
+                <svg class="pps-gauge-svg" viewBox="0 0 100 100" aria-hidden="true">
                   <circle class="pps-gauge-bg" cx="50" cy="50" r="40" />
                   <circle
                     class="pps-gauge-fill"
@@ -5064,6 +5071,33 @@ async function onWatchDrawerSubmit(prefs: Record<string, boolean>) {
       },
     )
     if (!res.ok) throw new Error('save-failed')
+    // register-interest only writes the buyer-profile interest row. The
+    // watcher count on the passport card counts PropertyWatch rows, which is
+    // a separate table behind POST /property/:id/watch - so without this the
+    // card could never show "1 person watching" no matter how many people
+    // used this drawer. Best-effort: the interest above is already saved, so
+    // a failure here (or a signed-out viewer, who has no row to create) must
+    // not turn the whole submit into an error toast.
+    if (token) {
+      try {
+        await fetch(`${config.public.apiBase}/property/${propertyId}/watch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          // Same body the HomeScore costs page sends - the toggle map is
+          // what the backend stores as the watch's notification prefs.
+          body: JSON.stringify(prefs),
+        })
+        // Re-read the property so watcherCount reflects the row just created
+        // instead of staying stale until the next full page load.
+        const fresh = await getPropertyDetails(propertyId)
+        if (fresh) property.value = fresh
+      } catch {
+        // Non-fatal - see above.
+      }
+    }
     watchDrawerOpen.value = false
     showToast({ message: "Saved to your buyer profile — we'll keep you posted", iconEmoji: '🔔' })
   } catch {

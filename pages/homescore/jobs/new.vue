@@ -98,7 +98,6 @@
 </template>
 
 <script setup lang="ts">
-useHead({ bodyAttrs: { class: 'hs-parity' } })
 import { ref } from 'vue'
 
 const router = useRouter()

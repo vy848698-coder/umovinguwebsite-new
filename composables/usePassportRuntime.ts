@@ -43,7 +43,10 @@ const loadPassport = async (passportId) => {
         tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
       return {
         ...section,
-        icon: section.imageKey || section.key,
+        // Section keys are the illustrated OPIcon names (see the backend seed).
+        // imageKey is the old generic art - Ownership Profile's is
+        // "instructions", the tan book - so the key wins when present.
+        icon: section.key || section.imageKey,
         progress,
         tasks,
       }

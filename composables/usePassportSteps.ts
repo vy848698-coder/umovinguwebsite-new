@@ -226,7 +226,7 @@ export const usePassportSteps = () => {
                 'Please state the capacity in which you are providing the information.',
               points: 100,
               type: 'radio',
-              help: 'Select the option that applies - either as the seller or in a specific legal capacity.',
+              help: 'Select the option that applies, either as the seller or in a specific legal capacity.',
               options: [
                 {
                   label: 'Will / Grant of Probate',
@@ -236,7 +236,7 @@ export const usePassportSteps = () => {
                 { label: 'Representative', value: 'representative' },
                 { label: 'Power of Attorney', value: 'power_of_attorney' },
                 { label: 'Limited Company', value: 'limited_company' },
-                { label: 'No - I am the seller', value: 'no_seller' },
+                { label: 'No, I am the seller', value: 'no_seller' },
               ],
               answer: '',
               completed: false,
@@ -342,9 +342,9 @@ export const usePassportSteps = () => {
               help: 'Provide the asking price in pounds.',
               options: [
                 { label: 'Under £250,000', value: 'under_250k' },
-                { label: '£250,000 - £500,000', value: '250k_500k' },
-                { label: '£500,000 - £750,000', value: '500k_750k' },
-                { label: '£750,000 - £1,000,000', value: '750k_1m' },
+                { label: '£250,000 to £500,000', value: '250k_500k' },
+                { label: '£500,000 to £750,000', value: '500k_750k' },
+                { label: '£750,000 to £1,000,000', value: '750k_1m' },
                 { label: 'Over £1,000,000', value: 'over_1m' },
               ],
               answer: '',
@@ -698,7 +698,7 @@ export const usePassportSteps = () => {
               description: 'If yes, please give details below',
               points: 100,
               type: 'radio',
-              help: 'Boundaries are irregular if they are not a straight line – for example, if they curve, bend, or follow unusual shapes.',
+              help: 'Boundaries are irregular if they are not a straight line, for example if they curve, bend, or follow unusual shapes.',
               options: [
                 { label: 'Yes', value: 'yes' },
                 { label: 'No', value: 'no' },

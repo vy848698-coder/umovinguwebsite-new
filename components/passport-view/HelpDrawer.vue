@@ -2,7 +2,14 @@
   <Teleport to="body">
     <Transition name="drawer">
       <div v-if="show" class="help-drawer-overlay" @click.self="$emit('close')">
-        <div class="help-drawer">
+        <div
+          class="help-drawer"
+          :style="dragStyle"
+          @touchstart.passive="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+          @touchcancel="onTouchEnd"
+        >
           <!-- Handle -->
           <div class="help-drawer-handle" />
 
@@ -118,7 +125,14 @@ const props = withDefaults(
   { content: null },
 )
 
-defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: [] }>()
+
+// Drag the sheet down by its handle or header to dismiss, as in the app.
+const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
+  onDismiss: () => emit('close'),
+  handleSelector: '.help-drawer-handle, .help-drawer-header',
+  contentSelector: '.help-drawer-body',
+})
 
 const guidanceText = computed(() => {
   if (!props.content) return null
@@ -357,4 +371,24 @@ const blocks = computed((): Block[] => {
 .drawer-leave-to { opacity: 0; }
 .drawer-enter-from .help-drawer,
 .drawer-leave-to .help-drawer { transform: translateY(100%); }
+
+/* ── Desktop / tablet: centred dialog instead of a bottom sheet ────────────── */
+@media (min-width: 640px) {
+  .help-drawer-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .help-drawer {
+    width: min(720px, 100%);
+    max-height: min(80vh, 760px);
+    border-radius: 20px;
+    box-shadow: 0 24px 64px -16px rgba(20, 16, 50, 0.45);
+  }
+  .help-drawer-handle { display: none; }
+  .help-drawer-header { padding: 16px 24px; }
+  .help-drawer-body { padding: 22px 24px 24px; }
+  .drawer-enter-from .help-drawer,
+  .drawer-leave-to .help-drawer { transform: translateY(16px) scale(0.97); }
+}
 </style>
