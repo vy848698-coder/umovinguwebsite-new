@@ -8,12 +8,14 @@
       Back
     </button>
 
-    <h1 class="otp-title">Check your email</h1>
+    <h1 class="otp-title">Enter your code</h1>
     <p class="otp-subtitle">
-      We sent a 6-digit verification code to
-      <template v-if="email"><br /><strong class="otp-email">{{ email }}</strong></template>
-      <template v-else>your email</template>
+      Enter the 6-digit verification code sent to your email address.
     </p>
+    <div v-if="email" class="otp-email-row">
+      <span class="otp-email">{{ email }}</span>
+      <button type="button" class="otp-edit-email" @click="goBack">Edit email</button>
+    </div>
 
     <!-- Code Input -->
     <div class="otp-fields">
@@ -51,6 +53,7 @@
       </button>
       <span v-else class="otp-resend-timer">{{ resendText }}</span>
     </div>
+    <p class="otp-spam-note">Check your spam or junk folder too.</p>
   </div>
 </template>
 
@@ -119,11 +122,31 @@ const {
   font-weight: 500;
   color: #6b6783;
   line-height: 1.6;
+  margin: 0 0 20px;
+}
+.otp-email-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 40px;
 }
 .otp-email {
   font-weight: 700;
   color: #231d45;
+  font-size: 15px;
+}
+.otp-edit-email {
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #00a19a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.otp-edit-email:hover {
+  color: #00857f;
 }
 
 /* Fields */
@@ -194,5 +217,13 @@ const {
 }
 .otp-resend-btn:hover {
   color: #00857f;
+}
+
+.otp-spam-note {
+  text-align: center;
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #9c98ad;
 }
 </style>

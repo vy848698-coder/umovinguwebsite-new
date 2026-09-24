@@ -1,18 +1,13 @@
 ﻿<template>
   <div class="signin-split">
-    <!-- ── Left brand panel (dark) ── -->
+    <!-- ── Left brand panel (light) ── -->
     <aside class="signin-aside">
       <div class="signin-aside-top">
         <div class="signin-logo">
-          <span class="signin-logo-mark"><img src="/op-icons/logo.svg" alt="umu" /></span>
+          <span class="signin-logo-mark"><img src="/op-icons/logo.png" alt="umu" /></span>
           <strong>umovingu</strong>
         </div>
-        <button class="signin-website-btn" type="button" @click="navigateTo('/')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
-          </svg>
-          Back to website
-        </button>
+        <p class="signin-tagline">You own the home. Own its story.</p>
       </div>
 
       <div class="signin-aside-body">
@@ -576,16 +571,16 @@ const onPrimary = () => {
   color: #231d45;
 }
 
-/* ── Left brand panel ── */
+/* ── Left brand panel (light) ── */
 .signin-aside {
   position: relative;
   display: flex;
   flex-direction: column;
   padding: 40px 48px;
-  color: #fff;
+  color: #231d45;
   background:
-    radial-gradient(circle at 90% 95%, rgba(0, 161, 154, 0.22) 0%, rgba(0, 161, 154, 0) 42%),
-    linear-gradient(165deg, #2c2456 0%, #231d45 55%, #1a1535 100%);
+    radial-gradient(circle at 90% 95%, rgba(0, 161, 154, 0.08) 0%, rgba(0, 161, 154, 0) 42%),
+    #fbfbf9;
   overflow: hidden;
 }
 
@@ -594,6 +589,7 @@ const onPrimary = () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 64px;
+  gap: 16px;
 }
 
 .signin-logo {
@@ -605,43 +601,30 @@ const onPrimary = () => {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 2px solid #2fd0c6;
-  background: rgba(0, 161, 154, 0.12);
-  box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.12);
+  border: 2px solid #00a19a;
+  background: rgba(0, 161, 154, 0.08);
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
 .signin-logo-mark :deep(img),
 .signin-logo-mark :deep(svg),
 .signin-logo-mark img,
-.signin-logo-mark svg { width: 23px; height: auto; display: block; }
+.signin-logo-mark svg { width: 30px; height: auto; display: block; }
 .signin-logo strong {
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.3px;
-  color: #fff;
+  color: #231d45;
 }
-
-.signin-website-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.85);
+.signin-tagline {
+  margin: 0;
   font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.18s, border-color 0.18s;
+  font-weight: 600;
+  color: #9490a3;
+  text-align: right;
+  white-space: nowrap;
 }
-.signin-website-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.24);
-}
-.signin-website-btn svg { width: 15px; height: 15px; }
 
 .signin-aside-body {
   flex: 1;
@@ -657,17 +640,17 @@ const onPrimary = () => {
   font-weight: 800;
   line-height: 1.02;
   letter-spacing: -2px;
-  color: #fff;
+  color: #231d45;
 }
 .signin-welcome-sub {
   margin: 20px 0 0;
   font-size: 16px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.62);
+  color: #6b6783;
   max-width: 34ch;
 }
 
-/* Dark home card */
+/* Light home card */
 .signin-home-card {
   display: flex;
   align-items: center;
@@ -675,15 +658,16 @@ const onPrimary = () => {
   margin-top: 40px;
   padding: 18px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fff;
+  border: 1px solid #ece9f5;
+  box-shadow: 0 10px 22px rgba(35, 29, 69, 0.06);
 }
 .signin-home-thumb {
   flex-shrink: 0;
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: #fff;
+  background: #f4fbfa;
   color: #231d45;
   display: grid;
   place-items: center;
@@ -696,14 +680,14 @@ const onPrimary = () => {
   font-weight: 800;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: #a39fb2;
   margin-bottom: 4px;
 }
 .signin-home-addr {
   display: block;
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: #231d45;
   margin-bottom: 8px;
 }
 .signin-home-tags { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -714,14 +698,14 @@ const onPrimary = () => {
   border-radius: 7px;
 }
 .signin-home-tag--score {
-  background: rgba(0, 161, 154, 0.2);
-  color: #2fd0c6;
-  border: 1px solid rgba(0, 161, 154, 0.4);
+  background: rgba(0, 161, 154, 0.12);
+  color: #00857f;
+  border: 1px solid rgba(0, 161, 154, 0.32);
 }
 .signin-home-tag--passport {
-  background: rgba(217, 154, 43, 0.16);
-  color: #e0a93f;
-  border: 1px solid rgba(217, 154, 43, 0.4);
+  background: rgba(224, 164, 58, 0.16);
+  color: #c98a1e;
+  border: 1px solid rgba(224, 164, 58, 0.4);
 }
 
 .signin-aside-foot {
@@ -731,7 +715,7 @@ const onPrimary = () => {
   margin: 56px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: #9490a3;
 }
 .signin-aside-foot svg { width: 15px; height: 15px; flex-shrink: 0; }
 
@@ -889,6 +873,7 @@ const onPrimary = () => {
   .signin-split { grid-template-columns: 1fr; }
   .signin-aside { padding: 28px 28px 36px; }
   .signin-aside-top { margin-bottom: 36px; }
+  .signin-tagline { display: none; }
   .signin-aside-body { justify-content: flex-start; }
   .signin-welcome { font-size: clamp(38px, 11vw, 52px); }
   .signin-home-card { margin-top: 28px; }
