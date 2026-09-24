@@ -594,8 +594,10 @@ const onPrimary = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   max-width: 440px;
+  text-align: center;
 }
 
 .signin-welcome {
@@ -607,7 +609,7 @@ const onPrimary = () => {
   color: #231d45;
 }
 .signin-welcome-sub {
-  margin: 20px 0 0;
+  margin: 20px auto 0;
   font-size: 16px;
   line-height: 1.6;
   color: #6b6783;
@@ -621,7 +623,7 @@ const onPrimary = () => {
   max-width: 260px;
   height: auto;
   display: block;
-  margin: 32px 0 0;
+  margin: 32px auto 0;
   object-fit: contain;
 }
 
