@@ -248,7 +248,7 @@
         >
           <OPIcon name="tabVault" class="pp-subtab-ic" />
           Vault
-          <span v-if="vaultStoredCount" class="pp-subtab-badge">{{ vaultStoredCount }}</span>
+          <span v-if="vaultDocCount" class="pp-subtab-badge">{{ vaultDocCount }}</span>
         </button>
         <button
           :class="['pp-subtab', activeTab === 'timeline' ? 'active' : '']"
@@ -555,80 +555,78 @@
         <div style="height: 80px" />
       </div>
 
-      <!-- Vault tab — verified documents + per-section visibility -->
+      <!-- Vault tab — documents with per-document access levels -->
       <div v-if="activeTab === 'vault'" class="pp-tab-content">
         <div v-if="vaultLoading" class="pp-empty">
           <div class="pp-empty-ic"><Icon name="i-lucide-archive" /></div>
           <p>Loading your vault…</p>
         </div>
 
-        <template v-else-if="vaultSections.length === 0">
+        <template v-else-if="!vaultHomeRecords.length && !vaultPersonalDocs.length">
           <div class="pp-empty">
             <div class="pp-empty-ic"><Icon name="i-lucide-archive" /></div>
             <p>Your vault is empty</p>
             <p style="font-size: 11.5px; margin-top: 6px; color: #94a3b8">
               As you complete sections, the verified documents are stored here —
-              and you choose which are private and which publish with your
-              passport.
+              and you choose who can see each one.
             </p>
           </div>
         </template>
 
         <template v-else>
           <div class="vault-legend">
-            <div class="vault-legend-t">Private or public?</div>
-            <div class="vault-legend-row">
-              <span class="vault-legend-ico private"><img src="/passport-seller-and-buyer-icon/padlock.png" alt="" loading="lazy" /></span>
-              <div>
-                <b>Private</b> — only you. Kept out of the passport when you
-                publish — for personal documents you're not required to
-                disclose.
-              </div>
-            </div>
-            <div class="vault-legend-row">
-              <span class="vault-legend-ico public"><img src="/passport-seller-and-buyer-icon/globe.png" alt="" loading="lazy" /></span>
-              <div>
-                <b>Public</b> — published with your passport. Visible to
-                everyone once you publish (it doesn't go to anyone before
-                then).
-              </div>
-            </div>
+            <div class="vault-legend-t">Your documents, your choice</div>
+            <p class="vault-legend-body">
+              Keep documents private in your Vault, share them with selected
+              people, or choose which ones to include when you share or
+              publish your Property Passport. We'll show you exactly who can
+              see each document before you share it.
+            </p>
           </div>
 
           <div class="vault-count">
-            {{ vaultStoredCount }} section{{ vaultStoredCount === 1 ? '' : 's' }} stored
+            {{ vaultDocCount }} document{{ vaultDocCount === 1 ? '' : 's' }} stored
           </div>
 
-          <div
-            v-for="s in completedVaultSections"
-            :key="s.id"
-            class="vault-row"
-            :class="(s.visibility || 'PUBLIC').toLowerCase()"
-          >
-            <div class="vault-ico">{{ sectionIcon(s.key, s.imageKey) }}</div>
-            <div class="vault-info">
-              <div class="vault-name">{{ s.title }}</div>
-              <div class="vault-vis-meta">
-                {{
-                  s.visibility === 'PRIVATE'
-                    ? 'Verified · Private — only you. Not included when you publish.'
-                    : 'Verified · Public — published with your passport when you go live.'
-                }}
+          <template v-if="vaultHomeRecords.length">
+            <div class="vault-group-h">Home records</div>
+            <div
+              v-for="d in vaultHomeRecords"
+              :key="d.id"
+              class="vault-doc-row"
+              @click="openDocAccess(d)"
+            >
+              <div class="vault-doc-ic"><Icon name="i-lucide-file-text" /></div>
+              <div class="vault-doc-info">
+                <div class="vault-doc-name">{{ d.title }}</div>
+                <div class="vault-doc-meta">Added {{ d.uploadedAt }}</div>
               </div>
+              <span class="vault-doc-badge" :class="accessBadgeClass(d.accessLevel)">
+                {{ accessBadgeLabel(d) }}
+              </span>
+              <Icon name="i-lucide-chevron-right" class="vault-doc-chevron" />
             </div>
-            <div class="vis-seg">
-              <span
-                class="vis-opt private"
-                :class="{ on: s.visibility === 'PRIVATE' }"
-                @click="setVisibility(s, 'PRIVATE')"
-              ><Icon name="i-lucide-lock" /> Private</span>
-              <span
-                class="vis-opt public"
-                :class="{ on: s.visibility !== 'PRIVATE' }"
-                @click="setVisibility(s, 'PUBLIC')"
-              ><Icon name="i-lucide-globe" /> Public</span>
+          </template>
+
+          <template v-if="vaultPersonalDocs.length">
+            <div class="vault-group-h">Personal documents</div>
+            <div
+              v-for="d in vaultPersonalDocs"
+              :key="d.id"
+              class="vault-doc-row"
+              @click="openDocAccess(d)"
+            >
+              <div class="vault-doc-ic"><Icon name="i-lucide-file-text" /></div>
+              <div class="vault-doc-info">
+                <div class="vault-doc-name">{{ d.title }}</div>
+                <div class="vault-doc-meta">Added {{ d.uploadedAt }}</div>
+              </div>
+              <span class="vault-doc-badge" :class="accessBadgeClass(d.accessLevel)">
+                {{ accessBadgeLabel(d) }}
+              </span>
+              <Icon name="i-lucide-chevron-right" class="vault-doc-chevron" />
             </div>
-          </div>
+          </template>
         </template>
         <div style="height: 80px" />
       </div>
@@ -703,6 +701,14 @@
       @removed="handleCollaboratorRemoved"
     />
 
+    <!-- Document access — per-document Private/Selected/Eligible/Published -->
+    <DocumentAccessDrawer
+      v-model:show="docAccessOpen"
+      :doc="activeDoc"
+      :collaborators="collaborators"
+      @changed="loadVault"
+    />
+
     <!-- Your Properties Modal -->
     <YourPropertiesModal
       :show="showPropertiesModal"
@@ -740,6 +746,7 @@
       :open="publishDrawerOpen"
       :submitting="publishLoading"
       :readiness="readiness"
+      :published-documents="publishedDocuments"
       @close="publishDrawerOpen = false"
       @publish="onPublishConfirm"
       @go-to-question="onGoToChecklistItem"
@@ -764,6 +771,8 @@ import OPIcon from '~/components/ui/OPIcon.vue'
 import SegmentedSwitch from '@/components/core/SegmentedSwitch.vue'
 import AddCollaboratorModal from '@/components/modals/AddCollaboratorModal.vue'
 import YourPropertiesModal from '@/components/modals/YourPropertiesModal.vue'
+import DocumentAccessDrawer from '~/components/passport/DocumentAccessDrawer.vue'
+import { useVaultDocuments } from '~/composables/useVaultDocuments'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 import PublishPassportDrawer from '~/components/passport/PublishPassportDrawer.vue'
 import BuyerDetailDrawer from '~/components/passport/BuyerDetailDrawer.vue'
@@ -1058,8 +1067,8 @@ function setTab(tab) {
   ) {
     fetchBuyerData(propertyId.value)
   }
-  if (tab === 'vault' && vaultSections.value.length === 0) {
-    fetchVault()
+  if (tab === 'vault' && vaultDocCount.value === 0) {
+    loadVault()
   }
   if (tab === 'timeline' && timelineEvents.value.length === 0) {
     fetchTimeline()
@@ -1132,6 +1141,10 @@ function onPublishClick() {
   } else {
     publishDrawerOpen.value = true
     fetchReadiness()
+    // Vault is lazy-loaded on first visit to that tab - load it here too so
+    // the drawer's document manifest isn't empty for a seller who publishes
+    // without ever opening Vault first.
+    if (vaultDocCount.value === 0) loadVault()
   }
 }
 
@@ -1375,24 +1388,34 @@ const onRoleSwitch = (role) => {
 // ── Vault ──────────────────────────────────────────────────────
 // Verified documents grouped by section, each with a private/public toggle
 // that controls whether the section publishes with the passport.
-const vaultSections = ref([])
+// Individual documents (passport-linked file answers + freestanding
+// uploads), each with a real per-document access level - see
+// composables/useVaultDocuments.ts. Replaces the old per-SECTION
+// Private/Public toggle in this repo's UI; the underlying section-level
+// endpoint (PATCH /passport/section/:id/visibility) is untouched and still
+// used by the mobile app.
+const { getPassportVault } = useVaultDocuments()
+const vaultHomeRecords = ref([])
+const vaultPersonalDocs = ref([])
 const vaultLoading = ref(false)
-const completedVaultSections = computed(() =>
-  vaultSections.value.filter((s) => s.status === 'COMPLETED'),
+const vaultDocCount = computed(
+  () => vaultHomeRecords.value.length + vaultPersonalDocs.value.length,
 )
-const vaultStoredCount = computed(() => completedVaultSections.value.length)
+// Fed into PublishPassportDrawer's manifest preview - publishing flips the
+// whole Passport's visibility on, so this reviews the standing per-document
+// choices already made in the Vault rather than re-picking them.
+const publishedDocuments = computed(() =>
+  [...vaultHomeRecords.value, ...vaultPersonalDocs.value].filter(
+    (d) => d.accessLevel === 'PUBLISHED',
+  ),
+)
 
-async function fetchVault() {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  if (!token) return
+async function loadVault() {
   vaultLoading.value = true
   try {
-    const data = await $fetch(
-      `${config.public.apiBase}/passport/${route.params.id}/vault`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    )
-    vaultSections.value = data.sections ?? []
+    const data = await getPassportVault(route.params.id)
+    vaultHomeRecords.value = data.homeRecords ?? []
+    vaultPersonalDocs.value = data.personalDocuments ?? []
   } catch (e) {
     console.error('Failed to load vault', e)
   } finally {
@@ -1400,34 +1423,24 @@ async function fetchVault() {
   }
 }
 
-async function setVisibility(section, visibility) {
-  const current = section.visibility || 'PUBLIC'
-  if (current === visibility) return
-  // Optimistic update — rollback on error.
-  const prev = current
-  section.visibility = visibility
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  if (!token) return
-  try {
-    await $fetch(
-      `${config.public.apiBase}/passport/section/${section.id}/visibility`,
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: { visibility },
-      },
-    )
-    // Activity ledger picks up the change server-side; refresh if user is on
-    // the timeline tab so the new row appears.
-    if (activeTab.value === 'timeline') fetchTimeline()
-  } catch (e) {
-    console.error('Failed to set visibility', e)
-    section.visibility = prev
+function accessBadgeLabel(doc) {
+  switch (doc.accessLevel) {
+    case 'PRIVATE': return 'Private'
+    case 'SELECTED': return `Shared with ${doc.sharedWith?.length || 0}`
+    case 'ELIGIBLE': return 'Included when shared'
+    case 'PUBLISHED': return 'Published'
+    default: return 'Private'
   }
+}
+function accessBadgeClass(level) {
+  return `badge-${(level || 'PRIVATE').toLowerCase()}`
+}
+
+const docAccessOpen = ref(false)
+const activeDoc = ref(null)
+function openDocAccess(doc) {
+  activeDoc.value = doc
+  docAccessOpen.value = true
 }
 
 // ── Timeline ───────────────────────────────────────────────────
@@ -3267,29 +3280,42 @@ function formatStamp(iso) {
 }
 
 /* ── Vault tab ─────────────────────────────────────────────────── */
-.vault-legend { margin: 8px 0 6px; padding: 12px 14px; background: #f5f6fa; border: 1px solid #e4e5ed; border-radius: 13px; }
-.vault-legend-t { font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #a8a9ad; margin-bottom: 8px; }
-.vault-legend-row { display: flex; align-items: flex-start; gap: 9px; font-size: 11px; font-weight: 600; color: #6b7089; line-height: 1.45; }
-.vault-legend-row + .vault-legend-row { margin-top: 7px; }
-.vault-legend-ico { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; flex-shrink: 0; }
-.vault-legend-ico img { width: 26px; height: 26px; object-fit: contain; }
-.vault-legend-ico.private { background: transparent; }
-.vault-legend-ico.public { background: transparent; }
-.vault-legend-row b { color: #231d45; font-weight: 800; }
+.vault-legend { margin: 8px 0 6px; padding: 14px; background: #f5f6fa; border: 1px solid #e4e5ed; border-radius: 13px; }
+.vault-legend-t { font-size: 14px; font-weight: 800; color: #231d45; margin-bottom: 6px; }
+.vault-legend-body { font-size: 12px; font-weight: 500; color: #6b7089; line-height: 1.5; margin: 0; }
 .vault-count { padding: 6px 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #6b7089; }
-.vault-row { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 10px; padding: 14px; background: #fff; border: 1px solid #e4e5ed; border-radius: 14px; box-shadow: 0 2px 8px rgba(35, 29, 69, 0.05); }
-.vault-ico { width: 40px; height: 40px; border-radius: 11px; background: #e5f4f2; color: #008a84; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.vault-info { flex: 1; min-width: 0; }
-.vault-name { font-size: 14px; font-weight: 800; color: #231d45; }
-.vault-vis-meta { font-size: 10.5px; font-weight: 700; margin-top: 3px; line-height: 1.35; }
-.vault-row.public .vault-vis-meta { color: #008a84; }
-.vault-row.private .vault-vis-meta { color: #6b7089; }
-.vis-seg { display: flex; gap: 2px; background: #f5f6fa; border: 1px solid #e4e5ed; border-radius: 100px; padding: 3px; flex-shrink: 0; align-self: center; }
-.vis-opt { display: flex; align-items: center; gap: 4px; padding: 6px 11px; border-radius: 100px; font-size: 11px; font-weight: 800; color: #6b7089; cursor: pointer; transition: all 0.12s; }
-.vis-opt:hover { color: #231d45; }
-.vis-opt.on { color: #fff; }
-.vis-opt.on.private { background: #6b7089; }
-.vis-opt.on.public { background: #00a19a; }
+.vault-group-h { margin: 16px 0 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: #9c98ad; }
+.vault-doc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 10px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e4e5ed;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(35, 29, 69, 0.05);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.vault-doc-row:hover { border-color: #00a19a; }
+.vault-doc-ic { width: 38px; height: 38px; border-radius: 11px; background: #e5f4f2; color: #008a84; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.vault-doc-info { flex: 1; min-width: 0; }
+.vault-doc-name { font-size: 14px; font-weight: 800; color: #231d45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vault-doc-meta { font-size: 11px; color: #9c98ad; margin-top: 2px; }
+.vault-doc-badge {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.badge-private { background: #f1f0f6; color: #6b7089; }
+.badge-selected { background: rgba(217, 154, 43, 0.16); color: #c98a1e; }
+.badge-eligible { background: rgba(0, 161, 154, 0.12); color: #008a84; }
+.badge-published { background: rgba(21, 128, 61, 0.12); color: #15803d; }
+.vault-doc-chevron { width: 16px; height: 16px; color: #c9c7d4; flex-shrink: 0; }
 
 /* ── Timeline tab ──────────────────────────────────────────────── */
 .tl-intro { margin: 8px 0 0; padding: 13px 15px; background: #f2faf8; border: 1px solid #e5f4f2; border-radius: 13px; font-size: 12px; font-weight: 600; color: #6b7089; line-height: 1.55; display: flex; gap: 9px; align-items: flex-start; }

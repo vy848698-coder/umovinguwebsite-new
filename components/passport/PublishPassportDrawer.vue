@@ -60,6 +60,24 @@
               <Icon name="i-lucide-lightbulb" class="ppd-tip-ic" /> Tip: <b>match &amp; make contact first</b> — gauge interest
               privately, then publish to open it up to everyone.
             </div>
+
+            <!-- Document manifest — the owner already chose which documents
+                 are "Published" in the Vault tab (Document access screen);
+                 this is a review of that standing choice, not a fresh pick,
+                 since publish just flips the whole Passport's visibility on. -->
+            <div v-if="publishedDocuments?.length" class="ppd-docs">
+              <div class="ppd-docs-h">Documents that will be visible</div>
+              <div class="ppd-docs-list">
+                <div v-for="d in publishedDocuments" :key="d.id" class="ppd-docs-row">
+                  <Icon name="i-lucide-file-text" class="ppd-docs-ic" />
+                  {{ d.title }}
+                </div>
+              </div>
+              <p class="ppd-docs-note">
+                Marked "Published" in your Vault. Change any document's
+                access there before publishing if this isn't right.
+              </p>
+            </div>
           </template>
 
           <template v-else>
@@ -148,6 +166,7 @@ const props = defineProps<{
     requiredTotal: number
     checklist: ChecklistItem[]
   } | null
+  publishedDocuments?: { id: string; title: string }[]
 }>()
 const emit = defineEmits<{
   (e: 'close'): void
@@ -224,6 +243,13 @@ const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
 .ppd-tip { margin: 14px 22px 0; padding: 11px 13px; background: var(--accent-paler); border: 1px solid var(--accent-pale); border-radius: 11px; font-size: 11.5px; font-weight: 600; color: var(--text-secondary); line-height: 1.5; }
 .ppd-tip b { color: var(--accent-dark); font-weight: 800; }
 .ppd-tip-ic { color: #d97706; vertical-align: -0.15em; }
+
+.ppd-docs { margin: 14px 22px 0; }
+.ppd-docs-h { font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+.ppd-docs-list { display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; }
+.ppd-docs-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--text); padding: 8px 10px; background: var(--bg); border-radius: 9px; }
+.ppd-docs-ic { width: 14px; height: 14px; color: var(--accent-dark); flex-shrink: 0; }
+.ppd-docs-note { margin: 8px 0 0; font-size: 11px; font-weight: 500; color: var(--text-faint); line-height: 1.4; }
 
 .ppd-gate { padding: 4px 22px 0; }
 .ppd-gate-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
