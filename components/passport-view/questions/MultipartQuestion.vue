@@ -1,13 +1,13 @@
 <template>
   <div class="multipart-question">
     <!-- Question Display (task-level title/description/help shown above parts) -->
-    <template v-if="displayedQuestion || displayedDescription || displayedHelp">
-      <p v-if="displayedQuestion" class="question-text">
+    <template v-if="showTaskQuestion || showTaskDescription || showTaskHelp">
+      <p v-if="showTaskQuestion" class="question-text">
         {{ displayedQuestion }}
         <span v-if="showQuestionCursor" class="typing-cursor">|</span>
       </p>
 
-      <div v-if="displayedDescription" class="question-description">
+      <div v-if="showTaskDescription" class="question-description">
         {{ displayedDescription }}
         <span
           v-if="showDescriptionCursor"
@@ -16,10 +16,10 @@
         >
       </div>
 
-      <div v-if="displayedHelp" class="help-section">
+      <div v-if="showTaskHelp" class="help-section">
         <div class="help-content">
           <h4 class="help-title">
-            <span class="help-icon">💡</span>What is this?
+            <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
           </h4>
           <p class="help-text">
             {{ displayedHelp }}
@@ -109,7 +109,7 @@
         <div v-if="part.helpText" class="help-section part-help-section">
           <div class="help-content">
             <h4 class="help-title">
-              <span class="help-icon">💡</span>What is this?
+              <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
             </h4>
             <p class="help-text">{{ part.helpText }}</p>
           </div>
@@ -120,6 +120,7 @@
           v-if="part.showVoiceInput"
           :value="localAnswers[part.partKey + '_text'] || ''"
           @update="(val) => updateVoiceText(part.partKey, val)"
+          @submit="(val) => addVoiceChip(part, val)"
         />
 
         <!-- Date input badge row (shown above the component when showDateInput is true) -->
@@ -158,8 +159,9 @@
             <div class="counter-buttons">
               <button
                 class="counter-btn"
+                aria-label="Decrease"
                 @click.prevent="decrementCounter(part.partKey)"
-              >—</button>
+              >−</button>
               <span class="counter-divider">|</span>
               <button
                 class="counter-btn"
@@ -210,7 +212,7 @@
             @input="
               (e) => updateCurrencyPartInput(part.partKey, e.target.value)
             "
-          />
+           aria-label="£ 0000" />
         </div>
       </div>
     </div>
@@ -285,6 +287,9 @@ const props = defineProps({
   question: { type: Object, required: true },
   answer: { type: [Object, String], default: () => ({}) },
   passportId: { type: String, default: '' },
+  // { addressLine1, city, postcode, uprn, titleNumber, propertyType } for
+  // this passport's property - lets an `address` part pre-fill + surface
+  // the known UPRN / title number instead of asking for them.
   propertyFacts: { type: Object, default: null },
   displayedQuestion: { type: String, default: '' },
   showQuestionCursor: { type: Boolean, default: false },
@@ -297,6 +302,10 @@ const props = defineProps({
 const emit = defineEmits(['update'])
 
 const localAnswers = ref({})
+// Custom chips added via the voice/text input, keyed by partKey. Kept
+// separate from `part.options` (a prop) so we never mutate the question
+// template — buildPartQuestion() merges these in when rendering.
+const customVoiceOptions = ref({})
 
 // Initialize from saved answers
 watch(
@@ -313,6 +322,38 @@ const sortedParts = computed(() => {
   if (!props.question?.parts) return []
   return [...props.question.parts].sort((a, b) => a.order - b.order)
 })
+
+// Fixtures & Fittings seeds often populate BOTH the question-level
+// fields (`question` / `description` / `help`, surfaced by the
+// task page as `displayedQuestion` / `displayedDescription` /
+// `displayedHelp`) AND the first part's matching field with the
+// exact same copy — see Night-Storage Heaters / Window Fittings
+// in the payload the tester forwarded. That produces the same
+// title / description / "What is this?" rendered twice inside
+// this one component (task-level block up top, then again inside
+// the part card below).
+//
+// When any part carries its own copy of a field we treat the
+// per-part value as the source of truth (it's more specific) and
+// hide the task-level duplicate.
+const hasPartTitle = computed(() =>
+  sortedParts.value.some((p) => (p?.title ?? '').toString().trim() !== ''),
+)
+const hasPartDescription = computed(() =>
+  sortedParts.value.some((p) => (p?.description ?? '').toString().trim() !== ''),
+)
+const hasPartHelp = computed(() =>
+  sortedParts.value.some((p) => (p?.helpText ?? '').toString().trim() !== ''),
+)
+const showTaskQuestion = computed(
+  () => !!props.displayedQuestion && !hasPartTitle.value,
+)
+const showTaskDescription = computed(
+  () => !!props.displayedDescription && !hasPartDescription.value,
+)
+const showTaskHelp = computed(
+  () => !!props.displayedHelp && !hasPartHelp.value,
+)
 
 // Link cards from prewritten.links (rendered after all parts)
 const questionLinks = computed(() => props.question?.prewritten?.links || [])
@@ -392,9 +433,18 @@ const buildPartQuestion = (part) => {
   const uploadInstruction = part.uploadInstruction || ''
 
   return {
+    // The parent MULTIPART PassportQuestion's real id — parts don't have
+    // their own PassportQuestion row, they all share this one. Combined
+    // with uploadOnly below, TextUploadQuestion posts to a non-destructive
+    // upload endpoint scoped by this id instead of /questions/undefined/upload.
+    id: props.question?.id,
+    uploadOnly: normalizedType === 'upload',
     title: part.title,
     description: part.description || '',
-    options: part.options || [],
+    options: [
+      ...(part.options || []),
+      ...(customVoiceOptions.value[part.partKey] || []),
+    ],
     placeholder: part.placeholder || '',
     type: normalizedType,
     display: normalizedType === 'upload' ? 'upload' : part.display || 'text',
@@ -512,6 +562,33 @@ const updateCurrencyPartInput = (partKey, value) => {
 
 const updateVoiceText = (partKey, value) => {
   localAnswers.value[partKey + '_text'] = value
+  emit('update', { ...localAnswers.value })
+}
+
+// Voice/text submit → add as a new chip and clear the field so it's
+// ready for the next note. Multiple notes can stack up this way.
+const addVoiceChip = (part, text) => {
+  const trimmed = (text || '').trim()
+  if (!trimmed) return
+  const partKey = part.partKey
+
+  const inTemplate = (part.options || []).some((o) => o.value === trimmed)
+  if (!inTemplate) {
+    const custom = customVoiceOptions.value[partKey] || []
+    if (!custom.some((o) => o.value === trimmed)) {
+      customVoiceOptions.value = {
+        ...customVoiceOptions.value,
+        [partKey]: [...custom, { value: trimmed, label: trimmed }],
+      }
+    }
+  }
+
+  const current = Array.isArray(localAnswers.value[partKey])
+    ? [...localAnswers.value[partKey]]
+    : []
+  if (!current.includes(trimmed)) current.push(trimmed)
+  localAnswers.value[partKey] = current
+  localAnswers.value[partKey + '_text'] = ''
   emit('update', { ...localAnswers.value })
 }
 
@@ -989,6 +1066,16 @@ const getVisibleParts = () => {
   margin-top: 8px;
   float: right;
   width: fit-content;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 </style>
 

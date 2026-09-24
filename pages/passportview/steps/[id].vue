@@ -120,7 +120,7 @@
             <h2 class="section-title">Question groups</h2>
             <p class="section-desc">
               {{ totalTaskCount }} {{ totalTaskCount === 1 ? 'task makes' : 'tasks make' }} up the
-              {{ currentStep?.title || 'section' }} — tap any group to review the answers.
+              {{ currentStep?.title || 'section' }}. Tap any group to review the answers.
             </p>
             <div class="legend">
               <span class="legend-item"><span class="ld done"></span> Complete</span>
@@ -139,12 +139,15 @@
             >
               <span class="task-index">{{ String(index + 1).padStart(2, '0') }}</span>
               <div class="task-icon" :class="getTaskStatus(task)">
-                <OPIcon :name="task.icon || 'instructions'" class="w-[20px] h-[20px]" />
+                <!-- Tasks carry no art of their own; they take their section's
+                     illustration (the navy open book for Ownership Profile),
+                     never the old tan instructions book. -->
+                <OPIcon :name="task.icon || currentStep?.icon || 'ownershipProfile'" class="w-[20px] h-[20px]" />
               </div>
 
               <div class="task-info">
                 <h3 class="task-title">
-                  {{ toSmartTitleCase(task.title) }}
+                  {{ toSentenceCase(task.title) }}
                   <span v-if="task.hasPublishRequired" class="task-required-badge">
                     Required to publish
                   </span>
@@ -235,7 +238,7 @@
           <!-- Up next -->
           <button v-if="nextStep" class="upnext-card" @click="goToNextSection">
             <div class="upnext-ic">
-              <OPIcon :name="nextStep.icon || 'instructions'" class="w-[20px] h-[20px]" />
+              <OPIcon :name="nextStep.icon || 'ownershipProfile'" class="w-[20px] h-[20px]" />
             </div>
             <div class="upnext-text">
               <small>Up next · Section {{ sectionNumber + 1 }}</small>
@@ -273,7 +276,7 @@ import SectionProgressCard from '@/components/passport-view/SectionProgressCard.
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import { toSmartTitleCase } from '~/utils/titleCase'
+import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
 
 const route = useRoute()
 const router = useRouter()
@@ -1019,9 +1022,12 @@ const handleViewProfile = () => {
 .task-card:hover::before {
   background: #00a19a;
 }
-.task-card:hover .task-required-badge {
+/* "Required to publish" is a small amber pill, always - it used to take this
+   style only while the card was hovered and otherwise read as part of the
+   task title. */
+.task-required-badge {
   display: inline-block;
-  margin-left: 6px;
+  margin-left: 8px;
   padding: 2px 7px;
   font-size: 9px;
   font-weight: 800;

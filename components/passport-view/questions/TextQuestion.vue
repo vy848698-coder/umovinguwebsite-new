@@ -45,7 +45,10 @@
         "
         class="text-input"
         :rows="question.rows || 6"
-      ></textarea>
+       :aria-label="
+          question.placeholder ||
+          'E.g., Back fence in the garden has been moved back 2 yards...'
+        "></textarea>
     </div>
   </div>
 </template>

@@ -23,7 +23,7 @@
         <div v-if="displayedHelp" class="help-section">
           <div class="help-content">
             <h4 class="help-title">
-              <span class="help-icon">💡</span>What is this?
+              <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
             </h4>
             <p class="help-text">
               {{ displayedHelp }}
@@ -37,7 +37,7 @@
         </div>
       </template>
 
-      <div class="summary" @click="openDrawer">
+      <div class="summary" @click="openDrawer" role="button" tabindex="0" @keydown.enter="openDrawer" @keydown.space.prevent="openDrawer">
         <template v-if="isGenericTemplate">
           <div class="summary-full">
             <div class="summary-line">{{ shortGenericContent }}</div>
@@ -796,6 +796,16 @@ const handleDrawerClose = () => {
   align-items: center;
   gap: 4px;
   border-radius: 100px;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 </style>
 

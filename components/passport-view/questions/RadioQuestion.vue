@@ -58,6 +58,7 @@
         class="radio-option"
         :class="{ selected: answer === option.value }"
         @click="selectOption(option.value)"
+        role="button" tabindex="0" @keydown.enter="selectOption(option.value)" @keydown.space.prevent="selectOption(option.value)"
       >
         <div class="radio-btn" :class="{ checked: answer === option.value }">
           <span v-if="answer === option.value" class="check-icon">✓</span>

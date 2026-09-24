@@ -21,7 +21,7 @@
       <div v-if="displayedHelp" class="help-section">
         <div class="help-content">
           <h4 class="help-title">
-            <span class="help-icon">💡</span>What is this?
+            <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
           </h4>
           <p class="help-text">
             {{ displayedHelp }}
@@ -43,7 +43,7 @@
         class="checkbox-option"
         :class="{ selected: isSelected(option.value) }"
         @click="toggleOption(option.value)"
-      >
+       role="button" tabindex="0" @keydown.enter="toggleOption(option.value)" @keydown.space.prevent="toggleOption(option.value)">
         <div class="checkbox" :class="{ checked: isSelected(option.value) }">
           <span v-if="isSelected(option.value)" class="check-mark">✓</span>
         </div>
@@ -59,7 +59,7 @@
       :placeholder="question.otherPlaceholder"
       class="other-text-input"
       rows="3"
-    ></textarea>
+     :aria-label="question.otherPlaceholder || 'Other details'"></textarea>
   </div>
 </template>
 
@@ -336,6 +336,16 @@ const onOtherTextInput = (event) => {
   border-color: #00a19a;
   background: #fff;
   box-shadow: 0 0 0 4px rgba(0, 161, 154, 0.1);
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 </style>
 

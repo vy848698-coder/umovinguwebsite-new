@@ -16,7 +16,7 @@
             <div class="ppd-eyebrow"><img src="/profile%20new%20icon/rocket.png" alt="" class="ppd-eyebrow-ic" loading="lazy" />Publish your passport</div>
             <div class="ppd-title">Go public to every matching buyer.</div>
             <div class="ppd-sub">
-              Right now your passport is private — you choose who sees it.
+              Right now your passport is private, and you choose who sees it.
               Publishing lists it openly so any verified buyer searching this
               area can find and request it.
             </div>
@@ -27,7 +27,7 @@
               <div class="ppd-row">
                 <span class="ppd-ico on"><Icon name="i-lucide-lock" /></span>
                 <div>
-                  <div class="ppd-row-t">Today — private</div>
+                  <div class="ppd-row-t">Today: private</div>
                   <div class="ppd-row-s">
                     Only buyers you contact can see it. Good for testing
                     interest first.
@@ -37,7 +37,7 @@
               <div class="ppd-row">
                 <span class="ppd-ico"><Icon name="i-lucide-globe" /></span>
                 <div>
-                  <div class="ppd-row-t">After publishing — public</div>
+                  <div class="ppd-row-t">After publishing: public</div>
                   <div class="ppd-row-s">
                     Listed to all matching verified buyers. They can view &amp;
                     request a viewing.
@@ -57,7 +57,7 @@
             </div>
 
             <div class="ppd-tip">
-              <Icon name="i-lucide-lightbulb" class="ppd-tip-ic" /> Tip: <b>match &amp; make contact first</b> — gauge interest
+              <Icon name="i-lucide-lightbulb" class="ppd-tip-ic" /> Tip: <b>match &amp; make contact first</b>. Gauge interest
               privately, then publish to open it up to everyone.
             </div>
           </template>
@@ -74,7 +74,7 @@
               <p class="ppd-gate-sub">
                 Buyers pay to unlock this passport, so these disclosures are
                 required before it can go public. Tap any item to jump
-                straight to it — done ones are shown too, so you can see
+                straight to it. Done ones are shown too, so you can see
                 exactly where things stand.
               </p>
               <div class="ppd-gate-list">
