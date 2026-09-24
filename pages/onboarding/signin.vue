@@ -13,7 +13,7 @@
         <h1 class="signin-welcome">{{ heroTitle }}</h1>
         <p class="signin-welcome-sub">Good to see you again. Your Property Passport is right where you left it.</p>
 
-        <img src="/umu-passport.png" alt="Property Passport" class="signin-passport-illus" />
+        <img src="/op-icons/passport-covers/seller_tilted_right_on_tile.png" alt="Property Passport" class="signin-passport-illus" />
       </div>
 
       <p class="signin-aside-foot">
@@ -614,16 +614,15 @@ const onPrimary = () => {
   max-width: 34ch;
 }
 
+/* Real 3D render, already tilted right with its own tile/shadow baked in -
+   no CSS transform needed. */
 .signin-passport-illus {
   width: 100%;
-  max-width: 280px;
+  max-width: 260px;
   height: auto;
   display: block;
-  margin: 32px 0 0 24px;
+  margin: 32px 0 0;
   object-fit: contain;
-  /* Tilted right - top edge leans right, as if propped and turned. */
-  transform: rotate(7deg);
-  filter: drop-shadow(12px 20px 26px rgba(35, 29, 69, 0.2));
 }
 
 .signin-aside-foot {
