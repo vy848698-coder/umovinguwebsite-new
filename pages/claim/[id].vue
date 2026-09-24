@@ -93,6 +93,7 @@
 
       <div class="cl-navy-card">
         <div class="cl-navy-glow" />
+        <img class="cl-navy-img" src="/dashboard-art/searchHouse-left.png" alt="" />
         <div class="cl-navy-eyebrow">Found on Land Registry</div>
         <div class="cl-navy-addr1">{{ selectedProperty?.addressLine1 || '—' }}</div>
         <div class="cl-navy-addr2">
@@ -2086,13 +2087,14 @@ async function issuePassport() {
 
 /* ── Confirm navy card ─────────────────────────────── */
 .cl-navy-card {
-  background: linear-gradient(135deg, #231d45, #2d2560);
+  background: #fff;
+  border: 1.5px solid #bfe6e1;
   border-radius: 20px;
   padding: 20px;
   margin-bottom: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 14px 32px rgba(35, 29, 69, 0.28);
+  box-shadow: 0 10px 26px rgba(0, 161, 154, 0.1);
 }
 .cl-navy-glow {
   position: absolute;
@@ -2100,28 +2102,42 @@ async function issuePassport() {
   top: -20px;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.25), transparent 70%);
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.14), transparent 70%);
   border-radius: 50%;
+}
+.cl-navy-img {
+  position: absolute;
+  right: 14px;
+  top: 10px;
+  width: 86px;
+  height: 86px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 16px rgba(35, 29, 69, 0.16));
+}
+.cl-navy-eyebrow,
+.cl-navy-addr1,
+.cl-navy-addr2 {
+  padding-right: 100px;
 }
 .cl-navy-eyebrow {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: #9c98ad;
   margin-bottom: 6px;
   position: relative;
 }
 .cl-navy-addr1 {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: #231d45;
   margin-bottom: 4px;
   position: relative;
 }
 .cl-navy-addr2 {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.65);
+  color: #6b6783;
   margin-bottom: 16px;
   position: relative;
 }
@@ -2132,19 +2148,19 @@ async function issuePassport() {
   position: relative;
 }
 .cl-tile {
-  background: rgba(255, 255, 255, 0.08);
+  background: #f4fbfa;
   border-radius: 10px;
   padding: 10px 12px;
 }
 .cl-tile-l {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #9c98ad;
   margin-bottom: 3px;
 }
 .cl-tile-v {
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: #231d45;
 }
 
 /* ── Info pale ─────────────────────────────────────── */

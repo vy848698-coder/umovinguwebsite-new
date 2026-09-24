@@ -1,56 +1,22 @@
 <template>
   <div class="otp-page">
-    <!-- ── Left brand / illustration panel ── -->
+    <!-- ── Left brand / illustration panel (light) ── -->
     <aside class="otp-aside">
-      <button class="otp-brand" type="button" @click="navigateTo('/')">
-        <img src="/op-icons/logo.png" alt="" class="otp-brand-logo" />
+      <div class="otp-brand" style="cursor: default">
+        <span class="otp-brand-logo"><img src="/op-icons/logo.png" alt="" /></span>
         <span class="otp-brand-name">umovingu</span>
         <span class="otp-brand-beta">Beta</span>
-      </button>
-
-      <div class="otp-illus" aria-hidden="true">
-        <svg viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- soft glow -->
-          <circle cx="180" cy="188" r="132" fill="url(#glow)" />
-
-          <!-- decorative dots -->
-          <circle cx="66" cy="150" r="6" fill="#E0A43A" />
-          <circle cx="300" cy="150" r="7" fill="#17B3A6" />
-          <circle cx="70" cy="250" r="7" fill="#17B3A6" />
-          <circle cx="292" cy="256" r="6" fill="#8E82C4" />
-
-          <!-- envelope -->
-          <rect x="86" y="176" width="188" height="130" rx="16" fill="#3A3368" />
-          <rect x="86" y="176" width="188" height="130" rx="16" stroke="#4E4788" stroke-width="2" />
-          <path d="M92 190 L180 250 L268 190" stroke="#6C63A6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-          <path d="M92 300 L150 250" stroke="#4E4788" stroke-width="3" stroke-linecap="round" />
-          <path d="M268 300 L210 250" stroke="#4E4788" stroke-width="3" stroke-linecap="round" />
-
-          <!-- OTP pill -->
-          <rect x="112" y="120" width="136" height="52" rx="14" fill="#12B5A6" />
-          <circle cx="140" cy="146" r="6" fill="#fff" />
-          <circle cx="164" cy="146" r="6" fill="#fff" />
-          <circle cx="188" cy="146" r="6" fill="#fff" />
-          <circle cx="212" cy="146" r="6" fill="#fff" />
-          <circle cx="236" cy="146" r="6" fill="#fff" />
-
-          <defs>
-            <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-              <stop offset="0%" stop-color="#2FBFB6" stop-opacity="0.28" />
-              <stop offset="100%" stop-color="#2FBFB6" stop-opacity="0" />
-            </radialGradient>
-          </defs>
-        </svg>
       </div>
 
-      <!-- progress dots -->
-      <div class="otp-progress">
-        <span class="on" />
-        <span class="on" />
-        <span />
-        <span />
-        <span />
-        <span />
+      <div class="otp-illus-wrap">
+        <p class="otp-eyebrow">One more step</p>
+        <h1 class="otp-headline">Check your email.</h1>
+        <p class="otp-sub">We've sent a six-digit code to your inbox.</p>
+        <img
+          src="/op-icons/onboarding/email.png"
+          alt=""
+          class="otp-illus-img"
+        />
       </div>
     </aside>
 
@@ -78,7 +44,7 @@ if (typeof definePageMeta === 'function') {
   background: #faf9f5;
 }
 
-/* ── Left panel ── */
+/* ── Left panel (light) ── */
 .otp-aside {
   position: relative;
   width: 40%;
@@ -89,8 +55,8 @@ if (typeof definePageMeta === 'function') {
   flex-direction: column;
   align-items: center;
   background:
-    radial-gradient(circle at 78% 12%, rgba(47, 191, 182, 0.10) 0%, transparent 42%),
-    linear-gradient(158deg, #241d47 0%, #2c2658 52%, #201b46 100%);
+    radial-gradient(circle at 78% 12%, rgba(0, 161, 154, 0.06) 0%, transparent 42%),
+    #fbfbf9;
   overflow: hidden;
 }
 
@@ -105,58 +71,78 @@ if (typeof definePageMeta === 'function') {
   padding: 4px;
 }
 .otp-brand-logo {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  background: rgba(0, 161, 154, 0.06);
+  border: 2px solid #00a19a;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.otp-brand-logo img {
+  width: 32px;
+  height: auto;
+  display: block;
 }
 .otp-brand-name {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.4px;
-  color: #fff;
+  color: #231d45;
 }
 .otp-brand-beta {
   align-self: center;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.6px;
-  color: #6fe6dc;
-  background: rgba(47, 191, 182, 0.16);
-  border: 1px solid rgba(47, 191, 182, 0.42);
+  color: #00857f;
+  background: rgba(0, 161, 154, 0.1);
+  border: 1px solid rgba(0, 161, 154, 0.32);
   border-radius: 6px;
   padding: 3px 8px;
 }
 
-.otp-illus {
+.otp-illus-wrap {
   flex: 1;
+  width: 100%;
+  max-width: 420px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
-  width: 100%;
 }
-.otp-illus svg {
+.otp-eyebrow {
+  margin: 0 0 18px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #00a19a;
+}
+.otp-headline {
+  margin: 0;
+  font-size: clamp(38px, 4vw, 50px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #231d45;
+}
+.otp-sub {
+  margin: 16px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #6b6783;
+  max-width: 34ch;
+}
+.otp-illus-img {
   width: 100%;
-  max-width: 360px;
+  max-width: 300px;
   height: auto;
-}
-
-.otp-progress {
-  display: flex;
-  gap: 10px;
-  padding-bottom: 8px;
-}
-.otp-progress span {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.16);
-}
-.otp-progress span.on {
-  background: #12b5a6;
+  display: block;
+  margin: 36px auto 0;
+  object-fit: contain;
 }
 
 /* ── Right panel ── */
@@ -183,8 +169,7 @@ if (typeof definePageMeta === 'function') {
     justify-content: space-between;
     align-items: center;
   }
-  .otp-illus,
-  .otp-progress {
+  .otp-illus-wrap {
     display: none;
   }
   .otp-main {
