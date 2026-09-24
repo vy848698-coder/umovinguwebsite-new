@@ -616,12 +616,14 @@ const onPrimary = () => {
 
 .signin-passport-illus {
   width: 100%;
-  max-width: 300px;
+  max-width: 280px;
   height: auto;
   display: block;
-  margin: 32px 0 0;
+  margin: 32px 0 0 24px;
   object-fit: contain;
-  filter: drop-shadow(0 20px 30px rgba(35, 29, 69, 0.16));
+  /* Tilted right - top edge leans right, as if propped and turned. */
+  transform: rotate(7deg);
+  filter: drop-shadow(12px 20px 26px rgba(35, 29, 69, 0.2));
 }
 
 .signin-aside-foot {
