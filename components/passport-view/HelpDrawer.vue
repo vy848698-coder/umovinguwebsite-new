@@ -2,7 +2,14 @@
   <Teleport to="body">
     <Transition name="drawer">
       <div v-if="show" class="help-drawer-overlay" @click.self="$emit('close')">
-        <div class="help-drawer">
+        <div
+          class="help-drawer"
+          :style="dragStyle"
+          @touchstart.passive="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+          @touchcancel="onTouchEnd"
+        >
           <!-- Handle -->
           <div class="help-drawer-handle" />
 
@@ -118,7 +125,14 @@ const props = withDefaults(
   { content: null },
 )
 
-defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: [] }>()
+
+// Drag the sheet down by its handle or header to dismiss, as in the app.
+const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
+  onDismiss: () => emit('close'),
+  handleSelector: '.help-drawer-handle, .help-drawer-header',
+  contentSelector: '.help-drawer-body',
+})
 
 const guidanceText = computed(() => {
   if (!props.content) return null

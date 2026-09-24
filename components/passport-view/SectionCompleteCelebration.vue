@@ -52,7 +52,7 @@
 
         <p class="scc-tip">
           <span class="scc-tip-icon">✦</span>
-          Great progress — another section complete.
+          Great progress! Another section complete.
         </p>
       </div>
 

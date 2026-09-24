@@ -21,7 +21,7 @@
       <div v-if="displayedHelp" class="help-section">
         <div class="help-content">
           <h4 class="help-title">
-            <span class="help-icon">💡</span>What is this?
+            <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
           </h4>
           <p class="help-text">
             {{ displayedHelp }}
@@ -55,7 +55,7 @@
                 {{ formatValue(getDateValue(option), option) }}
               </span>
               <span v-else class="date-placeholder">
-                {{ option.datePlaceholder || '—' }}
+                {{ option.datePlaceholder || 'Select a date' }}
               </span>
               <input
                 :ref="(el) => setDateInputRef(el, index)"
@@ -101,7 +101,7 @@
           'multi-input-option': isMultiInputMode,
         }"
         @click="handleOptionClick(option.value)"
-      >
+       role="button" tabindex="0" @keydown.enter="handleOptionClick(option.value)" @keydown.space.prevent="handleOptionClick(option.value)">
         <div
           v-if="question.options.length > 1 && !isMultiInputMode"
           class="radio-btn"
@@ -673,6 +673,16 @@ const formatValue = (rawValue, option) => {
   font-size: 14px;
   font-weight: 600;
   color: #00a19a;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 </style>
 

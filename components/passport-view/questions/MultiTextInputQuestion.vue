@@ -41,7 +41,7 @@
         class="text-input"
         :placeholder="question?.placeholder || 'Enter Name'"
         @keyup.enter="addItem"
-      />
+       :aria-label="question?.placeholder || 'Enter Name'" />
       <button class="add-btn" @click="addItem">
         <span class="add-icon">+</span>
         {{ question?.buttonText || 'Add More Sellers' }}
