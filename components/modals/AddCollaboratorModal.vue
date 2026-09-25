@@ -25,6 +25,37 @@
         />
       </div>
 
+      <!-- Role -->
+      <div class="form-group">
+        <label for="collaborator-role" class="form-label">Their role</label>
+        <select
+          id="collaborator-role"
+          v-model="role"
+          class="form-input"
+          :disabled="isLoading"
+        >
+          <option value="">Not specified</option>
+          <option value="Solicitor">Solicitor</option>
+          <option value="Estate agent">Estate agent</option>
+          <option value="Co-owner">Co-owner</option>
+          <option value="Buyer">Buyer</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <!-- Access -->
+      <div class="form-group">
+        <label class="form-label">Choose access</label>
+        <label class="checkbox-row">
+          <input type="checkbox" v-model="grantHistoryAccess" :disabled="isLoading" />
+          Passport history
+        </label>
+        <p class="checkbox-hint">
+          Property information is always included. Choose which vault
+          documents they can see from each document's own access settings.
+        </p>
+      </div>
+
       <!-- Error Message -->
       <div v-if="error" class="error-message">
         {{ error }}
@@ -50,8 +81,18 @@
             <div class="collaborator-details">
               <p class="collaborator-name">
                 {{ collaborator.firstName }} {{ collaborator.lastName }}
+                <span v-if="collaborator.role" class="collaborator-role">· {{ collaborator.role }}</span>
               </p>
               <p class="collaborator-email">{{ collaborator.email }}</p>
+              <label class="checkbox-row checkbox-row--small">
+                <input
+                  type="checkbox"
+                  :checked="collaborator.historyAccess"
+                  :disabled="isLoading"
+                  @change="handleToggleHistoryAccess(collaborator)"
+                />
+                Passport history
+              </label>
             </div>
           </div>
           <button
@@ -97,11 +138,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show', 'added', 'removed'])
 
-const { addCollaborator, getCollaborators, removeCollaborator } =
+const { addCollaborator, getCollaborators, removeCollaborator, updateCollaboratorScope } =
   usePassportCollaborators()
 
 const isOpen = ref(props.show)
 const email = ref('')
+const role = ref('')
+const grantHistoryAccess = ref(true)
 const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -116,6 +159,8 @@ watch(
       loadCollaborators()
       // Reset form
       email.value = ''
+      role.value = ''
+      grantHistoryAccess.value = true
       error.value = ''
       success.value = ''
     }
@@ -143,9 +188,14 @@ const handleAdd = async () => {
   isLoading.value = true
 
   try {
-    const response = await addCollaborator(props.passportId, email.value)
+    const response = await addCollaborator(props.passportId, email.value, {
+      role: role.value || undefined,
+      historyAccess: grantHistoryAccess.value,
+    })
     success.value = response.message || 'Collaborator added successfully!'
     email.value = ''
+    role.value = ''
+    grantHistoryAccess.value = true
 
     // Reload collaborators list
     await loadCollaborators()
@@ -191,6 +241,19 @@ const handleRemove = async (collaboratorId) => {
     error.value = err?.data?.message || 'Failed to remove collaborator'
   } finally {
     isLoading.value = false
+  }
+}
+
+const handleToggleHistoryAccess = async (collaborator) => {
+  error.value = ''
+  try {
+    await updateCollaboratorScope(props.passportId, collaborator.id, {
+      historyAccess: !collaborator.historyAccess,
+    })
+    await loadCollaborators()
+  } catch (err) {
+    console.error('Failed to update collaborator access:', err)
+    error.value = err?.data?.message || 'Failed to update access'
   }
 }
 
@@ -249,6 +312,38 @@ const getInitials = (firstName, lastName) => {
 .form-input:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
+}
+
+select.form-input {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+}
+.checkbox-row input {
+  accent-color: #00a19a;
+}
+.checkbox-row--small {
+  font-size: 11.5px;
+  color: #666;
+  margin-top: 6px;
+}
+.checkbox-hint {
+  font-size: 11.5px;
+  color: #999;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+.collaborator-role {
+  font-weight: 400;
+  color: #666;
 }
 
 .error-message {
