@@ -281,13 +281,16 @@ function refit() {
   //     third line
   //   - the block height is summed from the two lines rather than read off the
   //     clipped plate
+  // Bounding rects are in screen pixels, so on a page scaled with CSS zoom
+  // (big screens) they are divided back into the plate's own pixels to
+  // compare with availH, which comes from clientHeight.
+  const zoom = pl.currentCSSZoom || 1
   const blockHeight = () => {
     const gap = parseFloat(getComputedStyle(pl).rowGap) || 0
     const summed =
-      l1.getBoundingClientRect().height +
-      l2.getBoundingClientRect().height +
+      (l1.getBoundingClientRect().height + l2.getBoundingClientRect().height) / zoom +
       gap
-    return Math.max(pl.getBoundingClientRect().height, summed)
+    return Math.max(pl.getBoundingClientRect().height / zoom, summed)
   }
 
   const fits = (k, maxLines) => {

@@ -308,4 +308,18 @@ const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
   .ppd-enter-from .ppd-sheet,
   .ppd-leave-to .ppd-sheet { transform: translateY(18px) scale(0.98); }
 }
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Zoom multiplies vh/dvh too, so any
+   viewport-height rule divides the zoom back out. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .ppd-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(86dvh / var(--wide-zoom, 1)), 780px);
+  }
+  .ppd-gate-list { max-height: calc(42vh / var(--wide-zoom, 1)); }
+}
 </style>

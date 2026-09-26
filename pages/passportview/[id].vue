@@ -661,7 +661,7 @@
                   :key="e.id"
                   class="hist-item"
                 >
-                  <div class="hist-dot" :class="eventDisplay(e).dotClass">{{ eventDisplay(e).icon }}</div>
+                  <div class="hist-dot" :class="eventDisplay(e).dotClass"><Icon :name="eventDisplay(e).icon" /></div>
                   <div class="hist-entry">
                     <div class="hist-entry-top">
                       <b>{{ eventDisplay(e).title }}</b>
@@ -773,7 +773,7 @@
       </section>
     </div>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Add Collaborator Modal -->
     <AddCollaboratorModal
@@ -1655,29 +1655,29 @@ function closeHistoryDrawer() {
 
 // ── Display formatting ────────────────────────────────────────────
 const EVENT_DISPLAY = {
-  PASSPORT_CREATED: { title: 'Property Passport created', icon: '🏠', dotClass: 'navy' },
-  PASSPORT_CLAIM_SUBMITTED: { title: 'Ownership claim submitted', icon: '📝', dotClass: 'navy' },
-  PASSPORT_ACTIVATED: { title: 'Passport activated', icon: '✓', dotClass: 'navy' },
-  PASSPORT_ARCHIVED: { title: 'Passport archived', icon: '🗄', dotClass: 'navy' },
-  QUESTION_ANSWER_ADDED: { title: 'Information added', icon: '✎', dotClass: '' },
-  QUESTION_ANSWER_CHANGED: { title: 'Information updated', icon: '✎', dotClass: '' },
-  QUESTION_ANSWER_CLEARED: { title: 'Answer cleared', icon: '✎', dotClass: '' },
-  SECTION_COMPLETED: { title: 'Section completed', icon: '✓', dotClass: '' },
-  DOCUMENT_UPLOADED: { title: 'Document added', icon: '▣', dotClass: '' },
-  DOCUMENT_REPLACED: { title: 'Document replaced', icon: '▣', dotClass: '' },
-  DOCUMENT_REMOVED: { title: 'Document removed from view', icon: '▣', dotClass: '' },
-  ACTION_CREATED: { title: 'Action added', icon: '!', dotClass: 'gold', isAction: true },
-  ACTION_SUPERSEDED: { title: 'Action no longer applies', icon: '✓', dotClass: '', isAction: true },
-  ACTION_REOPENED: { title: 'Action reopened', icon: '!', dotClass: 'gold', isAction: true },
-  ACTION_ADDRESSED: { title: 'Action marked as addressed', icon: '✓', dotClass: '', isAction: true },
-  COLLABORATOR_INVITED: { title: 'Collaborator invited', icon: '👤', dotClass: 'navy' },
-  COLLABORATOR_REMOVED: { title: 'Collaborator removed', icon: '👤', dotClass: 'navy' },
-  COLLABORATOR_SCOPE_CHANGED: { title: 'Collaborator access changed', icon: '👤', dotClass: 'navy' },
-  SHARE_LINK_CREATED: { title: 'Share link created', icon: '🔗', dotClass: 'navy' },
-  BUYER_ACCESS_GRANTED: { title: 'Buyer access granted', icon: '🔑', dotClass: 'navy' },
-  PASSPORT_PUBLISHED: { title: 'Passport published — live to buyers', icon: '🚀', dotClass: 'navy' },
-  PASSPORT_UNPUBLISHED: { title: 'Passport unpublished — back to private', icon: '🔒', dotClass: 'navy' },
-  SECTION_VISIBILITY_CHANGED: { title: 'Section visibility changed', icon: '🌐', dotClass: 'navy' },
+  PASSPORT_CREATED: { title: 'Property Passport created', icon: 'i-lucide-house', dotClass: 'navy' },
+  PASSPORT_CLAIM_SUBMITTED: { title: 'Ownership claim submitted', icon: 'i-lucide-file-pen', dotClass: 'navy' },
+  PASSPORT_ACTIVATED: { title: 'Passport activated', icon: 'i-lucide-check', dotClass: 'navy' },
+  PASSPORT_ARCHIVED: { title: 'Passport archived', icon: 'i-lucide-archive', dotClass: 'navy' },
+  QUESTION_ANSWER_ADDED: { title: 'Information added', icon: 'i-lucide-pencil', dotClass: '' },
+  QUESTION_ANSWER_CHANGED: { title: 'Information updated', icon: 'i-lucide-pencil', dotClass: '' },
+  QUESTION_ANSWER_CLEARED: { title: 'Answer cleared', icon: 'i-lucide-pencil', dotClass: '' },
+  SECTION_COMPLETED: { title: 'Section completed', icon: 'i-lucide-check', dotClass: '' },
+  DOCUMENT_UPLOADED: { title: 'Document added', icon: 'i-lucide-file-text', dotClass: '' },
+  DOCUMENT_REPLACED: { title: 'Document replaced', icon: 'i-lucide-file-text', dotClass: '' },
+  DOCUMENT_REMOVED: { title: 'Document removed from view', icon: 'i-lucide-file-text', dotClass: '' },
+  ACTION_CREATED: { title: 'Action added', icon: 'i-lucide-circle-alert', dotClass: 'gold', isAction: true },
+  ACTION_SUPERSEDED: { title: 'Action no longer applies', icon: 'i-lucide-check', dotClass: '', isAction: true },
+  ACTION_REOPENED: { title: 'Action reopened', icon: 'i-lucide-circle-alert', dotClass: 'gold', isAction: true },
+  ACTION_ADDRESSED: { title: 'Action marked as addressed', icon: 'i-lucide-check', dotClass: '', isAction: true },
+  COLLABORATOR_INVITED: { title: 'Collaborator invited', icon: 'i-lucide-user', dotClass: 'navy' },
+  COLLABORATOR_REMOVED: { title: 'Collaborator removed', icon: 'i-lucide-user', dotClass: 'navy' },
+  COLLABORATOR_SCOPE_CHANGED: { title: 'Collaborator access changed', icon: 'i-lucide-user', dotClass: 'navy' },
+  SHARE_LINK_CREATED: { title: 'Share link created', icon: 'i-lucide-link', dotClass: 'navy' },
+  BUYER_ACCESS_GRANTED: { title: 'Buyer access granted', icon: 'i-lucide-key-round', dotClass: 'navy' },
+  PASSPORT_PUBLISHED: { title: 'Passport published — live to buyers', icon: 'i-lucide-rocket', dotClass: 'navy' },
+  PASSPORT_UNPUBLISHED: { title: 'Passport unpublished — back to private', icon: 'i-lucide-lock', dotClass: 'navy' },
+  SECTION_VISIBILITY_CHANGED: { title: 'Section visibility changed', icon: 'i-lucide-globe', dotClass: 'navy' },
 }
 
 function formatSectionLabel(sectionId) {
@@ -1697,7 +1697,7 @@ function actorLabelFor(e) {
 }
 
 function eventDisplay(e) {
-  const base = EVENT_DISPLAY[e.eventType] || { title: e.eventType, icon: '•', dotClass: '' }
+  const base = EVENT_DISPLAY[e.eventType] || { title: e.eventType, icon: 'i-lucide-dot', dotClass: '' }
   let title = base.title
   if (e.sectionId && !base.isAction) title = `${formatSectionLabel(e.sectionId)} — ${base.title.toLowerCase()}`
   if (base.isAction && actionsById.value[e.entityId]) {
@@ -3572,6 +3572,7 @@ const groupedHistory = computed(() => {
 .hist-dot { width: 26px; height: 26px; border-radius: 9px; background: #eaf8f7; color: #008b85; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
 .hist-dot.gold { background: #fff5e5; color: #a87d32; }
 .hist-dot.navy { background: #eeedf4; color: #231d45; }
+.hist-dot :deep(svg) { width: 14px; height: 14px; }
 .hist-entry { flex: 1; min-width: 0; border: 1px solid #e4e5ed; border-radius: 13px; padding: 13px 15px; background: #fff; }
 .hist-entry-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .hist-entry-top b { color: #231d45; font-size: 13px; line-height: 1.35; }
@@ -4322,5 +4323,17 @@ const groupedHistory = computed(() => {
 .pp-hero-main .pp-hero-dash-dot {
   background: #2fd0c6;
   box-shadow: 0 0 0 2.5px rgba(47, 208, 198, 0.18);
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Zoom multiplies vh/dvh too, so any
+   viewport-height rule divides the zoom back out. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .hsw-shell { zoom: var(--wide-zoom, 1); }
+  /* History detail panel is outside the shell, so it scales on its own. */
+  .hist-drawer { zoom: var(--wide-zoom, 1); }
 }
 </style>

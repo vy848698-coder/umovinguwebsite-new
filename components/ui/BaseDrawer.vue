@@ -506,6 +506,23 @@ const onDragEnd = () => {
 }
 
 /* Responsive adjustments */
+/* Big screens - scale with the page behind it (--wide-zoom = width / 1366,
+   nuxt.config.ts). Zoom multiplies vh too, so the height cap divides it back
+   out and the drawer still fits the window. Full-screen drawers (Notes) keep
+   their edge-to-edge frame; the rows inside scale, so the page reads as it
+   does on a 1366px laptop. */
+@media (min-width: 1367px) {
+  .drawer:not(.drawer--fullscreen) {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(90vh / var(--wide-zoom, 1));
+  }
+  .drawer--fullscreen > .drawer__header,
+  .drawer--fullscreen > .drawer__content,
+  .drawer--fullscreen > .drawer__footer {
+    zoom: var(--wide-zoom, 1);
+  }
+}
+
 @media (max-width: 480px) {
   .drawer {
     max-width: 100%;

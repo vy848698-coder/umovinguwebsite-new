@@ -100,26 +100,43 @@ const spotlightStyle = computed(() => {
 
 const tipAbove = ref(false)
 
+// The zoom of the page region the tip points at. On big screens the pages
+// scale up with CSS zoom (--wide-zoom), so read it off the target (or the
+// page shell) itself; the CSS variable is only the fallback for browsers
+// without currentCSSZoom.
+function pageZoom() {
+  if (typeof window === 'undefined') return 1
+  const sel = currentStep.value?.selector
+  const el = (sel && document.querySelector(sel)) || document.querySelector('.hsw-shell')
+  if (el && el.currentCSSZoom > 0) return el.currentCSSZoom
+  const z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--wide-zoom'))
+  return z > 0 ? z : 1
+}
+
 const tipStyle = computed(() => {
   const r = targetRect.value
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800
   const vw = typeof window !== 'undefined' ? window.innerWidth : 400
-  const tipHeight = 200
-  const tipWidth = Math.min(340, vw - 32)
+  // The tip lives on <body>, outside the zoomed page, so it takes the same
+  // zoom to match the page it points at. Everything below is worked out in
+  // screen pixels, then divided by the zoom because the tip's own
+  // top/left/width get multiplied by it.
+  const zoom = pageZoom()
+  const tipHeight = 200 * zoom
+  const tipWidth = Math.min(340 * zoom, vw - 32)
   const spaceBelow = vh - (r.y + r.h)
   const showAbove = spaceBelow < tipHeight + 24 && r.y > tipHeight + 24
   tipAbove.value = showAbove
-  const top = showAbove
-    ? `${Math.max(20, r.y - tipHeight - 24)}px`
-    : `${r.y + r.h + 24}px`
+  const top = showAbove ? Math.max(20, r.y - tipHeight - 24) : r.y + r.h + 24
   // Centre horizontally over the target, clamped to the viewport.
   const idealLeft = r.x + r.w / 2 - tipWidth / 2
   const left = Math.max(16, Math.min(idealLeft, vw - tipWidth - 16))
   return {
     position: 'fixed',
-    top,
-    left: `${left}px`,
-    width: `${tipWidth}px`,
+    top: `${top / zoom}px`,
+    left: `${left / zoom}px`,
+    width: `${tipWidth / zoom}px`,
+    zoom,
     zIndex: 10000,
     transition:
       'top 0.45s cubic-bezier(.2,.8,.2,1), left 0.45s cubic-bezier(.2,.8,.2,1)',

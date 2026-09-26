@@ -368,7 +368,7 @@
       </template>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Convert modal -->
     <Teleport to="body">
@@ -6537,5 +6537,26 @@ const SectionCard = defineComponent({
 /* Three across once there is room for it without squeezing the pills. */
 @media (min-width: 1120px) {
   .lp-sec-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Zoom multiplies vh/dvh too, so any
+   viewport-height rule divides the zoom back out. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .hsw-shell,
+  .lp-body { zoom: var(--wide-zoom, 1); }
+  /* Teleported modals and wizards sit outside the page, so they scale on
+     their own; their height caps divide the zoom back out. */
+  .lp-modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(88vh / var(--wide-zoom, 1)), 760px);
+  }
+  .lp-assess {
+    zoom: var(--wide-zoom, 1);
+    height: min(calc(88vh / var(--wide-zoom, 1)), 860px);
+  }
 }
 </style>
