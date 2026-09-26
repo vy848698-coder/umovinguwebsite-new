@@ -565,4 +565,13 @@ function onSearch() {
   border-radius: 999px;
   font-weight: 800;
 }
+/* Big screens - scale with the page behind it (--wide-zoom = width / 1366,
+   nuxt.config.ts). Zoom multiplies dvh too, so the height cap divides it
+   back out and the dialog still fits the window. */
+@media (min-width: 1367px) {
+  .psm-card {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(88dvh / var(--wide-zoom, 1));
+  }
+}
 </style>

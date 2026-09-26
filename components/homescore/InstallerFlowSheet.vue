@@ -1215,4 +1215,13 @@ watch(() => props.open, (o) => {
   color: #fff;
 }
 .ifs-ea-chip:active { transform: scale(0.97) }
+/* Big screens - scale with the page behind it (--wide-zoom = width / 1366,
+   nuxt.config.ts). Zoom multiplies dvh too, so the height cap divides it
+   back out and the dialog still fits the window. */
+@media (min-width: 1367px) {
+  .ifs-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(85dvh / var(--wide-zoom, 1)), 780px);
+  }
+}
 </style>

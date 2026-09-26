@@ -8,6 +8,10 @@
 //   --auth           set a placeholder login token first (for auth-gated pages)
 //   --mock-passport  answer /__backend passport sections + task questions with
 //                    test data, so passport pages render without a real login
+//   --no-skip        don't auto-click "Skip" buttons (tour dismissal) - needed
+//                    on pages whose own Skip button navigates away (preferences)
+//   --scroll         scroll through the page before capturing, so scroll-reveal
+//                    sections and lazy images are shown (landing page)
 //
 // Needs the dev server on http://localhost:3000 and Chrome installed. Widths
 // below 768 are emulated as a touch phone. Each page is captured full-length
@@ -27,6 +31,8 @@ const ROUTES = (routeArg || '/').split(',').map((r) => {
 })
 const AUTH = flags.includes('--auth')
 const MOCK = flags.includes('--mock-passport')
+const NO_SKIP = flags.includes('--no-skip')
+const SCROLL = flags.includes('--scroll')
 const ORIGIN = 'http://localhost:3000'
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const PORT = 9333
@@ -114,8 +120,11 @@ for (const route of ROUTES) {
     if (AUTH) { await send('Page.navigate', { url: `${ORIGIN}/favicon.ico` }); await sleep(800); await send('Runtime.evaluate', { expression: tokenSetup }) }
     await send('Page.navigate', { url: ORIGIN + route })
     await sleep(9000)
-    await send('Runtime.evaluate', { expression: `[...document.querySelectorAll('button')].filter(b=>/^Skip$/i.test(b.textContent.trim())).forEach(b=>b.click())` })
+    if (!NO_SKIP) await send('Runtime.evaluate', { expression: `[...document.querySelectorAll('button')].filter(b=>/^Skip$/i.test(b.textContent.trim())).forEach(b=>b.click())` })
     await sleep(600)
+    if (SCROLL) {
+      await send('Runtime.evaluate', { awaitPromise: true, expression: `(async()=>{const w=(ms)=>new Promise(r=>setTimeout(r,ms));for(let y=0;y<document.documentElement.scrollHeight;y+=Math.round(innerHeight*0.6)){scrollTo(0,y);await w(150)}scrollTo(0,0);await w(1200)})()` })
+    }
     const r = await send('Runtime.evaluate', { returnByValue: true, expression: `JSON.stringify({w: innerWidth, sw: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight, zoom: getComputedStyle(document.documentElement).getPropertyValue('--wide-zoom').trim() || '-'})` })
     const d = JSON.parse(r.result.value)
     const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width, height: Math.min(d.h, 3200), scale: 1 } })

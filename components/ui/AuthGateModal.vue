@@ -144,4 +144,9 @@ function go(mode: 'signup' | 'signin') {
   cursor: pointer;
   font-family: inherit;
 }
+/* Big screens - scale with the page behind it (--wide-zoom = width / 1366,
+   nuxt.config.ts), so the dialog reads as it does on a 1366px laptop. */
+@media (min-width: 1367px) {
+  .agm-card { zoom: var(--wide-zoom, 1); }
+}
 </style>
