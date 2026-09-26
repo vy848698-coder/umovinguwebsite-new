@@ -153,6 +153,23 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/logo.png' },
         { rel: 'manifest', href: '/manifest.webmanifest' },
       ],
+      script: [
+        {
+          // Big-screen scale (--wide-zoom). The passport pages are sized in px
+          // against a 1366px laptop; wider windows zoom them by width / 1366
+          // so any monitor shows the same layout as the laptop, only bigger:
+          // same margins, same proportions. Nothing changes at 1366px or below.
+          // Browser zoom shows up as a resize, so it is covered too. The cap
+          // (3, per screen pixel) keeps raster artwork from being blown up past
+          // its resolution; with the browser zoomed out (devicePixelRatio < 1)
+          // the cap rises by the same factor. Inline in <head> so it lands
+          // before the first paint; without JS the pages stay at laptop size.
+          key: 'wide-zoom',
+          tagPosition: 'head',
+          innerHTML:
+            "(function(){var r=document.documentElement;function s(){var w=innerWidth,d=Math.min(devicePixelRatio||1,1);r.style.setProperty('--wide-zoom',(w<=1366?1:Math.min(w/1366,3/d)).toFixed(3))}s();addEventListener('resize',s)})()",
+        },
+      ],
     },
   },
   runtimeConfig: {

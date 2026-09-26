@@ -553,4 +553,14 @@ onBeforeUnmount(() => stopStream())
   background: #fff;
   border: 2px solid #000;
 }
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Zoom multiplies vh/dvh too, so any
+   viewport-height rule divides the zoom back out. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .cs-modal { zoom: var(--wide-zoom, 1); }
+}
 </style>

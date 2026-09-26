@@ -295,7 +295,7 @@
 
     </div>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
   </div>
 
@@ -985,17 +985,24 @@ const isAnswerValid = computed(() => {
       return (
         answer.length > 0 &&
         answer.every((form) => {
-          return Object.values(form).some((val) => val && val.trim().length > 0)
+          return (
+            !!form &&
+            Object.values(form).some((val) => val && String(val).trim().length > 0)
+          )
         })
       )
     }
     // For non-repeatable: answer is single object
+    // An unanswered form can arrive as null (typeof null === 'object').
     if (
       !currentQuestion.value.repeatable &&
+      answer &&
       typeof answer === 'object' &&
       !Array.isArray(answer)
     ) {
-      return Object.values(answer).some((val) => val && val.trim().length > 0)
+      return Object.values(answer).some(
+        (val) => val && String(val).trim().length > 0,
+      )
     }
     return false
   }
@@ -1960,5 +1967,18 @@ const handleContinue = () => {
   .q-nav {
     margin-top: 0;
   }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Zoom multiplies vh/dvh too, so any
+   viewport-height rule divides the zoom back out. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .hsw-shell,
+  .tk-split { zoom: var(--wide-zoom, 1); }
+  /* Still ends at the bottom of the window, below the (taller) nav. */
+  .tk-side { min-height: calc(100dvh / var(--wide-zoom, 1) - 66px); }
 }
 </style>

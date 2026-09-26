@@ -1,5 +1,5 @@
 <template>
-  <footer class="uf">
+  <footer class="uf" :class="{ 'uf--wide': wide }">
     <div class="uf-shell">
       <div class="uf-grid">
         <!-- Brand / intro -->
@@ -68,6 +68,10 @@
 
 <script setup lang="ts">
 // navigateTo is auto-imported by Nuxt.
+
+// `wide`: pages that scale up on big screens (the passport pages) scale
+// the footer content with them; every other page is unchanged.
+defineProps<{ wide?: boolean }>()
 </script>
 
 <style scoped>
@@ -85,6 +89,13 @@
   width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
   padding: 56px 0 26px;
+}
+/* Passport pages scale up on big screens (--wide-zoom); the footer
+   content scales with them so the page reads as one piece. */
+@media (min-width: 1367px) {
+  .uf--wide .uf-shell {
+    zoom: var(--wide-zoom, 1);
+  }
 }
 
 .uf-grid {

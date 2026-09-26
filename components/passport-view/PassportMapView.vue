@@ -1172,4 +1172,17 @@ const navigateToStep = (stepId) => {
 .sheet-leave-to.sheet-backdrop {
   opacity: 0;
 }
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Zoom multiplies vh/dvh too, so any
+   viewport-height rule divides the zoom back out. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(88vh / var(--wide-zoom, 1));
+  }
+}
 </style>
