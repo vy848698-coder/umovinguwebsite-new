@@ -208,25 +208,31 @@ const filteredCountries = computed(() => {
 function computeDropdownPosition() {
   if (!wrapperRef.value) return
   const rect = wrapperRef.value.getBoundingClientRect()
+  // The dropdown is teleported to <body>, outside any CSS-zoomed page (big
+  // screens zoom by --wide-zoom). Give it the field's zoom so it matches, and
+  // divide the window-pixel rect by it, since zoom scales top/left/width too.
+  const z = wrapperRef.value.currentCSSZoom || 1
   const spaceBelow = window.innerHeight - rect.bottom
-  const dropdownHeight = 320
+  const dropdownHeight = 320 * z
 
-  if (spaceBelow >= dropdownHeight || spaceBelow >= 200) {
+  if (spaceBelow >= dropdownHeight || spaceBelow >= 200 * z) {
     // Open below
     dropdownStyle.value = {
       position: 'fixed',
-      top: `${rect.bottom + 4}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
+      top: `${(rect.bottom + 4) / z}px`,
+      left: `${rect.left / z}px`,
+      width: `${rect.width / z}px`,
+      zoom: z,
       zIndex: 9999,
     }
   } else {
     // Open above
     dropdownStyle.value = {
       position: 'fixed',
-      bottom: `${window.innerHeight - rect.top + 4}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
+      bottom: `${(window.innerHeight - rect.top + 4) / z}px`,
+      left: `${rect.left / z}px`,
+      width: `${rect.width / z}px`,
+      zoom: z,
       zIndex: 9999,
     }
   }

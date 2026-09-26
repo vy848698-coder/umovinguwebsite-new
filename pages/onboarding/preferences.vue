@@ -2002,6 +2002,22 @@ onMounted(() => {
     flex: 1;
     justify-content: center;
   }
+  .pf-side {
+    padding: 28px 20px;
+  }
+  .pf-side-title {
+    font-size: 25px;
+    margin: 20px 0 28px;
+  }
+  .pf-main {
+    padding: 28px 20px 48px;
+  }
+  .pf-role {
+    padding: 20px 18px;
+  }
+  .pf-card {
+    padding: 24px 20px 28px;
+  }
 }
 
 /* ── Light header (replaces the old purple block) ────────────────── */
@@ -2566,6 +2582,18 @@ onMounted(() => {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. The body row zooms (not the full-height page
+   root), so it still stretches to fill the window. Nothing changes at
+   1366px or below. */
+@media (min-width: 1367px) {
+  .pf-body {
+    zoom: var(--wide-zoom, 1);
   }
 }
 </style>
