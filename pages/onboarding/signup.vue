@@ -1,5 +1,12 @@
 <template>
   <div class="signup-split">
+    <NuxtLink to="/" class="auth-website-btn" title="Back to website">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+      </svg>
+      <span class="auth-website-label">Back to website</span>
+    </NuxtLink>
+
     <!-- ── Left brand panel (light) ── -->
     <aside class="signup-aside">
       <div class="signup-aside-top">
@@ -308,12 +315,37 @@ const handleSubmit = async () => {
 <style scoped>
 /* ── Split-screen layout ── */
 .signup-split {
+  position: relative;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #231d45;
 }
+
+/* Back to website — pinned to the page's top-right corner, level with the
+   logo row (top of the form panel on desktop, the header row when stacked) */
+.auth-website-btn {
+  position: absolute;
+  top: 43px;
+  right: 48px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e3e1ea;
+  color: #231d45;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.18s, color 0.18s;
+}
+.auth-website-btn:hover { border-color: #00a19a; color: #00857f; }
+.auth-website-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* ── Left brand panel (light) ── */
 .signup-aside {
@@ -769,17 +801,70 @@ const handleSubmit = async () => {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Responsive: stack to single column ── */
+/* ── Responsive ── */
+/* Narrow laptops: the logo + tagline row is tight in a half-width panel, so
+   let the tagline wrap instead of being clipped by the panel. */
+@media (max-width: 1100px) {
+  .signup-tagline { white-space: normal; }
+}
+/* The form panel is narrow enough here for its title to run into the
+   corner button, so start the form below it. */
+@media (max-width: 1180px) {
+  .signup-main { padding-top: 96px; }
+}
+
+/* Tablet / phone: stack to a single column */
 @media (max-width: 880px) {
   .signup-split { grid-template-columns: 1fr; }
   .signup-aside { padding: 28px 28px 36px; }
   .signup-aside-top { margin-bottom: 32px; }
   .signup-tagline { display: none; }
-  .signup-aside-body { justify-content: flex-start; }
+  .signup-aside-body { justify-content: flex-start; align-self: center; }
   .signup-welcome { font-size: clamp(38px, 11vw, 52px); }
   .signup-house-illus { display: none; }
   .signup-steps { margin-top: 28px; }
-  .signup-aside-foot { margin-top: 28px; }
+  .signup-aside-foot { margin-top: 28px; align-self: center; }
   .signup-main { padding: 32px 24px 48px; }
+  .auth-website-btn { top: 31px; right: 28px; }
+}
+
+/* Phone: tighter side padding so the form gets the width */
+@media (max-width: 520px) {
+  .signup-aside { padding: 22px 20px 28px; }
+  .signup-aside-top { margin-bottom: 24px; }
+  .signup-main { padding: 28px 20px 44px; }
+  .auth-website-btn { top: 25px; right: 20px; padding: 8px 13px; }
+}
+
+/* Small phones: the full label no longer fits beside the logo, so the
+   button becomes a round arrow; the label stays for screen readers. */
+@media (max-width: 359px) {
+  .auth-website-btn {
+    top: 24px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+  .auth-website-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Each half zooms on its own, so its background
+   still fills its grid track; the corner button zooms with them (its
+   top/right offsets scale too). Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .signup-aside,
+  .signup-main,
+  .auth-website-btn { zoom: var(--wide-zoom, 1); }
 }
 </style>

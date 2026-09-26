@@ -1,10 +1,18 @@
 ﻿<template>
   <div class="signin-split">
+    <NuxtLink to="/" class="auth-website-btn" title="Back to website">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+      </svg>
+      <span class="auth-website-label">Back to website</span>
+    </NuxtLink>
+
     <!-- ── Left brand panel (light) ── -->
     <aside class="signin-aside">
       <div class="signin-aside-top">
         <div class="signin-logo">
-          <span class="signin-logo-word"><span class="signin-logo-word-a">umo</span><span class="signin-logo-word-b">vingu</span></span>
+          <span class="signin-logo-mark"><img src="/op-icons/logo.png" alt="umu" /></span>
+          <strong>umovingu</strong>
         </div>
         <p class="signin-tagline">You own the home. Own its story.</p>
       </div>
@@ -542,12 +550,37 @@ const onPrimary = () => {
 <style scoped>
 /* ── Split-screen layout ── */
 .signin-split {
+  position: relative;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #231d45;
 }
+
+/* Back to website — pinned to the page's top-right corner, level with the
+   logo row (top of the form panel on desktop, the header row when stacked) */
+.auth-website-btn {
+  position: absolute;
+  top: 43px;
+  right: 48px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e3e1ea;
+  color: #231d45;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.18s, color 0.18s;
+}
+.auth-website-btn:hover { border-color: #00a19a; color: #00857f; }
+.auth-website-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* ── Left brand panel (light) ── */
 .signin-aside {
@@ -570,17 +603,24 @@ const onPrimary = () => {
   gap: 16px;
 }
 
-.signin-logo {
-  display: inline-flex;
-  align-items: center;
+.signin-logo { display: inline-flex; align-items: center; gap: 12px; }
+.signin-logo-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #00a19a;
+  background: rgba(0, 161, 154, 0.08);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
 }
-.signin-logo-word {
-  font-size: 22px;
+.signin-logo-mark img { width: 30px; height: auto; display: block; }
+.signin-logo strong {
+  font-size: 19px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+  color: #231d45;
 }
-.signin-logo-word-a { color: #231d45; }
-.signin-logo-word-b { color: #00a19a; }
 .signin-tagline {
   margin: 0;
   font-size: 13px;
@@ -787,17 +827,58 @@ const onPrimary = () => {
 .confirm-state--futuristic .confirm-sub strong { color: #231d45; }
 .confirm-state--futuristic .confirm-sub { color: #6b6783; }
 
-/* ── Responsive: stack to single column ── */
+/* ── Responsive ── */
+/* Narrow laptops: the logo + tagline row is tight in a half-width panel, so
+   let the tagline wrap instead of being clipped by the panel. */
+@media (max-width: 1100px) {
+  .signin-tagline { white-space: normal; }
+}
+
+/* Tablet / phone: stack to a single column */
 @media (max-width: 880px) {
   .signin-split { grid-template-columns: 1fr; }
   .signin-aside { padding: 28px 28px 36px; }
   .signin-aside-top { margin-bottom: 36px; }
   .signin-tagline { display: none; }
-  .signin-aside-body { justify-content: flex-start; }
+  .signin-aside-body { justify-content: flex-start; align-self: center; }
   .signin-welcome { font-size: clamp(38px, 11vw, 52px); }
   .signin-passport-illus { max-width: 220px; margin-top: 24px; }
-  .signin-aside-foot { margin-top: 32px; }
+  .signin-aside-foot { margin-top: 32px; align-self: center; }
   .signin-main { padding: 32px 24px 48px; }
+  .auth-website-btn { top: 31px; right: 28px; }
+}
+
+/* Phone: smaller cover and tighter spacing so the form starts sooner */
+@media (max-width: 520px) {
+  .signin-aside { padding: 22px 20px 28px; }
+  .signin-aside-top { margin-bottom: 24px; }
+  .signin-welcome-sub { margin-top: 14px; font-size: 15px; }
+  .signin-passport-illus { max-width: 160px; margin-top: 18px; }
+  .signin-aside-foot { margin-top: 22px; }
+  .signin-main { padding: 28px 20px 44px; }
+  .otp-boxes { gap: 8px; }
+  .otp-box { flex: 1 1 0; width: auto; min-width: 0; max-width: 46px; height: 50px; }
+  .auth-website-btn { top: 25px; right: 20px; padding: 8px 13px; }
+}
+
+/* Small phones: the full label no longer fits beside the logo, so the
+   button becomes a round arrow; the label stays for screen readers. */
+@media (max-width: 359px) {
+  .auth-website-btn {
+    top: 24px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+  .auth-website-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }
 
 /* Topbar */
@@ -1125,4 +1206,15 @@ const onPrimary = () => {
   50% { transform: translateY(-10px); }
 }
 
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Each half zooms on its own, so its background
+   still fills its grid track; the corner button zooms with them (its
+   top/right offsets scale too). Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .signin-aside,
+  .signin-main,
+  .auth-website-btn { zoom: var(--wide-zoom, 1); }
+}
 </style>
