@@ -7,7 +7,7 @@
          show-profile-mobile is off for guests: the burger panel's Profile row
          would otherwise bounce a signed-out visitor to the sign-in screen,
          which is exactly what this page exists to avoid. -->
-    <WebTopNav :show-profile-mobile="signedIn">
+    <WebTopNav :show-profile-mobile="signedIn" wide>
       <template #actions>
         <template v-if="signedIn">
           <NuxtLink to="/profile" class="dsc-nav-profile" aria-label="Your profile">
@@ -724,7 +724,7 @@
       </template>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <AuthGateModal
       v-model="authGateOpen"
@@ -2010,7 +2010,7 @@ onMounted(() => {
 /* ── Result grid ──────────────────────────────────────────────────────── */
 .dsc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(268px, 100%), 1fr));
   gap: 22px;
 }
 .dsc-skeleton {
@@ -2109,7 +2109,7 @@ onMounted(() => {
 /* ── Entry cards ──────────────────────────────────────────────────────── */
 .dsc-entry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 22px;
 }
 .dsc-entry {
@@ -2212,7 +2212,7 @@ onMounted(() => {
 /* ── Feature cards ────────────────────────────────────────────────────── */
 .dsc-feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
   gap: 24px;
 }
 .dsc-feature {
@@ -2418,7 +2418,7 @@ onMounted(() => {
 .dsc-eco-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(212px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(212px, 100%), 1fr));
   gap: 16px;
 }
 .dsc-eco-card {
@@ -2745,8 +2745,18 @@ onMounted(() => {
   .dsc-power-col { flex: 0 0 calc(50% - 12px); }
   .dsc-power-connector { display: none; }
 }
+/* Grid minimums above use min(Npx, 100%) so a track never gets wider than a
+   phone screen (a 400px minimum overflowed and clipped the feature cards). */
 @media (max-width: 760px) {
   .dsc-shell { padding: 0 16px 72px; }
+  .dsc-feature { padding: 26px 22px 24px; }
+  .dsc-feature-top { gap: 14px; margin-bottom: 20px; }
+  .dsc-hs-ring,
+  .dsc-feature-plate { width: 104px; height: 104px; }
+  .dsc-feature-plate { border-radius: 24px; }
+  .dsc-feature-art { width: 76px; height: 76px; }
+  .dsc-hs-ring-label strong { font-size: 28px; }
+  .dsc-feature-title { font-size: 22px; }
   .dsc-search-panel { padding: 12px 12px 0; margin-bottom: 48px; }
   .dsc-search-row { flex-wrap: wrap; }
   .dsc-search-field { flex: 1 1 100%; }
@@ -3118,5 +3128,21 @@ button.rx-card:hover {
   .dsc-eco-pop-leave-active,
   .dsc-eco-pop-enter-active .dsc-eco--dialog,
   .dsc-eco-pop-leave-active .dsc-eco--dialog { transition: none; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. The hero band and the page content zoom (nav
+   and footer via their `wide` prop). The ecosystem popup is teleported
+   outside the page, so it zooms on its own; zoom multiplies dvh too, so its
+   height cap divides the zoom back out. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .dsc-band,
+  .dsc-shell { zoom: var(--wide-zoom, 1); }
+  .dsc-eco--dialog {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(860px, calc(100dvh / var(--wide-zoom, 1) - 64px));
+  }
 }
 </style>

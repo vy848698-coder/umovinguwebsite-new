@@ -699,11 +699,15 @@ function scrollToTop() {
 // So: reveal the target first, then scroll to its LAYOUT position via the
 // offsetParent chain, which transforms don't affect. Every menu item now puts
 // its section in exactly the same place, whatever its reveal state.
+//
+// On big screens the page content is CSS-zoomed (--wide-zoom), and offsetTop
+// is then reported in the zoomed element's own unscaled units, so each step
+// is scaled back up by that element's zoom to get window pixels.
 function layoutTop(el: HTMLElement): number {
   let top = 0
   let node: HTMLElement | null = el
   while (node) {
-    top += node.offsetTop
+    top += node.offsetTop * ((node as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1)
     node = node.offsetParent as HTMLElement | null
   }
   return top
@@ -717,7 +721,8 @@ function scrollToSection(id: string) {
   // mid-animation when we compute where to stop.
   target.classList.add('is-visible')
   const nav = document.querySelector<HTMLElement>('.lp-nav')
-  const offset = (nav?.getBoundingClientRect().height ?? 72) + 24
+  const zoom = (nav as (HTMLElement & { currentCSSZoom?: number }) | null)?.currentCSSZoom || 1
+  const offset = (nav?.getBoundingClientRect().height ?? 72) + 24 * zoom
   window.scrollTo({ top: Math.max(0, layoutTop(target) - offset), behavior: 'smooth' })
 }
 
@@ -1240,7 +1245,9 @@ main section[id] {
   position: absolute; width: 210px; height: 210px; border-radius: 50%;
   background: radial-gradient(circle, rgba(23,179,166,.16) 0%, rgba(23,179,166,0) 68%);
 }
-.xp-img { position: relative; width: min(230px, 78%); height: auto; object-fit: contain; }
+/* aspect-ratio = the PNG's own 471x529, so the lazy image reserves its height
+   before it loads and nothing below jumps (menu jumps measured short). */
+.xp-img { position: relative; width: min(230px, 78%); height: auto; aspect-ratio: 471 / 529; object-fit: contain; }
 .xp-headline {
   position: relative; margin: 10px 0 0;
   font-size: 19px; font-weight: 800; line-height: 1.32;
@@ -2009,6 +2016,7 @@ main section[id] {
   position: relative;
   width: 128px;
   height: auto;
+  aspect-ratio: 412 / 368; /* the PNG's own size: reserves height before the lazy load */
   object-fit: contain;
   transform: rotate(-4deg);
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
@@ -2620,5 +2628,104 @@ main section[id] {
   .lp-timeline-step { flex: 0 0 44%; }
   .lp-footer-grid { grid-template-columns: 1fr; gap: 24px; }
   .lp-cta-actions .lp-btn { width: 100%; }
+}
+
+/* ── Responsive fixes (hero card, timeline, nav) ─────────────────── */
+/* Below ~1200px the shell's side margin is narrower than the solicitor
+   badge's 26px overhang, so the page's overflow clip cut it off. Pulled in,
+   it is a touch narrower so it clears the card's "Your HomeScore" label, and
+   the score badge hangs lower so it clears the note text. */
+@media (max-width: 1200px) {
+  .lp-badge--solicitor { right: 0; max-width: 206px; }
+  .lp-badge--score { bottom: -66px; }
+}
+/* Stacked hero: the visual keeps room below for the hanging score badge. */
+@media (max-width: 960px) {
+  .lp-hero-visual { margin-bottom: 60px; }
+}
+@media (max-width: 600px) {
+  /* The card is meant to sit straight here, but its sway animation kept
+     re-applying the tilt over `transform: none`. */
+  .lp-passport-card { animation: none; }
+  .lp-badge--score { bottom: -52px; }
+  /* A phone-width card has no room beside its label for the solicitor
+     badge, so the badge gets its own space above the card and overlaps
+     only the card's top padding (badge 133px tall, label 37px down). */
+  .lp-hero-visual { padding-top: 104px; }
+  .lp-badge--solicitor { top: 0; }
+  /* The timeline wraps onto rows here and its track is hidden; hide the
+     animated fill too, which otherwise drew across the first row only. */
+  .lp-timeline::after { display: none; }
+}
+/* Stacked layout: a plain `1fr` track can't shrink below its widest
+   unbreakable content (the no-wrap hero button), which pushed the whole hero
+   column past the screen edge on very narrow screens. minmax(0, 1fr) keeps
+   every stacked column to the screen width. */
+@media (max-width: 980px) {
+  .lp-split--explore { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 960px) {
+  .lp-hero-grid,
+  .lp-split,
+  .lp-split--passport { grid-template-columns: minmax(0, 1fr); }
+}
+/* Narrow phones: long buttons may wrap rather than run off the edge. */
+@media (max-width: 400px) {
+  .lp-hero-cta .lp-btn { white-space: normal; max-width: 100%; }
+}
+/* Very narrow screens (under 340px, e.g. a squeezed browser window or a
+   folded phone): drop the BETA tag so the nav fits on one row, and let the
+   Passport card's header wrap. */
+@media (max-width: 340px) {
+  .lp-brand-beta { display: none; }
+  .pp-card-top { flex-wrap: wrap; }
+  .pp-card-hero-img { width: 80px; }
+  .pp-headline-block { gap: 10px; }
+  /* Hero HomeScore card: a smaller ring and padding so the card fits. */
+  .lp-hero-visual { min-width: 0; }
+  .lp-passport-card { padding: 22px 16px; }
+  .lp-hs-top { grid-template-columns: 70px minmax(0, 1fr); gap: 10px; }
+  .lp-hs-ring-wrap { width: 70px; height: 70px; }
+  .lp-hs-center strong { font-size: 24px; }
+}
+/* Small phones: tighten the nav so the brand, BETA tag, Explore button and
+   menu toggle fit on one row. */
+@media (max-width: 380px) {
+  .lp-nav-inner { gap: 8px; }
+  .lp-brand { gap: 6px; padding: 0; }
+  .lp-brand-img { height: 30px; }
+  .lp-brand-name { font-size: 16px; }
+  .lp-nav-actions { gap: 6px; }
+  .lp-nav-actions .lp-btn--solid { padding: 9px 12px; font-size: 13px; }
+  /* The brand never runs under the buttons: its box may shrink, and the
+     name is clipped inside it rather than spilling out (it used to overflow
+     its own box and sit under the Explore button). */
+  .lp-brand { min-width: 0; overflow: hidden; }
+  .lp-brand-img { flex-shrink: 0; }
+  .lp-brand-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+/* Very narrow windows (a desktop browser squeezed to ~240px, where its own
+   scrollbar takes 15px more): a slightly smaller logo, Explore button and
+   menu toggle so the full "umovingu" name still fits beside them. */
+@media (max-width: 300px) {
+  .lp-nav-inner { gap: 6px; }
+  .lp-brand { gap: 4px; }
+  .lp-brand-img { height: 26px; }
+  .lp-brand-name { font-size: 15px; }
+  .lp-nav-actions { gap: 4px; }
+  .lp-nav-actions .lp-btn--solid { padding: 8px 9px; font-size: 12.5px; }
+  .lp-nav-burger { width: 36px; height: 36px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. The nav, the page content and the floating
+   CTA zoom (not the full-height root). Nothing changes at 1366px or
+   below. */
+@media (min-width: 1367px) {
+  .lp-nav,
+  .lp > main,
+  .lp-sticky-cta { zoom: var(--wide-zoom, 1); }
 }
 </style>

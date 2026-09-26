@@ -1,5 +1,5 @@
 ﻿<template>
-  <header class="webtop-nav">
+  <header class="webtop-nav" :class="{ 'webtop-nav--wide': wide }">
     <div class="webtop-shell webtop-inner">
       <button class="webtop-brand" type="button" @click="navigateTo('/')">
         <img src="/op-icons/logo.png" alt="" class="webtop-brand-logo" />
@@ -50,12 +50,16 @@
 </template>
 
 <script setup lang="ts">
+// `wide`: pages that scale up on big screens (--wide-zoom) scale the bar's
+// content with them; every other page is unchanged.
 const props = withDefaults(defineProps<{
   includeChatInLearn?: boolean
   showProfileMobile?: boolean
+  wide?: boolean
 }>(), {
   includeChatInLearn: false,
   showProfileMobile: true,
+  wide: false,
 })
 
 const route = useRoute()
@@ -341,6 +345,15 @@ watch(
   .webtop-brand-logo {
     width: 24px;
     height: 24px;
+  }
+}
+
+/* Pages that scale up on big screens (--wide-zoom = width / 1366, set in
+   nuxt.config.ts): the bar's content scales with them so the page reads as
+   one piece. The bar itself stays full-width. */
+@media (min-width: 1367px) {
+  .webtop-nav--wide .webtop-inner {
+    zoom: var(--wide-zoom, 1);
   }
 }
 </style>
