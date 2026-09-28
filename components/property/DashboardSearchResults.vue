@@ -1175,7 +1175,7 @@ onBeforeUnmount(() => {
 /* ── Grid + cards ────────────────────────────────────────────────── */
 .dsr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
   gap: 22px;
 }
 .dsr-skeleton {
@@ -1480,7 +1480,14 @@ onBeforeUnmount(() => {
   .dsr-head-text { order: 3; flex-basis: 100%; }
   .dsr-toggle { margin-left: auto; }
   .dsr-title { font-size: 20px; }
-  .dsr-pop, .dsr-pop--wide { min-width: 260px; }
+  .dsr-pop, .dsr-pop--wide { min-width: min(260px, calc(100vw - 32px)); }
   .dsr-chip-wrap:nth-last-child(-n + 3) .dsr-pop { left: auto; right: 0; }
+}
+
+/* Big screens: the dashboard zooms this whole panel (--wide-zoom), and zoom
+   multiplies vh too, so the map's height divides it back out. Mapbox already
+   corrects pointer positions for CSS scaling (offsetWidth / rect.width). */
+@media (min-width: 1367px) {
+  .dsr-map { height: min(calc(68vh / var(--wide-zoom, 1)), 640px); }
 }
 </style>

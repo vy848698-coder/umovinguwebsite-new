@@ -293,4 +293,14 @@ function relativeTime(iso: string): string {
 .nb-leave-to { opacity: 0; }
 .nb-enter-from .nb-sheet,
 .nb-leave-to .nb-sheet { transform: translateY(-8px); }
+
+/* Big screens - the panel is teleported outside the (zoomed) page, so it
+   scales on its own with --wide-zoom; zoom multiplies dvh, so the height cap
+   divides it back out. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .nb-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(100dvh / var(--wide-zoom, 1) - 90px);
+  }
+}
 </style>
