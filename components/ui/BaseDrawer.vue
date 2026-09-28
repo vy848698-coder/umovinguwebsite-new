@@ -542,13 +542,36 @@ const onDragEnd = () => {
     padding: 1rem;
   }
 
+  /* Full-width white bar like the desktop sheet. It used to sit inset by a
+     16px margin, which showed as a stray bordered box floating on the grey
+     sheet behind the button. */
   .drawer__footer {
-    padding: 0.75rem 1rem 1rem;
-    margin: 16px;
+    padding: 0.75rem 1rem calc(1rem + env(safe-area-inset-bottom, 0));
   }
 
+  /* Same width as the close button, so the title stays centred and gets
+     the room it needs instead of wrapping ("Collaborator / Type"). */
   .drawer__back-placeholder {
-    width: 60px; /* Smaller placeholder on mobile */
+    width: 2rem;
+    flex-shrink: 0;
+  }
+
+  .drawer__title {
+    padding: 0 0.5rem;
+  }
+
+  .drawer__close {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .drawer__header {
+    padding: 0.625rem 0.75rem 0.5rem;
+  }
+
+  .drawer__title {
+    font-size: 1rem;
   }
 }
 </style>

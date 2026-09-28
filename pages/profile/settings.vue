@@ -1,7 +1,7 @@
 <template>
   <div class="st-page">
 
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="st-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="st-quick-btn solid" type="button" @click="navigateTo('/profile/support')">Support</button>
@@ -1192,6 +1192,11 @@ const securityLabel = computed(() => {
 }
 
 @media (max-width: 560px) {
+  /* Theme row: the Light/Dark/Auto switch moves under its label rather
+     than squeezing "Choose how the app looks" to one word per line. */
+  .st-row--block { flex-wrap: wrap; }
+  .st-row--block .st-segment { flex: 1 1 100%; justify-content: space-between; }
+  .st-row--block .st-segment-btn { flex: 1; }
   .st-body { padding: 16px 14px 0; }
   .st-h1 { font-size: 32px; }
   .st-card, .st-strength-card { padding: 18px; }
@@ -1207,6 +1212,26 @@ const securityLabel = computed(() => {
   .st-modal {
     transition: none;
     animation: none;
+  }
+}
+
+/* One column must be allowed to shrink below its widest line (a plain 1fr
+   track grows to its content and ran 16px past a narrow window). */
+@media (max-width: 720px) {
+  .st-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. The change-password modal is teleported outside the page, so it zooms on its own; zoom multiplies vh too, so its height cap divides the zoom back out. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .st-body,
+  .st-footer { zoom: var(--wide-zoom, 1); }
+  .st-modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(92vh / var(--wide-zoom, 1));
   }
 }
 </style>

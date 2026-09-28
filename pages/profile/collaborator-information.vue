@@ -1,6 +1,6 @@
 <template>
   <div class="cl-page">
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="cl-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="cl-quick-btn solid" type="button" @click="openCollaboratorTypeModal">+ Add</button>
@@ -248,7 +248,7 @@
       </template>
     </BaseDrawer>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -1260,5 +1260,24 @@ const goBack = useGoBack('/profile')
   .collaborator-card::before {
     display: none;
   }
+}
+
+/* Narrow windows: the search box drops its 280px minimum and the chip row is
+   held to the column width (it scrolls sideways), so neither runs past the
+   screen edge. */
+@media (max-width: 860px) {
+  .cl-filter-row { width: 100%; max-width: 100%; min-width: 0; }
+  .cl-search { min-width: 0; max-width: 100%; }
+  .cl-search input { min-width: 0; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. The Collaborator Type drawer scales itself (BaseDrawer). Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .cl-body,
+  .fab { zoom: var(--wide-zoom, 1); }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="learn-page">
 
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="learn-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="learn-btn solid" type="button" @click="navigateTo('/profile/chat')">Chat History</button>
@@ -236,7 +236,7 @@
       </section>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -1149,6 +1149,18 @@ function askWith(text: string) {
   .learn-cta-btn { width: 100%; }
 }
 
+/* Small phones: slimmer hero and search box so the placeholder and the
+   Voice search / AI Generate chips fit without clipping or wrapping. */
+@media (max-width: 400px) {
+  .learn-hero { padding: 22px 16px; }
+  .learn-search { padding: 12px; }
+  .learn-search-top { gap: 8px; }
+  .learn-search-icon { width: 36px; height: 36px; }
+  .learn-send { width: 44px; height: 44px; }
+  .learn-search-actions { gap: 8px; flex-wrap: wrap; }
+  .learn-search-chip { padding: 8px 11px; font-size: 12.5px; gap: 5px; white-space: nowrap; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .learn-trend-card,
   .learn-recent-card,
@@ -1162,5 +1174,14 @@ function askWith(text: string) {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .learn-main { zoom: var(--wide-zoom, 1); }
 }
 </style>

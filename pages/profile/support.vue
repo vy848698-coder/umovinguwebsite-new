@@ -1,7 +1,7 @@
 <template>
   <div class="hs-page">
 
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="hs-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="hs-quick-btn solid" type="button" @click="navigateTo('/profile/settings')">Settings</button>
@@ -841,5 +841,15 @@ const faqs = [
     transition: none;
     animation: none;
   }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .hs-body,
+  .hs-footer { zoom: var(--wide-zoom, 1); }
 }
 </style>

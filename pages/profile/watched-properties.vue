@@ -3,7 +3,7 @@
     <!-- Back lives in the nav bar: this page is reached from the dashboard's
          Watching card, so "back" means the dashboard rather than a nav
          destination. -->
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="sp-nav-back" type="button" @click="goBack">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -134,7 +134,7 @@
         </article>
       </div>
     </main>
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -508,4 +508,13 @@ const filteredProperties = computed(() => {
   border-top: 1px solid #eef1f5;
 }
 .sp-hs strong { color: #008a84; font-feature-settings: 'tnum'; }
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sp-body { zoom: var(--wide-zoom, 1); }
+}
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="dc-page mobile-container">
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="dc-body">
       <!-- Hero -->
@@ -155,7 +155,7 @@
       </svg>
     </button>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Upload Document Modal -->
     <Teleport to="body">
@@ -1483,6 +1483,29 @@ const goBack = useGoBack('/profile')
 
   .dc-hero::before {
     display: none;
+  }
+}
+
+/* Narrow screens: the stats pill wraps onto a second line instead of running
+   past the hero card; each stat stays on one line and the dots are dropped
+   (a dot at the start of a wrapped line reads as a stray bullet). */
+@media (max-width: 430px) {
+  .hero-stats { flex-wrap: wrap; gap: 6px 14px; border-radius: 16px; max-width: 100%; }
+  .hero-stats > span:not(.stat-sep) { white-space: nowrap; }
+  .hero-stats .stat-sep { display: none; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. The upload modal is teleported outside the page, so it zooms on its own; zoom multiplies vh too, so its height cap divides the zoom back out. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .dc-body,
+  .fab { zoom: var(--wide-zoom, 1); }
+  .modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(88vh / var(--wide-zoom, 1)), 680px);
   }
 }
 </style>

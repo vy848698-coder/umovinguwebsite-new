@@ -1,7 +1,7 @@
 <template>
   <div class="sp-page">
 
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="sp-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="sp-quick-btn solid" type="button" @click="navigateTo('/dashboard')">Dashboard</button>
@@ -175,7 +175,7 @@
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -902,5 +902,29 @@ const sortedProperties = computed(() => {
     transition: none;
     animation: none;
   }
+}
+
+/* Narrow screens: the stats pill wraps onto a second line instead of running
+   past the hero card; each stat stays on one line and the dots are dropped
+   (a dot at the start of a wrapped line reads as a stray bullet). */
+@media (max-width: 430px) {
+  .hero-stats { flex-wrap: wrap; gap: 6px 14px; border-radius: 16px; max-width: 100%; }
+  .hero-stats > span:not(.stat-sep) { white-space: nowrap; }
+  .hero-stats .stat-sep { display: none; }
+}
+
+/* Very narrow windows: the sort menu and grid/list toggle share the row and
+   wrap instead of pushing the toggle past the edge. */
+@media (max-width: 360px) {
+  .sp-controls-right { flex-wrap: wrap; flex-shrink: 1; min-width: 0; gap: 8px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sp-body { zoom: var(--wide-zoom, 1); }
 }
 </style>

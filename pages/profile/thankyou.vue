@@ -10,8 +10,8 @@
       />
       <div class="absolute inset-0 thankyou-overlay" />
 
-      <div class="relative h-full flex flex-col px-6 pt-6 pb-8">
-        <div class="flex items-center justify-between">
+      <div class="ty-content relative h-full flex flex-col px-4 sm:px-6 pt-6 pb-8">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <div
             class="inline-flex items-center gap-2 bg-black/45 rounded-full px-2 py-1"
           >
@@ -52,7 +52,7 @@
             </button>
           </div>
 
-          <div class="inline-flex items-center gap-2">
+          <div class="ml-auto inline-flex items-center gap-2">
             <button
               type="button"
               class="w-10 h-10 rounded-full bg-[#2f3c45]/90 flex items-center justify-center"
@@ -131,5 +131,14 @@ const finish = () => {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 36%),
     linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.66) 100%);
+}
+
+/* Big screens (--wide-zoom = width / 1366, set in nuxt.config.ts): the
+   controls and end card scale like the rest of the site; the full-screen
+   background stays edge to edge. % heights stay correct under zoom. */
+@media (min-width: 1367px) {
+  .ty-content {
+    zoom: var(--wide-zoom, 1);
+  }
 }
 </style>

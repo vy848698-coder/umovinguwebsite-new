@@ -2,22 +2,22 @@
   <NuxtPage v-if="!isProfileRoot" />
 
   <div v-else class="w-full min-h-screen bg-umu-gradient pb-8">
-    <header class="flex items-center justify-between px-4 pt-5 max-w-7xl mx-auto">
+    <header class="pm-wide flex items-center justify-between gap-2 px-4 pt-5 max-w-7xl mx-auto">
       <button
         type="button"
-        class="w-10 h-10 flex items-center justify-center"
+        class="w-10 h-10 shrink-0 flex items-center justify-center"
         @click="goBack"
       >
         <Icon name="i-heroicons-chevron-left" class="w-6 h-6 text-black" />
       </button>
 
-      <h1 class="text-[32px] leading-[38px] font-semibold text-black">
+      <h1 class="min-w-0 truncate text-[24px] leading-[30px] sm:text-[32px] sm:leading-[38px] font-semibold text-black">
         My Profile
       </h1>
 
       <button
         type="button"
-        class="w-8 h-8 rounded-full bg-[#403d91] flex items-center justify-center"
+        class="w-8 h-8 shrink-0 rounded-full bg-[#403d91] flex items-center justify-center"
         aria-label="More"
       >
         <Icon
@@ -27,7 +27,7 @@
       </button>
     </header>
 
-    <main class="px-5 pb-8 max-w-7xl mx-auto">
+    <main class="pm-wide px-4 sm:px-5 pb-8 max-w-7xl mx-auto">
       <section class="pt-6 text-center">
         <div class="relative w-fit mx-auto">
           <UserAvatar
@@ -39,25 +39,25 @@
         </div>
 
         <h2
-          class="mt-8 text-[44px] leading-[52px] font-semibold text-[#101319]"
+          class="mt-8 text-[32px] leading-[40px] sm:text-[44px] sm:leading-[52px] font-semibold text-[#101319] break-words"
         >
           {{ fullName || 'Your Profile' }}
         </h2>
-        <p class="text-[20px] leading-[24px] text-[#7f8084] mt-1">
+        <p class="text-[16px] leading-[22px] sm:text-[20px] sm:leading-[24px] text-[#7f8084] mt-1 break-all">
           {{ profile?.email || '' }}
         </p>
 
         <button
           v-if="memberSince"
           type="button"
-          class="mt-6 h-14 px-8 rounded-full border border-brand-aqua text-brand-aqua text-xl leading-6 font-medium"
+          class="mt-6 h-12 sm:h-14 px-6 sm:px-8 rounded-full border border-brand-aqua text-brand-aqua text-lg sm:text-xl leading-6 font-medium"
         >
           Member since {{ memberSince }}
         </button>
       </section>
 
       <div class="mt-8 flex gap-3 items-center md:max-w-xl md:mx-auto">
-        <div class="flex-1 bg-white rounded-2xl h-14 px-4 flex items-center">
+        <div class="flex-1 min-w-0 bg-white rounded-2xl h-14 px-4 flex items-center">
           <Icon
             name="i-heroicons-magnifying-glass"
             class="w-6 h-6 text-gray-400"
@@ -72,7 +72,7 @@
 
         <button
           type="button"
-          class="w-14 h-14 rounded-2xl bg-brand-aqua text-white flex items-center justify-center"
+          class="w-14 h-14 shrink-0 rounded-2xl bg-brand-aqua text-white flex items-center justify-center"
           aria-label="Search filters"
         >
           <Icon name="i-heroicons-adjustments-horizontal" class="w-6 h-6" />
@@ -84,32 +84,32 @@
           v-for="item in filteredItems"
           :key="item.title"
           type="button"
-          class="w-full bg-[#f6f6f7] rounded-3xl px-5 py-4 flex items-center gap-4 text-left"
+          class="w-full bg-[#f6f6f7] rounded-3xl px-4 sm:px-5 py-4 flex items-center gap-3 sm:gap-4 text-left"
           @click="onPreferenceClick(item)"
         >
-          <div class="w-7 h-7 flex items-center justify-center text-[#1f2024]">
+          <div class="w-7 h-7 shrink-0 flex items-center justify-center text-[#1f2024]">
             <Icon :name="item.icon" class="w-6 h-6" />
           </div>
 
           <div class="flex-1 min-w-0">
-            <p class="text-[32px] leading-[38px] font-medium text-[#1f2024]">
+            <p class="text-[22px] leading-[28px] sm:text-[32px] sm:leading-[38px] font-medium text-[#1f2024]">
               {{ item.title }}
             </p>
-            <p class="text-[20px] leading-[24px] text-[#7f8084] mt-1">
+            <p class="text-[15px] leading-[20px] sm:text-[20px] sm:leading-[24px] text-[#7f8084] mt-1">
               {{ item.description }}
             </p>
           </div>
 
           <Icon
             name="i-heroicons-chevron-right"
-            class="w-6 h-6 text-[#b4b5b8]"
+            class="w-6 h-6 shrink-0 text-[#b4b5b8]"
           />
         </button>
       </div>
 
       <button
         type="button"
-        class="mt-8 w-full md:max-w-md md:mx-auto md:block h-[60px] rounded-2xl bg-brand-aqua text-white text-[32px] leading-[38px] font-medium"
+        class="mt-8 w-full md:max-w-md md:mx-auto md:block h-[56px] sm:h-[60px] rounded-2xl bg-brand-aqua text-white text-[24px] leading-[30px] sm:text-[32px] sm:leading-[38px] font-medium"
         @click="logout"
       >
         Log Out
@@ -225,3 +225,14 @@ const logout = async () => {
   await navigateTo("/onboarding/signin");
 };
 </script>
+
+<style scoped>
+/* Big screens (--wide-zoom = width / 1366, set in nuxt.config.ts): the
+   header and content scale so a monitor shows the 1366px laptop layout,
+   only bigger. The full-height gradient root is left alone. */
+@media (min-width: 1367px) {
+  .pm-wide {
+    zoom: var(--wide-zoom, 1);
+  }
+}
+</style>

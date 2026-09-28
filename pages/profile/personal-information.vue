@@ -1,7 +1,7 @@
 
 <template>
   <div class="pi-shell">
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="pi-body">
         <!-- Welcome hero banner -->
@@ -266,7 +266,7 @@
         </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Contact Edit Drawer -->
     <BaseDrawer
@@ -1147,7 +1147,9 @@ img.pi-footnote-ic { width: 18px; height: 18px; object-fit: contain; vertical-al
   .pi-welcome-prog, .pi-welcome-cta { grid-column: 1 / -1; }
 }
 @media (max-width: 860px) {
-  .pi-grid, .pi-grid-2 { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr): a plain 1fr track grows to its widest line and ran past
+     narrow windows */
+  .pi-grid, .pi-grid-2 { grid-template-columns: minmax(0, 1fr); }
   .pi-card-verify { grid-column: auto; }
 }
 @media (max-width: 760px) {
@@ -1157,7 +1159,11 @@ img.pi-footnote-ic { width: 18px; height: 18px; object-fit: contain; vertical-al
   .pi-avatar { width: 80px; height: 80px; font-size: 27px; }
 }
 @media (max-width: 560px) {
-  .pi-welcome { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  /* A long single word ("Verification") can't shrink, so on narrow cards
+     the header action drops below the title instead of covering it. */
+  .pi-card-head { flex-wrap: wrap; }
+  .pi-card-titlewrap { min-width: auto; }
+  .pi-welcome { grid-template-columns: minmax(0, 1fr); text-align: center; justify-items: center; }
   .pi-welcome-sub { margin: 0 auto; }
   .pi-completion-row { justify-content: center; }
 }
@@ -1172,5 +1178,14 @@ img.pi-footnote-ic { width: 18px; height: 18px; object-fit: contain; vertical-al
     transition: none;
     animation: none;
   }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. The edit drawers scale themselves (BaseDrawer). Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .pi-body { zoom: var(--wide-zoom, 1); }
 }
 </style>

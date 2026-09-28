@@ -1,7 +1,7 @@
 <template>
   <div class="chat-page">
 
-    <WebTopNav :include-chat-in-learn="true">
+    <WebTopNav wide :include-chat-in-learn="true">
       <template #actions>
         <button class="chat-btn ghost" type="button" @click="navigateTo('/profile/learn')">Back to Learn</button>
         <button class="chat-btn solid" type="button" @click="clearChat">Clear Chat</button>
@@ -88,7 +88,7 @@
                 <p>Powered by UMovingU AI</p>
               </div>
             </div>
-            <button class="chat-inline-clear" type="button" @click="clearChat">
+            <button class="chat-inline-clear" type="button" aria-label="Clear chat" @click="clearChat">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" />
               </svg>
@@ -850,7 +850,32 @@ watch(isLoading, async (val) => {
   .chat-empty-copy h3 { font-size: 22px; }
 }
 
+/* Small phones: the header's Clear chat button keeps just its bin icon (it
+   is still labelled) so it stays inside the panel next to the title. */
+@media (max-width: 420px) {
+  .chat-panel-title-wrap { min-width: 0; gap: 10px; }
+  .chat-avatar { flex-shrink: 0; }
+  .chat-inline-clear { flex-shrink: 0; font-size: 0; gap: 0; padding: 9px; }
+  .chat-inline-clear svg { width: 17px; height: 17px; }
+  .chat-panel-title-wrap > div { min-width: 0; }
+  .chat-panel-title-wrap h2 { flex-wrap: wrap; row-gap: 4px; font-size: 17px; }
+}
+@media (max-width: 300px) {
+  .chat-avatar { width: 36px; height: 36px; }
+  .chat-panel-title-wrap h2 { font-size: 15px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .chat-typing span { animation: none !important; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Zoom multiplies dvh too, so the chat panel's height divides the zoom back out. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .chat-main { zoom: var(--wide-zoom, 1); }
+  .chat-panel { min-height: calc(100dvh / var(--wide-zoom, 1) - 130px); }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="cal-page mobile-container">
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="cal-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="cal-quick-btn solid" type="button" @click="navigateTo('/profile/support')">Support</button>
@@ -1497,6 +1497,31 @@ onMounted(async () => {
   .modal {
     transition: none;
     animation: none;
+  }
+}
+
+/* Very narrow windows: the month title and stats take the full column and
+   wrap; the Month view button moves under the arrows instead of running
+   past the edge. */
+@media (max-width: 420px) {
+  .cal-toolbar-left { align-self: stretch; min-width: 0; }
+  .cal-month-title { font-size: 24px; }
+  .cal-controls { flex-wrap: wrap; min-width: 0; }
+  .cal-ctrl-today { min-width: 90px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. The add-event modal is teleported outside the page, so it zooms on its own; zoom multiplies vh too, so its height cap divides the zoom back out. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .cal-body,
+  .cal-footer,
+  .fab { zoom: var(--wide-zoom, 1); }
+  .modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(92vh / var(--wide-zoom, 1)), 760px);
   }
 }
 </style>

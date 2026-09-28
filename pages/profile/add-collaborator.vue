@@ -1,6 +1,6 @@
 <template>
   <div class="ac-page">
-    <WebTopNav />
+    <WebTopNav wide />
 
     <main class="ac-body">
       <button class="ac-back-link" type="button" @click="goBack">
@@ -233,7 +233,7 @@
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -1191,5 +1191,14 @@ onMounted(loadPassports)
   .ac-actions {
     flex-direction: column-reverse;
   }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .ac-body { zoom: var(--wide-zoom, 1); }
 }
 </style>
