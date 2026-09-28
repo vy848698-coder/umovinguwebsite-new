@@ -82,10 +82,10 @@
       <section class="hs-hero">
         <div class="hero-content">
           <p class="section-kicker"><span class="kicker-dot" />HomeScore</p>
-          <h1>What does any UK<br class="h1-br-mobile" /> home really<br class="h1-br-mobile" /> cost to run?</h1>
+          <h1>Could your home be costing you <span class="hero-accent">more than it should?</span></h1>
           <p class="hero-description">
-            Instantly scored from public EPC data, for any address, anyone.
-            See how a property compares to its street in seconds.
+            Discover hidden savings, compare with similar homes and see what your
+            property is really telling you.
           </p>
 
           <div class="hs-search-wrap">
@@ -179,7 +179,7 @@
                 <li>
                   <span class="hs-house-dot" style="background: #8b5cf6" />
                   <span class="hs-house-label">Potential savings</span>
-                  <span class="hs-house-val">£340 / year</span>
+                  <span class="hs-house-val">£330 / year</span>
                 </li>
               </ul>
 
@@ -266,30 +266,16 @@
           <h2>Getting your HomeScore is simple</h2>
         </div>
 
-        <div class="hs-how-tabs" role="tablist">
-          <button
-            v-for="t in howTabs"
-            :key="t.id"
-            class="hs-how-tab"
-            :class="{ active: activeHow === t.id }"
-            role="tab"
-            :aria-selected="activeHow === t.id"
-            @click="activeHow = t.id"
-          >
-            {{ t.label }}
-          </button>
-        </div>
-
-        <div class="hs-steps-grid">
-          <article v-for="(step, i) in currentHowSteps" :key="i" class="hs-step-card">
-            <div :class="['hs-step-icon', stepTones[i]]">
-              <span class="hs-step-badge">{{ i + 1 }}</span>
-              <img :src="`/homescore-icon/${step.icon}.png`" alt="" class="hs-step-art" loading="lazy" />
+        <ol class="hs-how-list">
+          <li v-for="(step, i) in howSteps" :key="step.title" class="hs-how-item" :class="step.tone">
+            <div class="hs-how-art-wrap">
+              <img :src="step.icon" alt="" class="hs-how-art" loading="lazy" />
+              <span class="hs-how-num">{{ i + 1 }}</span>
             </div>
             <h3>{{ step.title }}</h3>
             <p>{{ step.sub }}</p>
-          </article>
-        </div>
+          </li>
+        </ol>
       </section>
 
       <!-- ── Powered by OpenProperty ────────────────────────────────── -->
@@ -333,7 +319,6 @@ onMounted(() => {
 })
 
 const heroMeta = ['Free', 'Instant', 'No account needed']
-const stepTones = ['teal', 'purple', 'amber']
 
 // ── Real "N HomeScores run in the last hour" count ──────────────────
 // Public endpoint (no auth) — same source the deployed app reads. The
@@ -434,70 +419,27 @@ watch(
   },
 )
 
-// ── How it works tabs ────────────────────────────────────────────────
-type HowId = 'buyers' | 'owners' | 'curious'
-const activeHow = ref<HowId>('buyers')
-
-const howTabs: { id: HowId; label: string }[] = [
-  { id: 'buyers', label: 'Looking to buy' },
-  { id: 'owners', label: "It's my property" },
-  { id: 'curious', label: 'Just curious' },
+// ── How it works ─────────────────────────────────────────────────────
+const howSteps = [
+  {
+    icon: '/op-icons/explore/propertySearch.png',
+    tone: 'teal',
+    title: 'Search any UK address',
+    sub: 'Enter a postcode or street name to instantly view its HomeScore.',
+  },
+  {
+    icon: '/homescore-icon/growthChart.png',
+    tone: 'purple',
+    title: 'See how the property compares',
+    sub: 'Compare running costs, energy efficiency and public property information with similar homes.',
+  },
+  {
+    icon: '/homescore-icon/clipboard.png',
+    tone: 'amber',
+    title: 'Know more about the home',
+    sub: 'Spot potential issues, understand where money could be saved and know what to investigate next.',
+  },
 ]
-
-const howCopy: Record<HowId, { title: string; sub: string; icon: string }[]> = {
-  buyers: [
-    {
-      title: 'Search any UK address',
-      icon: 'magnifier',
-      sub: 'Type a postcode or street and see how it scores against its neighbours.',
-    },
-    {
-      title: 'See running costs & risks',
-      icon: 'utilityBills',
-      sub: 'Energy costs, sold history, flood risk: everything public records can tell you before you make an offer.',
-    },
-    {
-      title: 'Know what to ask before you view',
-      icon: 'clipboardChecklist',
-      sub: 'Get a list of questions based on what the EPC data flags, so you walk in already informed.',
-    },
-  ],
-  owners: [
-    {
-      title: 'Search your address',
-      icon: 'houseSearch',
-      sub: "See your property's estimated score from public EPC data. It takes 5 seconds.",
-    },
-    {
-      title: 'See how you compare to your street',
-      icon: 'housesCluster',
-      sub: 'Find out if this property is costing more to run than similar homes nearby, and why.',
-    },
-    {
-      title: 'Upload bills to get your real number',
-      icon: 'utilityBills',
-      sub: 'Public EPC data can be years out of date. Your actual bills tell the real story and start building your Property Passport.',
-    },
-  ],
-  curious: [
-    {
-      title: "Search any address, yours or anyone's",
-      icon: 'magnifier',
-      sub: 'No account, no commitment. Just type a postcode and see what the data says.',
-    },
-    {
-      title: 'See what your street is paying',
-      icon: 'housesCluster',
-      sub: 'Compare running costs across nearby homes. Renting or owning, the data is the same for everyone.',
-    },
-    {
-      title: 'Find out if you could be paying less',
-      icon: 'moneyBagPound',
-      sub: 'If this property is costing more than its neighbours, the HomeScore shows you exactly why and what could change it.',
-    },
-  ],
-}
-const currentHowSteps = computed(() => howCopy[activeHow.value])
 </script>
 
 <style scoped>
@@ -709,7 +651,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 /* ── Layout ───────────────────────────────────────────────────────── */
 .hs-main {
-  padding: 54px 0 18px;
+  padding: 30px 0 18px;
 }
 
 .section-kicker {
@@ -739,26 +681,35 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 /* ── Hero ─────────────────────────────────────────────────────────── */
 .hs-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   align-items: center;
-  gap: clamp(40px, 5vw, 72px);
-  min-height: 500px;
+  gap: clamp(32px, 4vw, 56px);
   max-width: 1260px;
   margin: 0 auto;
   padding: 0 clamp(24px, 4vw, 64px);
 }
 
 .hero-content {
-  max-width: 560px;
+  max-width: 580px;
 }
 
+/* Sized for the longer question so it sets in three even lines instead of
+   four ragged ones; `balance` evens the line lengths out. */
 .hero-content h1 {
   margin: 0;
   color: #231d45;
-  font-size: clamp(38px, 5vw, 62px);
+  font-size: clamp(36px, 4.3vw, 56px);
   font-weight: 800;
-  line-height: 1.07;
-  letter-spacing: -0.02em;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.hero-accent {
+  background: linear-gradient(100deg, #00a19a 0%, #0b7f72 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Forced line breaks only on narrow/mobile widths; desktop wraps naturally. */
@@ -767,8 +718,9 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 }
 
 .hero-description {
-  margin: 26px 0 0;
-  max-width: 540px;
+  margin: 20px 0 0;
+  max-width: 500px;
+  text-wrap: pretty;
   color: #5b6d89;
   font-size: 18px;
   font-weight: 500;
@@ -782,11 +734,11 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   align-items: center;
   gap: 8px;
   max-width: 540px;
-  margin-top: 34px;
+  margin-top: 30px;
   background: #fff;
   border: 1.5px solid #e7ecf2;
-  border-radius: 16px;
-  padding: 6px 6px 6px 12px;
+  border-radius: 18px;
+  padding: 7px 7px 7px 12px;
   box-shadow: 0 14px 30px rgba(24, 52, 88, 0.08);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -839,8 +791,8 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   font-family: inherit;
   font-size: 15px;
   font-weight: 800;
-  padding: 12px 20px;
-  border-radius: 12px;
+  padding: 13px 22px;
+  border-radius: 13px;
   cursor: pointer;
   flex-shrink: 0;
   box-shadow: 0 10px 20px rgba(0, 161, 154, 0.24);
@@ -859,11 +811,11 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
 .hs-meta-row {
   display: flex;
-  gap: 22px;
+  gap: 10px;
   flex-wrap: wrap;
-  font-size: 14px;
-  color: #647590;
-  font-weight: 600;
+  font-size: 13px;
+  color: #4a5870;
+  font-weight: 700;
   margin: 18px 0 0;
 }
 
@@ -871,11 +823,18 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  padding: 7px 13px 7px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(35, 29, 69, 0.07);
 }
 
 .hs-meta-item svg {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
+  padding: 3px;
+  border-radius: 50%;
+  background: rgba(0, 161, 154, 0.12);
   color: #00a19a;
 }
 
@@ -884,7 +843,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 480px;
+  padding: 14px 0;
 }
 
 /* ── House-shaped score card ──
@@ -1324,9 +1283,15 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   100% { transform: scale(2); opacity: 0; }
 }
 
-/* ── How it works ─────────────────────────────────────────────────── */
+/* ── How it works ─────────────────────────────────────────────────────
+   Centred heading, then three matching step cards. Each card: 3D art on a
+   soft teal glow, the outlined step number, title and copy. A dashed
+   connector links the cards on desktop. */
 .hs-how {
-  padding-top: 64px;
+  padding-top: 72px;
+}
+
+.hs-how-head {
   text-align: center;
 }
 
@@ -1339,62 +1304,28 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   letter-spacing: -0.02em;
 }
 
-.hs-how-tabs {
-  display: inline-flex;
-  background: #ffffff;
-  border: 1px solid #ece8df;
-  border-radius: 100px;
-  padding: 6px;
-  gap: 4px;
-  margin: 30px 0 44px;
-  box-shadow: 0 6px 18px rgba(26, 19, 64, 0.06);
-}
-
-.hs-how-tab {
-  white-space: nowrap;
-  border: none;
-  background: transparent;
-  color: #6b6783;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  padding: 11px 26px;
-  border-radius: 100px;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-
-.hs-how-tab:hover {
-  color: #1a1340;
-}
-
-.hs-how-tab.active {
-  background: #1a1340;
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: 0 6px 16px rgba(26, 19, 64, 0.28);
-}
-
-.hs-steps-grid {
+.hs-how-list {
+  position: relative;
+  list-style: none;
+  margin: 44px 0 0;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
-  position: relative;
 }
 
-.hs-steps-grid::before {
+/* dashed line running behind the three icons */
+.hs-how-list::before {
   content: '';
   position: absolute;
   left: 20%;
   right: 20%;
   top: 52px;
   border-top: 2px dashed #d5e6e2;
-  z-index: 0;
 }
 
-.hs-step-card {
+.hs-how-item {
   position: relative;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1402,9 +1333,12 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   padding: 0 14px;
 }
 
-/* Bare 3D icon - no tile. The page colour behind it breaks the dashed
-   connector cleanly around each icon. */
-.hs-step-icon {
+.hs-how-item.teal { --tone: #00857f; }
+.hs-how-item.purple { --tone: #5a4cf0; }
+.hs-how-item.amber { --tone: #e59100; }
+
+/* Page-colour disc behind each icon breaks the dashed line cleanly. */
+.hs-how-art-wrap {
   position: relative;
   z-index: 1;
   width: 104px;
@@ -1412,55 +1346,58 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   display: grid;
   place-items: center;
   margin-bottom: 18px;
-  background: #f3f2ef;
   border-radius: 50%;
+  background: #f3f2ef;
   transition: transform 0.3s ease;
 }
 
-.hs-step-art {
-  width: 96px;
-  height: 96px;
+.hs-how-item:hover .hs-how-art-wrap {
+  transform: translateY(-4px);
+}
+
+.hs-how-art {
+  width: 92px;
+  height: 92px;
   object-fit: contain;
   filter: drop-shadow(0 12px 16px rgba(24, 52, 88, 0.16));
 }
 
-.hs-step-card:hover .hs-step-icon { transform: translateY(-4px); }
+/* The search-house artwork has more empty padding than the other two,
+   so it gets a little extra scale to read at the same size. */
+.hs-how-item:first-child .hs-how-art {
+  scale: 1.3;
+}
 
-/* tone only drives the step-number colour now */
-.hs-step-icon.teal { color: #00857f; }
-.hs-step-icon.purple { color: #5a4cf0; }
-.hs-step-icon.amber { color: #e59100; }
-
-.hs-step-badge {
+.hs-how-num {
   position: absolute;
   top: 0;
   right: -2px;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
   background: #fff;
-  color: currentColor;
+  color: var(--tone);
   font-size: 13px;
   font-weight: 900;
   box-shadow: 0 4px 12px rgba(24, 52, 88, 0.16);
 }
 
-.hs-step-card h3 {
+.hs-how-item h3 {
   margin: 0 0 10px;
   color: #231d45;
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 1.25;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
-.hs-step-card p {
+.hs-how-item p {
   margin: 0;
-  max-width: 280px;
+  max-width: 300px;
   color: #6b6783;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 14.5px;
+  line-height: 1.6;
   font-weight: 500;
 }
 
@@ -1731,12 +1668,12 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
     padding-bottom: 48px;
   }
 
-  .hs-steps-grid {
+  .hs-how-list {
     grid-template-columns: minmax(0, 1fr);
-    gap: 30px;
+    gap: 32px;
   }
 
-  .hs-steps-grid::before {
+  .hs-how-list::before {
     display: none;
   }
 
@@ -1836,27 +1773,30 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 
   .hs-how {
-    padding-top: 48px;
+    padding-top: 52px;
   }
 
-  .hs-how-tabs {
-    display: flex;
-    width: 100%;
-    max-width: 360px;
-    margin-left: auto;
-    margin-right: auto;
-    gap: 3px;
-    padding: 4px;
+  .hs-how-list {
+    margin-top: 30px;
   }
 
-  .hs-how-tab {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 9px 6px;
-    font-size: 12px;
-    white-space: normal;
-    line-height: 1.2;
-    text-align: center;
+  .hs-how-art-wrap {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 14px;
+  }
+
+  .hs-how-art {
+    width: 78px;
+    height: 78px;
+  }
+
+  .hs-how-item h3 {
+    font-size: 17px;
+  }
+
+  .hs-how-item p {
+    font-size: 14px;
   }
 
   .footer-grid {
