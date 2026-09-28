@@ -266,11 +266,15 @@ const onDragEnd = () => {
      CTA (Add Collaborators, etc.) becomes invisible + untappable. */
   z-index: 100;
   display: flex;
-  align-items: flex-end;
+  /* Centred dialog on every screen size - docked to the bottom it read as
+     stuck to the bottom edge of a desktop window. */
+  align-items: center;
   justify-content: center;
+  padding: 16px;
 }
 
 .drawer-overlay--fullscreen {
+  padding: 0;
   align-items: stretch;
   justify-content: stretch;
   background-color: rgba(0, 0, 0, 0.9);
@@ -283,23 +287,22 @@ const onDragEnd = () => {
   transform: none;
 }
 
-/* Drawer Container - constrained to the app's `.mobile-container`
-   max-width (28rem ≈ Tailwind's max-w-md) so the sheet doesn't spill
-   past the chrome on desktop / wider viewports. Centered via the
-   overlay's flex centering above. */
+/* Drawer Container - a centred dialog, constrained to the app's
+   `.mobile-container` max-width (28rem ≈ Tailwind's max-w-md) and to the
+   window height (the overlay's 16px padding keeps it off every edge). */
 .drawer {
   background-color: #f3f4f6;
-  position: absolute;
-  bottom: 0;
+  position: relative;
   width: 100%;
   max-width: 28rem;
-  max-height: 90vh;
-  border-radius: 1rem 1rem 0 0;
+  max-height: min(90vh, calc(100dvh - 32px));
+  border-radius: 1rem;
   display: flex;
   flex-direction: column;
-  transform: translateY(100%);
+  transform: none;
   transition: transform 0.3s ease-out;
   overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
 }
 /* The drawer itself is only ever a focus target when it has no focusable
    content to land on instead (see focusables() in the script) - a plain
@@ -317,11 +320,12 @@ const onDragEnd = () => {
   width: 100%;
   height: 100%;
   border-radius: 0;
+  box-shadow: none;
   transform: translateY(0) !important;
 }
 
 .drawer--open {
-  transform: translateY(0);
+  transform: none;
 }
 
 /* ── Slide-down / fade animation on close ──────────────────────────
@@ -335,22 +339,36 @@ const onDragEnd = () => {
 }
 .drawer-enter-active .drawer,
 .drawer-leave-active .drawer {
-  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0.24, 1);
+  transition:
+    transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
 }
-/* Starting / ending states - overlay fades to transparent, sheet
-   slides fully off-screen. The `.drawer--open` class rule above
-   handles the resting position. */
+/* Starting / ending states - overlay fades to transparent, the dialog
+   fades and rises slightly into place. The `.drawer--open` class rule
+   above handles the resting position. */
 .drawer-enter-from,
 .drawer-leave-to {
   background-color: transparent !important;
 }
-.drawer-enter-from .drawer,
-.drawer-leave-to .drawer {
-  transform: translateY(100%) !important;
+.drawer-enter-from .drawer:not(.drawer--fullscreen),
+.drawer-leave-to .drawer:not(.drawer--fullscreen) {
+  transform: translateY(14px) scale(0.98) !important;
+  opacity: 0;
+}
+.drawer-enter-from .drawer--fullscreen,
+.drawer-leave-to .drawer--fullscreen {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer-enter-active .drawer,
+  .drawer-leave-active .drawer { transition: none; }
 }
 
-/* Grab handle at the top of the sheet - iOS-native drag affordance. */
+/* Grab handle - a bottom-sheet affordance, so it's hidden now that the
+   drawer is a centred dialog (kept in the markup; swipe-down still closes
+   it on touch screens). */
 .drawer__handle {
+  display: none;
   width: 40px;
   height: 4px;
   border-radius: 100px;
@@ -514,7 +532,7 @@ const onDragEnd = () => {
 @media (min-width: 1367px) {
   .drawer:not(.drawer--fullscreen) {
     zoom: var(--wide-zoom, 1);
-    max-height: calc(90vh / var(--wide-zoom, 1));
+    max-height: min(calc(90vh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px));
   }
   .drawer--fullscreen > .drawer__header,
   .drawer--fullscreen > .drawer__content,
@@ -524,10 +542,14 @@ const onDragEnd = () => {
 }
 
 @media (max-width: 480px) {
+  .drawer-overlay:not(.drawer-overlay--fullscreen) {
+    padding: 12px;
+  }
+
   .drawer {
     max-width: 100%;
     margin: 0;
-    max-height: 85vh; /* Adjust for mobile */
+    max-height: min(85vh, calc(100dvh - 24px)); /* Adjust for mobile */
   }
 
   .drawer__header {

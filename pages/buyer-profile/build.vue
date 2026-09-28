@@ -4139,6 +4139,24 @@ onBeforeUnmount(() => {
   .hsw-back { padding: 0 10px; }
 }
 
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.bp-sheet {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin: 0;
+  width: calc(100% - 32px);
+  transform: translate(-50%, -50%);
+  border-radius: 24px;
+  max-height: calc(100% - 32px);
+  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.28);
+}
+.bp-sheet-handle { display: none; }
+
 /* ── Big screens ──────────────────────────────────────────────
    Scale with the window width (--wide-zoom = width / 1366, set in
    nuxt.config.ts) so a desktop monitor shows the wizard exactly as a 1366px

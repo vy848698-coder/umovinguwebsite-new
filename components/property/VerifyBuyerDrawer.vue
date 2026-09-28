@@ -155,4 +155,20 @@ const benefits = [
 .verify-modal-leave-to { opacity: 0; }
 .verify-modal-enter-from .vb-sheet,
 .verify-modal-leave-to .vb-sheet { transform: translateY(100%); }
+
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.vb-overlay { align-items: center; padding: 16px; }
+.vb-sheet {
+  border-radius: 22px;
+  max-height: min(90dvh, calc(100dvh - 32px));
+  box-shadow: 0 24px 60px rgba(35, 29, 69, 0.28);
+}
+.verify-modal-enter-active .vb-sheet,
+.verify-modal-leave-active .vb-sheet { transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease; }
+.verify-modal-enter-from .vb-sheet,
+.verify-modal-leave-to .vb-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
+
 </style>
