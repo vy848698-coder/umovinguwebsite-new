@@ -1,63 +1,10 @@
 ﻿<template>
   <div class="dsc">
-    <!-- Guest-first page, so the nav actions are Sign in / Get started rather
-         than the bell + avatar the signed-in dashboard shows. A visitor who
-         already has a session still gets their profile pill, since this page
-         is reachable from the nav at any time.
-         show-profile-mobile is off for guests: the burger panel's Profile row
-         would otherwise bounce a signed-out visitor to the sign-in screen,
-         which is exactly what this page exists to avoid. -->
-    <WebTopNav :show-profile-mobile="signedIn" wide>
-      <template #actions>
-        <template v-if="signedIn">
-          <NuxtLink to="/profile" class="dsc-nav-profile" aria-label="Your profile">
-            <UserAvatar
-              :src="profile?.avatarUrl"
-              :first-name="profile?.firstName"
-              :last-name="profile?.lastName"
-              :size="30"
-            />
-            <span class="dsc-nav-profile-text">
-              <strong>{{ profile?.firstName || 'Profile' }}</strong>
-              <small>Your account</small>
-            </span>
-          </NuxtLink>
-        </template>
-        <template v-else>
-          <button class="dsc-nav-signin" type="button" @click="navigateTo('/onboarding/signin')">
-            Sign in
-          </button>
-          <button class="dsc-nav-join" type="button" @click="navigateTo('/onboarding/signup')">
-            Get started
-          </button>
-        </template>
-      </template>
-
-      <!-- The desktop actions above are hidden at mobile widths, so a guest on
-           a phone would otherwise have no way in at all - the burger panel is
-           the only nav there. -->
-      <template #mobile-extra="{ closeMenu }">
-        <template v-if="!signedIn">
-          <button
-            type="button"
-            class="dsc-mobile-auth"
-            @click="closeMenu(); navigateTo('/onboarding/signin')"
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            class="dsc-mobile-auth dsc-mobile-auth--solid"
-            @click="closeMenu(); navigateTo('/onboarding/signup')"
-          >
-            Get started
-          </button>
-        </template>
-      </template>
-    </WebTopNav>
+    <!-- Same public-site navbar as the homepage and /homescore. -->
+    <SiteNav />
 
     <!-- ── Hero ──────────────────────────────────────────────────────────
-         Deliberately no background of its own. WebTopNav is translucent, so a
+         Deliberately no background of its own. The navbar is translucent, so a
          tinted band here bled straight through the bar and made this page's
          navbar look like a different colour to every other page's. Same flat
          #f3f2ef ground as the landing page instead. -->
@@ -903,9 +850,8 @@
 definePageMeta({ title: 'Explore homes - UmovingU' })
 
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteNav from '~/components/core/SiteNav.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
-import UserAvatar from '~/components/ui/UserAvatar.vue'
 import AuthGateModal from '~/components/ui/AuthGateModal.vue'
 import PropertyImage from '~/components/property/PropertyImage.vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
@@ -1672,74 +1618,6 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px 72px;
-}
-
-/* ── Nav actions ──────────────────────────────────────────────────────── */
-.dsc-nav-signin,
-.dsc-nav-join {
-  padding: 11px 18px;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, transform 0.16s ease;
-}
-.dsc-nav-signin {
-  border: 1px solid #e4e5ed;
-  background: #fff;
-  color: #231d45;
-}
-.dsc-nav-signin:hover {
-  border-color: #9fe0d8;
-  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.12);
-}
-.dsc-nav-join {
-  border: none;
-  background: #00a19a;
-  color: #fff;
-}
-.dsc-nav-join:hover {
-  background: #018e88;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 161, 154, 0.3);
-}
-.dsc-nav-profile {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 5px 14px 5px 5px;
-  border-radius: 999px;
-  border: 1px solid #e4e5ed;
-  background: #fff;
-  text-decoration: none;
-  color: inherit;
-}
-.dsc-nav-profile:hover { border-color: #9fe0d8; }
-.dsc-nav-profile-text { display: flex; flex-direction: column; line-height: 1.15; }
-.dsc-nav-profile-text strong { font-size: 13px; font-weight: 800; color: #231d45; }
-.dsc-nav-profile-text small { font-size: 10.5px; font-weight: 700; color: #8a90a6; }
-@media (max-width: 1120px) {
-  .dsc-nav-profile-text { display: none; }
-  .dsc-nav-profile { padding: 5px; }
-}
-.dsc-mobile-auth {
-  width: 100%;
-  margin-top: 8px;
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: 1px solid #e4e5ed;
-  background: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  color: #231d45;
-  cursor: pointer;
-}
-.dsc-mobile-auth--solid {
-  border-color: #00a19a;
-  background: #00a19a;
-  color: #fff;
 }
 
 /* ── Hero band ────────────────────────────────────────────────────────── */

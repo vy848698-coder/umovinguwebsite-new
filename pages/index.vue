@@ -20,7 +20,7 @@
 
         <div class="lp-nav-actions">
           <button class="lp-btn lp-btn--ghost lp-nav-signin" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
-          <button class="lp-btn lp-btn--solid" type="button" @click="goToExploreFrom('nav')">Explore</button>
+          <button class="lp-btn lp-btn--solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
           <button
             class="lp-nav-burger"
             type="button"
@@ -65,12 +65,12 @@
             <p class="lp-hero-sub">
               A free <strong>HomeScore</strong> shows where your home stands today. A
               <strong>Property Passport</strong> has every answer a buyer's solicitor will ask
-              for — so you sell without the surprises, and stay in control.
+              for, so you sell without the surprises and stay in control.
             </p>
 
             <div class="lp-hero-cta">
               <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScoreFrom('hero_cta')">
-                Check my HomeScore — free
+                Check my HomeScore for free
               </button>
             </div>
 
@@ -111,7 +111,7 @@
                 <span class="lp-hs-note-ic">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                 </span>
-                <p>Add your real bills and improvements to sharpen your score — then move from
+                <p>Add your real bills and improvements to sharpen your score, then move from
                 <strong>HomeScore</strong> to a <strong>Property Passport</strong> when you're move-ready.</p>
               </div>
             </article>
@@ -230,38 +230,30 @@
               Look up any home<br />in the UK<span class="lp-q">.</span>
             </h2>
             <p class="lp-lede">
-              Not just the ones that are for sale. Type an address — yours, your neighbour's,
-              or one you're weighing up — and see what the public record already says about it.
+              Not just the ones that are for sale. Type an address (yours, your neighbour's,
+              or one you're weighing up) and see what the public record already says about it.
             </p>
 
             <div class="lp-xtiles">
               <div class="lp-xtile">
-                <span class="lp-xtile-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-                </span>
+                <span class="lp-xtile-ic"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></span>
                 <strong>Search an address</strong>
                 <p>Any UK postcode or street address. No sign-up wall, no card.</p>
               </div>
               <div class="lp-xtile">
-                <span class="lp-xtile-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11H4z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>
-                </span>
+                <span class="lp-xtile-ic"><img src="/homescore-icon/clipboardChecklist.png" alt="" loading="lazy" /></span>
                 <strong>See what's on record</strong>
                 <p>Value, sale history, energy, running costs and local area.</p>
               </div>
               <div class="lp-xtile">
-                <span class="lp-xtile-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
-                </span>
+                <span class="lp-xtile-ic"><img src="/homescore-icon/propertyPassportCard.png" alt="" loading="lazy" /></span>
                 <strong>Spot a Passport</strong>
                 <p>See at a glance which homes already have a verified record.</p>
               </div>
               <div class="lp-xtile">
-                <span class="lp-xtile-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                </span>
+                <span class="lp-xtile-ic"><img src="/homescore-icon/pathwaySignpost.png" alt="" loading="lazy" /></span>
                 <strong>Decide what's next</strong>
-                <p>Watch it, score it, or start your own — only then sign up.</p>
+                <p>Watch it, score it or start your own, and only then sign up.</p>
               </div>
             </div>
 
@@ -300,7 +292,7 @@
               </ul>
 
               <button class="xp-cta" type="button" @click="goToExploreFrom('explore_section')">
-                Explore homes
+                Explore property
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
               </button>
               <p class="xp-note">Free · no account · no card</p>
@@ -314,18 +306,34 @@
         <div class="lp-shell lp-split lp-split--passport">
           <div class="lp-copy">
             <p class="lp-eyebrow lp-eyebrow--teal">The product · solicitor-grade</p>
-            <h2 class="lp-h2 lp-h2--sans">Find out now.<br />Not three weeks in<span class="lp-q">.</span></h2>
+            <h2 class="lp-h2 lp-h2--sans lp-passport-title">Everything your buyer<br />will ask for.<br /><span class="lp-passport-accent">Before they ask</span><span class="lp-q">.</span></h2>
             <p class="lp-lede">
               This is where a sharpened HomeScore becomes move-ready. Everything a buyer's
-              solicitor needs — and will ask for — title deeds, searches, fixtures, boundaries
-              and compliance, gathered into one verified record before you list. The questions
+              solicitor needs and will ask for (title deeds, searches, fixtures, boundaries
+              and compliance) is gathered into one verified record before you list. The questions
               that break sales are answered on day one, and you stay in control of who sees what.
             </p>
             <div class="lp-feature-tiles">
-              <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11H4z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg></span><strong>Title &amp; deeds</strong><p>Pulled automatically from HM Land Registry.</p></div>
-              <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg></span><strong>Local searches</strong><p>Council, drainage and environmental, up front.</p></div>
-              <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13" /><path d="M9 21v-6h6v6" /></svg></span><strong>Fixtures &amp; boundaries</strong><p>The forms and plans solicitors request.</p></div>
-              <div><span class="lp-ft-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 7.8 8 9 4.6-1.2 8-4 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg></span><strong>Compliance &amp; certs</strong><p>FENSA, building regs, gas — verified.</p></div>
+              <div>
+                <span class="lp-ft-ic"><img src="/sample-passport-icon/titleDeedsAndPlan.png" alt="" loading="lazy" /></span>
+                <strong>Title &amp; deeds</strong>
+                <p>Pulled automatically from HM Land Registry.</p>
+              </div>
+              <div>
+                <span class="lp-ft-ic"><img src="/sample-passport-icon/searches.png" alt="" loading="lazy" /></span>
+                <strong>Local searches</strong>
+                <p>Council, drainage and environmental, up front.</p>
+              </div>
+              <div>
+                <span class="lp-ft-ic"><img src="/sample-passport-icon/boundaries.png" alt="" loading="lazy" /></span>
+                <strong>Fixtures &amp; boundaries</strong>
+                <p>The forms and plans solicitors request.</p>
+              </div>
+              <div>
+                <span class="lp-ft-ic"><img src="/homescore-icon/shield.png" alt="" loading="lazy" /></span>
+                <strong>Compliance &amp; certs</strong>
+                <p>FENSA, building regs and gas, all verified.</p>
+              </div>
             </div>
             <p class="lp-dark-foot"><span class="lp-star">★</span> Transferable, owned by you, accepted by your buyer's solicitor.</p>
           </div>
@@ -339,26 +347,31 @@
                 <span class="pp-grade">Solicitor-grade</span>
               </header>
 
-              <div class="pp-headline-block">
-                <p class="pp-headline">
-                  Everything your buyer<br />will ask for.
-                  <span class="pp-headline-soft">Before they ask.</span>
-                </p>
-                <span class="pp-card-hero-figure">
-                  <span class="pp-card-hero-halo" aria-hidden="true" />
-                  <img
-                    src="/op-icons/landing/propertyPassportCard.png"
-                    alt=""
-                    class="pp-card-hero-img"
-                    loading="lazy"
-                  />
-                </span>
+              <div class="pp-figure">
+                <span class="pp-card-hero-halo" aria-hidden="true" />
+                <img
+                  src="/op-icons/landing/propertyPassportCard.png"
+                  alt=""
+                  class="pp-card-hero-img"
+                  loading="lazy"
+                />
               </div>
+
+              <p class="pp-headline">
+                Everything your buyer will ask for.
+                <span class="pp-headline-soft">Before they ask.</span>
+              </p>
 
               <p class="pp-body">
                 Store, verify and securely share everything from deeds and
                 planning to guarantees and surveys.
               </p>
+
+              <ul class="pp-rows">
+                <li><span class="pp-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>Deeds, searches &amp; compliance in one record</li>
+                <li><span class="pp-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>Answers ready on day one</li>
+                <li><span class="pp-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>You control who sees what</li>
+              </ul>
 
               <div class="pp-rule" aria-hidden="true" />
 
@@ -368,7 +381,7 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                 </button>
                 <button class="pp-cta pp-cta--ghost" type="button" @click="navigateTo('/passport/sample')">
-                  See a sample
+                  See a sample Passport
                 </button>
               </div>
             </article>
@@ -407,7 +420,7 @@
           <blockquote class="lp-quote">
             "We had a Passport ready before our first viewing. The buyer's solicitor had
             everything they needed in a day. No surveys lost, no fall-through."
-            <cite>— Aisha Patel, seller</cite>
+            <cite>Aisha Patel, seller</cite>
           </blockquote>
         </div>
       </section>
@@ -419,7 +432,7 @@
           <h2 class="lp-h2 lp-h2--sans">UK home sales<br />are broken<span class="lp-q">.</span></h2>
           <p class="lp-lede lp-lede--wide">
             A third collapse before completion. The ones that survive take <span class="lp-hl">nearly six
-            months</span> — almost all of it spent waiting for paperwork that could have been
+            months</span>, almost all of it spent waiting for paperwork that could have been
             ready on day one.
           </p>
 
@@ -432,7 +445,7 @@
             <article class="lp-market-card">
               <strong>1<small>in</small><span data-count="3">3</span></strong>
               <em>Sales collapse</em>
-              <p>Usually a problem surfaced weeks in — after both sides have spent thousands.</p>
+              <p>Usually a problem surfaced weeks in, after both sides have spent thousands.</p>
             </article>
             <article class="lp-market-card">
               <strong>£<span data-count="2.7" data-decimals="1">2.7</span><small>k</small></strong>
@@ -444,7 +457,7 @@
           <div class="lp-founder">
             <span class="lp-founder-av">M</span>
             <div>
-              <p>"I've spent over 34 years in this industry, watching the same thing happen again and again. People lose homes they'd already moved into, lose deposits they couldn't afford to lose — because every answer they need only arrives <strong>after</strong> they've committed. <strong>None of it has to be like this.</strong> Surface the record on day one, and the whole rhythm of the sale changes."</p>
+              <p>"I've spent over 34 years in this industry, watching the same thing happen again and again. People lose homes they'd already moved into, lose deposits they couldn't afford to lose, because every answer they need only arrives <strong>after</strong> they've committed. <strong>None of it has to be like this.</strong> Surface the record on day one, and the whole rhythm of the sale changes."</p>
               <em>UMU's founder · 34 years in UK property</em>
             </div>
           </div>
@@ -455,15 +468,16 @@
       <section id="reviews" class="lp-section lp-cta reveal" data-reveal>
         <div class="lp-shell lp-cta-inner">
           <p class="lp-eyebrow">Ready when you are</p>
-          <h2 class="lp-h2 lp-h2--sans lp-cta-title">Start with a free HomeScore.<br />Sell like Aisha did<span class="lp-q">.</span></h2>
+          <h2 class="lp-h2 lp-h2--sans lp-cta-title">Start with a free HomeScore.<br /><span class="lp-cta-title-soft">Upgrade to a Passport when you're ready to list<span class="lp-q">.</span></span></h2>
           <p class="lp-lede">
-            See what your home tells you in 60 seconds. <span class="lp-hl-dark">Upgrade to a Property Passport</span>
-            when you're ready to list — and <span class="lp-hl-dark">stay in control</span> the whole way.
+            See what your home tells you in 60 seconds, and <span class="lp-hl-dark">stay in control</span> the whole way.
           </p>
           <div class="lp-cta-actions">
-            <button class="lp-btn lp-btn--solid lp-btn--lg" type="button" @click="goToHomeScore">Get my free HomeScore</button>
-            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg lp-btn--icon" type="button" @click="navigateTo('/passport/sample')"><OPIcon name="passport" class="lp-btn-ic" />See a sample Passport</button>
-            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg" type="button" @click="navigateTo('/onboarding/signup')">Create a free account</button>
+            <button class="lp-btn lp-btn--solid lp-btn--lg lp-cta-btn" type="button" @click="navigateTo('/claim')">
+              Start a property passport
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+            </button>
+            <button class="lp-btn lp-btn--ghost-dark lp-btn--lg lp-cta-btn" type="button" @click="navigateTo('/passport/sample')">See a sample Passport</button>
           </div>
           <p class="lp-cta-foot">No card needed · Free HomeScore · Property Passport from day one</p>
         </div>
@@ -522,7 +536,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import OPIcon from '~/components/ui/OPIcon.vue'
 
 // `guest`: a signed-in visitor is redirected to /dashboard rather than shown
 // the marketing page again. This is also what makes /explore a pre-login
@@ -654,7 +667,7 @@ const timelineWithout = [
   { n: '0', day: 'DAY 0', label: 'Offer accepted' },
   { n: '21', day: 'DAY 21', label: 'Survey reveals an issue' },
   { n: '47', day: 'DAY 47', label: 'Buyer renegotiates' },
-  { n: '74', day: 'DAY 74', label: 'Pulls out — start again' },
+  { n: '74', day: 'DAY 74', label: 'Pulls out, start again' },
   { n: '179', day: 'DAY 179', label: 'Eventual completion' },
 ]
 const timelineMode = ref<'with' | 'without'>('without')
@@ -665,7 +678,7 @@ const timeline = computed(() =>
 const timelineHeadline = computed(() =>
   timelineMode.value === 'with'
     ? { days: '14', sub: 'offer to completion, with a Passport ready' }
-    : { days: '179', sub: 'offer to completion — the UK average sale' },
+    : { days: '179', sub: 'offer to completion, the UK average sale' },
 )
 
 let revealObserver: IntersectionObserver | null = null
@@ -1180,31 +1193,52 @@ main section[id] {
 
 .lp-xtiles {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
   margin-top: 28px;
 }
 .lp-xtile {
+  position: relative;
+  overflow: hidden;
   background: #fff;
   border: 1px solid rgba(35, 29, 69, 0.07);
-  border-radius: 16px;
-  padding: 18px 17px;
-  box-shadow: 0 10px 26px rgba(31, 61, 98, 0.05);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border-radius: 18px;
+  padding: 18px 18px 20px;
+  box-shadow: 0 12px 28px rgba(31, 61, 98, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .lp-xtile:hover {
-  transform: translateY(-2px);
-  border-color: rgba(23, 179, 166, 0.45);
-  box-shadow: 0 16px 34px rgba(23, 179, 166, 0.14);
+  transform: translateY(-3px);
+  border-color: rgba(23, 179, 166, 0.4);
+  box-shadow: 0 18px 36px rgba(23, 179, 166, 0.14);
 }
+/* 3D art on a soft teal glow, no boxed tile */
 .lp-xtile-ic {
-  display: inline-flex; width: 32px; height: 32px; border-radius: 10px;
-  background: rgba(0, 161, 154, 0.12); color: #0e8e83;
-  align-items: center; justify-content: center; margin-bottom: 11px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  margin: -6px 0 8px -8px;
 }
-.lp-xtile-ic svg { width: 17px; height: 17px; }
-.lp-xtile strong { display: block; font-size: 14.5px; font-weight: 800; color: var(--navy); margin-bottom: 4px; letter-spacing: -0.01em; }
-.lp-xtile p { margin: 0; font-size: 12.5px; line-height: 1.55; color: #5c627c; }
+.lp-xtile-ic::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.16) 0%, rgba(0, 161, 154, 0) 70%);
+}
+.lp-xtile-ic img {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(24, 52, 88, 0.16));
+  transition: transform 0.25s ease;
+}
+.lp-xtile:hover .lp-xtile-ic img { transform: translateY(-3px) scale(1.04); }
+.lp-xtile strong { display: block; font-size: 15px; font-weight: 800; color: var(--navy); margin-bottom: 5px; letter-spacing: -0.01em; }
+.lp-xtile p { margin: 0; font-size: 13px; line-height: 1.55; color: #5c627c; }
 
 .lp-explore-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 30px; }
 .lp-explore-note { font-size: 13px; font-weight: 700; color: #5c627c; }
@@ -1217,16 +1251,12 @@ main section[id] {
   width: min(430px, 100%);
   padding: 26px 26px 26px;
   border-radius: 24px;
-  background: linear-gradient(165deg, #ffffff 0%, #f6faf9 100%);
+  background: #fff;
   border: 1px solid rgba(35, 29, 69, 0.08);
   box-shadow: 0 26px 60px rgba(35, 29, 69, 0.1);
   overflow: hidden;
 }
-.xp-glow {
-  position: absolute; top: -90px; right: -70px; width: 260px; height: 260px;
-  border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(23,179,166,.22) 0%, rgba(23,179,166,0) 70%);
-}
+.xp-glow { display: none; }
 .xp-top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .xp-eyebrow {
   display: inline-flex; align-items: center; gap: 7px;
@@ -1241,10 +1271,7 @@ main section[id] {
   text-transform: uppercase; color: #6b7089;
 }
 .xp-figure { position: relative; display: grid; place-items: center; margin: 14px 0 4px; }
-.xp-halo {
-  position: absolute; width: 210px; height: 210px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(23,179,166,.16) 0%, rgba(23,179,166,0) 68%);
-}
+.xp-halo { display: none; }
 /* aspect-ratio = the PNG's own 471x529, so the lazy image reserves its height
    before it loads and nothing below jumps (menu jumps measured short). */
 .xp-img { position: relative; width: min(230px, 78%); height: auto; aspect-ratio: 471 / 529; object-fit: contain; }
@@ -1277,13 +1304,13 @@ main section[id] {
   background: var(--teal); color: #fff;
   font-family: inherit; font-size: 14.5px; font-weight: 800;
   letter-spacing: -0.01em; white-space: nowrap; cursor: pointer;
-  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.26);
+  box-shadow: 0 6px 14px -6px rgba(35, 29, 69, 0.25);
   transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 .xp-cta:hover {
   transform: translateY(-1px);
   background: var(--teal-dark);
-  box-shadow: 0 14px 30px rgba(0, 161, 154, 0.32);
+  box-shadow: 0 10px 20px -8px rgba(35, 29, 69, 0.3);
 }
 .xp-cta svg { width: 17px; height: 17px; }
 .xp-note {
@@ -1839,6 +1866,9 @@ main section[id] {
 .lp-dark { background: var(--navy); color: #fff; }
 .lp-dark .lp-h2 { color: #fff; }
 .lp-dark .lp-h2 .lp-q { color: var(--teal-bright); }
+/* Passport heading: the answer ("Before they ask") picks up the teal, the
+   same way the hero's "before anyone" does. */
+.lp-passport-accent { color: var(--teal-bright); }
 .lp-dark .lp-lede { color: rgba(255, 255, 255, 0.68); }
 .lp-hl { color: var(--teal-bright); font-weight: 600; }
 
@@ -1847,59 +1877,79 @@ main section[id] {
 .lp-split--passport {
   grid-template-columns: 1fr 1.05fr;
   gap: 56px;
-  /* Pin both columns to the top so the card sits next to the heading
-     instead of being vertically centered against the taller copy column. */
-  align-items: start;
+  /* Both columns share one height so the card lines up with the copy +
+     tiles beside it, like the Explore section above. */
+  align-items: stretch;
 }
 .lp-split--passport .lp-copy { align-self: start; }
 .lp-dark-card-col {
   display: flex;
-  align-self: start;          /* don't stretch to the copy column's height */
-  align-items: flex-start;
+  align-self: stretch;
+  align-items: stretch;
   justify-content: flex-end;  /* push the card to the right of its column */
-  /* Drop the card down so its top lines up with the lede paragraph
-     (below the eyebrow + two-line heading), as in the design. */
-  margin-top: 132px;
 }
 .lp-feature-tiles {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  /* margin-bottom: 22px; */
-  /* margin-top:162px */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 .lp-feature-tiles > div {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
-  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 18px 18px 20px;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
+.lp-feature-tiles > div:hover {
+  transform: translateY(-3px);
+  border-color: rgba(64, 224, 200, 0.35);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04));
+}
+/* 3D art on a soft teal glow that reads on the dark band */
 .lp-ft-ic {
-  display: inline-flex; width: 30px; height: 30px; border-radius: 9px;
-  background: rgba(0, 161, 154, 0.18); color: var(--teal-bright);
-  align-items: center; justify-content: center; margin-bottom: 10px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  margin: -6px 0 8px -8px;
 }
-.lp-ft-ic svg { width: 17px; height: 17px; }
-.lp-feature-tiles strong { display: block; font-size: 14px; color: #fff; margin-bottom: 4px; }
-.lp-feature-tiles p { margin: 0; font-size: 12px; line-height: 1.5; color: rgba(255, 255, 255, 0.6); }
+.lp-ft-ic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(64, 224, 200, 0.28) 0%, rgba(64, 224, 200, 0) 70%);
+}
+.lp-ft-ic img {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35));
+  transition: transform 0.25s ease;
+}
+.lp-feature-tiles > div:hover .lp-ft-ic img { transform: translateY(-3px) scale(1.04); }
+.lp-feature-tiles strong { display: block; font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 5px; letter-spacing: -0.01em; }
+.lp-feature-tiles p { margin: 0; font-size: 13px; line-height: 1.55; color: rgba(255, 255, 255, 0.64); }
 .lp-dark-foot { font-size: 13.5px; font-weight: 700; color: #c18a38; margin-top: 30px; gap: 8px; display: inline-flex; align-items: center; }
 .lp-star { color: #c18a38; }
 
 /* ── Premium Property Passport card (navy-on-navy) ───────────────── */
 .pp-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 480px;
-  padding: 24px;
+  max-width: 500px;
+  padding: 28px 28px 28px;
   border-radius: 26px;
   overflow: hidden;
   isolation: isolate;
-  padding-top: 26px;
   /* A subtly lighter navy so the #231d45 card lifts off the #231d45 section */
-  background:
-    radial-gradient(120% 90% at 85% -10%, rgba(0, 161, 154, 0.22) 0%, transparent 58%),
-    radial-gradient(90% 70% at 8% 108%, rgba(90, 76, 240, 0.20) 0%, transparent 60%),
-    linear-gradient(165deg, #2f2760 0%, #251f4a 44%, #191434 100%);
+  background: #2a2356;
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow:
     0 48px 90px -28px rgba(0, 0, 0, 0.62),
@@ -1925,18 +1975,7 @@ main section[id] {
   z-index: 2;
 }
 /* Soft teal glow blooming behind the passport */
-.pp-card-glow {
-  position: absolute;
-  top: 8%;
-  left: -12%;
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.38) 0%, transparent 68%);
-  filter: blur(6px);
-  pointer-events: none;
-  z-index: 0;
-}
+.pp-card-glow { display: none; }
 .pp-card > *:not(.pp-card-glow) { position: relative; z-index: 1; }
 
 .pp-card-top {
@@ -1971,17 +2010,33 @@ main section[id] {
   border-radius: 100px;
 }
 
-/* Headline + illustration, matching the app's landing card */
-.pp-headline-block {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 16px;
+/* Big centred illustration on a teal bloom */
+/* Grows to take any spare height when the card stretches to match the
+   copy column, so the art stays centred instead of leaving a gap. */
+.pp-figure {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 1 1 230px;
+  min-height: 230px;
+  margin: 2px 0 18px;
 }
+.pp-card-hero-halo { display: none; }
+.pp-card-hero-img {
+  position: relative;
+  width: 250px;
+  height: auto;
+  aspect-ratio: 412 / 368; /* the PNG's own size: reserves height before the lazy load */
+  object-fit: contain;
+  transform: rotate(-4deg);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 26px 38px rgba(0, 0, 0, 0.58));
+}
+.pp-card:hover .pp-card-hero-img { transform: rotate(-1deg) translateY(-6px) scale(1.03); }
+
 .pp-headline {
-  margin: 0;
-  font-size: clamp(21px, 2.2vw, 27px);
+  margin: 0 0 10px;
+  font-size: clamp(22px, 2.2vw, 27px);
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.6px;
@@ -1994,40 +2049,39 @@ main section[id] {
   font-weight: 700;
 }
 
-.pp-card-hero-figure {
-  position: relative;
-  flex-shrink: 0;
-  display: inline-flex;
+.pp-rows {
+  list-style: none;
+  margin: 18px 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.pp-rows li {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
 }
-/* Teal bloom behind the books, so the illustration sits in light rather
-   than floating on a flat panel. */
-.pp-card-hero-halo {
-  position: absolute;
-  width: 150%;
-  aspect-ratio: 1;
+.pp-tick {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.42) 0%, transparent 66%);
-  filter: blur(10px);
-  pointer-events: none;
+  display: grid;
+  place-items: center;
+  background: rgba(47, 208, 198, 0.16);
+  color: var(--teal-bright);
 }
-.pp-card-hero-img {
-  position: relative;
-  width: 128px;
-  height: auto;
-  aspect-ratio: 412 / 368; /* the PNG's own size: reserves height before the lazy load */
-  object-fit: contain;
-  transform: rotate(-4deg);
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.58));
-}
-.pp-card:hover .pp-card-hero-img { transform: rotate(-1deg) translateY(-5px) scale(1.03); }
+.pp-tick svg { width: 12px; height: 12px; }
 
 /* Hairline that separates the pitch from the actions. */
 .pp-rule {
+  flex-shrink: 0;
   height: 1px;
-  margin: 20px 0 18px;
+  margin: auto 0 20px;
   background: linear-gradient(
     90deg,
     transparent,
@@ -2059,14 +2113,13 @@ main section[id] {
   letter-spacing: -0.1px;
   color: #fff;
   background: linear-gradient(135deg, #00b6ae 0%, #00a19a 52%, #008b85 100%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 0;
+  outline: none;
   border-radius: 14px;
   padding: 15px 20px;
   cursor: pointer;
   overflow: hidden;
-  box-shadow:
-    0 14px 30px -8px rgba(0, 161, 154, 0.62),
-    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.35);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 /* Sheen that sweeps across on hover. */
@@ -2087,9 +2140,7 @@ main section[id] {
 .pp-cta:hover::after { transform: translateX(120%); }
 .pp-cta:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 20px 38px -10px rgba(0, 161, 154, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.4);
 }
 .pp-cta svg { width: 16px; height: 16px; position: relative; z-index: 1; }
 
@@ -2098,21 +2149,26 @@ main section[id] {
   flex-wrap: wrap;
   gap: 10px;
 }
-.pp-actions .pp-cta { flex: 1 1 200px; }
+.pp-actions .pp-cta { flex: 1 1 auto; white-space: nowrap; font-size: 14px; padding: 15px 16px; }
+.pp-actions .pp-cta--ghost { flex: 0 0 auto; padding-left: 18px; padding-right: 18px; }
+/* When the pair can't share a row, both go full width. */
+@media (max-width: 520px) {
+  .pp-actions .pp-cta,
+  .pp-actions .pp-cta--ghost { flex: 1 1 100%; }
+}
 
-/* Secondary reads as glass, so the teal keeps the lead. */
+/* Secondary: solid white with navy text, matching the page's bottom CTA. */
 .pp-cta--ghost {
   flex: 0 1 150px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.92);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(6px);
+  background: #fff;
+  border: 0;
+  color: var(--navy);
+  box-shadow: 0 10px 22px -8px rgba(0, 0, 0, 0.45);
 }
+.pp-cta--ghost::after { display: none; }
 .pp-cta--ghost:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.32);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: #f3f7f6;
+  box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.5);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2436,22 +2492,69 @@ main section[id] {
 
 /* ── CTA ─────────────────────────────────────────────────────────── */
 .lp-cta { text-align: center; background: #efeeea; }
-.lp-cta-inner { max-width: 640px; margin: 0 auto; }
-/* The title's two lines (set by an explicit <br>) are wider than the 640px
-   lede column, so let the title break out and never auto-wrap mid-line. */
+.lp-cta-inner { max-width: 880px; margin: 0 auto; }
+/* Two-part title: the first sentence leads, the second is a smaller,
+   softer supporting line that can wrap evenly on narrow screens. */
 .lp-cta-title {
-  margin-bottom: 16px;
-  max-width: none;
-  width: max-content;
+  margin: 0 auto 18px;
   max-width: 100%;
-  margin-inline: auto;
-  white-space: nowrap;
+  text-wrap: balance;
 }
-.lp-cta .lp-lede { margin-inline: auto; }
+.lp-cta .lp-lede { margin-inline: auto; max-width: 620px; text-wrap: balance; }
 .lp-hl-dark { color: var(--teal-dark); font-weight: 600; }
 .lp-cta-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 18px; }
 .lp-cta .lp-btn--ghost-dark { color: var(--navy); border-color: rgba(35, 29, 69, 0.2); }
 .lp-cta .lp-btn--ghost-dark:hover { border-color: var(--navy); }
+/* Second line of the CTA heading steps back so the first lands harder. */
+.lp-cta-title-soft {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: #5c627c;
+}
+
+
+/* The two CTA buttons: same height, type and weight, so they read as a pair. */
+.lp-cta .lp-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 230px;
+  height: 54px;
+  padding: 0 26px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+.lp-cta .lp-cta-btn svg { width: 17px; height: 17px; transition: transform 0.18s ease; }
+.lp-cta .lp-btn--solid.lp-cta-btn {
+  border: 0;
+  outline: none;
+  background: linear-gradient(135deg, #00b6ae 0%, #00a19a 52%, #008b85 100%);
+  box-shadow: 0 14px 28px -8px rgba(0, 161, 154, 0.55);
+}
+.lp-cta .lp-btn--solid.lp-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px -10px rgba(0, 161, 154, 0.62);
+}
+.lp-cta .lp-btn--solid.lp-cta-btn:hover svg { transform: translateX(3px); }
+.lp-cta .lp-btn--ghost-dark.lp-cta-btn {
+  background: #fff;
+  color: var(--navy);
+  border: 1px solid rgba(35, 29, 69, 0.14);
+  box-shadow: 0 8px 20px rgba(31, 61, 98, 0.06);
+}
+.lp-cta .lp-btn--ghost-dark.lp-cta-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 161, 154, 0.5);
+  box-shadow: 0 12px 26px rgba(31, 61, 98, 0.1);
+}
 .lp-cta-foot { font-size: 12.5px; color: var(--ink-faint); margin: 0; }
 
 /* ── Footer ──────────────────────────────────────────────────────── */
@@ -2547,7 +2650,7 @@ main section[id] {
   .lp-hero-grid, .lp-split, .lp-split--passport { grid-template-columns: 1fr; gap: 40px; }
   .lp-hero-visual { min-height: 320px; max-width: 420px; margin: 0 auto; }
   .lp-market-grid { grid-template-columns: 1fr; }
-  .lp-dark-card-col { justify-content: flex-start; margin-top: 0; }
+  .lp-dark-card-col { justify-content: flex-start; }
   .pp-card { max-width: 100%; }
   .lp-footer-grid { grid-template-columns: 1fr 1fr; }
 
@@ -2563,7 +2666,6 @@ main section[id] {
   .lp-section { padding: 52px 0; }
   /* Let the CTA title wrap naturally on small screens instead of forcing
      the single-line width (which would overflow horizontally). */
-  .lp-cta-title { white-space: normal; width: auto; }
   .lp-nav-inner { min-height: 60px; gap: 12px; }
   .lp-nav-actions { gap: 8px; }
   .lp-hero { padding: 36px 0 44px; }
@@ -2679,8 +2781,9 @@ main section[id] {
 @media (max-width: 340px) {
   .lp-brand-beta { display: none; }
   .pp-card-top { flex-wrap: wrap; }
-  .pp-card-hero-img { width: 80px; }
-  .pp-headline-block { gap: 10px; }
+  .pp-figure { flex: 0 0 auto; min-height: 180px; margin-bottom: 12px; }
+  .pp-card-hero-img { width: 190px; }
+  .pp-card-hero-halo { width: 200px; }
   /* Hero HomeScore card: a smaller ring and padding so the card fits. */
   .lp-hero-visual { min-width: 0; }
   .lp-passport-card { padding: 22px 16px; }

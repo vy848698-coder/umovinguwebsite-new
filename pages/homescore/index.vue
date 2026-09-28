@@ -1,81 +1,7 @@
 <template>
   <div class="hs-root">
 
-    <!-- ── Web nav ──────────────────────────────────────────────────── -->
-    <header class="hs-web-nav">
-      <div class="hs-web-shell nav-inner">
-        <button class="brand" type="button" @click="navigateTo('/')">
-          <img src="/op-icons/logo.png" alt="umovingu" class="brand-logo" />
-          <span class="brand-name">umovingu</span>
-          <span class="brand-beta">BETA</span>
-        </button>
-
-        <!-- The Story/Market/Reviews links are sections of the landing page,
-             and `/` carries the guest middleware: a signed-in visitor hitting
-             it is redirected to /dashboard, so those anchors would silently
-             dump them on the dashboard. Signed in, the menu points at the
-             real app pages instead. -->
-        <nav class="web-links" aria-label="Primary navigation">
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
-          <template v-if="signedIn">
-            <button type="button" @click="navigateTo('/passport')">Passport</button>
-            <button type="button" @click="navigateTo('/marketplace')">Marketplace</button>
-            <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
-          </template>
-          <template v-else>
-            <button type="button" @click="navigateTo('/#passport')">Passport</button>
-            <button type="button" @click="navigateTo('/#story')">Story</button>
-            <button type="button" @click="navigateTo('/#market')">Market</button>
-            <button type="button" @click="navigateTo('/#reviews')">Reviews</button>
-          </template>
-        </nav>
-
-        <div class="web-actions">
-          <template v-if="signedIn">
-            <button class="web-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
-            <button class="web-btn solid" type="button" @click="navigateTo('/dashboard')">Dashboard</button>
-          </template>
-          <template v-else>
-            <button class="web-btn ghost" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
-            <button class="web-btn solid" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
-          </template>
-        </div>
-
-        <button
-          class="web-mobile-toggle"
-          type="button"
-          aria-label="Toggle navigation menu"
-          :aria-expanded="mobileNavOpen ? 'true' : 'false'"
-          @click="mobileNavOpen = !mobileNavOpen"
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
-
-      <div class="hs-web-shell">
-        <div class="web-mobile-backdrop" :class="{ open: mobileNavOpen }" @click="mobileNavOpen = false" />
-        <div class="web-mobile-panel" :class="{ open: mobileNavOpen }">
-          <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
-          <template v-if="signedIn">
-            <button type="button" @click="goMobile('/passport')">Passport</button>
-            <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
-            <button type="button" @click="goMobile('/profile/learn')">Learn</button>
-            <button type="button" @click="goMobile('/profile')">Profile</button>
-            <button type="button" class="claim" @click="goMobile('/dashboard')">Dashboard</button>
-          </template>
-          <template v-else>
-            <button type="button" @click="goMobile('/#passport')">Passport</button>
-            <button type="button" @click="goMobile('/#story')">Story</button>
-            <button type="button" @click="goMobile('/#market')">Market</button>
-            <button type="button" @click="goMobile('/#reviews')">Reviews</button>
-            <button type="button" @click="goMobile('/onboarding/signin')">Sign in</button>
-            <button type="button" class="claim" @click="goMobile('/onboarding/signup')">Get started</button>
-          </template>
-        </div>
-      </div>
-    </header>
+    <SiteNav />
 
     <main class="hs-web-shell hs-main">
       <!-- ── Hero ───────────────────────────────────────────────────── -->
@@ -297,27 +223,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import SiteNav from '~/components/core/SiteNav.vue'
 import { useRecentlyExplored } from '~/composables/useRecentlyExplored'
 
-const route = useRoute()
 const router = useRouter()
-const mobileNavOpen = ref(false)
-
-// Resolved after mount because localStorage doesn't exist during SSR, so the
-// first paint shows the guest menu and the two swap on hydration — the same
-// approach WebTopNav uses.
-const signedIn = ref(false)
-onMounted(() => {
-  try {
-    signedIn.value = !!localStorage.getItem('token')
-  } catch {
-    /* private mode / blocked storage — stays signed out */
-  }
-})
-
 const heroMeta = ['Free', 'Instant', 'No account needed']
 
 // ── Real "N HomeScores run in the last hour" count ──────────────────
@@ -404,21 +316,6 @@ async function onBreakdownClick() {
   }
 }
 
-const navIsActive = (basePath: string) =>
-  route.path === basePath || route.path.startsWith(`${basePath}/`)
-
-const goMobile = (path: string) => {
-  mobileNavOpen.value = false
-  navigateTo(path)
-}
-
-watch(
-  () => route.path,
-  () => {
-    mobileNavOpen.value = false
-  },
-)
-
 // ── How it works ─────────────────────────────────────────────────────
 const howSteps = [
   {
@@ -498,157 +395,6 @@ const howSteps = [
 }
 
 /* ── Nav ──────────────────────────────────────────────────────────── */
-.hs-web-nav {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: rgba(243, 242, 239, 0.88);
-  border-bottom: 1px solid rgba(35, 29, 69, 0.07);
-  backdrop-filter: blur(12px);
-}
-
-.nav-inner {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 28px;
-}
-
-.brand,
-.web-links button,
-.footer-col button {
-  font-family: inherit;
-}
-
-.brand {
-  border: 0;
-  background: transparent;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #0d1835;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-.brand-logo {
-  width: auto;
-  height: 32px;
-  object-fit: contain;
-}
-
-.brand-name {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  color: #0d1835;
-}
-
-.brand-beta {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: #007e78;
-  background: rgba(0, 161, 154, 0.1);
-  border: 1px solid rgba(0, 161, 154, 0.3);
-  border-radius: 6px;
-  padding: 2px 7px;
-  margin-left: 2px;
-}
-
-.web-links {
-  display: flex;
-  gap: 20px;
-}
-
-.web-links button {
-  border: 0;
-  background: transparent;
-  color: #475a7b;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 10px 14px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-.web-links button:hover,
-.web-links button.active {
-  color: #0c2342;
-  background: rgba(0, 161, 154, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.25);
-}
-
-.web-actions {
-  display: inline-flex;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.web-btn {
-  min-height: 44px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 0 20px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  white-space: nowrap;
-}
-
-.web-btn:hover {
-  transform: translateY(-1px);
-}
-
-.web-btn.solid {
-  color: #fff;
-  background: #00a19a;
-  box-shadow: 0 10px 20px rgba(0, 161, 154, 0.22);
-}
-
-.web-btn.solid:hover {
-  background: #00857f;
-}
-
-.web-btn.ghost {
-  color: #231d45;
-  background: #fff;
-  border-color: #e3e1ea;
-}
-
-.web-mobile-toggle,
-.web-mobile-panel,
-.web-mobile-backdrop {
-  display: none;
-}
-
-.web-mobile-toggle {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: #fff;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.web-mobile-toggle span {
-  width: 16px;
-  height: 2px;
-  border-radius: 999px;
-  background: #1c2b46;
-}
-
 /* ── Layout ───────────────────────────────────────────────────────── */
 .hs-main {
   padding: 30px 0 18px;
@@ -706,10 +452,7 @@ const howSteps = [
 }
 
 .hero-accent {
-  background: linear-gradient(100deg, #00a19a 0%, #0b7f72 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: inherit;
 }
 
 /* Forced line breaks only on narrow/mobile widths; desktop wraps naturally. */
@@ -1589,80 +1332,6 @@ const howSteps = [
     width: calc(100% - 32px);
   }
 
-  .web-links,
-  .web-actions {
-    display: none;
-  }
-
-  .web-mobile-toggle {
-    display: inline-flex;
-  }
-
-  .web-mobile-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    background: rgba(8, 16, 47, 0.24);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .web-mobile-backdrop.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .web-mobile-panel {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    position: relative;
-    z-index: 2;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: max-height 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .web-mobile-panel.open {
-    max-height: 480px;
-    margin: 0 0 12px;
-    padding: 10px;
-    border: 1px solid #dbe7f3;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 16px 30px rgba(21, 58, 95, 0.12);
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .web-mobile-panel button {
-    border: 1px solid #dde8f3;
-    border-radius: 10px;
-    background: #fff;
-    color: #22405f;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 800;
-    padding: 12px;
-    text-align: left;
-  }
-
-  .web-mobile-panel button.active {
-    background: rgba(0, 161, 154, 0.1);
-    color: #08294b;
-  }
-
-  .web-mobile-panel button.claim {
-    border: 0;
-    color: #fff;
-    background: linear-gradient(120deg, var(--color-teal), var(--color-blue) 48%, var(--color-purple));
-  }
-
   .hs-main {
     padding-top: 40px;
     padding-bottom: 48px;
@@ -1685,19 +1354,6 @@ const howSteps = [
 @media (max-width: 640px) {
   .hs-web-shell {
     width: calc(100% - 24px);
-  }
-
-  .nav-inner {
-    min-height: 62px;
-  }
-
-  .brand {
-    font-size: 17px;
-  }
-
-  .brand-logo {
-    width: auto;
-    height: 28px;
   }
 
   .hs-main {
@@ -1833,10 +1489,7 @@ const howSteps = [
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .web-btn,
-  .hs-search-go,
-  .web-mobile-panel,
-  .web-mobile-backdrop {
+  .hs-search-go {
     transition: none;
   }
 
@@ -1851,7 +1504,6 @@ const howSteps = [
    laptop does, only bigger. Nav row and page content zoom; the footer
    scales via its `wide` prop. */
 @media (min-width: 1367px) {
-  .nav-inner,
   .hs-main {
     zoom: var(--wide-zoom, 1);
   }
