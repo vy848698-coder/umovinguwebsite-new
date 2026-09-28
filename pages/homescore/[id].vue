@@ -2027,9 +2027,9 @@
 
         <main class="hsw-shell bvw-main">
           <div class="bvw-head">
-            <p class="bvw-kicker"><span class="bvw-kicker-dot" />Property report</p>
-            <h1>Buyer report</h1>
-            <p class="bvw-lede">Everything public EPC data can tell you before you view or make an offer.</p>
+            <p class="bvw-kicker"><span class="bvw-kicker-dot" />HomeScore</p>
+            <h1>Property report</h1>
+            <p class="bvw-lede">What we know about this property today.</p>
           </div>
 
           <div class="bvw-layout">
@@ -2086,49 +2086,46 @@
             </div>
           </div>
 
-          <div class="bv-hero-state" :class="`is-${bvPassportState}`">
-            <span>{{ bvPassportStateLabel }}</span>
-            <span
-              class="bv-hero-state-ic"
-              :title="bvPassportStateHint"
-              aria-hidden="true"
-              ><Icon name="i-lucide-info"
-            /></span>
-          </div>
-
-          <div v-if="bvSearches > 0 || bvWatchers > 0" class="bv-hero-live">
-            <div v-if="bvSearches > 0" class="bv-hero-live-row">
+          <!-- Social proof, then the passport-status box last: same order and
+               wording as the app's report-mode HomescoreAddressCard. -->
+          <div class="bv-hero-live">
+            <div class="bv-hero-live-row">
               <Icon name="i-lucide-search" class="bv-hero-live-ic" />
               <span
-                ><b>{{ bvSearches }}</b>
-                {{ bvSearches === 1 ? 'person' : 'people' }} checked this
+                ><b>{{ bvSearches }}
+                {{ bvSearches === 1 ? 'person' : 'people' }}</b> checked this
                 HomeScore today</span
               >
             </div>
-            <div v-if="bvWatchers > 0" class="bv-hero-live-row">
+            <div
+              v-if="bvPassportState4 === 'public' || bvPassportState4 === 'partiallyPublic'"
+              class="bv-hero-live-row"
+            >
+              <Icon name="i-lucide-activity" class="bv-hero-live-ic" />
+              <span><b>Live interest.</b> People are tracking this passport.</span>
+            </div>
+            <div v-else class="bv-hero-live-row">
               <Icon name="i-lucide-eye" class="bv-hero-live-ic" />
               <span
-                ><b>{{ bvWatchers }}</b>
-                {{ bvWatchers === 1 ? 'person is' : 'people are' }} watching this
+                ><b>{{ bvWatchers }}
+                {{ bvWatchers === 1 ? 'person' : 'people' }}</b>
+                {{ bvWatchers === 1 ? 'is' : 'are' }} watching this
                 property</span
               >
             </div>
+            <button
+              type="button"
+              class="bv-hero-live-row bv-hero-live-row--state"
+              :class="`is-${bvPassportState}`"
+              @click="onBvPassportPillClick"
+            >
+              <Icon
+                :name="bvPassportState === 'published' ? 'i-lucide-lock-open' : 'i-lucide-lock'"
+                class="bv-hero-live-ic"
+              />
+              <b>{{ bvPassportStateLabel }}</b>
+            </button>
           </div>
-        </div>
-
-        <!-- ── This property is unclaimed (navy CTA) ───────────── -->
-        <div
-          v-if="bvPassportState === 'unclaimed'"
-          class="bv-claim-banner"
-          @click="goToClaimPassport"
-        >
-          <div class="bv-claim-body">
-            <div class="bv-claim-title">This property is unclaimed</div>
-            <div class="bv-claim-sub">
-              Is it yours? Build your verified Passport in minutes.
-            </div>
-          </div>
-          <div class="bv-claim-arrow" aria-hidden="true">→</div>
         </div>
 
         <!-- ── Buyer snapshot (score + running cost + area read) ── -->
@@ -2164,7 +2161,9 @@
           </div>
 
           <div class="bv-snap-stats">
-            <div v-if="bvAnnualCostDisplay != null" class="bv-snap-stat">
+            <!-- Same three stats, figures and wording as the app's
+                 Property Report (homescore/costs/[id].vue). -->
+            <div class="bv-snap-stat">
               <img
                 src="/homescore-icon/wallet.png"
                 alt=""
@@ -2173,19 +2172,19 @@
               />
               <div class="bv-snap-stat-label">Est. running cost</div>
               <div class="bv-snap-stat-val">
-                £{{ bvAnnualCostDisplay.toLocaleString()
+                £{{ bvRunningCostDisplay.toLocaleString()
                 }}<span>/year</span>
               </div>
-              <div v-if="bvStreetDiff != null" class="bv-snap-stat-note">
-                £{{ Math.abs(bvStreetDiff).toLocaleString() }}
-                {{ bvStreetDiff >= 0 ? 'above' : 'below' }} street average
-              </div>
-              <div v-else-if="bvStreetBest != null" class="bv-snap-stat-note">
-                Best on this street £{{ bvStreetBest.toLocaleString() }}/yr
+              <div
+                v-if="bvCostVsArea"
+                class="bv-snap-stat-note"
+                :class="{ 'tone-good': bvCostVsArea.good }"
+              >
+                {{ bvCostVsArea.label }}
               </div>
             </div>
 
-            <div v-if="bvAreaCompare" class="bv-snap-stat">
+            <div class="bv-snap-stat">
               <img
                 src="/homescore-icon/growthChart.png"
                 alt=""
@@ -2195,11 +2194,17 @@
               <div class="bv-snap-stat-label">Compared to area</div>
               <div
                 class="bv-snap-stat-val"
-                :class="`tone-${bvAreaCompare.tone}`"
+                :class="bvAreaLabel === 'Below average' ? 'tone-good' : bvAreaLabel ? 'tone-warn' : ''"
               >
-                {{ bvAreaCompare.label }}
+                {{ bvAreaLabel ?? '-' }}
               </div>
-              <div class="bv-snap-stat-note">{{ bvAreaCompare.sub }}</div>
+              <div v-if="bvAreaLabel" class="bv-snap-stat-note">
+                {{
+                  bvAreaLabel === 'Below average'
+                    ? 'Lower running costs than similar homes'
+                    : 'Higher running costs than similar homes'
+                }}
+              </div>
             </div>
 
             <div class="bv-snap-stat">
@@ -2211,20 +2216,10 @@
               />
               <div class="bv-snap-stat-label">Areas worth checking</div>
               <div class="bv-snap-stat-val">{{ buyerConfidence.flags }}</div>
-              <div class="bv-snap-stat-note">
-                {{
-                  buyerConfidence.flags
-                    ? 'See key risks and questions below'
-                    : 'No major flags on the public EPC'
-                }}
-              </div>
+              <div class="bv-snap-stat-note">See key risks and questions below</div>
             </div>
           </div>
 
-          <div v-if="bvSnapFoot" class="bv-snap-foot">
-            <Icon name="i-lucide-info" class="bv-snap-foot-ic" />
-            <span>{{ bvSnapFoot }}</span>
-          </div>
         </div>
 
             </aside>
@@ -2248,57 +2243,7 @@
 
         <!-- ═══ RISKS tab ═══ -->
         <div v-show="buyerTab === 'risks'" class="bv-tabpanel">
-        <!-- ── Buyer risk summary ──────────────────────────────── -->
-        <div class="bv-section-h">
-          <div class="bv-section-h-icon img">
-            <img src="/homescore-icon/shield.png" alt="" loading="lazy" />
-          </div>
-          <div class="bv-section-h-text">
-            <div class="bv-section-h-title">Buyer risk summary</div>
-            <div class="bv-section-h-sub">
-              What the EPC data suggests you look into
-            </div>
-          </div>
-        </div>
-        <div class="bv-risks-card">
-          <div
-            v-for="r in buyerRisks"
-            :key="r.key"
-            class="bv-risk-row"
-            :class="r.tone === 'ok' ? 'green' : 'amber'"
-          >
-            <img class="bv-risk-icon" :src="r.icon" alt="" loading="lazy" />
-            <div class="bv-risk-body">
-              <div class="bv-risk-title">{{ r.title }}</div>
-              <div class="bv-risk-sub">{{ r.body }}</div>
-            </div>
-          </div>
-          <!-- Public-record risks from the backend (flood / mining / planning) -->
-          <template v-if="buyerPublicRisks.length">
-            <div
-              v-for="r in buyerPublicRisks"
-              :key="r.key"
-              class="bv-risk-row"
-              :class="r.tone === 'ok' ? 'green' : 'amber'"
-            >
-              <img class="bv-risk-icon" :src="r.icon" alt="" loading="lazy" />
-              <div class="bv-risk-body">
-                <div class="bv-risk-title">{{ r.title }}</div>
-                <div class="bv-risk-sub">{{ r.body }}</div>
-              </div>
-            </div>
-          </template>
-          <!-- Fallback flood row from the property record if running-costs unavailable -->
-          <div v-else-if="buyerFlood" class="bv-risk-row" :class="/low|very low/i.test(buyerFlood) ? 'green' : 'amber'">
-            <img class="bv-risk-icon" src="/homescore-icon/environmental.png" alt="" loading="lazy" />
-            <div class="bv-risk-body">
-              <div class="bv-risk-title">Flood risk — {{ buyerFlood }}</div>
-              <div class="bv-risk-sub">Environment Agency surface & river data for this postcode.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Public records (ported from the app's Property Report) ── -->
+        <!-- ── Public records (same cards as the app's Property Report) ── -->
         <div class="bv-section-h">
           <div class="bv-section-h-icon img">
             <img src="/homescore-icon/landmarks.png" alt="" loading="lazy" />
@@ -2306,11 +2251,41 @@
           <div class="bv-section-h-text">
             <div class="bv-section-h-title">Public records</div>
             <div class="bv-section-h-sub">
-              Env Agency · Planning.data.gov.uk · Historic England · BGS · EPC Register
+              Flood, heritage, planning and ground checks for this address
             </div>
           </div>
         </div>
+        <div class="bv-rc-srcs">
+          <span class="bv-rc-tag teal">Env Agency</span>
+          <span class="bv-rc-tag">Planning.data.gov.uk</span>
+          <span class="bv-rc-tag">Historic England</span>
+          <span class="bv-rc-tag">EPC Register</span>
+        </div>
         <div class="bv-rc-list">
+          <!-- Flood risk -->
+          <div class="bv-rc" :class="{ open: bvOpenCards.has('flood') }">
+            <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('flood')" @click="bvToggleCard('flood')">
+              <img class="bv-rc-ic" src="/homescore-icon/waterDroplet.png" alt="" loading="lazy" />
+              <span class="bv-rc-info">
+                <span class="bv-rc-title">Flood risk</span>
+                <span class="bv-rc-sub">{{ bvFlood.sub }} · Environment Agency</span>
+              </span>
+              <span class="bv-rc-pill" :class="bvFlood.tone">{{ bvFlood.label }}</span>
+              <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
+            </button>
+            <div v-if="bvOpenCards.has('flood')" class="bv-rc-body">
+              <b>Overall rating:</b> {{ bvFlood.label }}.
+              <div class="bv-rc-note">
+                The Environment Agency returns a combined assessment, so rivers,
+                surface water and reservoirs aren't split out separately.
+              </div>
+              <div class="bv-rc-src">
+                <span class="bv-rc-src-label">Source</span>
+                <span class="bv-rc-tag teal">Environment Agency</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Listed building / conservation area -->
           <div class="bv-rc" :class="{ open: bvOpenCards.has('listed') }">
             <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('listed')" @click="bvToggleCard('listed')">
@@ -2366,7 +2341,7 @@
             <div v-if="bvOpenCards.has('planning')" class="bv-rc-body">
               <template v-if="bvPlanningApps.length">
                 <div v-for="(a, i) in bvPlanningApps.slice(0, 6)" :key="'pa' + i" class="bv-rc-line">
-                  <b v-if="a.dateLabel">{{ a.dateLabel }}</b><template v-if="a.dateLabel"> — </template>{{ a.description }}
+                  <b v-if="a.dateLabel">{{ a.dateLabel }}</b><template v-if="a.dateLabel"> · </template>{{ a.description }}
                   <span class="bv-rc-status" :class="{ ok: a.approved }">{{ a.status }}</span>
                 </div>
               </template>
@@ -2403,9 +2378,6 @@
                 No contaminated-land or mineral-safeguarding-area records cover
                 this point.
               </template>
-              <div v-if="bvRadon" class="bv-rc-line">
-                <b>Radon potential: {{ bvRadon.band }}.</b> {{ bvRadon.description }}
-              </div>
               <div class="bv-rc-note">
                 Full coal-mining subsidence needs a paid Coal Authority CON29M
                 report (~£25) - there's no free per-property API.
@@ -2413,7 +2385,6 @@
               <div class="bv-rc-src">
                 <span class="bv-rc-src-label">Source</span>
                 <span class="bv-rc-tag teal">Planning.data.gov.uk</span>
-                <span v-if="bvRadon" class="bv-rc-tag">British Geological Survey</span>
               </div>
             </div>
           </div>
@@ -2449,99 +2420,104 @@
 
         <!-- ═══ ENERGY tab ═══ -->
         <div v-show="buyerTab === 'energy'" class="bv-tabpanel">
-        <!-- ── Score breakdown ─────────────────────────────────── -->
+        <!-- ── What the public EPC tells you ───────────────────── -->
         <div class="bv-section-h">
           <div class="bv-section-h-icon img">
             <img src="/homescore-icon/homeScoreCard.png" alt="" loading="lazy" />
           </div>
           <div class="bv-section-h-text">
-            <div class="bv-section-h-title">Score breakdown</div>
-            <div class="bv-section-h-sub">Based on public EPC data only</div>
+            <div class="bv-section-h-title">What the public EPC tells you</div>
+            <div class="bv-section-h-sub">Straight from the government EPC register</div>
           </div>
+          <span class="bv-rc-tag teal bv-section-h-tag">via EPC Register</span>
         </div>
         <div class="bv-breakdown-card">
           <div class="bv-breakdown-sub">
-            The owner could improve this with a full HomeScore.
+            EPC data comes from the government register. The owner may have
+            made improvements since this EPC was recorded.
           </div>
           <div class="bv-breakdown-rows">
             <div
-              v-for="bar in pillarBars(autoBreakdown)"
-              :key="bar.key"
+              v-for="s in bvEpcStats"
+              :key="s.key"
               class="bv-breakdown-row"
             >
               <div class="bv-bd-label">
                 <img
                   class="bv-bd-ic"
-                  :src="pillarIcon(bar.key)"
+                  :src="pillarIcon(s.key)"
                   alt=""
                   loading="lazy"
-                />{{ bar.label }}
+                />{{ s.label }}
               </div>
               <div class="bv-bd-bar-wrap">
                 <div
                   class="bv-bd-bar"
-                  :style="{
-                    width: `${(bar.value / bar.max) * 100}%`,
-                    background: pillarBarColor(bar.value, bar.max),
-                  }"
+                  :style="{ width: `${s.pct}%`, background: s.color }"
                 />
               </div>
-              <div
-                class="bv-bd-val"
-                :style="{ color: pillarBarColor(bar.value, bar.max) }"
-              >
-                {{ bar.value }}/{{ bar.max }}
+              <div class="bv-bd-val" :style="{ color: s.color }">
+                {{ s.value }}/{{ s.max }}
               </div>
             </div>
           </div>
           <div class="bv-bd-note">
-            This is based on public EPC data only. Ask the owner to run a full
-            HomeScore to get a verified picture.
+            An up-to-date Property Passport could reveal improvements that
+            aren't reflected in this EPC.
+          </div>
+        </div>
+
+        <!-- ── Questions worth asking (real EPC recommendations) ── -->
+        <div class="bv-section-h">
+          <div class="bv-section-h-icon img">
+            <img src="/homescore-icon/clipboardChecklist.png" alt="" loading="lazy" />
+          </div>
+          <div class="bv-section-h-text">
+            <div class="bv-section-h-title">Questions worth asking</div>
+            <div class="bv-section-h-sub">
+              A Property Passport could answer these for you automatically
+            </div>
+          </div>
+        </div>
+        <div class="bv-questions-card">
+          <div v-for="q in bvQuestions" :key="q.title" class="bv-q-row">
+            <img class="bv-q-icon" :src="q.icon" alt="" loading="lazy" />
+            <div class="bv-q-body">
+              <div class="bv-q-title">{{ q.title }}</div>
+              <div class="bv-q-sub">{{ q.sub }}</div>
+            </div>
           </div>
         </div>
         </div><!-- /energy tab -->
 
         <!-- ═══ COSTS tab ═══ -->
         <div v-show="buyerTab === 'costs'" class="bv-tabpanel">
-          <template v-if="buyerCosts.hasAny">
-            <div class="bv-costs-hero">
-              <div class="bv-costs-eyebrow">Estimated total per year</div>
-              <div class="bv-costs-num">
-                £{{ buyerCosts.total.toLocaleString() }}<span>/yr</span>
-              </div>
-              <div class="bv-costs-sub">
-                Energy from EPC data, plus water and council tax for this address.
-              </div>
+          <div class="bv-costs-hero">
+            <div class="bv-costs-eyebrow">Estimated total per year</div>
+            <div class="bv-costs-num">
+              £{{ buyerCosts.total.toLocaleString() }}<span> / year</span>
             </div>
-            <div class="bv-costs-rows">
-              <div class="bv-costs-row">
-                <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/lightning.png" alt="" loading="lazy" />Energy <small>· heating, hot water & lighting</small></span>
-                <b>{{ buyerCosts.energy != null ? '£' + buyerCosts.energy.toLocaleString() + '/yr' : '—' }}</b>
-              </div>
-              <div v-if="buyerCosts.water != null" class="bv-costs-row">
-                <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/tap.png" alt="" loading="lazy" />Water &amp; sewerage<template v-if="buyerCosts.waterLabel"> <small>· {{ buyerCosts.waterLabel }}</small></template></span>
-                <b>£{{ buyerCosts.water.toLocaleString() }}/yr</b>
-              </div>
-              <div class="bv-costs-row">
-                <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/utilityBills.png" alt="" loading="lazy" />Council tax<template v-if="buyerCosts.councilTaxBand"> <small>· Band {{ buyerCosts.councilTaxBand }}<template v-if="buyerCosts.council"> · {{ buyerCosts.council }}</template></small></template></span>
-                <b>{{ buyerCosts.councilTax != null ? '£' + buyerCosts.councilTax.toLocaleString() + '/yr' : '—' }}</b>
-              </div>
+            <div class="bv-costs-sub">
+              ~£{{ Math.round(buyerCosts.total / 12).toLocaleString() }}/month
+              across energy (per EPC), water and council tax.
             </div>
-            <div class="bv-bd-note">
-              Energy is modelled from the EPC; water is the region's published
-              average and council tax is the VOA band. Upload a bill to replace
-              these with your real figures.
+            <div class="bv-costs-srcs">
+              <span>EPC Register</span>
+              <span>VOA council tax</span>
+              <span>Regional water avg</span>
             </div>
-          </template>
-          <div v-else class="bv-area-note">
-            <div class="bv-area-note-title">
-              <img src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />No
-              published costs yet
+          </div>
+          <div class="bv-costs-rows">
+            <div v-for="l in buyerCosts.lines" :key="l.key" class="bv-costs-row">
+              <span class="bv-costs-row-label"><img class="bv-costs-ic" :src="l.icon" alt="" loading="lazy" />{{ l.title }} <small>· {{ l.sub }}</small></span>
+              <b>£{{ l.amount.toLocaleString() }}/year</b>
             </div>
-            <div class="bv-area-note-body">
-              This property has no EPC energy cost or council tax band on the public
-              record yet. They'll show here once the data is available.
-            </div>
+          </div>
+          <div class="bv-bd-note" style="margin: 0 22px">
+            Water &amp; sewerage is your water company's
+            <b v-if="buyerCosts.waterCompany">{{ buyerCosts.waterCompany }}</b> 2024/25
+            regional average - water companies don't expose a per-property metered
+            bill, so this is the published area figure.
           </div>
         </div>
 
@@ -2550,17 +2526,11 @@
           <div class="bv-costs-hero sold">
             <div class="bv-costs-eyebrow">Estimated value</div>
             <div class="bv-costs-num">
-              {{ buyerSold.estimated != null ? '£' + buyerSold.estimated.toLocaleString() : '—' }}
+              {{ buyerSold.estimated != null ? '£' + buyerSold.estimated.toLocaleString() : 'Not available' }}
             </div>
-            <div class="bv-costs-sub">Modelled from local sold prices (HPI-adjusted).</div>
-          </div>
-          <div class="bv-costs-rows">
-            <div v-if="buyerSold.lastPrice" class="bv-costs-row">
-              <span class="bv-costs-row-label"><img class="bv-costs-ic" src="/homescore-icon/cashAndCoins.png" alt="" loading="lazy" />Last sold<template v-if="buyerSold.lastDate"> <small>· {{ formatSoldDate(buyerSold.lastDate) }}</small></template></span>
-              <b>£{{ buyerSold.lastPrice.toLocaleString() }}</b>
-            </div>
-            <div v-else class="bv-bd-note" style="margin:0">
-              No Land Registry sale on record for this address yet.
+            <div class="bv-costs-sub">
+              {{ buyerSold.estimated != null ? buyerSold.estimateSource : 'No Land Registry estimate yet' }}
+              · via Land Registry
             </div>
           </div>
 
@@ -2599,27 +2569,34 @@
               <Icon :name="bvShowAllSales ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" />
             </button>
           </div>
-          <div v-else class="bv-bd-note" style="margin:0">
-            No Land Registry Price Paid record exists for this exact address —
-            it may be new-build, last sold before 1995, or transferred without a
+          <div v-else class="bv-bd-note" style="margin: 0 22px">
+            No Land Registry Price Paid record exists for this exact address. It
+            may be new-build, last sold before 1995, or transferred without a
             recorded price.
           </div>
 
           <!-- ── Comparable sales nearby ─────────────────────────── -->
-          <template v-if="buyerSold.comparables.length">
-            <div class="bv-section-h" style="margin-top:16px">
-              <div class="bv-section-h-icon img">
-                <img src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
-              </div>
-              <div class="bv-section-h-text">
-                <div class="bv-section-h-title">Comparable sales nearby</div>
-                <div class="bv-section-h-sub">
+          <div class="bv-section-h" style="margin-top:16px">
+            <div class="bv-section-h-icon img">
+              <img src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
+            </div>
+            <div class="bv-section-h-text">
+              <div class="bv-section-h-title">Comparable sales nearby</div>
+              <div class="bv-section-h-sub">
+                <template v-if="buyerSold.comparables.length">
                   {{ buyerSold.comparables.length }} similar
                   {{ buyerSold.comparables.length === 1 ? 'home' : 'homes' }} ·
                   {{ property?.postcode || 'this postcode' }} · HM Land Registry
-                </div>
+                </template>
+                <template v-else>No nearby sales found yet</template>
               </div>
             </div>
+          </div>
+          <div v-if="!buyerSold.comparables.length" class="bv-bd-note" style="margin: 0 22px">
+            No recent Land Registry sales recorded on nearby streets in
+            {{ property?.postcode || 'this postcode' }}.
+          </div>
+          <template v-else>
             <div class="bv-costs-rows">
               <div
                 v-for="(c, i) in buyerSold.comparables"
@@ -2796,7 +2773,7 @@
               <div v-if="bvOpenCards.has('bb')" class="bv-rc-body">
                 <template v-if="bvBroadband">
                   <div class="bv-bb">
-                    <span class="bv-bb-num">{{ bvBroadband.maxDownload ?? '—' }}</span>
+                    <span class="bv-bb-num">{{ bvBroadband.maxDownload ?? 'N/A' }}</span>
                     <span class="bv-bb-unit">Mb/s max download</span>
                   </div>
                   <template v-if="bvMobileNets.length">
@@ -2885,28 +2862,6 @@
               </div>
             </div>
 
-            <!-- Parks & green space -->
-            <div v-if="bvParks.length" class="bv-rc" :class="{ open: bvOpenCards.has('parks') }">
-              <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('parks')" @click="bvToggleCard('parks')">
-                <img class="bv-rc-ic" src="/homescore-icon/plantSprout.png" alt="" loading="lazy" />
-                <span class="bv-rc-info">
-                  <span class="bv-rc-title">Parks &amp; green space</span>
-                  <span class="bv-rc-sub">{{ bvParks.length }} nearby</span>
-                </span>
-                <Icon name="i-lucide-chevron-down" class="bv-rc-chev" />
-              </button>
-              <div v-if="bvOpenCards.has('parks')" class="bv-rc-body">
-                <div v-for="(p, i) in bvParks" :key="'pk' + i" class="bv-rc-row">
-                  <span class="bv-rc-row-name">{{ p.name }}</span>
-                  <span class="bv-rc-row-val">{{ p.dist }}</span>
-                </div>
-                <div class="bv-rc-src">
-                  <span class="bv-rc-src-label">Source</span>
-                  <span class="bv-rc-tag teal">Overpass · OpenStreetMap</span>
-                </div>
-              </div>
-            </div>
-
             <!-- Neighbourhood -->
             <div class="bv-rc" :class="{ open: bvOpenCards.has('hood') }">
               <button type="button" class="bv-rc-head" :aria-expanded="bvOpenCards.has('hood')" @click="bvToggleCard('hood')">
@@ -2946,7 +2901,7 @@
               <template v-if="streetEnergyRank?.rank && (streetEnergyRank?.total ?? 0) > 1">
                 {{ bvStreetRankLabel }}<span> of {{ streetEnergyRank?.total }}</span>
               </template>
-              <template v-else>—</template>
+              <template v-else>Not available</template>
             </div>
             <div class="bv-costs-sub">
               <template v-if="bvStreetRankText">{{ bvStreetRankText }}</template>
@@ -2986,36 +2941,31 @@
           </button>
         </div>
 
-        <!-- ── Questions to ask the owner (real EPC recommendations) ── -->
-        <template v-if="bvQuestions.length">
-          <div class="bv-section-h">
-            <div class="bv-section-h-icon img">
-              <img src="/homescore-icon/clipboardChecklist.png" alt="" loading="lazy" />
-            </div>
-            <div class="bv-section-h-text">
-              <div class="bv-section-h-title">Questions to ask the owner</div>
-              <div class="bv-section-h-sub">
-                {{
-                  property?.epcRecommendations?.length
-                    ? "Based on this property's EPC recommendations"
-                    : 'Key documents to request before you offer'
-                }}
-              </div>
-            </div>
-          </div>
-          <div class="bv-questions-card">
-            <div v-for="q in bvQuestions" :key="q.title" class="bv-q-row">
-              <img class="bv-q-icon" :src="q.icon" alt="" loading="lazy" />
-              <div class="bv-q-body">
-                <div class="bv-q-title">{{ q.title }}</div>
-                <div class="bv-q-sub">{{ q.sub }}</div>
-              </div>
-            </div>
-          </div>
-        </template>
+        <!-- ═══ STATE-AWARE BUYER ACTIONS (every tab) ═══
+             Same three branches as the app's Property Report:
+             unclaimed → watch CTA · private → progress + register interest ·
+             published → open the Passport + qualified offer. -->
 
-        <!-- ── Passport build · live (owner claimed, not published) ─────── -->
-        <template v-if="bvPassportState === 'inProgress'">
+        <!-- ─── UNCLAIMED ─── -->
+        <div v-if="bvPassportState === 'unclaimed'" class="bv-watch-card">
+          <button class="bv-watch-btn" type="button" @click="openWatchDrawer">
+            <template v-if="notifiedOfPublish">
+              <Icon name="i-lucide-check" class="bv-watch-btn-ic" />Watching
+              this property, edit alerts
+            </template>
+            <template v-else>
+              <Icon name="i-lucide-eye" class="bv-watch-btn-ic" />Watch this
+              property →
+            </template>
+          </button>
+          <div class="bv-watch-note">
+            Be the first to know if anything important changes.<br />
+            We'll notify you when a Passport is started, published or updated.
+          </div>
+        </div>
+
+        <!-- ─── CLAIMED · PRIVATE ─── -->
+        <template v-else-if="bvPassportState === 'inProgress'">
           <div class="bv-pp-banner">
             <img
               class="bv-pp-banner-ic"
@@ -3025,24 +2975,19 @@
             />
             <div class="bv-pp-banner-body">
               <div class="bv-pp-banner-title">
-                Passport in progress
+                Claimed · Private
                 <span class="bv-pp-banner-pill">Owner verified</span>
               </div>
               <div class="bv-pp-banner-sub">
                 The owner has claimed this home and is building a verified
-                Passport<template v-if="passportSectionsTotal">
-                  —
-                  <b
-                    >{{ passportSectionsDone }} of
-                    {{ passportSectionsTotal }} sections</b
-                  >
-                  done</template
-                >.
+                Passport<template v-if="bvPpTotal">:
+                  <b>{{ bvPpDone }} of {{ bvPpTotal }} sections</b>
+                  done</template>.
               </div>
             </div>
           </div>
 
-          <div v-if="passportSectionsTotal" class="bv-pp-hero">
+          <div v-if="bvPpTotal" class="bv-pp-hero">
             <div class="bv-pp-eyebrow">
               <img
                 src="/homescore-icon/clipboardChecklist.png"
@@ -3051,17 +2996,13 @@
               />Passport build · live
             </div>
             <div class="bv-pp-pct-row">
-              <span class="bv-pp-pct">{{ passportProgressPct }}%</span>
+              <span class="bv-pp-pct">{{ bvPpPct }}%</span>
               <span class="bv-pp-frac"
-                >{{ passportSectionsDone }} of
-                {{ passportSectionsTotal }} sections complete</span
+                >{{ bvPpDone }} of {{ bvPpTotal }} sections complete</span
               >
             </div>
             <div class="bv-pp-bar">
-              <div
-                class="bv-pp-fill"
-                :style="{ width: passportProgressPct + '%' }"
-              />
+              <div class="bv-pp-fill" :style="{ width: bvPpPct + '%' }" />
             </div>
             <div class="bv-pp-sub">
               The owner is gathering verified documents.
@@ -3071,10 +3012,54 @@
               >
             </div>
           </div>
+
+          <div class="bv-watch-card">
+            <div class="bv-watch-eyebrow">
+              <img src="/homescore-icon/trophy.png" alt="" loading="lazy" />Register
+              your interest
+            </div>
+            <div class="bv-watch-title">Get in the queue before it goes live.</div>
+            <div class="bv-watch-lede">
+              Registering interest tells the owner a real buyer is waiting, and
+              puts you <b>first in line</b> for a viewing the moment the Passport
+              publishes.
+            </div>
+            <div class="bv-watch-rows">
+              <div v-for="t in bvWatchTriggers" :key="t.title" class="bv-watch-row">
+                <img class="bv-watch-ic" :src="t.icon" alt="" loading="lazy" />
+                <div class="bv-watch-body">
+                  <div class="bv-watch-row-title">{{ t.title }}</div>
+                  <div class="bv-watch-row-sub">{{ t.sub }}</div>
+                </div>
+              </div>
+            </div>
+            <button class="bv-watch-btn" type="button" @click="openWatchDrawer">
+              <template v-if="notifiedOfPublish">
+                <Icon name="i-lucide-check" class="bv-watch-btn-ic" />Interest
+                registered, edit alerts
+              </template>
+              <template v-else>
+                <img
+                  src="/homescore-icon/trophy.png"
+                  alt=""
+                  class="bv-watch-btn-img"
+                  loading="lazy"
+                />Register my interest →
+              </template>
+            </button>
+          </div>
+
+          <BuyerVerifyCard
+            class="bv-verify-card"
+            :first-name="bvFirstName"
+            @start-verification="onBuyerStartVerification"
+            @view-profile="navigateTo('/buyer-profile/view')"
+            @edit-profile="navigateTo('/buyer-profile')"
+          />
         </template>
 
-        <!-- ── Published Passport (ported from the app's Property Report) ── -->
-        <template v-if="bvPassportState === 'published'">
+        <!-- ─── PUBLISHED (Partially Public / Public) ─── -->
+        <template v-else>
           <div class="bv-pp-banner bv-pp-banner--published">
             <img class="bv-pp-banner-ic" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
             <div class="bv-pp-banner-body">
@@ -3083,9 +3068,8 @@
                 <span class="bv-pp-banner-pill">Solicitor-grade</span>
               </div>
               <div class="bv-pp-banner-sub">
-                Full verified sales pack ready<template v-if="passportSectionsTotal">
-                  —
-                  <b>{{ passportSectionsDone }} of {{ passportSectionsTotal }} sections</b></template>. Title, surveys, planning &amp; fittings in one place.
+                Full verified sales pack ready<template v-if="bvPpTotal">:
+                  <b>{{ bvPpDone }} of {{ bvPpTotal }} sections</b></template>. Title, surveys, planning &amp; fittings in one place.
               </div>
             </div>
           </div>
@@ -3095,7 +3079,7 @@
               <img class="bv-buypp-badge" src="/homescore-icon/clipboard.png" alt="" loading="lazy" />
               <span class="bv-buypp-grade">Solicitor-grade</span>
             </div>
-            <div class="bv-buypp-title">The full story on this home - verified.</div>
+            <div class="bv-buypp-title">The full story on this home, verified.</div>
             <div class="bv-buypp-sub">
               Everything a buyer's solicitor needs, gathered &amp; checked upfront.
               Homes with a Passport sell <b>~12 weeks faster</b>.
@@ -3108,7 +3092,7 @@
             <div class="bv-buypp-pricerow">
               <div class="bv-buypp-price">£15<small> one-off</small></div>
               <div class="bv-buypp-pricenote">
-                Instant access to the full pack. <b>Free for verified buyers</b> -
+                Instant access to the full pack. <b>Free for verified buyers</b>:
                 verify once, open every Passport.
               </div>
             </div>
@@ -3124,106 +3108,23 @@
             <div class="bv-qoffer-title">Make an offer the seller sees first.</div>
             <div class="bv-qoffer-sub">
               Verified buyers can submit a qualified offer straight from the
-              Passport - ID &amp; funds already checked, so the seller knows it's
-              real.
+              Passport. ID &amp; funds are already checked, so the seller knows
+              it's real.
               <b>You need to be verified to make one.</b>
             </div>
             <button class="bv-qoffer-cta" type="button" @click="verifyBuyerDrawerOpen = true">
               <img src="/homescore-icon/padlock.png" alt="" loading="lazy" />Get verified to make an offer →
             </button>
           </div>
+
+          <BuyerVerifyCard
+            class="bv-verify-card"
+            :first-name="bvFirstName"
+            @start-verification="onBuyerStartVerification"
+            @view-profile="navigateTo('/buyer-profile/view')"
+            @edit-profile="navigateTo('/buyer-profile')"
+          />
         </template>
-
-        <!-- ── Register your interest (ported from reference clone) ─────── -->
-        <div class="bv-watch-card">
-          <div class="bv-watch-eyebrow">
-            <img src="/homescore-icon/trophy.png" alt="" loading="lazy" />Register
-            your interest
-          </div>
-          <div class="bv-watch-title">Get in the queue before it goes live.</div>
-          <div class="bv-watch-lede">
-            Registering interest tells the owner a real buyer is waiting — and
-            puts you <b>first in line</b> for a viewing the moment the Passport
-            publishes.
-          </div>
-          <div class="bv-watch-rows">
-            <div v-for="t in bvWatchTriggers" :key="t.title" class="bv-watch-row">
-              <img class="bv-watch-ic" :src="t.icon" alt="" loading="lazy" />
-              <div class="bv-watch-body">
-                <div class="bv-watch-row-title">{{ t.title }}</div>
-                <div class="bv-watch-row-sub">{{ t.sub }}</div>
-              </div>
-            </div>
-          </div>
-          <button
-            class="bv-watch-btn"
-            type="button"
-            @click="openWatchDrawer"
-          >
-            <template v-if="notifiedOfPublish">
-              <Icon name="i-lucide-check" class="bv-watch-btn-ic" />Interest
-              registered — edit alerts
-            </template>
-            <template v-else>
-              <img
-                src="/homescore-icon/trophy.png"
-                alt=""
-                class="bv-watch-btn-img"
-                loading="lazy"
-              />Register my interest →
-            </template>
-          </button>
-        </div>
-
-        <!-- ── Verified buyer upsell (£35 one-off) ─────────────── -->
-        <div class="bv-verified-card">
-          <div class="bv-verified-eyebrow">
-            <img src="/homescore-icon/trustPadlock.png" alt="" loading="lazy" />Verified
-            buyer · £35 one-off
-          </div>
-          <div class="bv-verified-title">Be viewing-ready before anyone else.</div>
-          <div class="bv-verified-lede">
-            Owners building a Passport are choosing who to sell to. Get verified
-            and here's what you unlock.
-          </div>
-          <div class="bv-verified-rows">
-            <div v-for="p in bvVerifiedPerks" :key="p.title" class="bv-verified-row">
-              <img class="bv-verified-ic" :src="p.icon" alt="" loading="lazy" />
-              <div class="bv-verified-body">
-                <div class="bv-verified-row-title">{{ p.title }}</div>
-                <div class="bv-verified-row-sub">{{ p.sub }}</div>
-              </div>
-            </div>
-          </div>
-          <button class="bv-verified-btn" type="button" @click="saveToBuyerProfile">
-            <Icon name="i-lucide-shield-check" class="bv-verified-btn-ic" />See
-            what verification gets you →
-          </button>
-        </div>
-
-        <!-- ── Save to Buyer Profile CTA ───────────────────────── -->
-        <div class="bv-save-card" @click="saveToBuyerProfile">
-          <div class="bv-save-icon">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-          </div>
-          <div class="bv-save-body">
-            <div class="bv-save-title">Save to your Buyer Profile</div>
-            <div class="bv-save-sub">
-              Track this property, compare with others, share with your
-              solicitor.
-            </div>
-          </div>
-          <div class="bv-save-cta">Save →</div>
-        </div>
 
         <button class="bv-back" @click="screen = 'landing'">
           ← Back to HomeScore
@@ -3600,6 +3501,7 @@
     <WatchPropertyDrawer
       :open="watchDrawerOpen"
       :address-label="property?.addressLine1 || ''"
+      :passport-state="bvPassportState4"
       @close="watchDrawerOpen = false"
       @submit="onWatchSubmit"
     />
@@ -3878,6 +3780,7 @@ import V6NoEpcEstimator from '~/components/homescore/V6NoEpcEstimator.vue'
 import TourCoach from '~/components/homescore/TourCoach.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
+import BuyerVerifyCard from '~/components/property/BuyerVerifyCard.vue'
 import VerifyBuyerDrawer from '~/components/property/VerifyBuyerDrawer.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
 import type { TopWin, Opportunity } from '~/types/homescore'
@@ -6015,19 +5918,6 @@ function goToPassport() {
 
 // ── Buyer results helpers ─────────────────────────────────────
 
-// Real per-property EPC running cost. The backend exposes these three
-// figures directly on the property row (heating / hot water / lighting
-// current cost). If none are on file yet we return null so the UI can show
-// an honest "no verified figure" state rather than an invented number.
-const buyerAnnualCost = computed<number | null>(() => {
-  const p: any = property.value
-  const heating = Number(p?.heatingCostCurrent ?? 0)
-  const hotWater = Number(p?.hotWaterCostCurrent ?? 0)
-  const lighting = Number(p?.lightingCostCurrent ?? 0)
-  const sum = Math.round(heating + hotWater + lighting)
-  return sum > 0 ? sum : null
-})
-
 // Buyer-results screen: address typewriter + £ count-up. Same pattern as
 // ResultDetail so both flows feel consistent.
 const bvAddressFull = computed(
@@ -6036,11 +5926,6 @@ const bvAddressFull = computed(
 const bvAddressTyped = makeTypewriterRef(() => bvAddressFull.value, 32)
 const bvAddressTypingDone = computed(
   () => bvAddressTyped.value.length >= bvAddressFull.value.length,
-)
-const bvAnnualCostAnimated = makeAnimRef(() => buyerAnnualCost.value ?? 0, 900)
-// null when the backend has no verified running-cost figure on file.
-const bvAnnualCostDisplay = computed<number | null>(() =>
-  buyerAnnualCost.value == null ? null : Math.round(bvAnnualCostAnimated.value),
 )
 
 // ── Buyer-results (watch screen) helpers ─────────────────────
@@ -6067,14 +5952,6 @@ async function loadStreetEnergyRank() {
     /* keep null — UI falls back gracefully */
   }
 }
-
-// Real cheapest-on-street figure from the backend street-energy-rank
-// endpoint. null when fewer than 3 neighbours are enriched — the template
-// hides the comparison line rather than showing an invented number.
-const bvStreetBest = computed<number | null>(() => {
-  const real = streetEnergyRank.value?.bestCost
-  return typeof real === 'number' && real > 0 ? real : null
-})
 
 // "Nth" label (1st, 2nd, 3rd, 4th, …) for the cost-hero stats row.
 // Returns null when we don't have enough comparable data for a rank yet,
@@ -6121,72 +5998,27 @@ const bvPassportStateLabel = computed(() =>
     : bvPassportState4.value === 'partiallyPublic'
       ? 'Claimed · Partially Public'
       : bvPassportState4.value === 'private'
-        ? 'Claimed · Private · Passport in progress'
-        : 'Unclaimed · No Passport yet',
-)
-const bvPassportStateHint = computed(() =>
-  bvPassportState.value === 'published'
-    ? 'The owner has published a verified Passport for this home.'
-    : bvPassportState.value === 'inProgress'
-      ? 'The owner has started a Passport for this home but not published it yet.'
-      : 'No owner has claimed this home yet — everything here comes from public records.',
+        ? 'Claimed · Private'
+        : 'No Passport yet',
 )
 
-// Street average running cost from /street-energy-rank. null when the
-// backend hasn't enriched enough neighbours to publish an average.
-const bvStreetAvg = computed<number | null>(() => {
-  const a = streetEnergyRank.value?.averageCost
-  return typeof a === 'number' && a > 0 ? a : null
-})
-// £ difference between this home and the street average (+ = costs more).
-const bvStreetDiff = computed<number | null>(() => {
-  const mine = buyerAnnualCost.value
-  const avg = bvStreetAvg.value
-  if (mine == null || avg == null) return null
-  return Math.round(mine - avg)
-})
-// "Compared to area" column of the snapshot — hidden entirely when there's
-// no real street average to compare against.
-const bvAreaCompare = computed<{
-  label: string
-  sub: string
-  tone: 'good' | 'warn' | 'flat'
-} | null>(() => {
-  const d = bvStreetDiff.value
-  if (d == null) return null
-  if (d <= -50)
-    return {
-      label: 'Below average',
-      sub: 'Lower running costs than similar homes',
-      tone: 'good',
-    }
-  if (d >= 50)
-    return {
-      label: 'Above average',
-      sub: 'Higher running costs than similar homes',
-      tone: 'warn',
-    }
-  return {
-    label: 'In line with area',
-    sub: 'Running costs match similar homes nearby',
-    tone: 'flat',
-  }
-})
-// Footnote under the snapshot: where the running-cost figure comes from,
-// plus the street rank when the backend has enough neighbours to publish it.
-const bvSnapFoot = computed<string | null>(() => {
-  const parts: string[] = []
-  if (bvAnnualCostDisplay.value != null)
-    parts.push(
-      "Running cost from the property's EPC — heating, hot water & lighting",
-    )
-  if (bvStreetRankLabel.value && streetEnergyRank.value?.total)
-    parts.push(
-      `${bvStreetRankLabel.value} cheapest to run of ${streetEnergyRank.value.total} homes on this street`,
-    )
-  return parts.length ? parts.join(' · ') : null
-})
+// Passport-status box on the address hero: claim when nobody has started a
+// Passport, register interest while it's private, open it once published.
+function onBvPassportPillClick() {
+  if (bvPassportState.value === 'unclaimed') goToClaimPassport()
+  else if (bvPassportState.value === 'inProgress') openWatchDrawer()
+  else onBuyPassport()
+}
 
+// Snapshot "Compared to area" — same rule as the app: the street
+// running-cost rank, top half reads "Below average". null (shown as "-")
+// until the backend has a rank for this street.
+const bvAreaLabel = computed<string | null>(() => {
+  const r = streetEnergyRank.value?.rank
+  const t = streetEnergyRank.value?.total
+  if (!r || !t) return null
+  return r / t <= 0.5 ? 'Below average' : 'Above average'
+})
 const bvEpcColor = computed(() => {
   const map: Record<string, string> = {
     A: '#00B050',
@@ -6260,12 +6092,12 @@ const bvQuestions = computed(() => {
   out.push({
     icon: '/homescore-icon/gasSafety.png',
     title: 'Do you have a Gas Safety certificate?',
-    sub: 'A CP12 from a Gas Safe registered engineer confirms the boiler and gas appliances are safe — ask for the latest one.',
+    sub: 'A CP12 from a Gas Safe registered engineer confirms the boiler and gas appliances are safe. Ask for the latest one.',
   })
   out.push({
     icon: '/homescore-icon/electrician.png',
     title: 'Do you have an EICR certificate?',
-    sub: 'Electrical Installation Condition Report — not legally required, but worth asking.',
+    sub: 'Electrical Installation Condition Report. Not legally required, but worth asking.',
   })
   return out
 })
@@ -6399,29 +6231,18 @@ const bvPlanningApps = computed(() => {
 })
 
 // Risks tab — ground stability (contaminated land + mineral safeguarding
-// from planning.data.gov.uk, plus BGS radon potential).
+// from planning.data.gov.uk), same as the app's Property Report.
 const bvGroundConstraints = computed<any[]>(() => {
   const cs: any[] = bvEnrichment.value?.planningHistory?.constraints || []
   return cs.filter((c) => c?.category === 'ground')
 })
-const bvRadon = computed<{ band: string; description: string } | null>(() => {
-  const r = bvEnrichment.value?.radon
-  return r?.band ? { band: String(r.band), description: String(r.description || '') } : null
-})
-const bvGroundFlag = computed(
-  () =>
-    bvGroundConstraints.value.length > 0 ||
-    (!!bvRadon.value && !/low/i.test(bvRadon.value.band)),
-)
+const bvGroundFlag = computed(() => bvGroundConstraints.value.length > 0)
 const bvGroundLabel = computed(() => (bvGroundFlag.value ? 'Check' : 'None flagged'))
 const bvGroundSub = computed(() => {
   if (!bvEnrichmentLoaded.value) return 'Checking ground records…'
-  const parts: string[] = []
   if (bvGroundConstraints.value.length)
-    parts.push(bvGroundConstraints.value.map((c) => c.type).join(', ') + ' on record')
-  else parts.push('No contaminated-land or mineral-safeguarding flags')
-  if (bvRadon.value) parts.push(`Radon: ${bvRadon.value.band}`)
-  return parts.join(' · ')
+    return bvGroundConstraints.value.map((c) => c.type).join(', ') + ' on record'
+  return 'No contaminated-land or mineral-safeguarding flags · Coal Authority report not connected'
 })
 
 // Risks tab — every improvement flagged on the EPC (the app lists them all).
@@ -6435,7 +6256,7 @@ const bvEpcRiskFlags = computed(() => {
       id: r?.id || `rec-${i}`,
       icon: iconForAskTitle(title),
       title,
-      sub: `${r?.description || 'Listed on the EPC.'}${saving > 0 ? ` Adds ~£${Math.round(saving)}/yr.` : ''}`,
+      sub: `${r?.description || 'Listed on the EPC.'}${saving > 0 ? ` Could save ~£${Math.round(saving)}/yr.` : ''}`,
       flag,
     }
   })
@@ -6487,10 +6308,6 @@ const bvHealthcare = computed(() => {
     .filter((a) => /doctor|hospital|pharmacy|clinic|gp|dentist/i.test(a?.category || ''))
     .slice(0, 4)
     .map((a) => ({ name: a?.name || 'Healthcare', dist: bvFmtDist(a?.distanceKm), kind: a?.category || '' }))
-})
-const bvParks = computed(() => {
-  const parks: any[] = bvEnrichment.value?.nearby?.parks || []
-  return parks.slice(0, 4).map((p) => ({ name: p?.name || 'Park', dist: bvFmtDist(p?.distanceKm) }))
 })
 const bvBroadband = computed(() => {
   const b = bvEnrichment.value?.broadband
@@ -6585,9 +6402,58 @@ const bvBuyPpItems = [
   'Warranties & guarantees',
   '+ 14 more sections',
 ]
+// Passport build progress for the report. /passport-status is JWT-only, so
+// fall back to the public /property/:id payload, which carries the same
+// passportProgress block for guests (the app shows it to everyone).
+const bvPpProgress = computed<any>(
+  () =>
+    passportStatus.value?.passportProgress ??
+    (property.value as any)?.passportProgress ??
+    null,
+)
+const bvPpTotal = computed<number>(() => Number(bvPpProgress.value?.totalSections) || 0)
+const bvPpDone = computed<number>(() => Number(bvPpProgress.value?.completedSections) || 0)
+const bvPpPct = computed<number>(() =>
+  Math.round(Number(bvPpProgress.value?.completionPct) || 0),
+)
+
+// Verified-buyer card (shared BuyerVerifyCard, same as the app). The card
+// fetches /buyer-profile itself to pick guest / unverified / verified; the
+// user profile only supplies the "Welcome back, {name}" greeting.
+const { profile: bvUserProfile, fetchProfile: bvFetchProfile } = useProfile()
+const bvFirstName = computed<string | null>(
+  () => bvUserProfile.value?.firstName ?? null,
+)
+watch(
+  () => screen.value === 'buyer-results',
+  (isBuyer) => {
+    if (
+      isBuyer &&
+      !bvUserProfile.value &&
+      typeof localStorage !== 'undefined' &&
+      localStorage.getItem('token')
+    )
+      bvFetchProfile().catch(() => {})
+  },
+  { immediate: true },
+)
+function onBuyerStartVerification() {
+  const tk =
+    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  if (!tk) {
+    try {
+      localStorage.setItem('redirectAfterLogin', '/buyer-profile')
+    } catch {}
+    router.push('/onboarding/signin')
+    return
+  }
+  router.push('/buyer-profile')
+}
+
 const verifyBuyerDrawerOpen = ref(false)
 function onBuyPassport() {
-  const pid = passportStatus.value?.passportId
+  const pid =
+    passportStatus.value?.passportId ?? (property.value as any)?.passportId
   if (pid) router.push(`/passportview/${pid}`)
   else router.push(`/property/${propertyId}`)
 }
@@ -6716,51 +6582,117 @@ watch(buyerTab, (t) => {
 // come from the backend — the water figure is the region's published average
 // (labelled as such), not an invented per-property estimate.
 const buyerCosts = computed(() => {
-  const p: any = property.value
-  const rc: any = runningCosts.value
+  const heating = Math.round(Number(epcField('heatingCostCurrent') ?? 0) || 0)
+  const hotWater = Math.round(Number(epcField('hotWaterCostCurrent') ?? 0) || 0)
+  const lighting = Math.round(Number(epcField('lightingCostCurrent') ?? 0) || 0)
+  // Water company regional average (Discover Water 2024/25) from enrichment.
+  const waterInfo: any = bvEnrichment.value?.water ?? null
+  const water = Number(waterInfo?.annual ?? 430) || 430
+  const councilTax = (() => {
+    const fromEnrich = Number(bvEnrichment.value?.councilTax?.annualEstimate ?? 0)
+    if (fromEnrich > 0) return Math.round(fromEnrich)
+    const real = Number((property.value as any)?.councilTaxAnnual ?? 0)
+    if (real > 0) return Math.round(real)
+    const band = String(epcField('councilTaxBand') || '').toUpperCase()
+    const map: Record<string, number> = {
+      A: 1340, B: 1564, C: 1787, D: 2010, E: 2457, F: 2904, G: 3350, H: 4020,
+    }
+    return map[band] ?? 2010
+  })()
+  const total = heating + hotWater + lighting + water + councilTax
 
-  const energy: number | null =
-    rc?.energy?.total ?? buyerAnnualCost.value ?? null
-  const water: number | null = rc?.water?.cost ?? null
-  const waterLabel: string | null = rc?.water?.label ?? null
-  const councilTax: number | null =
-    rc?.councilTax?.cost ?? p?.councilTaxAnnual ?? null
-  const councilTaxBand: string | null =
-    rc?.councilTax?.band ?? p?.councilTaxBand ?? null
-  const council: string | null =
-    rc?.councilTax?.council ?? p?.councilTaxCouncilName ?? null
+  const lines: { key: string; icon: string; title: string; sub: string; amount: number }[] = []
+  if (heating > 0)
+    lines.push({
+      key: 'heating',
+      icon: '/homescore-icon/flame.png',
+      title: 'Heating',
+      sub: epcField('mainheatDescription') || 'EPC figure',
+      amount: heating,
+    })
+  if (hotWater > 0)
+    lines.push({
+      key: 'hw',
+      icon: '/homescore-icon/waterDroplet.png',
+      title: 'Hot water',
+      sub: epcField('hotwaterDescription') || 'From main system',
+      amount: hotWater,
+    })
+  if (lighting > 0) {
+    const ledPct = Number(epcField('lowEnergyLighting') ?? 0)
+    lines.push({
+      key: 'light',
+      icon: '/homescore-icon/lightbulb.png',
+      title: 'Lighting',
+      sub: ledPct ? `${Math.round(ledPct)}% LED` : 'EPC figure',
+      amount: lighting,
+    })
+  }
+  lines.push({
+    key: 'water',
+    icon: '/homescore-icon/tap.png',
+    title: 'Water & sewerage',
+    sub: waterInfo?.company
+      ? `${waterInfo.company} · regional avg`
+      : 'Regional average · unmetered',
+    amount: water,
+  })
+  const band = String(epcField('councilTaxBand') || '').toUpperCase()
+  lines.push({
+    key: 'ctax',
+    icon: '/homescore-icon/house.png',
+    title: 'Council tax',
+    sub: band
+      ? `Band ${band} · ${bvEnrichment.value?.councilTax?.councilName || 'local council'}`
+      : 'Estimated',
+    amount: councilTax,
+  })
+  return { total, lines, waterCompany: (waterInfo?.company as string) || null }
+})
 
-  const total = (energy ?? 0) + (water ?? 0) + (councilTax ?? 0)
+// Snapshot "Est. running cost": the same yearly total as the Costs tab,
+// counted up like the rest of the report.
+const bvRunningCostAnimated = makeAnimRef(() => buyerCosts.value.total, 900)
+const bvRunningCostDisplay = computed<number>(() =>
+  Math.round(bvRunningCostAnimated.value),
+)
+// "£X below/above street average" — the app compares the yearly total above
+// with the street's averageCost from /street-energy-rank.
+const bvCostVsArea = computed<{ label: string; good: boolean } | null>(() => {
+  const avg = Number(streetEnergyRank.value?.averageCost ?? 0)
+  const yours = Number(buyerCosts.value.total ?? 0)
+  if (!avg || !yours) return null
+  const diff = Math.round(Math.abs(yours - avg))
+  if (diff === 0) return null
   return {
-    energy,
-    water,
-    waterLabel,
-    councilTax,
-    councilTaxBand,
-    council,
-    hasAny: energy != null || water != null || councilTax != null,
-    total,
+    label: `£${diff} ${yours < avg ? 'below' : 'above'} street average`,
+    good: yours < avg,
   }
 })
 
-// Sold tab — estimated value + last Land Registry sale (real fields).
+// Sold tab — estimated value + Land Registry sale history (real fields).
 const buyerSold = computed(() => {
   const p: any = property.value
   const sh = soldHistory.value
-  // Sale history for this exact address — prefer the Land Registry list,
-  // fall back to the single lastSold* fields on the property record.
-  const own: any[] = (sh?.thisProperty ?? []).slice().sort(
+  // Sale history for this exact address — the Land Registry list, or the
+  // single lastSold* pair on the property record when that's all there is.
+  let own: any[] = (sh?.thisProperty ?? []).slice().sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   )
-  const lastFromHistory = own[0] ?? null
+  if (!own.length && p?.lastSoldPrice && p?.lastSoldDate)
+    own = [{ price: p.lastSoldPrice, date: p.lastSoldDate }]
   const nearby: any[] = (sh?.nearbySales ?? [])
     .slice()
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6)
   return {
-    estimated: p?.estimatedPrice ?? null,
-    lastPrice: lastFromHistory?.price ?? p?.lastSoldPrice ?? null,
-    lastDate: lastFromHistory?.date ?? p?.lastSoldDate ?? null,
+    estimated:
+      Number(bvEnrichment.value?.landRegistryEstimate ?? 0) > 0
+        ? Number(bvEnrichment.value.landRegistryEstimate)
+        : null,
+    estimateSource:
+      (bvEnrichment.value?.landRegistrySource as string) ||
+      'based on Land Registry data',
     history: own,
     comparables: nearby,
   }
@@ -6776,156 +6708,89 @@ function titleCaseAddress(s: string): string {
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
-const buyerFlood = computed<string | null>(() => property.value?.floodRisk ?? null)
 
-// Public-record risk rows from the backend running-costs endpoint (flood,
-// mining subsidence, planning). Same source the deployed app / costs page use.
-// tone: 'warn' for low/medium/high flags, 'ok' for a clear result.
-const buyerPublicRisks = computed(() => {
-  const risks: any = runningCosts.value?.risks
-  if (!risks) return [] as { key: string; icon: string; title: string; body: string; pill: string; tone: 'warn' | 'ok' }[]
-  const rows: { key: string; icon: string; title: string; body: string; pill: string; tone: 'warn' | 'ok' }[] = []
-  const map: { key: string; icon: string; title: string }[] = [
-    { key: 'flood', icon: HS_ICON.flood, title: 'Flood risk' },
-    { key: 'mining', icon: HS_ICON.mining, title: 'Mining subsidence' },
-    { key: 'planning', icon: HS_ICON.planning, title: 'Planning history' },
+// Flood risk card (Risks tab). Same source as the app: the enrichment's
+// Environment Agency rating, then the running-costs flood check, then the
+// property record. "Unknown" counts as no data.
+const bvFlood = computed<{ label: string; sub: string; tone: 'clear' | 'note' | 'flag' }>(() => {
+  const raw = [bvEnrichment.value?.floodRisk, (property.value as any)?.floodRisk]
+    .map((v) => String(v ?? '').trim())
+    .find((v) => v && !/^unknown$/i.test(v))
+  if (raw) {
+    const tone = /high|severe|medium/i.test(raw) ? 'flag' : /low/i.test(raw) ? 'clear' : 'note'
+    return { label: raw, sub: `${raw} risk across all sources`, tone }
+  }
+  const rc = runningCosts.value?.risks?.flood
+  if (rc?.label)
+    return { label: rc.pill || 'Checked', sub: rc.label, tone: rc.level === 'clear' ? 'clear' : 'note' }
+  return {
+    label: bvEnrichmentLoaded.value ? 'No data' : 'Checking',
+    sub: bvEnrichmentLoaded.value ? 'Flood data not available' : 'Checking flood records',
+    tone: 'note',
+  }
+})
+
+// ── What the public EPC tells you (Energy tab) ────────────────
+// Ported from the app's Property Report: each bar is read straight off the
+// EPC's own efficiency ratings (Very good → Very poor), not the HomeScore
+// engine, so a buyer sees exactly what the register says.
+function bvEffScore(eff: unknown): number {
+  const e = String(eff ?? '').toLowerCase().trim()
+  if (e === 'very good') return 1
+  if (e === 'good') return 0.8
+  if (e === 'average') return 0.6
+  if (e === 'poor') return 0.4
+  if (e === 'very poor') return 0.2
+  return 0.5
+}
+const bvEpcStats = computed(() => {
+  const heating =
+    (bvEffScore(epcField('mainheatEnergyEff')) +
+      bvEffScore(epcField('mainheatcEnergyEff'))) /
+    2
+  const structure =
+    (bvEffScore(epcField('wallsEnergyEff')) +
+      bvEffScore(epcField('roofEnergyEff')) +
+      bvEffScore(epcField('floorEnergyEff')) +
+      bvEffScore(epcField('windowsEnergyEff'))) /
+    4
+  const ledPct = Number(epcField('lowEnergyLighting') ?? 0) || 0
+  const efficiency =
+    bvEffScore(epcField('lightingEnergyEff')) * 0.6 + (ledPct / 100) * 0.4
+  const recs: any[] = (property.value as any)?.epcRecommendations || []
+  const electrics = recs.some((r) => /solar pv|photovoltaic/i.test(r?.title || ''))
+    ? 0.5
+    : 0.8
+  const plumbing = bvEffScore(epcField('hotWaterEnergyEff'))
+  const mk = (key: string, label: string, score: number, max: number) => {
+    const tone: 'high' | 'mid' | 'low' =
+      score >= 0.7 ? 'high' : score < 0.5 ? 'low' : 'mid'
+    return {
+      key,
+      label,
+      value: Math.round(score * max),
+      max,
+      pct: Math.round(score * 100),
+      tone,
+      color: tone === 'high' ? '#00a19a' : tone === 'mid' ? '#f5a623' : '#e74c5e',
+    }
+  }
+  return [
+    mk('heating', 'Heating', heating, 20),
+    mk('structure', 'Structure', structure, 25),
+    mk('efficiency', 'Efficiency', efficiency, 15),
+    mk('electrics', 'Electrics', electrics, 20),
+    mk('plumbing', 'Plumbing', plumbing, 20),
   ]
-  for (const m of map) {
-    const r = risks[m.key]
-    if (!r) continue
-    // The enrichment planning card below lists the real applications; drop
-    // the summary row when it would contradict it ("not yet available").
-    if (m.key === 'planning' && bvPlanningApps.value.length) continue
-    rows.push({
-      key: m.key,
-      icon: m.icon,
-      title: `${m.title} — ${r.pill}`,
-      body: r.label,
-      pill: r.pill,
-      tone: r.level === 'clear' ? 'ok' : 'warn',
-    })
-  }
-  return rows
 })
 
-const buyerRisks = computed(() => {
-  type Row = {
-    key: string
-    icon: string
-    title: string
-    body: string
-    tone: 'warn' | 'ok'
-  }
-  const bd = autoBreakdown.value as any
-  const pct = (v: number, m: number) => (m > 0 ? (v / m) * 100 : 0)
-
-  const heatingPct = pct(bd?.heating ?? 0, 20)
-  const structurePct = pct(bd?.structure ?? 0, 25)
-  const electricsPct = pct(bd?.electrics ?? 0, 15)
-  const plumbingPct = pct(bd?.plumbing ?? 0, 20)
-  const efficiencyPct = pct(bd?.efficiency ?? 0, 20)
-
-  const all: Row[] = []
-
-  // Heating
-  if (heatingPct < 60) {
-    all.push({
-      key: 'heating',
-      icon: HS_ICON.heating,
-      title: 'Heating — needs attention',
-      body: 'EPC flags old heating system. Boiler replacement could cost £2,500–£4,000.',
-      tone: 'warn',
-    })
-  } else {
-    all.push({
-      key: 'heating',
-      icon: HS_ICON.heating,
-      title: 'Heating — looks reasonable',
-      body: 'Heating efficiency is in line with similar homes. Worth asking for the latest service record.',
-      tone: 'ok',
-    })
-  }
-
-  // Structure / insulation
-  if (structurePct < 60) {
-    all.push({
-      key: 'structure',
-      icon: HS_ICON.structure,
-      title: 'Insulation — below average',
-      body: 'Likely no cavity wall insulation. Adds ~£400/yr vs best-in-street.',
-      tone: 'warn',
-    })
-  } else {
-    all.push({
-      key: 'structure',
-      icon: HS_ICON.structure,
-      title: 'Insulation — looks reasonable',
-      body: 'Insulation appears adequate for the property age. Confirm any guarantees with the seller.',
-      tone: 'ok',
-    })
-  }
-
-  // Electrics
-  if (electricsPct >= 60) {
-    all.push({
-      key: 'electrics',
-      icon: HS_ICON.electrics,
-      title: 'Electrics — looks reasonable',
-      body: 'Average for a property of this age. Worth confirming EICR.',
-      tone: 'ok',
-    })
-  } else {
-    all.push({
-      key: 'electrics',
-      icon: HS_ICON.electrics,
-      title: 'Electrics — worth checking',
-      body: 'Ask for a recent EICR certificate to rule out rewiring costs.',
-      tone: 'warn',
-    })
-  }
-
-  // Ensure at least one green row if any pillar > 60%
-  const anyOk =
-    heatingPct >= 60 ||
-    structurePct >= 60 ||
-    electricsPct >= 60 ||
-    plumbingPct >= 60 ||
-    efficiencyPct >= 60
-  if (anyOk && !all.some((r) => r.tone === 'ok')) {
-    all.push({
-      key: 'other',
-      icon: HS_ICON.other,
-      title: 'Other systems — look reasonable',
-      body: 'Several EPC pillars are average-or-better. Confirm documentation with the seller.',
-      tone: 'ok',
-    })
-  }
-
-  return all.slice(0, 3)
-})
-
-// ── Buyer confidence gauge ────────────────────────────────────
-// Headline confidence read for buyers, driven by the real EPC-derived
-// HomeScore + a count of pillars that fall below 60% of their max (the
-// "flags" a buyer should look into). No invented data — all from the EPC.
+// ── Buyer snapshot ────────────────────────────────────────────
+// Headline HomeScore is the property's real EPC SAP score (autoScoreVal),
+// same as the app. "Areas worth checking" counts the EPC bars above that
+// fall in the low band. Wording matches the app's confidence line.
 const buyerConfidence = computed(() => {
-  const s = Number(result.value.total) || 0
-  const bd = autoBreakdown.value as any
-  const maxes: Record<string, number> = {
-    heating: 20,
-    structure: 25,
-    efficiency: 20,
-    electrics: 15,
-    plumbing: 20,
-  }
-  let flags = 0
-  for (const k of Object.keys(maxes)) {
-    const v = Number(bd?.[k] ?? 0)
-    if (maxes[k] > 0 && v / maxes[k] < 0.6) flags++
-  }
-  // Buyer-confidence label wording ported from the reference clone so the
-  // headline matches (e.g. a 69 reads "Above average public record"). The
-  // insulation-flag override also mirrors the clone's cautious framing.
+  const s = Math.round(Number(autoScoreVal.value) || 0)
+  const flags = bvEpcStats.value.filter((x) => x.tone === 'low').length
   const recs = (property.value as any)?.epcRecommendations
   const insulationFlags = Array.isArray(recs)
     ? recs.filter((r: any) =>
@@ -6933,99 +6798,43 @@ const buyerConfidence = computed(() => {
       ).length
     : 0
   let label: string
-  let tone: 'good' | 'ok' | 'warn'
-  if (!s) {
-    label = 'No EPC on the public register'
-    tone = 'warn'
-  } else if (insulationFlags > 0) {
-    label = `Worth investigating — ${insulationFlags} insulation flag${insulationFlags > 1 ? 's' : ''}`
-    tone = 'ok'
-  } else if (s >= 80) {
-    label = 'Strong public record — minimal flags'
-    tone = 'good'
-  } else if (s >= 60) {
-    label = 'Above average public record'
-    tone = 'ok'
-  } else if (s >= 40) {
-    label = 'Worth investigating'
-    tone = 'ok'
-  } else {
-    label = 'Investigate before offering'
-    tone = 'warn'
-  }
-  const note =
-    flags > 0
-      ? `${flags} ${flags === 1 ? 'flag' : 'flags'} from the public EPC — see the Risks tab`
-      : 'No major flags on the public EPC'
-  const color =
-    tone === 'good' ? '#16a34a' : tone === 'ok' ? '#00a19a' : '#e6a23c'
-  // dasharray for the r=32 ring used elsewhere on this page (2πr ≈ 201.06)
+  if (!s) label = 'No EPC on the public register'
+  else if (insulationFlags > 0)
+    label = `Worth investigating: ${insulationFlags} insulation flag${insulationFlags > 1 ? 's' : ''}`
+  else if (s >= 80) label = 'Strong public record, minimal flags'
+  else if (s >= 60) label = 'Above average public record'
+  else if (s >= 40) label = 'Worth investigating'
+  else label = 'Investigate before offering'
+  // dasharray for the r=32 ring (2πr ≈ 201.06)
   const RING = 201.06
   return {
     score: s,
     label,
-    tone,
-    note,
     flags,
-    color,
+    color: '#00a19a',
     ringLen: RING,
-    ringOffset: RING - (s / 100) * RING,
+    ringOffset: RING - (Math.min(100, s) / 100) * RING,
   }
 })
 
-// ── Register your interest — triggers ported from the reference clone ─
-const bvWatchTriggers = computed(() => [
+// ── Register your interest (private Passport) ─────────────────
+// Same two real, state-based alerts as the app and WatchPropertyDrawer:
+// there are no build-progress % pings on the backend, and verified buyers
+// don't get a free Passport, so neither claim is made here.
+const bvWatchTriggers = [
   {
     icon: '/homescore-icon/clipboardChecklist.png',
-    title: 'Milestone pings',
-    sub: 'Get pinged at 75%, 90%, and published.',
+    title: 'Passport goes Partially Public',
+    sub: "We'll let you know as soon as it's live to view, even before every section is finished.",
   },
   {
-    icon: '/homescore-icon/gift.png',
-    title: 'Free Passport the moment it publishes',
-    sub: 'Verified buyers get the full sales pack free on publish — worth £15.',
-  },
-])
-
-// ── Verified buyer upsell perks (reference §6) ────────────────
-const bvVerifiedPerks = [
-  {
-    icon: '/homescore-icon/targetPathway.png',
-    title: 'Go to the front of the queue',
-    sub: 'Owners see verified buyers first when choosing who to sell to.',
-  },
-  {
-    icon: '/homescore-icon/gift.png',
-    title: 'Get your Passport free on day one',
-    sub: "Skip the £35 charge once you're verified and registered.",
-  },
-  {
-    icon: '/homescore-icon/boostBolt.png',
-    title: '3× more likely to have an offer accepted',
-    sub: 'Owners favour verified buyers, so your offers land more often.',
+    icon: '/homescore-icon/bell.png',
+    title: 'Passport becomes Public',
+    sub: "We'll notify you when it's fully public and you can access everything.",
   },
 ]
 
-const { toggleSave } = usePropertyActions()
 const { showToast } = useAppToast()
-
-async function saveToBuyerProfile() {
-  // The "Save to Buyer Profile" CTAs now direct the user to the new
-  // Buyer Profile flow (/buyer-profile) where they build/share their own
-  // verified buyer profile. Keeping `toggleSave` available elsewhere for
-  // the wishlist feature — this button is the funnel into the profile build.
-  // Auth-gate: if guest, send to sign-in with redirect-back.
-  const tk =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
-  if (!tk) {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('redirectAfterLogin', '/buyer-profile')
-    }
-    showAuthGate.value = true
-    return
-  }
-  router.push('/buyer-profile')
-}
 
 // ── Watch this property drawer (mirrors deployed app) ─────────
 // The buyer-report "Watch this property" button opens a bottom-sheet where
@@ -12023,31 +11832,7 @@ watch(screen, (s) => {
   font-weight: 700;
   color: #6bd4cd;
 }
-.bv-hero-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 14px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #fff;
-}
-.bv-hero-state.is-published {
-  background: rgba(107, 212, 205, 0.18);
-  border-color: rgba(107, 212, 205, 0.42);
-  color: #9ff0e9;
-}
-.bv-hero-state-ic {
-  display: inline-grid;
-  place-items: center;
-  font-size: 13px;
-  opacity: 0.6;
-  cursor: help;
-}
+
 .bv-hero-live {
   display: flex;
   flex-direction: column;
@@ -12070,6 +11855,22 @@ watch(screen, (s) => {
 .bv-hero-live-row b {
   font-weight: 800;
   color: #fff;
+}
+/* Passport-status box: last row of the hero, clickable like the app. */
+.bv-hero-live-row--state {
+  width: 100%;
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.bv-hero-live-row--state:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.bv-hero-live-row--state.is-published {
+  background: rgba(107, 212, 205, 0.18);
+  border-color: rgba(107, 212, 205, 0.42);
 }
 .bv-hero-live-ic {
   flex-shrink: 0;
@@ -12211,7 +12012,8 @@ watch(screen, (s) => {
   font-weight: 700;
   color: #8b93a7;
 }
-.bv-snap-stat-val.tone-good {
+.bv-snap-stat-val.tone-good,
+.bv-snap-stat-note.tone-good {
   color: #0f9d76;
 }
 .bv-snap-stat-val.tone-warn {
@@ -12224,74 +12026,19 @@ watch(screen, (s) => {
   color: #9aa2b4;
   line-height: 1.35;
 }
-.bv-snap-foot {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f1f5;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #8b93a7;
-  line-height: 1.4;
-}
-.bv-snap-foot-ic {
-  flex-shrink: 0;
-  margin-top: 1px;
-  font-size: 13px;
-  color: var(--bv-teal);
-}
+
+
 @media (max-width: 430px) {
   .bv-snap-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* ── "This property is unclaimed" navy banner ────────────────── */
-.bv-claim-banner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  border-radius: 18px;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--bv-navy-soft) 0%, var(--bv-navy) 70%, #0d1a3a 100%);
-  color: #fff;
-  box-shadow: 0 12px 30px -10px rgba(35, 29, 69, 0.5);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.bv-claim-banner:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 36px -10px rgba(35, 29, 69, 0.55);
-}
-.bv-claim-body {
-  flex: 1;
-  min-width: 0;
-}
-.bv-claim-title {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.2px;
-}
-.bv-claim-sub {
-  margin-top: 3px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.4;
-}
-.bv-claim-arrow {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.14);
-  font-size: 17px;
-  font-weight: 700;
-}
+
+
+
+
+
 
 
 /* ── Watch this property card ────────────────────────────────── */
@@ -12394,6 +12141,16 @@ watch(screen, (s) => {
   transform: translateY(-1px);
   filter: brightness(1.04);
 }
+.bv-watch-note {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--bv-text-soft);
+}
+.bv-verify-card {
+  margin: 14px 22px 0;
+}
 .bv-watch-btn:disabled {
   background: #eaf6f5;
   color: #017a72;
@@ -12401,104 +12158,19 @@ watch(screen, (s) => {
   cursor: default;
 }
 
-/* ── Verified buyer upsell (navy) ────────────────────────────── */
-.bv-verified-card {
-  margin: 14px 22px 0;
-  padding: 20px;
-  border-radius: 18px;
-  background: linear-gradient(150deg, var(--bv-navy) 0%, #2f2760 55%, #0d1a3a 100%);
-  color: #fff;
-  box-shadow: 0 14px 32px -10px rgba(35, 29, 69, 0.5);
-}
-.bv-verified-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-}
-.bv-verified-title {
-  margin-top: 6px;
-  font-size: 19px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-}
-.bv-verified-lede {
-  margin-top: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.5;
-}
-.bv-verified-rows {
-  margin: 16px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.bv-verified-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-}
-.bv-verified-ic {
-  flex-shrink: 0;
-  box-sizing: border-box;
-  width: 28px;
-  height: 28px;
-  padding: 4px;
-  border-radius: 8px;
-  background: rgba(107, 212, 205, 0.18);
-  object-fit: contain;
-}
-.bv-verified-body {
-  flex: 1;
-  min-width: 0;
-}
-.bv-verified-row-title {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.1px;
-}
-.bv-verified-row-sub {
-  margin-top: 2px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.4;
-}
-.bv-verified-btn {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 14px;
-  background: var(--bv-teal);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 8px 20px -6px rgba(0, 161, 154, 0.55);
-  transition: transform 0.15s, filter 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.bv-verified-btn-ic {
-  font-size: 17px;
-  flex-shrink: 0;
-}
+
+
+
+
+
+
+
+
+
+
 
 /* ── Illustrated icons inside the interest / verified cards ─── */
-.bv-watch-eyebrow img,
-.bv-verified-eyebrow img {
+.bv-watch-eyebrow img {
   width: 18px;
   height: 18px;
   object-fit: contain;
@@ -12645,10 +12317,7 @@ watch(screen, (s) => {
   font-weight: 800;
   color: #ffc857;
 }
-.bv-verified-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
+
 
 /* ── Section header (mirrors costs page) ───────────────────── */
 .bv-section-h {
@@ -12808,6 +12477,19 @@ watch(screen, (s) => {
   opacity: 0.9;
   line-height: 1.4;
 }
+.bv-costs-srcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.bv-costs-srcs span {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 11px;
+  font-weight: 700;
+}
 .bv-costs-rows {
   margin: 0 22px 10px;
   background: #fff;
@@ -12957,69 +12639,17 @@ watch(screen, (s) => {
   }
 }
 
-.bv-risks-card {
-  margin: 0 22px;
-  background: #fff;
-  border: 2px solid var(--bv-amber);
-  border-radius: 16px;
-  padding: 8px;
-  box-shadow: 0 4px 16px rgba(230, 162, 60, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.bv-risk-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 2px solid;
-}
-.bv-risk-row.green {
-  background: #f0fbf4;
-  border-color: #b8e8c8;
-}
-.bv-risk-row.amber {
-  background: #fffbf0;
-  border-color: rgba(230, 162, 60, 0.4);
-}
-.bv-risk-row.red {
-  background: #fef0ef;
-  border-color: rgba(199, 62, 54, 0.3);
-}
-.bv-risk-icon {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.bv-risk-body {
-  flex: 1;
-  min-width: 0;
-}
-.bv-risk-title {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.15px;
-  margin-bottom: 2px;
-}
-.bv-risk-row.green .bv-risk-title {
-  color: #2e7d4f;
-}
-.bv-risk-row.amber .bv-risk-title {
-  color: var(--bv-amber);
-}
-.bv-risk-row.red .bv-risk-title {
-  color: var(--bv-red);
-}
-.bv-risk-sub {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--bv-text-soft);
-  line-height: 1.4;
-}
+
+
+
+
+
+
+
+
+
+
+
 
 /* ── Score breakdown card (teal border) ────────────────────── */
 .bv-breakdown-card {
@@ -13146,61 +12776,13 @@ watch(screen, (s) => {
   line-height: 1.4;
 }
 
-/* ── Save to Buyer Profile card ────────────────────────────── */
-.bv-save-card {
-  margin: 16px 22px 0;
-  padding: 16px 18px;
-  background: var(--bv-teal-paler);
-  border: 2px solid var(--bv-teal-pale);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.bv-save-card:hover {
-  border-color: var(--bv-teal);
-  transform: translateY(-1px);
-}
-.bv-save-icon {
-  width: 38px;
-  height: 38px;
-  background: var(--bv-teal);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-}
-.bv-save-icon svg {
-  width: 16px;
-  height: 16px;
-}
-.bv-save-body {
-  flex: 1;
-  min-width: 0;
-}
-.bv-save-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--bv-navy);
-  letter-spacing: -0.2px;
-  margin-bottom: 2px;
-}
-.bv-save-sub {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--bv-text-soft);
-  line-height: 1.4;
-}
-.bv-save-cta {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--bv-teal-dark);
-  flex-shrink: 0;
-}
+
+
+
+
+
+
+
 
 /* ── Back link ─────────────────────────────────────────────── */
 .bv-back {
@@ -17064,6 +16646,17 @@ button.bv-rc-head:hover {
 .bv-rc-tag.teal {
   background: var(--bv-teal-pale);
   color: var(--bv-teal-deep);
+}
+.bv-rc-srcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 22px 12px;
+}
+.bv-section-h-tag {
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
 }
 .bv-rc-trend {
   display: flex;

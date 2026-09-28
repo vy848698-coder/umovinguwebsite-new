@@ -8,7 +8,7 @@
     <!-- ── Verified state ── -->
     <template v-if="state === 'verified'">
       <div class="vb-badge">
-        <span class="vb-badge__icon" aria-hidden="true">🛡</span>
+        <span class="vb-badge__icon" aria-hidden="true"><Icon name="i-lucide-shield-check" /></span>
         <span>VERIFIED BUYER</span>
         <span class="vb-badge__sep">·</span>
         <span class="vb-badge__active">ACTIVE</span>
@@ -23,7 +23,7 @@
         <span
           class="vb-benefit__icon vb-benefit__icon--amber"
           aria-hidden="true"
-          >↑</span
+          ><Icon name="i-lucide-arrow-up" /></span
         >
         <div>
           <div class="vb-benefit__head">First in the queue</div>
@@ -35,7 +35,7 @@
 
       <div class="vb-benefit">
         <span class="vb-benefit__icon vb-benefit__icon--teal" aria-hidden="true"
-          >✓</span
+          ><Icon name="i-lucide-check" /></span
         >
         <div>
           <div class="vb-benefit__head">
@@ -58,7 +58,7 @@
     <!-- ── Unverified state (guests + logged-in users without a published profile) ── -->
     <template v-else>
       <div class="vb-badge">
-        <span class="vb-badge__icon" aria-hidden="true">🛡</span>
+        <span class="vb-badge__icon" aria-hidden="true"><Icon name="i-lucide-shield-check" /></span>
         <span>VERIFIED BUYER</span>
         <span class="vb-badge__sep">·</span>
         <span class="vb-badge__price">£35 ONE-OFF</span>
@@ -74,7 +74,7 @@
         <span
           class="vb-benefit__icon vb-benefit__icon--amber"
           aria-hidden="true"
-          >↑</span
+          ><Icon name="i-lucide-arrow-up" /></span
         >
         <div>
           <div class="vb-benefit__head">Go to the front of the queue</div>
@@ -86,7 +86,7 @@
 
       <div class="vb-benefit">
         <span class="vb-benefit__icon vb-benefit__icon--teal" aria-hidden="true"
-          >✓</span
+          ><Icon name="i-lucide-check" /></span
         >
         <div>
           <div class="vb-benefit__head">Get your Passport free on day one</div>
@@ -100,7 +100,7 @@
         <span
           class="vb-benefit__icon vb-benefit__icon--amber"
           aria-hidden="true"
-          >★</span
+          ><Icon name="i-lucide-star" /></span
         >
         <div>
           <div class="vb-benefit__head">
@@ -117,7 +117,7 @@
         class="vb-btn vb-btn--primary vb-btn--cta"
         @click="onStart"
       >
-        ✓ See what verification gets you →
+        <Icon name="i-lucide-shield-check" /> See what verification gets you →
       </button>
     </template>
   </div>
