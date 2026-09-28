@@ -5,7 +5,7 @@
          despite the backend serving them, and the profile was only reachable
          from the mobile menu. Neither duplicates anything already on the
          page (Claim a property lives in the page head). -->
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <NotificationBell />
 
@@ -618,7 +618,7 @@
       @search="onForYouFiltersSearch"
     />
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -2521,9 +2521,24 @@ onMounted(async () => {
   .dsh-grid { grid-template-columns: minmax(0, 1fr); }
   .dsh-side { position: static; }
 }
+/* Tablets / small laptops: the side column drops under the main one; two
+   cards per row there instead of each stretching the full content width. */
+@media (min-width: 721px) and (max-width: 1080px) {
+  .dsh-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
 @media (max-width: 860px) {
   .dsh-hero { padding: 26px 22px 24px; border-radius: var(--r-lg); }
   .dsh-hero-top { flex-direction: column; gap: 20px; }
+  /* Its 420px flex-basis is a width in the desktop row, but becomes a
+     height once the hero stacks - which left an empty band under the lede. */
+  .dsh-hero-text { flex: 0 1 auto; }
+  /* The book band spans the card on tablets/phones; keep the book itself at
+     a sensible size rather than letting it grow to the full card width. */
+  .apc-book :deep(.passport-card) { max-width: 240px; margin: 0 auto; }
   .dsh-head-side { width: 100%; }
   .dsh-add { flex: 1; justify-content: center; }
   /* The book panel becomes a full-width band above the copy. */
@@ -2541,8 +2556,41 @@ onMounted(async () => {
   .dsh-search { flex-direction: column; align-items: stretch; padding: 12px; border-radius: var(--r-lg); }
   .dsh-search-btn { justify-content: center; }
   .dsh-stats { gap: 10px; }
-  .dsh-stat { flex: 1 1 100%; }
+  /* Two per row: one tile per row made the hero twice as tall as needed. */
+  .dsh-stat { flex: 1 1 calc(50% - 5px); padding: 13px 14px; }
+  .dsh-stat-value { font-size: 24px; }
   .dsh-sec-ic { width: 42px; height: 42px; }
   .dsh-sec-title { font-size: 19px; }
+}
+
+/* Small phones / narrow windows: slimmer hero and rows, so the next-steps
+   and cards keep a readable line length instead of a word per line. */
+@media (max-width: 420px) {
+  .dsh-shell { padding: 16px 12px 40px; }
+  .dsh-hero { padding: 22px 16px 20px; }
+  .dsh-stats { margin-top: 20px; padding-top: 18px; }
+  .dsh-sec-head { gap: 12px; }
+  .nfy-stale { padding: 12px 14px; }
+  .nfy-row { gap: 12px; padding: 14px; }
+  .nfy-row:hover { padding-left: 16px; }
+  .nfy-ic { width: 40px; height: 40px; }
+  .apc-info { padding: 18px 16px; }
+  .apc-book { padding: 18px; }
+}
+@media (max-width: 300px) {
+  .dsh-stat { flex: 1 1 100%; }
+  /* The whole row is the button; the chevron gives its width to the copy */
+  .nfy-chev { display: none; }
+  .dsh-add { padding: 10px 16px 10px 10px; font-size: 13px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows the dashboard exactly as a
+   1366px laptop does, only bigger. Nav and footer scale via their `wide`
+   prop; teleported pop-ups (notifications, postcode, filters) scale in their
+   own components. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .dsh-shell { zoom: var(--wide-zoom, 1); }
 }
 </style>

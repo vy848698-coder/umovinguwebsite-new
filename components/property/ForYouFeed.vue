@@ -677,4 +677,10 @@ async function savePostcode() {
   .fyf-title { font-size: 22px; }
   .fyf-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 }
+
+/* Big screens - the postcode sheet is teleported outside the (zoomed) page,
+   so it scales on its own with --wide-zoom. */
+@media (min-width: 1367px) {
+  .pcs-sheet { zoom: var(--wide-zoom, 1); }
+}
 </style>
