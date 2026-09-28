@@ -357,7 +357,7 @@
           <aside class="dsh-side">
             <!-- Owner HomeScore. Shown for every owner with a passport, scored
                  or not: an owner without a score yet is exactly who needs the
-                 route into HomeScore, so the ring reads "–" and says so rather
+                 route into HomeScore, so the ring reads "?" and says so rather
                  than the whole card vanishing. -->
             <section v-if="!isBuyerView && passports.length" class="hsc">
               <div class="hsc-head">
@@ -389,7 +389,7 @@
                     />
                   </svg>
                   <div class="hsc-ring-label">
-                    <span class="hsc-ring-num">{{ primaryPassport.homeScore ?? '–' }}</span>
+                    <span class="hsc-ring-num">{{ primaryPassport.homeScore ?? '?' }}</span>
                     <span class="hsc-ring-den">/100</span>
                   </div>
                 </div>
@@ -530,7 +530,7 @@
               <span class="hec-body">
                 <strong>Check any home's HomeScore</strong>
                 <small>
-                  Instant insight on energy, running costs and value — for any UK
+                  Instant insight on energy, running costs and value, for any UK
                   property, not just your own.
                 </small>
                 <span class="hec-cta">
@@ -896,7 +896,7 @@ function stalenessCopy(createdAt?: string | null, lastTouchedAt?: string | null)
   if (days < 3) return null
   const verb = lastTouchedAt ? 'Last touched' : 'Started'
   const when = days === 1 ? 'yesterday' : `${days} days ago`
-  return `${verb} ${when} — pick up where you left off.`
+  return `${verb} ${when}. Pick up where you left off.`
 }
 
 const stalenessLine = computed(() => {
@@ -1576,13 +1576,6 @@ onMounted(async () => {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--brand);
-}
-.dsh-eyebrow::before {
-  content: '';
-  width: 20px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--brand);
 }
 .dsh-sec-title {
   margin: 0;

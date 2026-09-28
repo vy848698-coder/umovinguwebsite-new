@@ -77,13 +77,6 @@ defineProps<{
   text-transform: uppercase;
   color: #00a19a;
 }
-.rvf-eyebrow::before {
-  content: '';
-  width: 20px;
-  height: 2px;
-  border-radius: 2px;
-  background: #00a19a;
-}
 .rvf-title {
   margin: 0;
   font-size: 22px;
