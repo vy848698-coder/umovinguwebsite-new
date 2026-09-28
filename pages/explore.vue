@@ -505,15 +505,28 @@
             <button type="button" class="dsc-feature dsc-feature--teal" @click="navigateTo('/homescore')">
               <span class="dsc-feature-glow" aria-hidden="true" />
 
-              <div class="dsc-feature-top">
+              <div class="dsc-feature-body">
                 <div class="dsc-feature-heading">
                   <p class="dsc-feature-eyebrow">HomeScore&trade;</p>
                   <span class="dsc-pill dsc-pill--free">FREE</span>
                 </div>
-                <!-- Illustrative score, matching the reference app's card. A
-                     sample figure for a marketing card, not a reading for any
-                     property - the real number only ever comes from /homescore
-                     once an address is chosen. -->
+
+                <h3 class="dsc-feature-title">Know what your home<br />could be costing you</h3>
+                <p class="dsc-feature-sub">
+                  Check energy performance, running costs and where you could improve.
+                </p>
+
+                <span class="dsc-feature-go">
+                  Run a free HomeScore
+                  <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
+                </span>
+              </div>
+
+              <!-- Illustrative score, matching the reference app's card. A
+                   sample figure for a marketing card, not a reading for any
+                   property - the real number only ever comes from /homescore
+                   once an address is chosen. -->
+              <div class="dsc-feature-stage">
                 <span class="dsc-hs-ring" role="img" aria-label="Example HomeScore of 55 out of 100">
                   <svg viewBox="0 0 100 100">
                     <circle class="dsc-hs-ring-bg" cx="50" cy="50" r="42" />
@@ -525,16 +538,6 @@
                   </span>
                 </span>
               </div>
-
-              <h3 class="dsc-feature-title">Know what your home<br />could be costing you</h3>
-              <p class="dsc-feature-sub">
-                Check energy performance, running costs and where you could improve.
-              </p>
-
-              <span class="dsc-feature-go">
-                Run a free HomeScore
-                <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
-              </span>
             </button>
 
             <!-- Opens the passport ecosystem popup. The sample Passport it used
@@ -548,32 +551,33 @@
             >
               <span class="dsc-feature-glow" aria-hidden="true" />
 
-              <div class="dsc-feature-top">
+              <div class="dsc-feature-body">
                 <div class="dsc-feature-heading">
                   <p class="dsc-feature-eyebrow">Property Passport</p>
                   <span class="dsc-pill dsc-pill--grade">SOLICITOR-GRADE</span>
                 </div>
-                <span class="dsc-feature-plate">
-                  <img src="/op-icons/misc/passportFan.png" alt="" class="dsc-feature-art" loading="lazy" />
+
+                <!-- Same copy as the app's Property Passport card. -->
+                <h3 class="dsc-feature-title">Build your home's<br />verified record</h3>
+                <p class="dsc-feature-sub">
+                  Store, verify and share documents, answers and history in one place.
+                </p>
+
+                <span class="dsc-feature-roles" aria-hidden="true">
+                  <span v-for="c in passportCards" :key="c.key" class="dsc-feature-role">
+                    <i :style="{ background: c.color }" />{{ c.title.replace(' Passport', '') }}
+                  </span>
+                </span>
+
+                <span class="dsc-feature-go dsc-feature-go--amber">
+                  Explore the passports
+                  <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
                 </span>
               </div>
 
-              <!-- Same copy as the app's Property Passport card. -->
-              <h3 class="dsc-feature-title">Build your home's<br />verified record</h3>
-              <p class="dsc-feature-sub">
-                Store, verify and share documents, answers and history in one place.
-              </p>
-
-              <span class="dsc-feature-roles" aria-hidden="true">
-                <span v-for="c in passportCards" :key="c.key" class="dsc-feature-role">
-                  <i :style="{ background: c.color }" />{{ c.title.replace(' Passport', '') }}
-                </span>
-              </span>
-
-              <span class="dsc-feature-go dsc-feature-go--amber">
-                Explore the passports
-                <span class="dsc-feature-chev"><Icon name="i-lucide-arrow-right" /></span>
-              </span>
+              <div class="dsc-feature-stage">
+                <img src="/op-icons/misc/passportFan.png" alt="" class="dsc-feature-art" loading="lazy" />
+              </div>
             </button>
           </div>
         </section>
@@ -2117,7 +2121,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 30px 28px 28px;
+  padding: 0 28px 28px;
   border-radius: 24px;
   border: 1px solid rgba(35, 29, 69, 0.07);
   background: #fff;
@@ -2142,21 +2146,57 @@ onMounted(() => {
   cursor: default;
   background: #faf9f7;
 }
-.dsc-entry--soon:hover { transform: none; box-shadow: none; }
+.dsc-entry--soon:hover { border-color: rgba(60, 64, 82, 0.2); background: #fcfbfa; }
 
+/* Hero stage: no boxed tile - the art sits large on a soft tinted glow that
+   bleeds to the card edges and fades into the white body below. */
 .dsc-entry-plate {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 92px; height: 92px;
-  border-radius: 22px;
-  margin-bottom: 20px;
-  background: linear-gradient(160deg, #f4f8f7 0%, #fbfbfa 100%);
-  border: 1px solid rgba(35, 29, 69, 0.05);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  align-self: stretch;
+  height: 212px;
+  margin: 0 -28px 24px;
+  padding-bottom: 14px;
+  background:
+    radial-gradient(60% 70% at 50% 58%, rgba(0, 161, 154, 0.16) 0%, rgba(0, 161, 154, 0) 72%),
+    linear-gradient(180deg, #f1f8f6 0%, #fbfdfc 78%, #fff 100%);
 }
-.dsc-entry--violet .dsc-entry-plate { background: linear-gradient(160deg, #f4f1fc 0%, #fbfbfd 100%); }
-.dsc-entry-art { width: 62px; height: 62px; object-fit: contain; }
-.dsc-entry-art--book { width: 52px; height: 66px; }
+.dsc-entry--violet .dsc-entry-plate {
+  background:
+    radial-gradient(60% 70% at 50% 58%, rgba(107, 79, 216, 0.15) 0%, rgba(107, 79, 216, 0) 72%),
+    linear-gradient(180deg, #f5f2fd 0%, #fcfbfe 78%, #fff 100%);
+}
+.dsc-entry--soon .dsc-entry-plate {
+  background:
+    radial-gradient(60% 70% at 50% 58%, rgba(60, 64, 82, 0.1) 0%, rgba(60, 64, 82, 0) 72%),
+    linear-gradient(180deg, #f1f0ed 0%, #f8f7f5 78%, #faf9f7 100%);
+}
+/* Floor shadow under the pedestal */
+.dsc-entry-plate::after {
+  content: '';
+  position: absolute;
+  left: 50%; bottom: 10px;
+  width: 150px; height: 18px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(31, 41, 70, 0.18), rgba(31, 41, 70, 0));
+  z-index: 0;
+}
+.dsc-entry-art {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  height: 158px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 18px rgba(31, 41, 70, 0.12));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dsc-entry-art--book { height: 176px; }
+.dsc-entry:hover .dsc-entry-art { transform: translateY(-6px) scale(1.03); }
+.dsc-entry--soon:hover .dsc-entry-art { opacity: 1; filter: drop-shadow(0 18px 22px rgba(31, 41, 70, 0.14)); }
+.dsc-entry--soon .dsc-entry-art { filter: drop-shadow(0 14px 18px rgba(31, 41, 70, 0.1)) saturate(0.85); opacity: 0.92; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease, opacity 0.3s ease; }
 
 .dsc-entry-titlerow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 .dsc-entry-title {
@@ -2198,6 +2238,12 @@ onMounted(() => {
 .dsc-entry-chev :deep(svg) { width: 14px; height: 14px; }
 .dsc-entry--violet .dsc-entry-chev { background: rgba(107, 79, 216, 0.12); }
 .dsc-entry:hover .dsc-entry-chev { transform: translateX(4px); }
+@media (max-width: 560px) {
+  .dsc-entry { padding: 0 20px 22px; }
+  .dsc-entry-plate { height: 184px; margin: 0 -20px 20px; }
+  .dsc-entry-art { height: 136px; }
+  .dsc-entry-art--book { height: 152px; }
+}
 .dsc-soon {
   padding: 5px 11px;
   border-radius: 999px;
@@ -2217,14 +2263,14 @@ onMounted(() => {
 }
 .dsc-feature {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 38%);
+  align-items: stretch;
   text-align: left;
   font-family: inherit;
   color: inherit;
   cursor: pointer;
-  padding: 34px 34px 30px;
+  padding: 0;
   border-radius: 26px;
   border: 1px solid rgba(35, 29, 69, 0.07);
   background: linear-gradient(165deg, #ffffff 0%, #fafbfb 100%);
@@ -2247,18 +2293,19 @@ onMounted(() => {
   display: none;
 }
 
-.dsc-feature-top {
+/* Text column: tight rhythm, pinned CTA at the bottom. */
+.dsc-feature-body {
   position: relative;
+  z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  width: 100%;
-  margin-bottom: 26px;
+  min-width: 0;
+  padding: 30px 8px 28px 32px;
 }
-.dsc-feature-heading { min-width: 0; padding-top: 4px; }
+.dsc-feature-heading { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
 .dsc-feature-eyebrow {
-  margin: 0 0 11px;
+  margin: 0;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -2274,25 +2321,44 @@ onMounted(() => {
 .dsc-pill--free { background: #e6f6f4; border: 1px solid rgba(0, 161, 154, 0.26); color: #00776f; }
 .dsc-pill--grade { background: #fdf3e1; border: 1px solid rgba(224, 164, 58, 0.36); color: #9a6b12; }
 
-/* The visual is the point of these cards, so it is allowed to be big. */
-.dsc-feature-plate {
+/* Visual column: no boxed tile - the art sits big on a soft tinted glow
+   that bleeds to the card's top, right and bottom edges. */
+.dsc-feature-stage {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 132px; height: 132px;
-  flex-shrink: 0;
-  border-radius: 30px;
-  background: linear-gradient(160deg, #fdf7ec 0%, #fdfcfa 100%);
-  border: 1px solid rgba(35, 29, 69, 0.05);
+  padding: 24px 20px;
+  background:
+    radial-gradient(62% 58% at 50% 50%, rgba(0, 161, 154, 0.17) 0%, rgba(0, 161, 154, 0) 75%),
+    linear-gradient(270deg, #eef8f6 0%, #f7fbfa 60%, rgba(255, 255, 255, 0) 100%);
 }
-.dsc-feature-art { width: 96px; height: 96px; object-fit: contain; }
+.dsc-feature--amber .dsc-feature-stage {
+  background:
+    radial-gradient(62% 58% at 50% 50%, rgba(224, 164, 58, 0.2) 0%, rgba(224, 164, 58, 0) 75%),
+    linear-gradient(270deg, #fdf5e6 0%, #fdfaf3 60%, rgba(255, 255, 255, 0) 100%);
+}
+.dsc-feature-art {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 24px rgba(31, 41, 70, 0.16));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dsc-feature:hover .dsc-feature-art { transform: translateY(-6px) rotate(-2deg) scale(1.03); }
 
 .dsc-hs-ring {
   position: relative;
   display: grid;
   place-items: center;
-  width: 132px; height: 132px;
+  width: 190px; height: 190px;
   flex-shrink: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #fff 62%, rgba(255, 255, 255, 0) 63%);
+  filter: drop-shadow(0 16px 26px rgba(0, 120, 112, 0.16));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.dsc-feature:hover .dsc-hs-ring { transform: scale(1.04); }
 .dsc-hs-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .dsc-hs-ring-bg { fill: none; stroke: rgba(0, 161, 154, 0.14); stroke-width: 9; }
 .dsc-hs-ring-fill { fill: none; stroke: #00a19a; stroke-width: 9; stroke-linecap: round; }
@@ -2304,11 +2370,11 @@ onMounted(() => {
   color: #231d45;
 }
 .dsc-hs-ring-num { display: flex; align-items: baseline; gap: 1px; }
-.dsc-hs-ring-label strong { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
-.dsc-hs-ring-label small { font-size: 13px; font-weight: 700; color: #8a90a6; }
+.dsc-hs-ring-label strong { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; }
+.dsc-hs-ring-label small { font-size: 15px; font-weight: 700; color: #8a90a6; }
 .dsc-hs-ring-note {
   margin-top: 2px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2317,17 +2383,17 @@ onMounted(() => {
 
 .dsc-feature-title {
   position: relative;
-  margin: 0 0 12px;
-  font-size: 25px;
+  margin: 0 0 10px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.22;
 }
 .dsc-feature-sub {
   position: relative;
-  margin: 0 0 26px;
-  max-width: 40ch;
-  font-size: 14.5px;
+  margin: 0 0 20px;
+  max-width: 34ch;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.62;
   color: #5c627c;
@@ -2749,14 +2815,24 @@ onMounted(() => {
    phone screen (a 400px minimum overflowed and clipped the feature cards). */
 @media (max-width: 760px) {
   .dsc-shell { padding: 0 16px 72px; }
-  .dsc-feature { padding: 26px 22px 24px; }
-  .dsc-feature-top { gap: 14px; margin-bottom: 20px; }
-  .dsc-hs-ring,
-  .dsc-feature-plate { width: 104px; height: 104px; }
-  .dsc-feature-plate { border-radius: 24px; }
-  .dsc-feature-art { width: 76px; height: 76px; }
-  .dsc-hs-ring-label strong { font-size: 28px; }
-  .dsc-feature-title { font-size: 22px; }
+  .dsc-feature { grid-template-columns: 1fr; }
+  .dsc-feature-stage {
+    order: -1;
+    height: 210px;
+    background:
+      radial-gradient(60% 70% at 50% 55%, rgba(0, 161, 154, 0.17) 0%, rgba(0, 161, 154, 0) 75%),
+      linear-gradient(180deg, #eef8f6 0%, #f7fbfa 70%, rgba(255, 255, 255, 0) 100%);
+  }
+  .dsc-feature--amber .dsc-feature-stage {
+    background:
+      radial-gradient(60% 70% at 50% 55%, rgba(224, 164, 58, 0.2) 0%, rgba(224, 164, 58, 0) 75%),
+      linear-gradient(180deg, #fdf5e6 0%, #fdfaf3 70%, rgba(255, 255, 255, 0) 100%);
+  }
+  .dsc-feature-body { padding: 20px 22px 24px; }
+  .dsc-hs-ring { width: 160px; height: 160px; }
+  .dsc-hs-ring-label strong { font-size: 38px; }
+  .dsc-feature-art { max-width: 170px; }
+  .dsc-feature-title { font-size: 21px; }
   .dsc-search-panel { padding: 12px 12px 0; margin-bottom: 48px; }
   .dsc-search-row { flex-wrap: wrap; }
   .dsc-search-field { flex: 1 1 100%; }
@@ -2953,7 +3029,7 @@ button.rx-card:hover {
 }
 
 /* ── Property Passport card: the four roles it opens onto ───────────────── */
-.dsc-feature-roles { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 18px; }
+.dsc-feature-roles { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 20px; }
 .dsc-feature-role {
   display: inline-flex;
   align-items: center;

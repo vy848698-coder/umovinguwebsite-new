@@ -158,21 +158,61 @@
               </button>
             </div>
 
-            <div class="pi-verify-body">
-              <div class="pi-verify-badge" :class="{ done: profile?.isVerified }">
+            <!-- Verified: hero status + details + view action -->
+            <div v-if="identityVerified" class="pi-verified">
+              <div class="pi-verified-hero">
+                <span class="pi-verified-seal">
+                  <Icon name="i-lucide-shield-check" />
+                </span>
+                <div class="pi-verified-hero-text">
+                  <span class="pi-verified-eyebrow">
+                    <Icon name="i-lucide-badge-check" />Verified
+                  </span>
+                  <div class="pi-verified-title">Your identity is confirmed</div>
+                  <div class="pi-verified-sub">By Onfido · verified profile</div>
+                </div>
+              </div>
+
+              <ul class="pi-verified-list">
+                <li>
+                  <span class="pi-verified-k"><Icon name="i-lucide-fingerprint" />Provider</span>
+                  <span class="pi-verified-v">Onfido</span>
+                </li>
+                <li>
+                  <span class="pi-verified-k"><Icon name="i-lucide-circle-check" />Status</span>
+                  <span class="pi-verified-pill">Approved</span>
+                </li>
+                <li v-if="kycCompletedLabel">
+                  <span class="pi-verified-k"><Icon name="i-lucide-calendar-check" />Verified on</span>
+                  <span class="pi-verified-v">{{ kycCompletedLabel }}</span>
+                </li>
+              </ul>
+
+              <button
+                type="button"
+                class="pi-verified-btn"
+                @click="navigateTo('/buyer-profile/view')"
+              >
+                <Icon name="i-lucide-eye" />View verified profile
+              </button>
+            </div>
+
+            <!-- Not verified: prompt + CTA into the Onfido ID/selfie step -->
+            <div v-else class="pi-verify-body">
+              <div class="pi-verify-badge">
                 <Icon name="heroicons:shield-check-solid" class="pi-verify-badge-ic" />
               </div>
               <div class="pi-verify-title">
-                {{ profile?.isVerified ? 'Verified' : 'Not verified yet' }}
+                {{ kycStatus === 'pending' ? 'Verification in progress' : 'Not verified yet' }}
               </div>
               <p class="pi-verify-sub">
-                {{ profile?.isVerified
-                  ? 'Your identity has been verified by Onfido.'
+                {{ kycStatus === 'pending'
+                  ? 'We\'re checking your documents. This usually takes a few minutes.'
                   : 'Verify your identity to build trust and unlock all platform features.' }}
               </p>
-              <button type="button" class="pi-verify-btn" :disabled="profile?.isVerified">
-                {{ profile?.isVerified ? 'Verified' : 'Verify identity' }}
-                <Icon v-if="!profile?.isVerified" name="heroicons:arrow-right" class="pi-verify-btn-ic" />
+              <button type="button" class="pi-verify-btn" @click="goVerifyIdentity">
+                {{ kycStatus === 'pending' ? 'Continue verification' : 'Verify identity' }}
+                <Icon name="heroicons:arrow-right" class="pi-verify-btn-ic" />
               </button>
             </div>
           </section>
@@ -518,6 +558,32 @@ const {
 
 onMounted(fetchProfile)
 
+// ── Identity verification ──────────────────────────────────────
+// /profile/me doesn't carry a verified flag, so the real signal is the
+// user's KYC status (same source the buyer passport's ID step uses).
+const { getKycStatus } = useKyc()
+const kycStatus = ref(null)
+const kycCompletedAt = ref(null)
+const identityVerified = computed(
+  () => kycStatus.value === 'approved' || profile.value?.isVerified === true,
+)
+const kycCompletedLabel = computed(() => {
+  if (!kycCompletedAt.value) return ''
+  const d = new Date(kycCompletedAt.value)
+  return isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+})
+onMounted(async () => {
+  try {
+    const res = await getKycStatus()
+    kycStatus.value = res?.status ?? null
+    kycCompletedAt.value = res?.completedAt ?? null
+  } catch {
+    kycStatus.value = null
+  }
+})
+// Step 1 of the buyer passport build is the Onfido ID + selfie check.
+const goVerifyIdentity = () => navigateTo('/buyer-profile/build')
+
 const saving = ref(false)
 
 // ── Avatar ─────────────────────────────────────────────────────
@@ -776,7 +842,7 @@ const completionSteps = computed(() => [
   { label: 'Add current address', icon: '/op-icons/matched-buyers/pin.png', done: !!profile.value?.addresses?.length },
   { label: 'Add company details', icon: '/op-icons/investment/officeBuilding.png', done: !!profile.value?.companies?.length },
   { label: 'Add solicitor', icon: '/buyer-profile-icon/scales.png', done: !!profile.value?.solicitors?.length },
-  { label: 'Verify your identity', icon: '/homescore-icon/shield.png', done: !!profile.value?.isVerified },
+  { label: 'Verify your identity', icon: '/homescore-icon/shield.png', done: identityVerified.value },
 ])
 
 const ringStyle = computed(() => ({
@@ -940,6 +1006,57 @@ const goBack = useGoBack('/profile')
 .pi-verify-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(0, 161, 154, 0.32); }
 .pi-verify-btn:disabled { opacity: 0.6; cursor: default; }
 .pi-verify-btn-ic { width: 15px; height: 15px; }
+
+.pi-verified { flex: 1; display: flex; flex-direction: column; gap: 14px; text-align: left; }
+.pi-verified-hero {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 18px; border-radius: 18px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(0, 161, 154, 0.18) 0%, rgba(0, 161, 154, 0) 55%),
+    linear-gradient(135deg, #eefaf6 0%, #f8fcfb 100%);
+  border: 1px solid #d6eee6;
+}
+.pi-verified-hero::after {
+  content: ''; position: absolute; right: -28px; bottom: -28px;
+  width: 110px; height: 110px; border-radius: 50%;
+  border: 14px solid rgba(15, 138, 120, 0.06);
+  pointer-events: none;
+}
+.pi-verified-seal {
+  width: 58px; height: 58px; border-radius: 18px; flex-shrink: 0;
+  background: linear-gradient(145deg, #13a28c 0%, #0b7566 100%); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 22px rgba(11, 117, 102, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.pi-verified-seal :deep(svg) { width: 28px; height: 28px; }
+.pi-verified-hero-text { min-width: 0; position: relative; z-index: 1; }
+.pi-verified-eyebrow {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #0f8a78; background: #fff; border: 1px solid #cfeae1; border-radius: 100px; padding: 3px 9px 3px 7px;
+}
+.pi-verified-eyebrow :deep(svg) { width: 13px; height: 13px; }
+.pi-verified-title { font-size: 16.5px; font-weight: 800; color: #231d45; margin-top: 8px; line-height: 1.25; }
+.pi-verified-sub { font-size: 12.5px; font-weight: 600; color: #6f8398; margin-top: 3px; }
+
+.pi-verified-list { list-style: none; margin: 0; padding: 4px 14px; border: 1px solid #eef3f9; border-radius: 14px; background: #fbfcfe; }
+.pi-verified-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px dashed #e6edf4; }
+.pi-verified-list li:last-child { border-bottom: none; }
+.pi-verified-k { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #6f8398; }
+.pi-verified-k :deep(svg) { width: 15px; height: 15px; color: #0f8a78; }
+.pi-verified-v { font-size: 13px; font-weight: 800; color: #16314a; }
+.pi-verified-pill { font-size: 11.5px; font-weight: 800; color: #18a558; background: #e3f5ec; border-radius: 100px; padding: 3px 10px; }
+
+.pi-verified-btn {
+  margin-top: auto; width: 100%; height: 44px; border-radius: 12px; cursor: pointer;
+  border: 1px solid #cfe6df; background: #fff; color: #0f8a78;
+  font-family: inherit; font-size: 13.5px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.pi-verified-btn :deep(svg) { width: 16px; height: 16px; }
+.pi-verified-btn:hover { background: #f0faf7; border-color: #9fd6c8; transform: translateY(-1px); }
 
 /* Comms preferences */
 .pi-prefs { display: flex; flex-direction: column; gap: 10px; }
@@ -1173,6 +1290,7 @@ img.pi-footnote-ic { width: 18px; height: 18px; object-fit: contain; vertical-al
   .pi-card,
   .pi-wc-btn,
   .pi-verify-btn,
+  .pi-verified-btn,
   .drawer-cta,
   .avatar-pick-row {
     transition: none;

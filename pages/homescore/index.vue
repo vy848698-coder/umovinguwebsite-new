@@ -84,7 +84,7 @@
           <p class="section-kicker"><span class="kicker-dot" />HomeScore</p>
           <h1>What does any UK<br class="h1-br-mobile" /> home really<br class="h1-br-mobile" /> cost to run?</h1>
           <p class="hero-description">
-            Instantly scored from public EPC data — for any address, anyone.
+            Instantly scored from public EPC data, for any address, anyone.
             See how a property compares to its street in seconds.
           </p>
 
@@ -116,37 +116,74 @@
         </div>
 
         <aside class="hero-visual" aria-label="HomeScore preview">
-          <div class="visual-glow" />
-          <div class="house-stage">
-            <img src="/images/uk-houses/house-1.jpg" alt="Modern UK home" class="hero-house" />
-            <div class="score-card">
-              <div class="score-card-eyebrow">HomeScore</div>
-              <div class="score-ring-holder">
-                <ScoreRing :score="74" rating="Good" rating-color="#00a19a" />
+          <!-- House-shaped score card: roof + chimney outline drawn in SVG
+               (halo stroke under a crisp stroke for the teal glow); the
+               content sits on top. Sample figures for the preview only. -->
+          <div class="hs-house">
+            <svg class="hs-house-shape" viewBox="0 0 400 502" aria-hidden="true">
+              <defs>
+                <linearGradient id="hsHouseFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="100%" stop-color="#f5f8f8" />
+                </linearGradient>
+              </defs>
+              <path class="hs-house-halo" d="M38 472 L38 173 Q38 165 32 165 L28 165 C18 165 14 159 27.7 147.5 L187.5 20 Q200 10 212.5 20 L292 83.4 L292 58 Q292 50 300 50 L322 50 Q330 50 330 58 L330 113.7 L372.3 147.5 C386 159 382 165 372 165 L368 165 Q362 165 362 173 L362 472 Q362 490 344 490 L56 490 Q38 490 38 472 Z" />
+              <path class="hs-house-fill" d="M38 472 L38 173 Q38 165 32 165 L28 165 C18 165 14 159 27.7 147.5 L187.5 20 Q200 10 212.5 20 L292 83.4 L292 58 Q292 50 300 50 L322 50 Q330 50 330 58 L330 113.7 L372.3 147.5 C386 159 382 165 372 165 L368 165 Q362 165 362 173 L362 472 Q362 490 344 490 L56 490 Q38 490 38 472 Z" />
+              <path class="hs-house-edge" d="M38 472 L38 173 Q38 165 32 165 L28 165 C18 165 14 159 27.7 147.5 L187.5 20 Q200 10 212.5 20 L292 83.4 L292 58 Q292 50 300 50 L322 50 Q330 50 330 58 L330 113.7 L372.3 147.5 C386 159 382 165 372 165 L368 165 Q362 165 362 173 L362 472 Q362 490 344 490 L56 490 Q38 490 38 472 Z" />
+            </svg>
+
+            <div class="hs-house-body">
+              <div class="hs-house-eyebrow">HomeScore</div>
+
+              <div class="hs-house-ring">
+                <svg viewBox="0 0 120 120">
+                  <defs>
+                    <linearGradient id="hsHouseRingGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#34cdb5" />
+                      <stop offset="100%" stop-color="#0b8676" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="hs-house-ring-track" cx="60" cy="60" r="52" />
+                  <circle
+                    class="hs-house-ring-fill"
+                    cx="60"
+                    cy="60"
+                    r="52"
+                    stroke-dasharray="326.7"
+                    :stroke-dashoffset="326.7 * (1 - 0.74)"
+                  />
+                </svg>
+                <div class="hs-house-ring-label">
+                  <strong>74</strong>
+                  <span>Good</span>
+                </div>
               </div>
-              <ul class="score-breakdown">
+              <div class="hs-house-outof">out of 100</div>
+
+              <ul class="hs-house-rows">
                 <li>
-                  <span class="sb-dot teal" />
-                  <span class="sb-label">Energy &amp; running costs</span>
-                  <span class="sb-value good">Good</span>
+                  <span class="hs-house-dot" style="background: #0f8f7d" />
+                  <span class="hs-house-label">Energy &amp; running costs</span>
+                  <span class="hs-house-val" style="color: #0f8f7d">Good</span>
                 </li>
                 <li>
-                  <span class="sb-dot teal" />
-                  <span class="sb-label">Environmental impact</span>
-                  <span class="sb-value good">Good</span>
+                  <span class="hs-house-dot" style="background: #3cb46a" />
+                  <span class="hs-house-label">Environmental impact</span>
+                  <span class="hs-house-val" style="color: #2f9a58">Good</span>
                 </li>
                 <li>
-                  <span class="sb-dot amber" />
-                  <span class="sb-label">Heating efficiency</span>
-                  <span class="sb-value avg">Average</span>
+                  <span class="hs-house-dot" style="background: #d08b16" />
+                  <span class="hs-house-label">Heating efficiency</span>
+                  <span class="hs-house-val" style="color: #c98612">Average</span>
                 </li>
                 <li>
-                  <span class="sb-dot blue" />
-                  <span class="sb-label">Potential savings</span>
-                  <span class="sb-value">£340 / year</span>
+                  <span class="hs-house-dot" style="background: #8b5cf6" />
+                  <span class="hs-house-label">Potential savings</span>
+                  <span class="hs-house-val">£340 / year</span>
                 </li>
               </ul>
-              <button class="score-breakdown-btn" type="button">
+
+              <button class="hs-house-btn" type="button" :disabled="breakdownLoading" @click="onBreakdownClick">
                 View full breakdown
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -162,37 +199,62 @@
       <section class="hs-story-section">
         <article class="hs-real-story">
           <div class="hs-real-story-bar" />
-          <div class="hs-real-story-icon" aria-hidden="true">&ldquo;</div>
-          <div class="hs-real-story-body">
-            <div class="hs-real-story-eyebrow">Real story</div>
+          <div class="hs-real-story-main">
+            <div class="hs-card-top">
+              <span class="hs-card-tag">
+                <Icon name="i-lucide-quote" class="hs-card-tag-ic" />Real story
+              </span>
+            </div>
+
             <p class="hs-real-story-quote">
-              "My neighbour was being charged £150 a month extra — her supplier
+              "My neighbour was being charged £150 a month extra. Her supplier
               thought she had a swimming pool."
             </p>
             <p class="hs-real-story-text">
               Energy suppliers estimate usage based on assumptions. Those
               assumptions are sometimes very wrong. HomeScore shows you what your
-              home should actually cost — and flags when something doesn't add up.
+              home should actually cost, and flags when something doesn't add up.
             </p>
           </div>
-          <img
-            class="hs-real-story-art"
-            src="/homescore-icon/wallet.png"
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-          />
+
+          <div class="hs-real-story-visual" aria-hidden="true">
+            <img class="hs-real-story-art" src="/homescore-icon/wallet.png" alt="" loading="lazy" />
+          </div>
         </article>
 
         <aside class="hs-activity-card">
+          <div class="hs-card-top">
+            <span class="hs-card-tag">
+              <span class="hs-live-pulse" />Live activity
+            </span>
+            <span v-if="lastHourUpdated" class="hs-activity-updated">Updated {{ lastHourUpdated }}</span>
+          </div>
+
           <div class="hs-activity-head">
-            <span class="hs-live-pulse" />
             <strong v-if="lastHourLoading" class="hs-activity-skel" />
             <strong v-else>{{ lastHourCount }}</strong>
+            <span class="hs-activity-unit">in the last hour</span>
           </div>
           <p class="hs-activity-label">
-            {{ lastHourCount === 1 ? 'HomeScore' : 'HomeScores' }} run in the last hour
+            {{ lastHourCount === 1 ? 'HomeScore' : 'HomeScores' }} run by people checking
+            what their home really costs.
           </p>
+
+          <ul class="hs-activity-list">
+            <li>
+              <span class="hs-activity-ic"><img src="/homescore-icon/epcAssessment.png" alt="" /></span>
+              <span class="hs-activity-li-text"><b>EPC &amp; energy rating</b><small>From the EPC register</small></span>
+            </li>
+            <li>
+              <span class="hs-activity-ic"><img src="/homescore-icon/utilityBills.png" alt="" /></span>
+              <span class="hs-activity-li-text"><b>Running cost estimate</b><small>Yearly energy bills</small></span>
+            </li>
+            <li>
+              <span class="hs-activity-ic"><img src="/homescore-icon/houseSearch.png" alt="" /></span>
+              <span class="hs-activity-li-text"><b>Sold prices nearby</b><small>Recent local sales</small></span>
+            </li>
+          </ul>
+
           <p class="hs-activity-note">Live count, straight from the HomeScore engine.</p>
         </aside>
       </section>
@@ -222,16 +284,7 @@
           <article v-for="(step, i) in currentHowSteps" :key="i" class="hs-step-card">
             <div :class="['hs-step-icon', stepTones[i]]">
               <span class="hs-step-badge">{{ i + 1 }}</span>
-              <svg v-if="i === 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" />
-              </svg>
-              <svg v-else-if="i === 1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="6" y1="20" x2="6" y2="13" /><line x1="12" y1="20" x2="12" y2="8" /><line x1="18" y1="20" x2="18" y2="4" />
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 4H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />
-                <rect x="9" y="3" width="6" height="4" rx="1" /><polyline points="9 14 11 16 15 12" />
-              </svg>
+              <img :src="`/homescore-icon/${step.icon}.png`" alt="" class="hs-step-art" loading="lazy" />
             </div>
             <h3>{{ step.title }}</h3>
             <p>{{ step.sub }}</p>
@@ -253,15 +306,15 @@
     </main>
 
     <!-- ── Footer (shared, matches Explore) ─────────────────────────── -->
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import PropertySearchInput from '~/components/property/PropertySearchInput.vue'
-import ScoreRing from '~/components/homescore/ScoreRing.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import { useRecentlyExplored } from '~/composables/useRecentlyExplored'
 
 const route = useRoute()
 const router = useRouter()
@@ -290,15 +343,29 @@ const config = useRuntimeConfig()
 const lastHourCount = ref(0)
 const lastHourLoading = ref(true)
 
-onMounted(async () => {
+const lastHourUpdated = ref('')
+let lastHourTimer: ReturnType<typeof setInterval> | null = null
+
+async function loadLastHour() {
   try {
     const res: any = await $fetch(`${config.public.apiBase}/property/activity/last-hour`)
     lastHourCount.value = res?.count ?? 0
+    lastHourUpdated.value = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
   } catch {
-    /* stays at 0 on failure */
+    /* keeps the last good value on failure */
   } finally {
     lastHourLoading.value = false
   }
+}
+
+// Re-poll every minute so the "live" count actually moves while the page
+// is open (it used to be read once on mount).
+onMounted(() => {
+  loadLastHour()
+  lastHourTimer = setInterval(loadLastHour, 60_000)
+})
+onBeforeUnmount(() => {
+  if (lastHourTimer) clearInterval(lastHourTimer)
 })
 
 function onResultSelect(property: any) {
@@ -313,6 +380,43 @@ function onSearchEnter(_q: string) {
 function onCheckClick() {
   const input = document.querySelector<HTMLInputElement>('.hs-search-wrap input')
   input?.focus()
+}
+
+// ── "View full breakdown" on the house preview card ─────────────────
+// The card shows sample figures, so the button takes people to the most
+// relevant REAL breakdown it can find:
+//   1. signed in with a Passport → their own home's HomeScore
+//   2. a property they explored earlier in this browser → that one
+//   3. nothing yet → scroll to the search so they can run one
+const { getRecentlyExplored } = useRecentlyExplored()
+const breakdownLoading = ref(false)
+
+async function onBreakdownClick() {
+  if (breakdownLoading.value) return
+  breakdownLoading.value = true
+  try {
+    const token = localStorage.getItem('token')
+    if (token) {
+      try {
+        const list = await $fetch<any[]>(`${config.public.apiBase}/profile/passports`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const own = (list ?? []).find((p: any) => p?.propertyId)?.propertyId
+        if (own) return router.push(`/homescore/${own}`)
+      } catch {
+        /* fall through to the next option */
+      }
+    }
+
+    const recent = getRecentlyExplored()[0]
+    if (recent?.id) return router.push(`/homescore/${recent.id}`)
+
+    const input = document.querySelector<HTMLInputElement>('.hs-search-wrap input')
+    input?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    input?.focus({ preventScroll: true })
+  } finally {
+    breakdownLoading.value = false
+  }
 }
 
 const navIsActive = (basePath: string) =>
@@ -340,47 +444,56 @@ const howTabs: { id: HowId; label: string }[] = [
   { id: 'curious', label: 'Just curious' },
 ]
 
-const howCopy: Record<HowId, { title: string; sub: string }[]> = {
+const howCopy: Record<HowId, { title: string; sub: string; icon: string }[]> = {
   buyers: [
     {
       title: 'Search any UK address',
+      icon: 'magnifier',
       sub: 'Type a postcode or street and see how it scores against its neighbours.',
     },
     {
       title: 'See running costs & risks',
-      sub: 'Energy costs, sold history, flood risk — everything public records can tell you before you make an offer.',
+      icon: 'utilityBills',
+      sub: 'Energy costs, sold history, flood risk: everything public records can tell you before you make an offer.',
     },
     {
       title: 'Know what to ask before you view',
-      sub: 'Get a list of questions based on what the EPC data flags — walk in already informed.',
+      icon: 'clipboardChecklist',
+      sub: 'Get a list of questions based on what the EPC data flags, so you walk in already informed.',
     },
   ],
   owners: [
     {
       title: 'Search your address',
-      sub: "See your property's estimated score from public EPC data — takes 5 seconds.",
+      icon: 'houseSearch',
+      sub: "See your property's estimated score from public EPC data. It takes 5 seconds.",
     },
     {
       title: 'See how you compare to your street',
-      sub: 'Find out if this property is costing more to run than similar homes nearby — and why.',
+      icon: 'housesCluster',
+      sub: 'Find out if this property is costing more to run than similar homes nearby, and why.',
     },
     {
       title: 'Upload bills to get your real number',
-      sub: 'Public EPC data can be years out of date. Your actual bills tell the real story — and start building your Property Passport.',
+      icon: 'utilityBills',
+      sub: 'Public EPC data can be years out of date. Your actual bills tell the real story and start building your Property Passport.',
     },
   ],
   curious: [
     {
-      title: "Search any address — yours or anyone's",
+      title: "Search any address, yours or anyone's",
+      icon: 'magnifier',
       sub: 'No account, no commitment. Just type a postcode and see what the data says.',
     },
     {
       title: 'See what your street is paying',
-      sub: 'Compare running costs across nearby homes — renting or owning, the data is the same for everyone.',
+      icon: 'housesCluster',
+      sub: 'Compare running costs across nearby homes. Renting or owning, the data is the same for everyone.',
     },
     {
       title: 'Find out if you could be paying less',
-      sub: 'If this property is costing more than its neighbours, the HomeScore shows you exactly why — and what could change it.',
+      icon: 'moneyBagPound',
+      sub: 'If this property is costing more than its neighbours, the HomeScore shows you exactly why and what could change it.',
     },
   ],
 }
@@ -626,7 +739,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 /* ── Hero ─────────────────────────────────────────────────────────── */
 .hs-hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   gap: clamp(40px, 5vw, 72px);
   min-height: 500px;
@@ -769,152 +882,205 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 /* ── Hero visual / score card ─────────────────────────────────────── */
 .hero-visual {
   position: relative;
-  min-height: 520px;
-}
-
-.visual-glow {
-  position: absolute;
-  right: 0;
-  top: 40px;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 161, 154, 0.12), transparent 66%);
-  filter: blur(8px);
-}
-
-.house-stage {
-  position: relative;
-  /* inset: 30px 0 0 0; */
-}
-
-.hero-house {
-  position: absolute;
-  right: 41px;
-  top: 31px;
-  width: min(560px, 88%);
-  height: 410px;
-  border-radius: 24px;
-  object-fit: cover;
-  object-position: center;
-  filter: saturate(1.03) contrast(1.02);
-  box-shadow: 0 30px 56px rgba(31, 61, 98, 0.18);
-}
-
-.score-card {
-  position: relative;
-  /* left: 0; */
-  /* top: 14px; */
-  max-width: 372px;
-  padding: 26px 26px 24px;
-  border: 1px solid rgba(20, 40, 70, 0.06);
-  border-radius: 26px;
-  background: #ffffff;
-  box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.95) inset,
-    0 30px 60px rgba(23, 52, 92, 0.18),
-    0 6px 16px rgba(0, 0, 0, 0.06);
-  z-index: 2;
-}
-
-.score-card-eyebrow {
-  text-align: center;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #009b93;
-  margin-bottom: 6px;
-}
-
-.score-ring-holder {
-  display: flex;
-  justify-content: center;
-  margin: 2px 0 6px;
-}
-
-.score-ring-holder :deep(svg) {
-  width: 168px;
-  height: 168px;
-}
-
-.score-ring-holder :deep(.hs-ring-label) {
-  font-size: 12px;
-  color: #9e9ea7;
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-.score-breakdown {
-  list-style: none;
-  margin: 6px 0 18px;
-  padding: 18px 2px 0;
-  border-top: 1px solid #ebeef2;
   display: grid;
-  gap: 16px;
+  place-items: center;
+  min-height: 480px;
 }
 
-.score-breakdown li {
+/* ── House-shaped score card ──
+   Outline (rounded peak, overhanging eaves, chimney) is one SVG path:
+   a blurred halo stroke under a crisp stroke gives the teal glow. */
+.hs-house {
+  position: relative;
+  width: 400px;
+  height: 502px;
+}
+
+.hs-house-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hs-house-halo {
+  fill: none;
+  stroke: rgba(56, 214, 192, 0.55);
+  stroke-width: 18;
+  stroke-linejoin: round;
+  filter: blur(10px);
+}
+
+/* Two-tone rim: a deep teal band with a lighter aqua line through it. */
+.hs-house-fill {
+  fill: url(#hsHouseFill);
+  stroke: #1cb4a0;
+  stroke-width: 7.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px rgba(64, 224, 200, 0.7)) drop-shadow(0 26px 40px rgba(20, 60, 70, 0.16));
+}
+
+.hs-house-edge {
+  fill: none;
+  stroke: #9ff3e4;
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+  opacity: 0.45;
+  filter: blur(0.6px);
+}
+
+.hs-house-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 58px 28px;
+}
+
+/* Same label style as the site's section kickers (.section-kicker). */
+.hs-house-eyebrow {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #00857f;
+  margin-bottom: 14px;
+}
+
+.hs-house-ring {
+  position: relative;
+  width: 138px;
+  height: 138px;
+}
+
+.hs-house-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.hs-house-ring-track {
+  fill: none;
+  stroke: #e9f1ef;
+  stroke-width: 10;
+}
+
+.hs-house-ring-fill {
+  fill: none;
+  stroke: url(#hsHouseRingGrad);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.hs-house-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.hs-house-ring-label strong {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--color-ink);
+}
+
+.hs-house-ring-label span {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f9582;
+}
+
+.hs-house-outof {
+  margin-top: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8a8fa0;
+}
+
+.hs-house-rows {
+  list-style: none;
+  width: 100%;
+  margin: 14px 0 0;
+  padding: 0;
+  border-top: 1px solid #edf0f3;
+}
+
+.hs-house-rows li {
   display: flex;
   align-items: center;
-  gap: 11px;
-  font-size: 14.5px;
+  gap: 12px;
+  height: 35px;
+  padding: 0 2px;
+  border-bottom: 1px solid #edf0f3;
 }
 
-.sb-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
+.hs-house-rows li:last-child {
+  border-bottom: 0;
+}
+
+.hs-house-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
-.sb-dot.teal { background: #12b3a6; }
-.sb-dot.amber { background: #d99a2b; }
-.sb-dot.blue { background: #8b8ff5; }
-
-.sb-label {
+.hs-house-label {
   flex: 1;
-  color: #231d45;
+  min-width: 0;
+  font-size: 13.5px;
   font-weight: 600;
-  gap: 10px;
-  line-height: 1.5;
-}
-
-.sb-value {
-  font-weight: 800;
-  color: #1a2340;
+  color: #2a2f4a;
   white-space: nowrap;
 }
 
-.sb-value.good { color: #009b8f; }
-.sb-value.avg { color: #d6921f; }
+.hs-house-val {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1f2547;
+  white-space: nowrap;
+}
 
-.score-breakdown-btn {
-  display: flex;
+.hs-house-btn {
+  margin-top: auto;
+  width: 100%;
+  height: 46px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 16px;
-  background: #d7efea;
-  color: #017a72;
+  background: linear-gradient(180deg, #14a08e 0%, #0a7468 100%);
+  color: #fff;
   font-family: inherit;
   font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 0.2s;
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 18px rgba(11, 127, 114, 0.32);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.score-breakdown-btn:hover {
-  background: #c7e8e1;
+.hs-house-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 24px rgba(11, 127, 114, 0.4);
 }
 
-.score-breakdown-btn svg {
-  width: 15px;
-  height: 15px;
+.hs-house-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* ── Real story + activity ────────────────────────────────────────── */
@@ -925,74 +1091,68 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   margin-top: 28px;
 }
 
-.hs-real-story {
+/* Both cards share one frame: white, hairline border, soft shadow,
+   same padding and header row, so they read as a matched pair. */
+.hs-real-story,
+.hs-activity-card {
   position: relative;
-  display: flex;
-  gap: 16px;
-  padding: 30px 32px 30px 36px;
-  border: 1px solid rgba(231, 236, 242, 0.9);
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 253, 251, 0.92));
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 18px 40px rgba(31, 61, 98, 0.08);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 30px 26px;
+  border: 1px solid rgba(35, 29, 69, 0.07);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(31, 61, 98, 0.06);
+}
+
+.hs-real-story {
+  padding-left: 34px;
 }
 
 .hs-real-story-bar {
   position: absolute;
   top: 0;
   left: 0;
-  width: 5px;
+  width: 4px;
   height: 100%;
   background: linear-gradient(180deg, #00a19a, #00b6ad);
 }
 
-.hs-real-story-icon {
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(150deg, #e4faf3, #c3f0e3);
-  color: #00857f;
-  font-size: 34px;
-  font-weight: 900;
-  line-height: 0;
-  padding-top: 14px;
+.hs-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 30px;
+  margin-bottom: 18px;
 }
 
-.hs-real-story-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.hs-real-story-art {
-  flex-shrink: 0;
-  align-self: center;
-  width: 116px;
-  height: auto;
-  margin-left: 6px;
-  filter: drop-shadow(0 12px 20px rgba(31, 61, 98, 0.14));
-}
-
-.hs-real-story-eyebrow {
+.hs-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 12px 0 11px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(0, 161, 154, 0.22);
   font-size: 11px;
-  font-weight: 900;
-  color: #007e78;
-  letter-spacing: 0.14em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  color: #00776f;
 }
+.hs-card-tag .hs-live-pulse { width: 7px; height: 7px; }
+.hs-card-tag-ic { width: 13px; height: 13px; }
 
 .hs-real-story-quote {
   margin: 0 0 14px;
-  font-size: 22px;
+  font-size: 23px;
   font-weight: 800;
   color: #231d45;
-  line-height: 1.36;
-  letter-spacing: -0.01em;
+  line-height: 1.34;
+  letter-spacing: -0.015em;
 }
 
 .hs-real-story-text {
@@ -1003,49 +1163,140 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   font-weight: 500;
 }
 
-.hs-activity-card {
+/* Text column + big 3D art column, both vertically centred so the card
+   has no dead space when it stretches to match the activity card. */
+.hs-real-story {
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+}
+
+.hs-real-story-main {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
-  padding: 26px;
-  border: 1px solid rgba(229, 244, 242, 0.9);
-  border-radius: 22px;
-  background: linear-gradient(180deg, #f4faf8, #ffffff);
-  box-shadow: 0 18px 40px rgba(31, 61, 98, 0.06);
+}
+
+/* Tag stays pinned top (level with the Live activity tag); the quote and
+   copy centre in the space below it. */
+.hs-real-story-quote {
+  margin-top: auto !important;
+}
+.hs-real-story-text {
+  margin-bottom: auto !important;
+  padding-bottom: 30px;
+}
+
+.hs-real-story-visual {
+  position: relative;
+  flex-shrink: 0;
+  width: 190px;
+  height: 190px;
+  display: grid;
+  place-items: center;
+}
+
+.hs-real-story-visual::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.16) 0%, rgba(0, 161, 154, 0.05) 55%, rgba(0, 161, 154, 0) 72%);
+}
+
+.hs-real-story-art {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 24px rgba(31, 61, 98, 0.2));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hs-real-story:hover .hs-real-story-art {
+  transform: translateY(-6px) rotate(-3deg);
+}
+
+.hs-activity-updated {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9a97aa;
 }
 
 .hs-activity-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
 }
 
 .hs-activity-head strong {
-  font-size: 30px;
+  font-size: 52px;
+  line-height: 1;
   font-weight: 900;
   color: #00a19a;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
 }
 
-.hs-activity-label {
-  margin: 6px 0 0;
+.hs-activity-unit {
   font-size: 14px;
   font-weight: 700;
   color: #4a5570;
-  line-height: 1.4;
+}
+
+.hs-activity-label {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #6b6783;
+  line-height: 1.5;
 }
 
 .hs-activity-skel {
   display: inline-block;
-  width: 58px;
-  height: 30px;
-  border-radius: 8px;
+  width: 64px;
+  height: 52px;
+  border-radius: 10px;
   background: rgba(0, 161, 154, 0.14);
 }
 
+.hs-activity-list {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid #f0eee9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hs-activity-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+/* 3D illustrated icon, shown large with no tile so it reads clearly */
+.hs-activity-ic {
+  width: 52px;
+  height: 48px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.hs-activity-ic img {
+  max-width: 48px;
+  max-height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(24, 52, 88, 0.12));
+}
+.hs-activity-li-text { display: flex; flex-direction: column; min-width: 0; }
+.hs-activity-li-text b { font-size: 13.5px; font-weight: 800; color: #231d45; }
+.hs-activity-li-text small { font-size: 12px; font-weight: 600; color: #8b8799; margin-top: 1px; }
+
 .hs-activity-note {
   margin: auto 0 0;
-  padding-top: 22px;
-  font-size: 12.5px;
+  padding-top: 18px;
+  font-size: 12px;
   font-weight: 600;
   color: #8b8799;
   line-height: 1.5;
@@ -1136,7 +1387,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   position: absolute;
   left: 20%;
   right: 20%;
-  top: 38px;
+  top: 52px;
   border-top: 2px dashed #d5e6e2;
   z-index: 0;
 }
@@ -1151,43 +1402,39 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   padding: 0 14px;
 }
 
+/* Bare 3D icon - no tile. The page colour behind it breaks the dashed
+   connector cleanly around each icon. */
 .hs-step-icon {
   position: relative;
-  width: 76px;
-  height: 76px;
-  border-radius: 24px;
+  z-index: 1;
+  width: 104px;
+  height: 104px;
   display: grid;
   place-items: center;
-  margin-bottom: 22px;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.8),
-    0 12px 26px rgba(24, 52, 88, 0.1);
+  margin-bottom: 18px;
+  background: #f3f2ef;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
 }
 
-.hs-step-icon svg {
-  width: 30px;
-  height: 30px;
+.hs-step-art {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 16px rgba(24, 52, 88, 0.16));
 }
 
-.hs-step-icon.teal {
-  background: linear-gradient(150deg, #e4faf3, #c3f0e3);
-  color: #00857f;
-}
+.hs-step-card:hover .hs-step-icon { transform: translateY(-4px); }
 
-.hs-step-icon.purple {
-  background: linear-gradient(150deg, #f3effe, #e1d9fd);
-  color: #5a4cf0;
-}
-
-.hs-step-icon.amber {
-  background: linear-gradient(150deg, #fff6e0, #ffe9bd);
-  color: #e59100;
-}
+/* tone only drives the step-number colour now */
+.hs-step-icon.teal { color: #00857f; }
+.hs-step-icon.purple { color: #5a4cf0; }
+.hs-step-icon.amber { color: #e59100; }
 
 .hs-step-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: 0;
+  right: -2px;
   width: 26px;
   height: 26px;
   border-radius: 999px;
@@ -1374,7 +1621,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .hs-hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 30px;
   }
 
@@ -1383,11 +1630,12 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 
   .hero-visual {
-    min-height: 470px;
+    min-height: 0;
+    padding: 12px 0;
   }
 
   .hs-story-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .footer-grid {
@@ -1484,7 +1732,7 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 
   .hs-steps-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 30px;
   }
 
@@ -1519,8 +1767,18 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
     padding-top: 26px;
   }
 
+  /* The shell already gives the page its side gutter on phones. */
+  .hs-hero {
+    padding: 0;
+    min-height: 0;
+  }
+
   .hero-content h1 {
     font-size: 38px;
+  }
+
+  .hs-activity-head strong {
+    font-size: 44px;
   }
 
   .hero-content h1 .h1-br-mobile {
@@ -1540,32 +1798,41 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
     justify-content: center;
   }
 
-  .hero-visual {
-    min-height: 430px;
-  }
+  /* Phone: same panel, a little shorter; the house card scales down
+     as one piece so its outline never distorts. */
 
-  .hero-house {
-    width: 80%;
-    height: 280px;
-  }
-
-  .score-card {
-    width: 260px;
+  .hs-real-story,
+  .hs-activity-card {
+    padding: 22px 20px 20px;
   }
 
   .hs-real-story {
-    flex-wrap: wrap;
-    padding: 24px 22px 24px 26px;
+    padding-left: 24px;
   }
 
   .hs-real-story-quote {
     font-size: 19px;
   }
 
+  .hs-real-story {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .hs-real-story-visual {
+    width: 120px;
+    height: 120px;
+    align-self: center;
+  }
+
+  .hs-real-story-text {
+    padding-bottom: 0;
+  }
+
   .hs-real-story-art {
-    width: 86px;
-    margin: 4px 0 0 auto;
-    align-self: flex-end;
+    width: 100px;
+    height: 100px;
   }
 
   .hs-how {
@@ -1603,6 +1870,28 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
   }
 }
 
+@media (max-width: 440px) {
+  .hs-house {
+    zoom: 0.86;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-content h1 {
+    font-size: 33px;
+  }
+
+  .hs-house {
+    zoom: 0.7;
+  }
+}
+
+@media (max-width: 300px) {
+  .hs-house {
+    zoom: 0.58;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .web-btn,
   .hs-search-go,
@@ -1613,6 +1902,18 @@ const currentHowSteps = computed(() => howCopy[activeHow.value])
 
   .hs-live-pulse::after {
     animation: none;
+  }
+}
+
+/* ── Big screens ──────────────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. Nav row and page content zoom; the footer
+   scales via its `wide` prop. */
+@media (min-width: 1367px) {
+  .nav-inner,
+  .hs-main {
+    zoom: var(--wide-zoom, 1);
   }
 }
 </style>
