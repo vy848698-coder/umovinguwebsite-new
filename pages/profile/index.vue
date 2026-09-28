@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="pf-page">
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="pf-quick-btn" type="button" @click="navigateTo('/profile/settings')">Settings</button>
         <button class="pf-quick-btn solid" type="button" @click="navigateTo('/profile/support')">Support</button>
@@ -206,7 +206,7 @@
           @click="showLogoutModal = false"
         />
         <div
-          class="relative bg-white rounded-3xl px-6 py-8 w-full max-w-[340px] text-center shadow-2xl"
+          class="pf-modal-card relative bg-white rounded-3xl px-6 py-8 w-full max-w-[340px] text-center shadow-2xl"
         >
           <div
             class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4"
@@ -254,7 +254,7 @@
           @click="showDeleteModal = false"
         />
         <div
-          class="relative bg-white rounded-3xl px-6 py-8 w-full max-w-[340px] text-center shadow-2xl"
+          class="pf-modal-card relative bg-white rounded-3xl px-6 py-8 w-full max-w-[340px] text-center shadow-2xl"
         >
           <div
             class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"
@@ -1374,6 +1374,32 @@ const deleteAccount = async () => {
   }
 }
 
+/* Small phones: the module cards keep their layout, with tighter padding and
+   a smaller icon tile so the title and description get a usable width
+   instead of wrapping one or two words per line. */
+@media (max-width: 420px) {
+  .pf-panel {
+    padding: 16px 12px 14px;
+  }
+
+  :deep(.prow) {
+    min-height: 0;
+    padding: 16px 14px;
+    gap: 12px;
+  }
+
+  :deep(.prow-icon) {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  :deep(.prow-chev) {
+    width: 26px;
+    height: 26px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pf-overview,
   .pf-panel,
@@ -1388,6 +1414,20 @@ const deleteAccount = async () => {
 
   :deep(.prow::before) {
     display: none;
+  }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
+   laptop does, only bigger. The nav scales via its `wide` prop. The two
+   confirm dialogs are teleported outside the page, so their cards zoom on
+   their own. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .pf-body,
+  .pf-footer,
+  .pf-modal-card {
+    zoom: var(--wide-zoom, 1);
   }
 }
 </style>

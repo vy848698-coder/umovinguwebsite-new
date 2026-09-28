@@ -1,7 +1,7 @@
 
 <template>
   <div class="ss-page">
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="ss-body">
       <!-- Hero banner -->
@@ -165,11 +165,14 @@
         Your data is encrypted and never shared with third parties.
       </div>
     </main>
+
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
 import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { usePropertyActions } from '~/composables/usePropertyActions'
 
 definePageMeta({ middleware: 'auth' })
@@ -243,6 +246,8 @@ const goBack = () => router.back()
 <style scoped>
 .ss-page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
   font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #1f2b3f;
@@ -253,6 +258,7 @@ const goBack = () => router.back()
   width: min(1280px, calc(100% - 64px));
   margin: 0 auto;
   padding: 36px 0 72px;
+  flex: 1 0 auto;
 }
 
 /* ── Hero ── */
@@ -591,16 +597,26 @@ const goBack = () => router.back()
   .ss-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 900px) {
-  .ss-hero { grid-template-columns: 1fr; gap: 24px; }
+  .ss-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 }
 @media (max-width: 760px) {
   .ss-body { width: calc(100% - 32px); padding: 24px 0 56px; }
   .ss-hero { padding: 24px; }
+  .ss-grid { grid-template-columns: minmax(0, 1fr); }
   .ss-hero-title { font-size: 28px; }
   .ss-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .ss-hero-title { font-size: 24px; }
   .ss-stats { flex-wrap: wrap; gap: 14px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .ss-body { zoom: var(--wide-zoom, 1); }
 }
 </style>

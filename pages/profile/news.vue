@@ -1,6 +1,6 @@
 <template>
   <div class="nw-page">
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="nw-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="nw-btn solid" type="button" @click="navigateTo('/profile/learn')">Ask AI</button>
@@ -248,7 +248,7 @@
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -1116,5 +1116,14 @@ function iconFor(n: NewsItem) {
 @media (prefers-reduced-motion: reduce) {
   .nw-art-img { animation: none; }
   .nw-card, .nw-card-ic, .nw-feature, .nw-feature-art { transition: none; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .nw-main { zoom: var(--wide-zoom, 1); }
 }
 </style>

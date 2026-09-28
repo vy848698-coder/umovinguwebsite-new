@@ -12,6 +12,14 @@
 //                    on pages whose own Skip button navigates away (preferences)
 //   --scroll         scroll through the page before capturing, so scroll-reveal
 //                    sections and lazy images are shown (landing page)
+//   --mock-buyer     answer /__backend buyer-passport calls (profile, shares,
+//                    verifier access requests, /profile/me) with test data, so
+//                    the buyer-profile pages render their filled-in state
+//   --mock-dash      answer the dashboard's calls (role, passport, saved /
+//                    watched / recently-viewed / for-you properties) with test
+//                    data; the role comes from DASH_ROLE=buy|sell|landlord|both
+//   --desktop        never emulate a phone: narrow widths render as a shrunk
+//                    desktop browser window (no touch, desktop UA metrics)
 //
 // Needs the dev server on http://localhost:3000 and Chrome installed. Widths
 // below 768 are emulated as a touch phone. Each page is captured full-length
@@ -33,6 +41,10 @@ const AUTH = flags.includes('--auth')
 const MOCK = flags.includes('--mock-passport')
 const NO_SKIP = flags.includes('--no-skip')
 const SCROLL = flags.includes('--scroll')
+const DESKTOP = flags.includes('--desktop')
+const MOCK_BUYER = flags.includes('--mock-buyer')
+const MOCK_DASH = flags.includes('--mock-dash')
+const DASH_ROLE = process.env.DASH_ROLE || 'buy'
 const ORIGIN = 'http://localhost:3000'
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const PORT = 9333
@@ -69,8 +81,66 @@ const FORM_Q = {
   id: 'q-form', type: 'MULTIFIELDFORM', title: 'Sellers Solicitor', question: 'Sellers Solicitor', points: 100, completed: false, answer: null,
   fields: ['Name of the Solicitors firm', 'Contact name', 'Enter address', 'Enter email', 'Enter phone number'].map((p, i) => ({ key: `f${i}`, label: p.replace(/^Enter /, ''), placeholder: p })),
 }
+// ── Buyer passport test data (only used with --mock-buyer) ─────────────────
+const NOW = '2026-09-20T10:00:00.000Z'
+const BUYER = {
+  id: 'bp-1', userId: 'u-1', publicRef: 'UMU-BP-4821', tier: 'VERIFIED', tierPaidAt: NOW,
+  idDocumentType: 'passport', idDocumentUrl: null, idVerified: true, idVerifiedAt: NOW,
+  fundsType: 'mortgage', fundsAmount: 350000, fundsDocumentUrl: null, fundsReviewStatus: 'approved',
+  fundsVerified: true, fundsAmountVerified: 350000, mortgageAipUrl: null, mortgageAipReviewStatus: 'pending',
+  mortgageAipVerified: false, amlStatus: 'clear', affordabilityScore: 78, sourceOfFundsJson: null,
+  chainPosition: 'ftb', solicitorStatus: 'instructed', timeline: '3-6 months', propertyType: 'house',
+  statement: 'First-time buyers with a mortgage in principle, ready to move quickly.',
+  signatureData: null, signedName: 'Alex Morgan', signedAt: NOW, completedSteps: 4, strengthScore: 82,
+  published: true, publishedAt: NOW, createdAt: NOW, updatedAt: NOW,
+}
+const ACCESS_REQ = {
+  id: 'x1', status: 'PENDING', requestedScopes: ['identity', 'proof_of_deposit', 'source_of_funds'],
+  approvedScopes: ['identity', 'proof_of_deposit'], reason: 'Mortgage application for a property you offered on.',
+  expiresAt: '2026-10-20T10:00:00.000Z', createdAt: NOW, decidedAt: NOW,
+  org: { id: 'o-1', name: 'Harbour Mortgages', legalName: 'Harbour Mortgages Ltd', logoEmoji: null,
+    description: 'Independent mortgage broker', fcaNumber: '123456', websiteUrl: 'https://example.com' },
+  grant: { id: 'g-1', scopes: ['identity', 'proof_of_deposit'], expiresAt: '2026-10-20T10:00:00.000Z', revokedAt: null, lastUsedAt: null, useCount: 0 },
+}
+function buyerMockFor(p) {
+  if (p === '/buyer-profile') return BUYER
+  if (p === '/buyer-profile/shares') return []
+  if (p === '/buyer-profile/access-requests') return [ACCESS_REQ]
+  if (/^\/buyer-profile\/access-requests\/[^/]+$/.test(p)) return ACCESS_REQ
+  if (p === '/profile/me') return { id: 'u-1', firstName: 'Alex', lastName: 'Morgan', email: 'alex.morgan@example.com', createdAt: '2025-03-01T10:00:00.000Z' }
+  return null
+}
+// ── Dashboard test data (only used with --mock-dash) ───────────────────────
+const PROPS = [
+  ['14 Willow Lane', 'Coventry', 'CV5 8HE', 'Semi-detached', 325000, 'C', 72],
+  ['7 Harbour Road', 'Bristol', 'BS1 4RN', 'Terraced', 289000, 'D', 61],
+  ['Flat 3, 22 Queens Court', 'Leeds', 'LS1 2AB', 'Flat', 214000, 'B', 80],
+  ['The Old Rectory, Church Street', 'Stratford-upon-Avon', 'CV37 6HB', 'Detached', 745000, 'E', 55],
+].map(([line, city, pc, type, price, epc, hs], i) => ({
+  id: `prop-${i + 1}`, propertyId: `prop-${i + 1}`, addressLine: line, addressLine1: line,
+  address: `${line}, ${city}`, city, postcode: pc, area: city, propertyType: type, type, tenure: 'Freehold',
+  epcScore: epc, estimatedPrice: price, priceDisplay: `£${price.toLocaleString('en-GB')}`, imageUrl: null,
+  image: null, passportPublished: i === 0, hasPassport: i === 0, homeScore: hs,
+}))
+function dashMockFor(p) {
+  if (p === '/profile/preferences') return { purpose: [DASH_ROLE] }
+  if (p === '/profile/passports') return [{
+    id: 'pp-1', type: DASH_ROLE === 'landlord' ? 'LANDLORD' : 'SELLER', propertyId: 'prop-1',
+    address: '14 Willow Lane, Coventry', addressLine1: '14 Willow Lane', postcode: 'CV5 8HE',
+    completionPercentage: 46, status: 'DRAFT', homeScore: 72, homeScorePotential: 84,
+    createdAt: '2026-08-01T10:00:00.000Z', lastVisitedAt: '2026-09-20T10:00:00.000Z',
+  }]
+  if (p === '/passport/pp-1/sections') return SECTIONS
+  if (p === '/property/saved') return PROPS.slice(0, 3)
+  if (p === '/property/watches') return PROPS.slice(1, 3)
+  if (p === '/property/recently-viewed') return PROPS
+  if (p === '/property/for-you') return { items: PROPS, needsPostcode: false }
+  return buyerMockFor(p)
+}
 function mockFor(url) {
   const p = new URL(url).pathname.replace(/^\/__backend/, '')
+  if (MOCK_DASH) return dashMockFor(p)
+  if (MOCK_BUYER) return buyerMockFor(p)
   if (/^\/passport\/[^/]+\/sections$/.test(p)) return SECTIONS
   if (/^\/tasks\/task-\d+-1\/questions$/.test(p)) return [NOTE_Q, FORM_Q]
   if (/^\/tasks\/[^/]+\/questions$/.test(p)) return [FORM_Q]
@@ -107,13 +177,13 @@ ws.onmessage = async (ev) => {
 }
 await send('Page.enable')
 await send('Runtime.enable')
-if (MOCK) await send('Fetch.enable', { patterns: [{ urlPattern: '*__backend*', requestStage: 'Request' }] })
+if (MOCK || MOCK_BUYER || MOCK_DASH) await send('Fetch.enable', { patterns: [{ urlPattern: '*__backend*', requestStage: 'Request' }] })
 
 const tokenSetup = `try{localStorage.setItem('token','probe-token');['umu_tour_passport_v1','umu_tour_question_v1'].forEach(k=>localStorage.setItem(k,'1'))}catch{};document.cookie='umu_has_session=1; path=/'`
 let problems = 0
 for (const route of ROUTES) {
   for (const width of WIDTHS) {
-    const phone = width < 768
+    const phone = !DESKTOP && width < 768
     const height = phone ? 844 : width < 1366 ? 1024 : Math.round(width * 0.5625)
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: phone })
     await send('Emulation.setTouchEmulationEnabled', { enabled: phone })
@@ -128,7 +198,7 @@ for (const route of ROUTES) {
     const r = await send('Runtime.evaluate', { returnByValue: true, expression: `JSON.stringify({w: innerWidth, sw: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight, zoom: getComputedStyle(document.documentElement).getPropertyValue('--wide-zoom').trim() || '-'})` })
     const d = JSON.parse(r.result.value)
     const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width, height: Math.min(d.h, 3200), scale: 1 } })
-    const name = `${route.replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') || 'home'}_${width}.png`
+    const name = `${route.replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') || 'home'}_${width}${DESKTOP ? 'd' : ''}.png`
     fs.writeFileSync(path.join(OUT, name), Buffer.from(shot.data, 'base64'))
     const overflow = d.sw > d.w
     if (overflow) problems++

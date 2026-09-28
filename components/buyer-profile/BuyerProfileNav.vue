@@ -1,5 +1,5 @@
 <template>
-  <header class="bpnav">
+  <header class="bpnav" :class="{ 'bpnav--wide': wide }">
     <div class="bpnav-shell bpnav-inner">
       <button class="bpnav-brand" type="button" @click="navigateTo('/')">
         <img src="/op-icons/logo.png" alt="" class="bpnav-logo" />
@@ -13,11 +13,11 @@
         <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
       </nav>
       <div class="bpnav-actions">
-        <button class="bpnav-help" type="button" @click="navigateTo('/profile/support')">
+        <button class="bpnav-help" type="button" aria-label="Need help?" @click="navigateTo('/profile/support')">
           <Icon name="heroicons:question-mark-circle" class="bpnav-help-ic" />
           Need Help?
         </button>
-        <button class="bpnav-back" type="button" @click="$emit('back')">
+        <button class="bpnav-back" type="button" :aria-label="backLabel" @click="$emit('back')">
           <Icon name="heroicons:chevron-left" class="bpnav-back-ic" />
           {{ backLabel }}
         </button>
@@ -27,9 +27,11 @@
 </template>
 
 <script setup lang="ts">
+// `wide`: pages that scale up on big screens (--wide-zoom) scale the bar's
+// content with them, like WebTopNav's `wide`; every other page is unchanged.
 withDefaults(
-  defineProps<{ backLabel?: string }>(),
-  { backLabel: 'Back' },
+  defineProps<{ backLabel?: string; wide?: boolean }>(),
+  { backLabel: 'Back', wide: false },
 )
 defineEmits<{ (e: 'back'): void }>()
 </script>
@@ -62,5 +64,29 @@ defineEmits<{ (e: 'back'): void }>()
   .bpnav-shell { width: calc(100% - 32px); }
   .bpnav-links { display: none; }
   .bpnav-help span, .bpnav-help { font-size: 12px; }
+}
+/* Small phones: brand + Need Help? + Back no longer fit on one line, so the
+   help pill drops its label and keeps the icon (still a labelled button). */
+@media (max-width: 420px) {
+  .bpnav-inner { gap: 10px; }
+  .bpnav-help { padding: 7px 9px; font-size: 0; gap: 0; }
+  .bpnav-help-ic { width: 17px; height: 17px; }
+}
+@media (max-width: 340px) {
+  .bpnav-shell { width: calc(100% - 24px); }
+  .bpnav-beta { display: none; }
+}
+/* Very narrow windows (a shrunk desktop browser): Back keeps its chevron
+   only, so brand + both buttons still fit on one line. */
+@media (max-width: 300px) {
+  .bpnav-inner { gap: 8px; }
+  .bpnav-actions { gap: 6px; }
+  .bpnav-back { padding: 7px 9px; font-size: 0; gap: 0; }
+  .bpnav-back-ic { width: 17px; height: 17px; }
+}
+/* Big screens (--wide-zoom = width / 1366, set in nuxt.config.ts): the bar's
+   content scales with the page; the bar itself stays full-width. */
+@media (min-width: 1367px) {
+  .bpnav--wide .bpnav-inner { zoom: var(--wide-zoom, 1); }
 }
 </style>

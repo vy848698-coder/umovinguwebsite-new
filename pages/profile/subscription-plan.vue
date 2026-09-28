@@ -1,6 +1,6 @@
 <template>
   <div class="sb-shell">
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="sb-body">
       <!-- Page head -->
@@ -261,7 +261,7 @@
       </section>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -584,7 +584,8 @@ function openStripePortal() {
   .sb-brands-row { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 860px) {
-  .sb-two-col, .sb-prefs-grid, .sb-methods-grid { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr) so a stacked column can shrink below its widest line */
+  .sb-two-col, .sb-prefs-grid, .sb-methods-grid { grid-template-columns: minmax(0, 1fr); }
   .sb-plan-art { display: none; }
 }
 @media (max-width: 760px) {
@@ -596,9 +597,28 @@ function openStripePortal() {
 }
 @media (max-width: 480px) {
   .sb-brands-row { grid-template-columns: repeat(2, 1fr); }
+  /* Narrow panels: the badge sits above the invoice number so the number
+     reads on one line instead of breaking at every hyphen. */
+  .sb-panel { padding: 20px 16px; }
+  .sb-tx-row { gap: 12px; }
+  .sb-tx-top { flex-wrap: wrap; gap: 6px 10px; }
+  .sb-tx-inv { white-space: nowrap; }
+}
+@media (max-width: 300px) {
+  /* Too narrow for the number on one line: let it wrap */
+  .sb-tx-inv { white-space: normal; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sb-plan-btn, .sb-stripe-btn, .sb-brand-cell, .sb-toggle, .sb-toggle-thumb { transition: none; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sb-body { zoom: var(--wide-zoom, 1); }
 }
 </style>

@@ -1,23 +1,28 @@
 <template>
-  <div class="mobile-container min-h-screen bg-umu-gradient pb-8">
-    <header class="flex items-center justify-between px-4 pt-5">
+  <div class="mobile-container min-h-screen bg-umu-gradient flex flex-col">
+    <WebTopNav wide />
+
+    <!-- Phone layout, centred in a readable column on tablets and laptops
+         instead of stretching edge to edge. -->
+    <div class="cd-body w-full max-w-3xl mx-auto flex-1 pb-8">
+    <header class="flex items-center justify-between gap-3 px-4 pt-5">
       <button
         type="button"
-        class="w-10 h-10 flex items-center justify-center"
+        class="w-10 h-10 shrink-0 flex items-center justify-center"
         @click="goBack"
       >
         <Icon name="i-heroicons-chevron-left" class="w-6 h-6 text-black" />
       </button>
 
       <h1
-        class="font-sf-pro text-[17px] leading-[22px] tracking-[-0.43px] font-[590] text-black text-center truncate max-w-[200px]"
+        class="font-sf-pro text-[17px] leading-[22px] tracking-[-0.43px] font-[590] text-black text-center truncate min-w-0 max-w-[200px] sm:max-w-[420px]"
       >
         {{ collaborator?.name || 'Collaborator' }}
       </h1>
 
       <button
         type="button"
-        class="w-8 h-8 rounded-full bg-[#403d91] flex items-center justify-center"
+        class="w-8 h-8 shrink-0 rounded-full bg-[#403d91] flex items-center justify-center"
         aria-label="More"
       >
         <Icon name="i-heroicons-ellipsis-horizontal" class="w-5 h-5 text-white" />
@@ -72,7 +77,7 @@
           </div>
         </div>
 
-        <div class="mt-8 flex items-center gap-8">
+        <div class="mt-8 flex items-center gap-4 sm:gap-8">
           <button
             type="button"
             class="w-[50px] h-[50px] rounded-full bg-white flex items-center justify-center shrink-0"
@@ -160,31 +165,31 @@
 
         <div class="mt-4 space-y-3">
           <!-- Property Access -->
-          <div class="bg-white rounded-3xl px-6 py-5 flex items-center justify-between">
+          <div class="bg-white rounded-3xl px-5 sm:px-6 py-5 flex items-center justify-between gap-3">
             <div>
               <p class="text-[15px] leading-[20px] tracking-[-0.23px] text-black">Property Access</p>
               <p class="text-[13px] leading-[18px] tracking-[-0.08px] text-[#3C3C43]/60 mt-0.5">
                 {{ propertyAccessLabel }}
               </p>
             </div>
-            <span class="h-8 px-3 rounded-full bg-brand-aqua/10 text-brand-aqua text-[12px] font-medium inline-flex items-center">
+            <span class="h-8 px-3 shrink-0 rounded-full bg-brand-aqua/10 text-brand-aqua text-[12px] font-medium inline-flex items-center">
               {{ permissionChip }}
             </span>
           </div>
 
           <!-- Client Access -->
-          <div class="bg-white rounded-3xl px-6 py-5 flex items-center justify-between">
+          <div class="bg-white rounded-3xl px-5 sm:px-6 py-5 flex items-center justify-between gap-3">
             <p class="text-[15px] leading-[20px] tracking-[-0.23px] text-black">Client Access</p>
-            <span class="h-8 px-3 rounded-full bg-brand-aqua/10 text-brand-aqua text-[12px] font-medium inline-flex items-center">
+            <span class="h-8 px-3 shrink-0 rounded-full bg-brand-aqua/10 text-brand-aqua text-[12px] font-medium inline-flex items-center">
               {{ clientAccessLabel }}
             </span>
           </div>
 
           <!-- Allow Communications -->
-          <div class="bg-white rounded-3xl px-6 py-5 flex items-center justify-between">
+          <div class="bg-white rounded-3xl px-5 sm:px-6 py-5 flex items-center justify-between gap-3">
             <p class="text-[15px] leading-[20px] tracking-[-0.23px] text-black">Communications</p>
             <span
-              class="h-8 px-3 rounded-full text-[12px] font-medium inline-flex items-center"
+              class="h-8 px-3 shrink-0 rounded-full text-[12px] font-medium inline-flex items-center"
               :class="collaborator.allowComms ? 'bg-brand-aqua/10 text-brand-aqua' : 'bg-gray-100 text-gray-500'"
             >
               {{ collaborator.allowComms ? 'Allowed' : 'Disabled' }}
@@ -192,7 +197,7 @@
           </div>
 
           <!-- Access Duration -->
-          <div class="bg-white rounded-3xl px-6 py-5 flex items-center justify-between">
+          <div class="bg-white rounded-3xl px-5 sm:px-6 py-5 flex items-center justify-between gap-3">
             <div>
               <p class="text-[15px] leading-[20px] tracking-[-0.23px] text-black">Partnership Validity</p>
               <p class="text-[13px] leading-[18px] tracking-[-0.08px] text-[#3C3C43]/60 mt-0.5">
@@ -201,7 +206,7 @@
             </div>
             <button
               type="button"
-              class="h-10 px-5 rounded-full bg-teal-50 text-brand-aqua text-[13px] font-medium"
+              class="h-10 px-5 shrink-0 rounded-full bg-teal-50 text-brand-aqua text-[13px] font-medium"
             >
               Edit
             </button>
@@ -223,10 +228,16 @@
         <p v-if="removeError" class="mt-2 text-center text-red-500 text-[13px]">{{ removeError }}</p>
       </section>
     </main>
+    </div>
+
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup>
+import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
+
 definePageMeta({
   title: "Collaborator Detail - UmovingU",
   middleware: 'auth',
@@ -333,3 +344,14 @@ const removeCollab = async () => {
 
 const goBack = useGoBack('/profile/collaborator-information');
 </script>
+
+<style scoped>
+/* Big screens (--wide-zoom = width / 1366, set in nuxt.config.ts): the
+   column scales so a monitor shows the 1366px laptop layout, only bigger.
+   Nav and footer scale via their `wide` prop. */
+@media (min-width: 1367px) {
+  .cd-body {
+    zoom: var(--wide-zoom, 1);
+  }
+}
+</style>

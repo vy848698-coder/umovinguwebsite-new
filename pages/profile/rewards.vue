@@ -1,6 +1,6 @@
 <template>
   <div class="rw-page">
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="rw-quick-btn" type="button" @click="navigateTo('/profile')">Profile</button>
         <button class="rw-quick-btn solid" type="button" @click="navigateTo('/marketplace')">Marketplace</button>
@@ -268,7 +268,7 @@
       </section>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -943,5 +943,14 @@ onMounted(() => {
   .rw-launch { padding: 18px; gap: 14px; }
   .rw-launch-ic { width: 58px; height: 58px; }
   .rw-cards-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a
+   1366px laptop does, only bigger. The nav and footer scale via their
+   `wide` prop. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .rw-body { zoom: var(--wide-zoom, 1); }
 }
 </style>
