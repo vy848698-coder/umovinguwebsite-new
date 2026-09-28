@@ -94,7 +94,7 @@
 
             <div class="psi-drop-body">
               <div class="psi-drop-line1">
-                {{ r.addressLine1 || r.address || '—' }}
+                {{ r.addressLine1 || r.address || 'Address unavailable' }}
               </div>
               <div class="psi-drop-line2">
                 <span v-if="r.city">{{ r.city }} · </span>{{ r.postcode || '' }}
