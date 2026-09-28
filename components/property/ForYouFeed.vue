@@ -222,7 +222,7 @@ async function savePostcode() {
     postcodeSheetOpen.value = false
     emit('postcode-saved')
   } catch {
-    postcodeError.value = 'Could not save your postcode — try again.'
+    postcodeError.value = 'Could not save your postcode. Try again.'
   } finally {
     postcodeSaving.value = false
   }
@@ -254,13 +254,6 @@ async function savePostcode() {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #00a19a;
-}
-.fyf-eyebrow::before {
-  content: '';
-  width: 20px;
-  height: 2px;
-  border-radius: 2px;
-  background: #00a19a;
 }
 .fyf-title {
   margin: 0 0 6px;
