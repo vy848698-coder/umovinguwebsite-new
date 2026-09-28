@@ -1,7 +1,7 @@
 <template>
   <div class="sd-page">
 
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="sd-shell">
       <!-- Page head -->
@@ -99,10 +99,13 @@
         </div>
       </div>
     </main>
+
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import {
   useBuyerProfile,
@@ -154,34 +157,47 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
 })
 
+// Big screens scale the page with CSS zoom (--wide-zoom). getBoundingClientRect
+// and pointer clientX/Y are in on-screen pixels, while the canvas's own CSS
+// size and drawing coordinates are in its zoomed units - divide by the zoom
+// so strokes land under the pointer. 1 everywhere at 1366px and below.
+function cssZoom(el: Element): number {
+  return (el as any).currentCSSZoom || 1
+}
+
 function initCanvas() {
   const canvas = canvasEl.value
   if (!canvas) return
   const dpr = window.devicePixelRatio || 1
+  const zoom = cssZoom(canvas)
   const rect = canvas.parentElement!.getBoundingClientRect()
+  const w = rect.width / zoom
+  const h = rect.height / zoom
   // Backup current pixels before resizing (avoid wiping when re-init runs).
   const backup = canvas.toDataURL?.('image/png')
   canvas.width = Math.floor(rect.width * dpr)
   canvas.height = Math.floor(rect.height * dpr)
-  canvas.style.width = rect.width + 'px'
-  canvas.style.height = rect.height + 'px'
+  canvas.style.width = w + 'px'
+  canvas.style.height = h + 'px'
   ctx = canvas.getContext('2d')
   if (!ctx) return
-  ctx.scale(dpr, dpr)
+  ctx.scale(dpr * zoom, dpr * zoom)
   ctx.strokeStyle = '#231d45'
   ctx.lineWidth = 2.4
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
   if (backup && hasDrawn.value) {
     const img = new Image()
-    img.onload = () => { ctx?.drawImage(img, 0, 0, rect.width, rect.height) }
+    img.onload = () => { ctx?.drawImage(img, 0, 0, w, h) }
     img.src = backup
   }
 }
 
 function getXY(ev: PointerEvent): [number, number] {
-  const rect = canvasEl.value!.getBoundingClientRect()
-  return [ev.clientX - rect.left, ev.clientY - rect.top]
+  const canvas = canvasEl.value!
+  const zoom = cssZoom(canvas)
+  const rect = canvas.getBoundingClientRect()
+  return [(ev.clientX - rect.left) / zoom, (ev.clientY - rect.top) / zoom]
 }
 
 function onPointerDown(ev: PointerEvent) {
@@ -219,9 +235,9 @@ function onTypeNameInput() {
 
 function clearCanvas() {
   if (!ctx || !canvasEl.value) return
-  const w = canvasEl.value.parentElement!.getBoundingClientRect().width
-  const h = canvasEl.value.parentElement!.getBoundingClientRect().height
-  ctx.clearRect(0, 0, w, h)
+  const zoom = cssZoom(canvasEl.value)
+  const rect = canvasEl.value.parentElement!.getBoundingClientRect()
+  ctx.clearRect(0, 0, rect.width / zoom, rect.height / zoom)
   hasDrawn.value = false
 }
 
@@ -280,6 +296,8 @@ const goBack = useGoBack('/buyer-profile/pdf')
 <style scoped>
 .sd-page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: #f3f2ef;
   color: #231d45;
   width: 100%;
@@ -291,7 +309,7 @@ const goBack = useGoBack('/buyer-profile/pdf')
 .sd-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.12) 0%, transparent 70%); }
 .sd-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sd-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
+.sd-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; flex: 1 0 auto; }
 
 /* Head */
 .sd-head { margin-bottom: 28px; max-width: 640px; }
@@ -393,5 +411,18 @@ const goBack = useGoBack('/buyer-profile/pdf')
 @media (max-width: 480px) {
   .sd-shell { width: calc(100% - 24px); }
   .sd-h1 { font-size: 23px; }
+}
+
+@media (max-width: 420px) {
+  .sd-card { padding: 16px 14px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop. The signature pad divides the zoom back out of its pointer maths.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sd-shell { zoom: var(--wide-zoom, 1); }
 }
 </style>

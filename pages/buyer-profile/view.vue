@@ -16,7 +16,7 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-iconbtn" type="button" @click="goShare()">
+          <button class="hsw-iconbtn" type="button" aria-label="Share" @click="goShare()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
               <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
               <polyline points="16 6 12 2 8 6" />
@@ -32,7 +32,7 @@
             </svg>
             Need Help?
           </button>
-          <button class="hsw-back" type="button" @click="goBack">
+          <button class="hsw-back" type="button" aria-label="Back" @click="goBack">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
@@ -426,7 +426,7 @@
       @close="tierDrawerOpen = false"
       @tier-changed="onTierChanged"
     />
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -1233,5 +1233,48 @@ function goEdit() { router.push('/buyer-profile/build') }
   .doc-title { font-size: 13.5px; }
   .doc-meta { font-size: 11px; }
   .bpvw-help span, .bpvw-help { font-size: 12px; }
+  /* Narrower side gutters so the cards keep a usable width */
+  .hsw-shell { width: calc(100% - 32px); }
+  /* The hero's Need Help? pill drops under the intro instead of sitting on
+     top of the eyebrow; the nav's duplicate Need Help? goes (hero keeps it) */
+  .bpvw-hero { flex-direction: column; gap: 14px; }
+  .hsw-help { display: none; }
+  .hsw-nav-inner { gap: 12px; }
+}
+/* Small phones / narrow windows: nav buttons keep their icons only (still
+   labelled), the passport card stacks its cover above the name, and the
+   panels get slimmer padding so text isn't squeezed to a word per line. */
+@media (max-width: 420px) {
+  .hsw-iconbtn, .hsw-back { font-size: 0; gap: 0; padding: 8px 9px; }
+  .hsw-iconbtn svg, .hsw-back svg { width: 17px; height: 17px; }
+  .hsw-actions { gap: 6px; }
+  .hero-card { padding: 20px 16px 18px; }
+  .bpvw-aside-body { padding: 16px 14px; }
+  .bp-hero-body { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .bph-hero-icon { width: 72px; }
+  .bp-privacy-banner { padding: 14px; gap: 12px; }
+  .doc-row { padding: 12px; gap: 10px; }
+  .doc-right--col { align-items: flex-end; }
+}
+@media (max-width: 360px) {
+  .hsw-shell { width: calc(100% - 24px); }
+  .hsw-brand-beta { display: none; }
+  .hsw-brand { font-size: 17px; gap: 8px; }
+  .bp-hero-top { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. The footer scales via its `wide` prop. The
+   Stripe tier drawer is left at its normal size so the card field is never
+   under CSS zoom. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  .bpvw-hero,
+  .bpvw-layout,
+  .bpvw-share-section,
+  .bp-loading,
+  .bp-empty { zoom: var(--wide-zoom, 1); }
 }
 </style>

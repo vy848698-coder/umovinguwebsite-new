@@ -1,129 +1,139 @@
 <template>
-  <div class="ar-page">
-    <!-- Top nav -->
-    <div class="ar-top-nav">
-      <button class="ar-back" @click="goBack" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div class="ar-nav-centre">Access Request</div>
-      <span class="ar-nav-right" />
-    </div>
+  <!-- Site nav and footer around the app-style screen, like every other
+       page; the screen itself is unchanged. -->
+  <div class="bpa-shell">
+    <WebTopNav wide />
 
-    <!-- Loading / error -->
-    <div v-if="loading" class="ar-loading">Loading request…</div>
-    <div v-else-if="error" class="ar-error">{{ error }}</div>
+    <div class="ar-page">
+      <!-- Top nav -->
+      <div class="ar-top-nav">
+        <button class="ar-back" @click="goBack" aria-label="Back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+        </button>
+        <div class="ar-nav-centre">Access Request</div>
+        <span class="ar-nav-right" />
+      </div>
 
-    <template v-else-if="request">
-      <!-- Notification card -->
-      <div class="ar-notif-wrap">
-        <div class="notif-card">
-          <div class="notif-header">
-            <div class="notif-logo">{{ request.org.logoEmoji || '🏦' }}</div>
-            <div class="notif-meta">
-              <div class="notif-title">{{ request.org.name }}</div>
-              <div class="notif-sub">
-                {{ request.org.description || 'Verifier organisation' }}
+      <!-- Loading / error -->
+      <div v-if="loading" class="ar-loading">Loading request…</div>
+      <div v-else-if="error" class="ar-error">{{ error }}</div>
+
+      <template v-else-if="request">
+        <!-- Notification card -->
+        <div class="ar-notif-wrap">
+          <div class="notif-card">
+            <div class="notif-header">
+              <div class="notif-logo">{{ request.org.logoEmoji || '🏦' }}</div>
+              <div class="notif-meta">
+                <div class="notif-title">{{ request.org.name }}</div>
+                <div class="notif-sub">
+                  {{ request.org.description || 'Verifier organisation' }}
+                </div>
+              </div>
+              <div
+                class="notif-badge"
+                :class="{
+                  pending: request.status === 'PENDING',
+                  approved: request.status === 'APPROVED',
+                  declined: request.status === 'DECLINED',
+                  expired: request.status === 'EXPIRED',
+                }"
+              >
+                {{ statusBadgeLabel }}
               </div>
             </div>
-            <div
-              class="notif-badge"
-              :class="{
-                pending: request.status === 'PENDING',
-                approved: request.status === 'APPROVED',
-                declined: request.status === 'DECLINED',
-                expired: request.status === 'EXPIRED',
-              }"
-            >
-              {{ statusBadgeLabel }}
+            <div class="notif-body">
+              <template v-if="request.reason">"{{ request.reason }}"</template>
+              <template v-else>
+                "We'd like to access your verified financial data to speed up
+                your application. You control exactly what we can see — approve
+                or decline below."
+              </template>
             </div>
-          </div>
-          <div class="notif-body">
-            <template v-if="request.reason">"{{ request.reason }}"</template>
-            <template v-else>
-              "We'd like to access your verified financial data to speed up
-              your application. You control exactly what we can see — approve
-              or decline below."
-            </template>
-          </div>
-          <div class="notif-pills">
-            <div class="notif-pill notif-pill--teal">
-              <Icon name="i-lucide-clock" />{{ expiresLabel }}
+            <div class="notif-pills">
+              <div class="notif-pill notif-pill--teal">
+                <Icon name="i-lucide-clock" />{{ expiresLabel }}
+              </div>
+              <div class="notif-pill notif-pill--navy">
+                <Icon name="i-lucide-lock" />Read-only access
+              </div>
+              <div class="notif-pill notif-pill--teal">30 day max</div>
             </div>
-            <div class="notif-pill notif-pill--navy">
-              <Icon name="i-lucide-lock" />Read-only access
-            </div>
-            <div class="notif-pill notif-pill--teal">30 day max</div>
           </div>
         </div>
-      </div>
 
-      <!-- Status banner — already decided -->
-      <div
-        v-if="request.status !== 'PENDING'"
-        class="ar-status-banner"
-        :class="`ar-status-banner--${request.status.toLowerCase()}`"
-      >
-        <Icon class="ar-status-emoji" :name="statusBannerEmoji" />
-        {{ statusBannerText }}
-      </div>
-
-      <!-- Per-scope toggles -->
-      <span class="sec-label">THEY ARE REQUESTING</span>
-      <div class="ar-scope-card">
+        <!-- Status banner — already decided -->
         <div
-          v-for="s in displayScopes"
-          :key="s.id"
-          class="scope-approve-row"
+          v-if="request.status !== 'PENDING'"
+          class="ar-status-banner"
+          :class="`ar-status-banner--${request.status.toLowerCase()}`"
         >
-          <div class="scope-approve-body">
-            <div class="scope-approve-title">{{ s.title }}</div>
-            <div class="scope-approve-sub">{{ s.sub }}</div>
-          </div>
-          <button
-            type="button"
-            class="scope-toggle"
-            :class="{ on: scopesOn[s.id] }"
-            :disabled="request.status !== 'PENDING'"
-            @click="toggleScope(s.id)"
-            :aria-pressed="scopesOn[s.id]"
+          <Icon class="ar-status-emoji" :name="statusBannerEmoji" />
+          {{ statusBannerText }}
+        </div>
+
+        <!-- Per-scope toggles -->
+        <span class="sec-label">THEY ARE REQUESTING</span>
+        <div class="ar-scope-card">
+          <div
+            v-for="s in displayScopes"
+            :key="s.id"
+            class="scope-approve-row"
           >
-            <span class="scope-toggle-knob" />
+            <div class="scope-approve-body">
+              <div class="scope-approve-title">{{ s.title }}</div>
+              <div class="scope-approve-sub">{{ s.sub }}</div>
+            </div>
+            <button
+              type="button"
+              class="scope-toggle"
+              :class="{ on: scopesOn[s.id] }"
+              :disabled="request.status !== 'PENDING'"
+              @click="toggleScope(s.id)"
+              :aria-pressed="scopesOn[s.id]"
+            >
+              <span class="scope-toggle-knob" />
+            </button>
+          </div>
+        </div>
+        <div class="ar-revoke-note">
+          You can revoke access at any time from your profile
+        </div>
+
+        <!-- Actions (only when pending) -->
+        <div v-if="request.status === 'PENDING'" class="ar-actions">
+          <button
+            class="cta-btn"
+            :disabled="approving || selectedScopes.length === 0"
+            @click="onApprove"
+          >
+            {{ approving ? 'Approving…' : 'Approve selected access →' }}
+          </button>
+          <button
+            class="cta-btn outline"
+            :disabled="declining"
+            @click="onDecline"
+          >
+            {{ declining ? 'Declining…' : 'Decline request' }}
           </button>
         </div>
-      </div>
-      <div class="ar-revoke-note">
-        You can revoke access at any time from your profile
-      </div>
 
-      <!-- Actions (only when pending) -->
-      <div v-if="request.status === 'PENDING'" class="ar-actions">
-        <button
-          class="cta-btn"
-          :disabled="approving || selectedScopes.length === 0"
-          @click="onApprove"
-        >
-          {{ approving ? 'Approving…' : 'Approve selected access →' }}
-        </button>
-        <button
-          class="cta-btn outline"
-          :disabled="declining"
-          @click="onDecline"
-        >
-          {{ declining ? 'Declining…' : 'Decline request' }}
-        </button>
-      </div>
+        <!-- Actions (post-decision) -->
+        <div v-else class="ar-actions">
+          <button class="cta-btn" @click="goView">Back to my profile</button>
+        </div>
+      </template>
+    </div>
 
-      <!-- Actions (post-decision) -->
-      <div v-else class="ar-actions">
-        <button class="cta-btn" @click="goView">Back to my profile</button>
-      </div>
-    </template>
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
+import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { ref, computed, onMounted } from 'vue'
 import {
   useVerifierAccess,
@@ -292,8 +302,15 @@ function goView() { router.push('/buyer-profile/view') }
 </script>
 
 <style scoped>
-.ar-page {
+.bpa-shell {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Fills the footer's 48px top margin with the screen's own tint */
+  background: #eef6f7;
+}
+.ar-page {
+  flex: 1 0 auto;
   background:
     radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
     linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
@@ -559,5 +576,23 @@ function goView() { router.push('/buyer-profile/view') }
     padding: 12px 12px 6px;
     padding-top: calc(12px + env(safe-area-inset-top));
   }
+}
+
+/* Small phones / narrow windows: the status badge moves under the firm's
+   name instead of squeezing it, and the cards get slimmer padding. */
+@media (max-width: 420px) {
+  .notif-header { flex-wrap: wrap; row-gap: 8px; }
+  .notif-meta { flex: 1 1 calc(100% - 52px); }
+  .notif-badge { margin-left: 52px; }
+  .notif-card { padding: 12px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this screen exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .ar-page { zoom: var(--wide-zoom, 1); }
 }
 </style>

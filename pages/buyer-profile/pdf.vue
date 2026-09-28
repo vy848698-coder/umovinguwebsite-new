@@ -1,7 +1,7 @@
 <template>
   <div class="pv-page">
 
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="pv-shell">
       <div class="pv-head">
@@ -203,7 +203,7 @@
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -672,5 +672,24 @@ function downloadPdf() {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+}
+
+/* Small phones / narrow windows: Issued and Expires sit side by side and the
+   Active status drops to its own line, so the two dates never run into each
+   other; the document sections get slimmer padding. */
+@media (max-width: 420px) {
+  .pdf-validity { flex-wrap: wrap; row-gap: 8px; padding: 12px 14px; }
+  .pdf-validity > .pdf-validity-divider:nth-child(4) { display: none; }
+  .pdf-validity-status { flex: 1 1 100%; justify-content: flex-start; }
+  .pdf-header, .pdf-section { padding-left: 14px; padding-right: 14px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .pv-shell { zoom: var(--wide-zoom, 1); }
 }
 </style>

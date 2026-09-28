@@ -16,7 +16,7 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="goBack">
+          <button class="hsw-back" type="button" aria-label="Back" @click="goBack">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
@@ -140,7 +140,7 @@
       </div>
     </Teleport>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -393,5 +393,37 @@ onMounted(async () => {
   .hsw-shell { width: calc(100% - 32px); }
   .bph-check-row { padding: 14px; }
   .bph-check-done { display: none; }
+}
+/* Small phones / narrow windows: Back keeps its chevron only (still
+   labelled), the passport card stacks its cover above the text, and the
+   checklist rows use a smaller icon tile so their copy has room. */
+@media (max-width: 420px) {
+  .hsw-back { font-size: 0; gap: 0; padding: 8px 9px; }
+  .hsw-back svg { width: 17px; height: 17px; }
+  .hsw-nav-inner { gap: 12px; }
+  .bph-hero-card { flex-direction: column; align-items: flex-start; gap: 12px; padding: 18px 16px; }
+  .bph-hero-icon { width: 64px; }
+  .bph-progress-block { padding: 16px; }
+  .bph-check-row { gap: 12px; padding: 12px; }
+  .bph-check-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .bph-check-icon img { width: 26px; height: 26px; }
+}
+@media (max-width: 360px) {
+  .hsw-shell { width: calc(100% - 24px); }
+  .hsw-brand-beta { display: none; }
+  .hsw-brand { font-size: 17px; gap: 8px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. The footer scales via its `wide` prop; the info
+   dialog is teleported outside the page, so it zooms on its own. Nothing
+   changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  .bph-hero-head,
+  .bph-layout,
+  .bph-sheet { zoom: var(--wide-zoom, 1); }
 }
 </style>
