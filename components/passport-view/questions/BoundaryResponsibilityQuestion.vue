@@ -727,6 +727,23 @@ const emitUpdate = () => {
   margin-right: 5px;
 }
 
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.selector-overlay { align-items: center; justify-content: center; padding: 16px; }
+.selector-modal {
+  max-width: 560px;
+  border-radius: 16px;
+  max-height: min(75vh, calc(100dvh - 32px));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  animation: selectorPop 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes selectorPop {
+  from { transform: translateY(14px) scale(0.98); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
 /* ── Big screens ──────────────────────────────────────────────────────
    Scale with the window width (--wide-zoom = width / 1366, set in
    nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
@@ -734,7 +751,7 @@ const emitUpdate = () => {
    viewport-height rule divides the zoom back out. Nothing changes at
    1366px or below. */
 @media (min-width: 1367px) {
-  .selector-modal { max-height: calc(75vh / var(--wide-zoom, 1)); }
+  .selector-modal { max-height: min(calc(75vh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px)); }
 }
 </style>
 

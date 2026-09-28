@@ -1056,4 +1056,19 @@ function downloadAllFiles() {
   .bsw-spinner { animation: none; }
   .ov-seller-bar-fill, .ov-task-card, .ov-expert-cta { transition: none; }
 }
+
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.files-sheet-overlay { align-items: center; justify-content: center; padding: 16px; }
+.files-sheet {
+  border-radius: 20px;
+  max-height: min(78vh, calc(100dvh - 32px));
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+.files-sheet-handle { display: none; }
+.sheet-enter-active .files-sheet, .sheet-leave-active .files-sheet { transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease; }
+.sheet-enter-from .files-sheet, .sheet-leave-to .files-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
+
 </style>

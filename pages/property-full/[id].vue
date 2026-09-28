@@ -4455,4 +4455,17 @@ function handleClaimed(passportId: string) {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.unpub-overlay { align-items: center; padding: 16px; }
+.unpub-modal {
+  border-radius: 24px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
 </style>

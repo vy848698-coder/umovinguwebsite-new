@@ -366,6 +366,22 @@ const addPassport = async (passport) => {
 .cdm-slide-enter-from .cdm-sheet, .cdm-slide-leave-to .cdm-sheet {
   transform: translateY(100%);
 }
+
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.cdm-backdrop { align-items: center; padding: 16px; }
+.cdm-sheet {
+  border-radius: 28px;
+  padding-bottom: 16px;
+  max-height: min(85vh, calc(100dvh - 32px));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+.cdm-handle { display: none; }
+.cdm-slide-enter-active .cdm-sheet, .cdm-slide-leave-active .cdm-sheet { transition: transform 0.25s ease, opacity 0.2s ease; }
+.cdm-slide-enter-from .cdm-sheet, .cdm-slide-leave-to .cdm-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
+
 </style>
 
 

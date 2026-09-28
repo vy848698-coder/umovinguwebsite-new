@@ -566,6 +566,18 @@ const itemSubtext = (item) => {
   margin-right: 5px;
 }
 
+/* ── Centred dialog on every screen size ─────────────────────────────
+   This used to dock to the bottom edge like a phone bottom sheet, which on
+   a desktop window read as stuck to the bottom. Now it opens in the middle
+   of the screen, off every edge, with all four corners rounded. */
+.modal-backdrop { align-items: center; justify-content: center; padding: 16px; }
+.modal-sheet {
+  max-width: 560px;
+  border-radius: 20px;
+  max-height: min(90vh, calc(100dvh - 32px));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
 /* ── Big screens ──────────────────────────────────────────────────────
    Scale with the window width (--wide-zoom = width / 1366, set in
    nuxt.config.ts) so a desktop monitor shows this exactly as a 1366px
@@ -575,7 +587,7 @@ const itemSubtext = (item) => {
 @media (min-width: 1367px) {
   .modal-sheet {
     zoom: var(--wide-zoom, 1);
-    max-height: calc(90vh / var(--wide-zoom, 1));
+    max-height: min(calc(90vh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px));
   }
 }
 </style>
