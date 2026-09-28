@@ -1,7 +1,7 @@
 <template>
   <div class="sh-page">
 
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="sh-shell">
       <div class="sh-head">
@@ -187,10 +187,13 @@
       </p>
     </div>
     </main>
+
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import {
   useBuyerProfile,
@@ -430,6 +433,8 @@ function goSign() { router.push('/buyer-profile/sign') }
 <style scoped>
 .sh-page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: #f3f2ef;
   color: #231d45;
   width: 100%;
@@ -441,7 +446,7 @@ function goSign() { router.push('/buyer-profile/sign') }
 .sh-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.1) 0%, transparent 70%); }
 .sh-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sh-shell { width: min(880px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
+.sh-shell { width: min(880px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; flex: 1 0 auto; }
 .sh-head { margin-bottom: 22px; max-width: 640px; }
 .sh-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
 .sh-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
@@ -878,5 +883,20 @@ function goSign() { router.push('/buyer-profile/sign') }
   .sh-shell { width: calc(100% - 24px); }
   .sh-h1 { font-size: 24px; }
   .how-tab span:not(.how-tab-dot) { display: inline; }
+}
+
+/* Small phones / narrow windows: the four tabs share the row evenly and
+   keep their icons, so none of them is pushed off the edge. */
+@media (max-width: 420px) {
+  .how-tab { padding: 8px 6px; gap: 4px; font-size: 11.5px; flex: 1 1 0; justify-content: center; min-width: 0; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sh-shell { zoom: var(--wide-zoom, 1); }
 }
 </style>

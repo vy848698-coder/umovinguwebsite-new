@@ -1,59 +1,69 @@
 <template>
-  <div class="ag-page">
-    <!-- Celebration hero -->
-    <div class="ag-hero">
-      <img class="ag-emoji" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
-      <h2 class="ag-title">Access granted</h2>
-      <p class="ag-sub">
-        <template v-if="request">
-          <strong>{{ request.org.name }}</strong> can now read your selected
-          financial data. Access expires
-          {{ relativeExpiry(request.grant?.expiresAt) }}.
-        </template>
-        <template v-else>Loading…</template>
-      </p>
-    </div>
+  <!-- Site nav and footer around the app-style screen, like every other
+       page; the screen itself is unchanged. -->
+  <div class="bpa-shell">
+    <WebTopNav wide />
 
-    <!-- Token card -->
-    <div v-if="request?.grant" class="ag-token-card">
-      <div class="ag-token-label">CONSENT TOKEN ISSUED</div>
-      <div class="ag-token-value">{{ tokenSummary }}</div>
-      <div class="ag-token-foot">
-        This token allows {{ request.org.name }} to call the OpenProperty API
-        on your behalf. It cannot be shared or escalated.
+    <div class="ag-page">
+      <!-- Celebration hero -->
+      <div class="ag-hero">
+        <img class="ag-emoji" src="/homescore-icon/confetti.png" alt="" loading="lazy" />
+        <h2 class="ag-title">Access granted</h2>
+        <p class="ag-sub">
+          <template v-if="request">
+            <strong>{{ request.org.name }}</strong> can now read your selected
+            financial data. Access expires
+            {{ relativeExpiry(request.grant?.expiresAt) }}.
+          </template>
+          <template v-else>Loading…</template>
+        </p>
+      </div>
+
+      <!-- Token card -->
+      <div v-if="request?.grant" class="ag-token-card">
+        <div class="ag-token-label">CONSENT TOKEN ISSUED</div>
+        <div class="ag-token-value">{{ tokenSummary }}</div>
+        <div class="ag-token-foot">
+          This token allows {{ request.org.name }} to call the OpenProperty API
+          on your behalf. It cannot be shared or escalated.
+        </div>
+      </div>
+
+      <!-- What was shared -->
+      <span class="sec-label">DATA SHARED WITH {{ orgUpper }}</span>
+      <div v-if="request" class="ag-shared-card">
+        <div
+          v-for="row in sharedRows"
+          :key="row.scope"
+          class="doc-row"
+        >
+          <div class="doc-icon">
+            <img class="doc-icon-img" :src="row.icon" alt="" loading="lazy" />
+          </div>
+          <div class="doc-body">
+            <div class="doc-title">{{ row.title }}</div>
+            <div class="doc-meta">{{ row.meta }}</div>
+          </div>
+          <span class="risk-pill clear">✓ SHARED</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="ag-actions">
+        <button class="cta-btn" @click="goView">Back to my profile</button>
+        <button class="cta-btn outline" @click="goShare">
+          Manage all access →
+        </button>
       </div>
     </div>
 
-    <!-- What was shared -->
-    <span class="sec-label">DATA SHARED WITH {{ orgUpper }}</span>
-    <div v-if="request" class="ag-shared-card">
-      <div
-        v-for="row in sharedRows"
-        :key="row.scope"
-        class="doc-row"
-      >
-        <div class="doc-icon">
-          <img class="doc-icon-img" :src="row.icon" alt="" loading="lazy" />
-        </div>
-        <div class="doc-body">
-          <div class="doc-title">{{ row.title }}</div>
-          <div class="doc-meta">{{ row.meta }}</div>
-        </div>
-        <span class="risk-pill clear">✓ SHARED</span>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="ag-actions">
-      <button class="cta-btn" @click="goView">Back to my profile</button>
-      <button class="cta-btn outline" @click="goShare">
-        Manage all access →
-      </button>
-    </div>
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
+import WebTopNav from '~/components/core/WebTopNav.vue'
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { ref, computed, onMounted } from 'vue'
 import {
   useVerifierAccess,
@@ -156,8 +166,15 @@ function goShare() { router.push('/buyer-profile/share') }
 </script>
 
 <style scoped>
-.ag-page {
+.bpa-shell {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Fills the footer's 48px top margin with the screen's own tint */
+  background: #eef6f7;
+}
+.ag-page {
+  flex: 1 0 auto;
   background:
     radial-gradient(circle at 86% 8%, rgba(72, 120, 255, 0.14) 0%, rgba(72, 120, 255, 0) 38%),
     linear-gradient(160deg, #f7fbff 0%, #eef4ff 48%, #edf9f7 100%);
@@ -356,5 +373,18 @@ function goShare() { router.push('/buyer-profile/share') }
   .ag-hero {
     padding-top: 32px;
   }
+}
+
+@media (max-width: 420px) {
+  .doc-row { padding: 12px; gap: 10px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this screen exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .ag-page { zoom: var(--wide-zoom, 1); }
 }
 </style>

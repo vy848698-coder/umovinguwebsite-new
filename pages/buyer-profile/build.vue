@@ -996,7 +996,7 @@
       </div>
     </div>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Tier upgrade drawer (Stripe checkout) -->
     <TierUpgradeDrawer
@@ -1368,19 +1368,29 @@ function startAML() {
   startBuyerKyc()
 }
 
+function stopKycCountdown() {
+  if (kycCountdownTimer) clearInterval(kycCountdownTimer)
+  kycCountdownTimer = null
+}
+
 watch(kycAllDone, (done) => {
   if (!done) return
   // Auto-advance after 10s; user can also click "Continue"
   kycCountdown.value = 10
-  if (kycCountdownTimer) clearInterval(kycCountdownTimer)
+  stopKycCountdown()
   kycCountdownTimer = setInterval(() => {
+    // Only ever advances off step 1 - if the user already pressed Continue
+    // (or went back), it must not skip them past the step they're on.
+    if (step.value !== 1) { stopKycCountdown(); return }
     kycCountdown.value--
     if (kycCountdown.value <= 0) {
-      if (kycCountdownTimer) clearInterval(kycCountdownTimer)
+      stopKycCountdown()
       goNext()
     }
   }, 1000)
 })
+// Leaving step 1 cancels the pending auto-advance.
+watch(step, (s) => { if (s !== 1) stopKycCountdown() })
 
 // ── Funds (step 2) state ─────────────────────────────────────────
 const fundsUploads = ref<Record<string, { name: string; size: string }>>({})
@@ -1807,6 +1817,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   kycAbort?.abort()
+  // Otherwise the interval keeps running (and saving) after leaving the page
+  stopKycCountdown()
 })
 </script>
 
@@ -4085,4 +4097,61 @@ onBeforeUnmount(() => {
 .bp-cta-outline img { width: 18px; height: 18px; object-fit: contain; vertical-align: -4px; margin-right: 7px; }
 .bp-ai-pill { display: inline-flex; align-items: center; gap: 4px; }
 .bp-tip { display: flex; align-items: flex-start; gap: 7px; }
+
+/* ── Small phones / narrow windows ──────────────────────────────
+   Same cards and steps, fitted: the RECOMMENDED badge sits on the card's top
+   edge instead of taking a slice of the row, and the KYC status pills
+   (Required / Verified / Passed) drop under their title, so no text is
+   squeezed to one word per line or covered by a pill. */
+@media (max-width: 560px) {
+  .bp-option-card { position: relative; }
+  .bp-rec-pill { position: absolute; top: -8px; right: 12px; margin: 0; }
+}
+@media (max-width: 420px) {
+  .bp-header,
+  .bp-progress,
+  .bp-scroll { width: calc(100% - 24px); }
+  .bp-step,
+  .bp-complete { padding: 16px 12px 22px; }
+  .bp-option-card,
+  .bp-funds-card { padding: 12px; gap: 10px; }
+  .bp-option-illus { width: 36px; height: 36px; }
+  .bp-task { padding: 12px; }
+  .bp-task-row { flex-wrap: wrap; row-gap: 6px; }
+  .bp-task-body { flex: 1 1 calc(100% - 52px); }
+  .bp-task-status { margin-left: 52px; }
+  .bp-ai-card { flex-wrap: wrap; row-gap: 6px; }
+  .bp-ai-text { flex: 1 1 calc(100% - 60px); }
+  .bp-ai-try { margin-left: auto; }
+  .bp-xp-row { flex-wrap: wrap; padding: 12px; }
+  .bp-xp-body { flex: 1 1 calc(100% - 60px); }
+  .bp-xp-points { margin-left: auto; }
+  .hsw-back { height: 36px; padding: 0 12px; font-size: 13px; }
+  .hsw-nav-inner { gap: 10px; }
+}
+@media (max-width: 360px) {
+  .hsw-shell { width: calc(100% - 24px); }
+  .hsw-brand-beta { display: none; }
+  .hsw-brand { font-size: 17px; gap: 8px; }
+}
+@media (max-width: 300px) {
+  .hsw-brand { font-size: 16px; }
+  .hsw-back { padding: 0 10px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows the wizard exactly as a 1366px
+   laptop does, only bigger. The footer scales via its `wide` prop; the KYC /
+   funds bottom sheets are teleported outside the page, so they zoom on their
+   own (their height cap is a %, which stays correct under zoom). The Stripe
+   tier drawer keeps its normal size so the card field is never under CSS
+   zoom. Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  .bp-header,
+  .bp-progress,
+  .bp-scroll,
+  .bp-sheet { zoom: var(--wide-zoom, 1); }
+}
 </style>

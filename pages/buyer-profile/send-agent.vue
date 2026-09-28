@@ -1,7 +1,7 @@
 <template>
   <div class="sa-page">
 
-    <BuyerProfileNav back-label="Back" @back="goBack" />
+    <BuyerProfileNav wide back-label="Back" @back="goBack" />
 
     <main class="sa-shell">
       <div class="sa-head">
@@ -112,10 +112,13 @@
         </div>
       </div>
     </main>
+
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useBuyerProfile } from '~/composables/useBuyerProfile'
 import { useAppToast } from '~/composables/useCustomToast'
@@ -202,6 +205,8 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sa-page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: #f3f2ef;
   color: #231d45; width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
@@ -211,7 +216,7 @@ function goView() { router.push('/buyer-profile/view') }
 .sa-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.12) 0%, transparent 70%); }
 .sa-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sa-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; }
+.sa-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 40px 0 90px; flex: 1 0 auto; }
 .sa-head { margin-bottom: 28px; max-width: 640px; }
 .sa-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #067a74; background: rgba(229,255,248,0.92); border: 1px solid rgba(0,161,154,0.28); padding: 6px 12px; border-radius: 100px; margin-bottom: 14px; }
 .sa-kicker-dot { width: 5px; height: 5px; border-radius: 50%; background: #00a19a; }
@@ -280,5 +285,18 @@ function goView() { router.push('/buyer-profile/view') }
 @media (max-width: 480px) {
   .sa-shell { width: calc(100% - 24px); }
   .sa-h1 { font-size: 23px; }
+}
+
+@media (max-width: 420px) {
+  .sa-card { padding: 18px 14px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sa-shell { zoom: var(--wide-zoom, 1); }
 }
 </style>

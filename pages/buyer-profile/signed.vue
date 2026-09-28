@@ -1,7 +1,7 @@
 <template>
   <div class="sn-page">
 
-    <BuyerProfileNav back-label="My passport" @back="goView" />
+    <BuyerProfileNav wide back-label="My passport" @back="goView" />
 
     <main class="sn-shell">
       <!-- Celebration hero -->
@@ -89,10 +89,13 @@
         </div>
       </div>
     </main>
+
+    <SiteFooter wide />
   </div>
 </template>
 
 <script setup lang="ts">
+import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { ref, computed, onMounted } from 'vue'
 import {
   useBuyerProfile,
@@ -157,6 +160,8 @@ function goView() { router.push('/buyer-profile/view') }
 <style scoped>
 .sn-page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: #f3f2ef;
   color: #231d45;
   width: 100%;
@@ -168,7 +173,7 @@ function goView() { router.push('/buyer-profile/view') }
 .sn-ambient-a { width: 540px; height: 540px; top: -160px; left: -140px; background: radial-gradient(circle, rgba(0,161,154,0.12) 0%, transparent 70%); }
 .sn-ambient-b { width: 480px; height: 480px; bottom: 6%; right: -120px; background: radial-gradient(circle, rgba(90,76,240,0.1) 0%, transparent 70%); }
 
-.sn-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 44px 0 90px; }
+.sn-shell { width: min(1100px, calc(100% - 64px)); margin: 0 auto; position: relative; z-index: 2; padding: 44px 0 90px; flex: 1 0 auto; }
 
 /* Hero */
 .sn-hero { text-align: center; max-width: 620px; margin: 0 auto 36px; }
@@ -264,5 +269,23 @@ function goView() { router.push('/buyer-profile/view') }
   .sn-title { font-size: 23px; }
   .sn-badge { width: 60px; height: 60px; border-radius: 18px; }
   .sn-badge-ic { width: 34px; height: 34px; }
+}
+
+/* Small phones / narrow windows: slimmer side card and action rows so the
+   "What's next?" labels read on one or two lines, not one word per line. */
+@media (max-width: 420px) {
+  .sn-side-card { padding: 16px 12px; }
+  .sn-action { padding: 12px; gap: 10px; }
+  .sn-action-ic { width: 34px; height: 34px; }
+  .sn-doc-card { padding: 18px 14px; }
+}
+
+/* ── Big screens ──────────────────────────────────────────────
+   Scale with the window width (--wide-zoom = width / 1366, set in
+   nuxt.config.ts) so a desktop monitor shows this page exactly as a 1366px
+   laptop does, only bigger. Nav and footer scale via their `wide` prop.
+   Nothing changes at 1366px or below. */
+@media (min-width: 1367px) {
+  .sn-shell { zoom: var(--wide-zoom, 1); }
 }
 </style>
