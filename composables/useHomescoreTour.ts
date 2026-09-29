@@ -20,6 +20,47 @@ export interface UseHomescoreTourOptions {
 
 export type HomescoreTour = ReturnType<typeof useHomescoreTour>
 
+/** Rough height of the tip card plus its gap, used before it has rendered. */
+export const TOUR_TIP_SPACE = 210
+
+/**
+ * Bottom edge (viewport px) of whatever sticky/fixed header is pinned to the
+ * top of the screen, so the tour can keep its spotlight and tip clear of it.
+ */
+export function tourTopInset(): number {
+  if (typeof document === 'undefined') return 0
+  const vh = window.innerHeight
+  let inset = 0
+  document
+    .querySelectorAll<HTMLElement>('header, nav, .hsw-nav, .webtop-nav')
+    .forEach((el) => {
+      const pos = getComputedStyle(el).position
+      if (pos !== 'sticky' && pos !== 'fixed') return
+      const r = el.getBoundingClientRect()
+      if (r.height === 0 || r.top > 1 || r.bottom <= 0 || r.height > vh / 3) return
+      inset = Math.max(inset, r.bottom)
+    })
+  return inset
+}
+
+/**
+ * Scroll so the target sits just below the header. When the target and the
+ * tip card fit together, centre the pair in the space under the header.
+ */
+function scrollTargetIntoView(el: HTMLElement) {
+  const vh = window.innerHeight
+  const inset = tourTopInset()
+  const r = el.getBoundingClientRect()
+  const gap = 16
+  const room = vh - inset - gap * 2
+  const needed = r.height + TOUR_TIP_SPACE
+  const offset = needed <= room ? (room - needed) / 2 : 0
+  const desiredTop = inset + gap + offset
+  const delta = r.top - desiredTop
+  if (Math.abs(delta) < 2) return
+  window.scrollBy({ top: delta, behavior: 'smooth' })
+}
+
 /**
  * Mirrors the landing prototype's coach-mark flow: a sequence of steps,
  * each one highlights a card by `data-tour` (or any selector) and renders
@@ -55,10 +96,10 @@ export function useHomescoreTour(opts: UseHomescoreTourOptions) {
       return idx.value < steps.length ? show() : end()
     }
     targetEl.value = el
-    // Center the highlighted card on screen.
-    requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
+    // Bring the card into the space under the sticky navbar. A plain
+    // scrollIntoView({ block: 'start' }) parks it at viewport top, i.e.
+    // underneath the header, so the spotlight ends up ringing the nav.
+    requestAnimationFrame(() => scrollTargetIntoView(el))
   }
 
   function start() {

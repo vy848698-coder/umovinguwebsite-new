@@ -9,6 +9,7 @@
 
       <div
         v-if="tour.currentStep.value && injectPos"
+        ref="injectEl"
         class="cm-inject"
         :style="injectStyle"
       >
@@ -38,12 +39,16 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
+import { tourTopInset, TOUR_TIP_SPACE } from '~/composables/useHomescoreTour'
 import type { HomescoreTour } from '~/composables/useHomescoreTour'
 
 const props = defineProps<{ tour: HomescoreTour }>()
 
 interface Rect { top: number; left: number; width: number; height: number }
 const targetRect = ref<Rect | null>(null)
+const injectEl = ref<HTMLElement | null>(null)
+const injectHeight = ref(TOUR_TIP_SPACE - 16)
+const topInset = ref(0)
 
 function measure() {
   const el = props.tour.targetEl.value
@@ -53,7 +58,14 @@ function measure() {
   }
   const r = el.getBoundingClientRect()
   targetRect.value = { top: r.top, left: r.left, width: r.width, height: r.height }
+  topInset.value = tourTopInset()
+  if (injectEl.value) injectHeight.value = injectEl.value.offsetHeight
 }
+
+// Pick up the tip's real height as soon as it renders.
+watch(injectEl, (el) => {
+  if (el) injectHeight.value = el.offsetHeight
+})
 
 // Re-measure when the active step or visibility changes.
 watch(
@@ -92,10 +104,18 @@ const injectStyle = computed(() => {
   if (!r) return {}
   const vw = typeof window !== 'undefined' ? window.innerWidth : 360
   const cardWidth = Math.min(vw - 32, 360)
-  // Anchor centered horizontally, just below the target (or above if near bottom).
+  // Centre horizontally; sit below the target, else above it, but never up
+  // under the sticky navbar or off the bottom of the screen.
   const vh = typeof window !== 'undefined' ? window.innerHeight : 640
-  const wantBelow = r.top + r.height + 200 < vh
-  const top = wantBelow ? r.top + r.height + 16 : Math.max(r.top - 200, 12)
+  const h = injectHeight.value
+  const gap = 16
+  const minTop = topInset.value + 12
+  const maxTop = vh - h - 12
+  let top: number
+  if (r.top + r.height + gap + h <= vh - 12) top = r.top + r.height + gap
+  else if (r.top - gap - h >= minTop) top = r.top - gap - h
+  else top = maxTop
+  top = Math.max(minTop, Math.min(maxTop, top))
   const left = Math.max(16, Math.min(vw - cardWidth - 16, r.left + r.width / 2 - cardWidth / 2))
   return {
     top: `${top}px`,
