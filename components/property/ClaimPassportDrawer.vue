@@ -685,4 +685,12 @@ onUnmounted(() => {
   cursor: pointer;
   font-family: inherit;
 }
+
+/* Narrow screens: the "Included" chip drops under the label instead of
+   running off the card's right edge. */
+@media (max-width: 420px) {
+  .cp__feature { flex-wrap: wrap; gap: 6px 12px; padding: 12px; }
+  .cp__feature-icon { width: 34px; height: 34px; }
+  .cp__feature-label { flex: 1 1 110px; min-width: 0; }
+}
 </style>

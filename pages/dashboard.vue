@@ -1328,9 +1328,12 @@ onMounted(async () => {
    Navy card, matching the property page's hero, so the two pages read as
    one product. Greeting, identity, the search that starts everything, and
    the live figures — all above the fold. */
+/* No overflow: hidden here: it cut the address dropdown off at the card's
+   bottom edge. The backgrounds already follow the radius on their own.
+   z-index lifts the card (and its dropdown) above the sections below. */
 .dsh-hero {
   position: relative;
-  overflow: hidden;
+  z-index: 3;
   border-radius: var(--r-xl);
   padding: 34px 36px 30px;
   margin-bottom: 34px;
@@ -1435,6 +1438,7 @@ onMounted(async () => {
    action every role starts with. */
 .dsh-search {
   position: relative;
+  z-index: 5;
   display: flex;
   align-items: center;
   gap: 10px;

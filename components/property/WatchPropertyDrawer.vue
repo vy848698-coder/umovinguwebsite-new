@@ -473,4 +473,27 @@ function onSubmit() {
 .watch-modal-enter-from .watch-sheet,
 .watch-modal-leave-to .watch-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
 
+/* Small phones / narrowed windows: smaller artwork so each alert's text
+   gets a usable width, the tip's picture sits above its copy, and the two
+   buttons stack instead of squeezing their labels onto three lines. */
+@media (max-width: 420px) {
+  .watch-head,
+  .watch-triggers { padding-left: 16px; padding-right: 16px; }
+  .watch-trigger { gap: 10px; }
+  .watch-trigger-ico { width: 34px; height: 34px; }
+  .watch-read-row { flex-direction: column; align-items: flex-start; margin-left: 16px; margin-right: 16px; }
+  .watch-cta-row { flex-direction: column-reverse; padding-left: 16px; padding-right: 16px; }
+  .watch-btn { flex: none; }
+  .watch-privacy { padding-left: 16px; padding-right: 16px; }
+}
+
+
+/* Big desktop: scale the dialog like the rest of the site (--wide-zoom);
+   the dvh cap is divided back so the zoomed box still fits the window. */
+@media (min-width: 1367px) {
+  .watch-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(90dvh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px));
+  }
+}
 </style>
