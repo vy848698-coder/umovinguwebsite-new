@@ -7600,6 +7600,24 @@ function formatSaleDate(dateStr: string): string {
   }
 }
 
+/* Phones: the nav keeps "All passports" on one line (it wrapped into a
+   two-line block), and the three preview figures sit side by side in equal
+   columns instead of stacking one per row. */
+@media (max-width: 520px) {
+  .pps-nav-beta { display: none; }
+  .pps-nav-actions { gap: 8px; }
+  .pps-nav-allpass { white-space: nowrap; padding: 8px 12px; font-size: 13px; }
+  .pps-preview-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .pps-preview-metric { min-width: 0; padding: 0 10px; }
+  .pps-preview-metric:first-child { padding-left: 0; }
+  .pps-preview-metric:last-child { padding-right: 0; }
+  .pps-preview-metric-val { font-size: 15px; white-space: normal; }
+  .pps-preview-metric-lab { font-size: 11px; line-height: 1.3; white-space: normal; }
+}
+
 /* ─── Hero (legacy mobile overlay unit — unused on web) ─────── */
 .pps-hero {
   height: 340px;
@@ -8680,9 +8698,21 @@ function formatSaleDate(dateStr: string): string {
 @media (max-width: 820px) {
   .pps-explore-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* Phones keep two tiles per row (one per row made 16 full-width cards to
+   scroll past); the tiles just get tighter. One column only on the very
+   narrowest screens. */
 @media (max-width: 560px) {
-  .pps-explore-grid { grid-template-columns: minmax(0, 1fr); }
+  .pps-explore-grid { gap: 10px; }
+  .pps-tile { padding: 14px; gap: 12px; border-radius: 16px; }
+  .pps-tile-icon { width: 42px; height: 42px; }
+  .pps-tile-arrow { width: 26px; height: 26px; font-size: 12px; }
+  .pps-tile-title { font-size: 13.5px; }
+  .pps-tile-value { font-size: 16px; overflow-wrap: anywhere; }
+  .pps-tile-sub { font-size: 11.5px; }
   .pps-tile--cta { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 300px) {
+  .pps-explore-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ─── Passport card ─────────────────────────────────────────── */
@@ -9249,6 +9279,21 @@ function formatSaleDate(dateStr: string): string {
   .pps-keepgoing-card-btn { align-self: stretch; text-align: center; }
   .pps-costs-body { padding: 20px 20px 18px; }
 }
+/* Small phones: the image sits above the copy, so the text gets the card's
+   full width instead of a thin column beside it. */
+@media (max-width: 420px) {
+  .pps-keepgoing { padding: 24px 16px 22px; }
+  .pps-keepgoing-card { padding: 20px 18px 18px; }
+  .pps-keepgoing-card-top { flex-direction: column; gap: 12px; }
+  .pps-keepgoing-card-ic { width: 54px; height: 54px; }
+}
+/* Very narrow windows: tighter label and rating columns so the EPC bars
+   keep a readable length. */
+@media (max-width: 340px) {
+  .pps-epc-row { grid-template-columns: 56px minmax(40px, 1fr) auto; gap: 8px; }
+  .pps-epc-label,
+  .pps-epc-rating { font-size: 12px; }
+}
 
 /* ─── Details card ──────────────────────────────────────────── */
 .pps-details-card {
@@ -9443,25 +9488,22 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   margin: 0 auto 14px;
 }
 
-/* Collapse to a bottom-sheet on phones */
+/* Phones: still a centred card, just with a smaller gap. It used to dock
+   to the bottom as an edge-to-edge sheet, which read as stuck to the left,
+   right and bottom of the screen. Now it floats off every edge with all
+   four corners rounded, and its height fits inside the gap. */
 @media (max-width: 560px) {
   .pps-sheet-overlay {
-    align-items: flex-end;
-    padding: 0;
+    align-items: center;
+    padding: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
-  .pps-sheet {
-    max-width: 100%;
-    border-radius: 22px 22px 0 0;
-    max-height: 88vh;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
-    animation: pps-sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+  .pps-sheet,
   .pps-sheet--tall {
-    max-height: 92vh;
-  }
-  .pps-sheet-handle {
-    display: block;
+    max-width: 100%;
+    border-radius: 20px;
+    max-height: calc(100dvh - 24px);
+    padding: 14px 16px 20px;
   }
 }
 /* Sticky close affordance — zero-height so it floats over the sheet body and
@@ -10982,5 +11024,86 @@ button.pps-detail-tile.pps-detail-tile--clickable:hover {
   padding: 9px 12px;
   margin: 6px 0 10px;
   font-weight: 600;
+}
+
+/* Small phones and narrowed desktop windows: the same cards, stacked.
+   Beside-each-other layouts (icon + copy, ring + address) squeezed the copy
+   into a one-word column, and the no-wrap hero buttons ran off the card. */
+@media (max-width: 420px) {
+  .pps-nav-help { display: none; }
+  .pps-herocard { padding: 20px 16px 18px; }
+  .pps-herocard-btn { white-space: normal; padding: 13px 16px; min-width: 0; }
+  .pps-preview { padding: 16px; }
+  .pps-preview-main { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .pps-claimcard { padding: 20px 16px; }
+  .pps-claimcard-row { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .pps-claimcard-ic { width: 60px; height: 60px; }
+  /* Data-source sheets: their rows are inline-styled flex rows with
+     space-between and no wrap, so a price and its chip overlapped once the
+     sheet got narrow. Let them wrap onto a second line instead. */
+  .pps-sheet { padding-left: 14px; padding-right: 14px; }
+  .pps-sheet [style*="justify-content: space-between"],
+  .pps-sheet [style*="justify-content:space-between"] {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    column-gap: 10px;
+  }
+  /* Price timeline: the body keeps its natural width so the change pill
+     drops under it rather than sitting on top of the "Estimate" tag. */
+  .pps-ds-tl-row { flex-wrap: wrap; row-gap: 6px; }
+  .pps-ds-tl-body { flex: 1 1 auto; }
+  .pps-ds-cagr-banner { flex-wrap: wrap; gap: 4px 10px; }
+  /* Three-column tables (planning, etc.): date and status take only what
+     they need so the description column isn't one word per line. */
+  .pps-ds-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 10px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+  }
+  .pps-ds-val { overflow-wrap: anywhere; }
+  .pps-ds-kv { flex-wrap: wrap; gap: 2px 10px; }
+}
+/* Very narrow: the logo mark alone in the nav, and the three preview
+   figures as a short list (figure left, label right) instead of three
+   columns too thin for "Above average". */
+@media (max-width: 340px) {
+  .pps-nav-brand > span:not(.pps-nav-beta) { display: none; }
+  .pps-preview-metrics { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
+  .pps-preview-metric,
+  .pps-preview-metric:first-child,
+  .pps-preview-metric:last-child {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0;
+    border-left: 0;
+  }
+  .pps-preview-metric-lab { text-align: right; }
+}
+
+/* Big desktop (>1366px): the 1366 layout scaled up (--wide-zoom from the
+   head script in nuxt.config.ts). Content wrappers only, never the
+   full-height root, so the page background and the navy footer band still
+   fill the window. The data-source sheet and the unpublished modal are
+   teleported to <body>, outside the zoomed shell, so they zoom on their own
+   and their vh caps are divided back. */
+@media (min-width: 1367px) {
+  .pps-web-nav-inner,
+  .pps-shell,
+  .pps-footer-grid,
+  .pps-footer-bottom,
+  .pps-sheet,
+  .unpub-modal {
+    zoom: var(--wide-zoom, 1);
+  }
+  .pps-sheet { max-height: min(calc(88vh / var(--wide-zoom, 1)), 760px); }
+  .pps-sheet--tall { max-height: min(calc(92vh / var(--wide-zoom, 1)), 860px); }
+  /* The navy band itself stays full width; its spacing scales with it. */
+  .pps-footer {
+    margin-top: calc(48px * var(--wide-zoom, 1));
+    padding: calc(56px * var(--wide-zoom, 1)) 0 calc(28px * var(--wide-zoom, 1));
+  }
 }
 </style>

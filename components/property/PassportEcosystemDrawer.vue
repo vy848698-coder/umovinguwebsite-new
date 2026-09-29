@@ -565,9 +565,10 @@ function onCardClick(card: { key: string; status: string }) {
 }
 
 @media (max-width: 900px) {
-  .pe-overlay { padding: 12px; align-items: flex-end; }
-  .pe-modal { max-height: 92vh; border-radius: 24px 24px 0 0; }
-  .pe-scroll { max-height: 92vh; padding: 30px 22px 26px; }
+  /* Centred card with a gap on every side, not a bottom-docked sheet. */
+  .pe-overlay { padding: 12px; align-items: center; }
+  .pe-modal { max-height: calc(100dvh - 24px); border-radius: 22px; }
+  .pe-scroll { max-height: calc(100dvh - 24px); padding: 30px 22px 26px; }
   .pe-hero { flex-direction: column; align-items: flex-start; gap: 20px; }
   .pe-hero-title { font-size: 27px; }
   .pe-hero-group { width: min(200px, 58%); align-self: center; }
@@ -576,5 +577,20 @@ function onCardClick(card: { key: string; status: string }) {
   .pe-power-col { flex: 0 0 calc(50% - 12px); }
   .pe-power-connector { display: none; }
   .pe-footer { flex-direction: column; align-items: flex-start; }
+}
+/* Small phones / narrowed windows: one benefit per row, so each gets the
+   full width instead of a one-word-per-line half column. */
+@media (max-width: 420px) {
+  .pe-scroll { padding: 26px 16px 22px; }
+  .pe-power { padding: 22px 14px 18px; }
+  .pe-power-col { flex: 0 0 100%; }
+}
+
+/* Big desktop: scale the dialog like the rest of the site (--wide-zoom);
+   the vh caps are divided back so the zoomed box still fits the window. */
+@media (min-width: 1367px) {
+  .pe-modal { zoom: var(--wide-zoom, 1); }
+  .pe-modal,
+  .pe-scroll { max-height: min(calc(88vh / var(--wide-zoom, 1)), 900px); }
 }
 </style>
