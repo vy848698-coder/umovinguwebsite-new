@@ -1,79 +1,120 @@
 <template>
   <BaseDrawer v-model="isOpen" title="Add Collaborator">
     <div class="add-collaborator-modal">
-      <!-- Header Info -->
-      <div class="modal-info">
-        <p class="info-text">
-          Enter the email address of a registered user to give them access to
-          this passport.
-        </p>
-      </div>
+      <!-- Step 1: email lookup -->
+      <template v-if="step === 'search'">
+        <div class="modal-info">
+          <p class="info-text">
+            Enter the email address of the person you'd like to give access to
+            this passport. We'll check if they already have an Umovingu account.
+          </p>
+        </div>
 
-      <!-- Email Input -->
-      <div class="form-group">
-        <label for="collaborator-email" class="form-label"
-          >Email Address</label
-        >
-        <input
-          id="collaborator-email"
-          v-model="email"
-          type="email"
-          placeholder="colleague@example.com"
-          class="form-input"
-          :disabled="isLoading"
-          @keyup.enter="handleAdd"
-        />
-      </div>
+        <div class="form-group">
+          <label for="collaborator-email" class="form-label">Email Address</label>
+          <input
+            id="collaborator-email"
+            v-model="email"
+            type="email"
+            placeholder="colleague@example.com"
+            class="form-input"
+            :disabled="isLoading"
+            @keyup.enter="handleCheckEmail"
+          />
+        </div>
 
-      <!-- Role -->
-      <div class="form-group">
-        <label for="collaborator-role" class="form-label">Their role</label>
-        <select
-          id="collaborator-role"
-          v-model="role"
-          class="form-input"
-          :disabled="isLoading"
-        >
-          <option value="">Not specified</option>
-          <option value="Solicitor">Solicitor</option>
-          <option value="Estate agent">Estate agent</option>
-          <option value="Co-owner">Co-owner</option>
-          <option value="Buyer">Buyer</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
+        <div v-if="checkMessage" class="check-message" :class="`check-message--${checkMessageTone}`">
+          <p>{{ checkMessage }}</p>
+          <button
+            v-if="checkStatus === 'already-invited'"
+            type="button"
+            class="link-btn"
+            :disabled="isLoading"
+            @click="goToInviteStep"
+          >
+            Resend invite
+          </button>
+        </div>
+      </template>
 
-      <!-- Access -->
-      <div class="form-group">
-        <label class="form-label">Choose access</label>
-        <label class="checkbox-row">
-          <input type="checkbox" v-model="grantHistoryAccess" :disabled="isLoading" />
-          Passport history
-        </label>
-        <p class="checkbox-hint">
-          Property information is always included. Choose which vault
-          documents they can see from each document's own access settings.
-        </p>
-      </div>
+      <!-- Step 2a: found an existing account - collect role/access, then add -->
+      <template v-else-if="step === 'add'">
+        <div class="modal-info">
+          <p class="info-text">
+            <strong>{{ foundFirstName || 'This person' }}</strong> already has an
+            Umovingu account. Choose their role and access, then add them as a
+            collaborator.
+          </p>
+        </div>
+        <p class="found-email">{{ email }}</p>
 
-      <!-- Error Message -->
-      <div v-if="error" class="error-message">
-        {{ error }}
-      </div>
+        <div class="form-group">
+          <label for="collaborator-role" class="form-label">Their role</label>
+          <select id="collaborator-role" v-model="role" class="form-input" :disabled="isLoading">
+            <option value="">Not specified</option>
+            <option value="Solicitor">Solicitor</option>
+            <option value="Estate agent">Estate agent</option>
+            <option value="Co-owner">Co-owner</option>
+            <option value="Buyer">Buyer</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
 
-      <!-- Success Message -->
-      <div v-if="success" class="success-message">
-        {{ success }}
-      </div>
+        <div class="form-group">
+          <label class="form-label">Choose access</label>
+          <label class="checkbox-row">
+            <input type="checkbox" v-model="grantHistoryAccess" :disabled="isLoading" />
+            Passport history
+          </label>
+          <p class="checkbox-hint">
+            Property information is always included. Choose which vault
+            documents they can see from each document's own access settings.
+          </p>
+        </div>
+      </template>
+
+      <!-- Step 2b: no account yet - offer to invite -->
+      <template v-else-if="step === 'invite'">
+        <div class="modal-info modal-info--invite">
+          <p class="info-text">
+            We couldn't find an Umovingu account for <strong>{{ email }}</strong>.
+            You can invite them to join Umovingu - they'll be added as a
+            collaborator on this passport automatically as soon as they sign up.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label for="invite-role" class="form-label">Their role</label>
+          <select id="invite-role" v-model="role" class="form-input" :disabled="isLoading">
+            <option value="">Not specified</option>
+            <option value="Solicitor">Solicitor</option>
+            <option value="Estate agent">Estate agent</option>
+            <option value="Co-owner">Co-owner</option>
+            <option value="Buyer">Buyer</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Choose access</label>
+          <label class="checkbox-row">
+            <input type="checkbox" v-model="grantHistoryAccess" :disabled="isLoading" />
+            Passport history
+          </label>
+          <p class="checkbox-hint">
+            This is what they'll be granted the moment they accept and sign up.
+          </p>
+        </div>
+      </template>
+
+      <!-- Error / Success -->
+      <div v-if="error" class="error-message">{{ error }}</div>
+      <div v-if="success" class="success-message">{{ success }}</div>
 
       <!-- Existing Collaborators -->
       <div v-if="collaborators.length > 0" class="collaborators-list">
         <h3 class="list-title">Current Collaborators</h3>
-        <div
-          v-for="collaborator in collaborators"
-          :key="collaborator.id"
-          class="collaborator-item"
-        >
+        <div v-for="collaborator in collaborators" :key="collaborator.id" class="collaborator-item">
           <div class="collaborator-info">
             <div class="collaborator-avatar">
               {{ getInitials(collaborator.firstName, collaborator.lastName) }}
@@ -95,11 +136,7 @@
               </label>
             </div>
           </div>
-          <button
-            class="remove-btn"
-            :disabled="isLoading"
-            @click="handleRemove(collaborator.id)"
-          >
+          <button class="remove-btn" :disabled="isLoading" @click="handleRemove(collaborator.id)">
             Remove
           </button>
         </div>
@@ -108,18 +145,30 @@
       <!-- Action Buttons -->
       <div class="modal-actions">
         <button
+          v-if="step !== 'search'"
           class="btn btn-secondary"
           :disabled="isLoading"
-          @click="handleClose"
+          @click="step = 'search'"
         >
+          Back
+        </button>
+        <button v-else class="btn btn-secondary" :disabled="isLoading" @click="handleClose">
           Close
         </button>
+
         <button
+          v-if="step === 'search'"
           class="btn btn-primary"
           :disabled="!email || isLoading"
-          @click="handleAdd"
+          @click="handleCheckEmail"
         >
+          {{ isLoading ? 'Checking...' : 'Check email' }}
+        </button>
+        <button v-else-if="step === 'add'" class="btn btn-primary" :disabled="isLoading" @click="handleAdd">
           {{ isLoading ? 'Adding...' : 'Add Collaborator' }}
+        </button>
+        <button v-else class="btn btn-primary" :disabled="isLoading" @click="handleInvite">
+          {{ isLoading ? 'Sending...' : 'Invite to Umovingu' }}
         </button>
       </div>
     </div>
@@ -136,38 +185,61 @@ const props = defineProps({
   passportId: { type: String, required: true },
 })
 
-const emit = defineEmits(['update:show', 'added', 'removed'])
+const emit = defineEmits(['update:show', 'added', 'removed', 'invited'])
 
-const { addCollaborator, getCollaborators, removeCollaborator, updateCollaboratorScope } =
-  usePassportCollaborators()
+const {
+  addCollaborator,
+  checkCollaboratorEmail,
+  inviteCollaborator,
+  getCollaborators,
+  removeCollaborator,
+  updateCollaboratorScope,
+} = usePassportCollaborators()
 
 const isOpen = ref(props.show)
+const step = ref('search') // 'search' | 'add' | 'invite'
 const email = ref('')
 const role = ref('')
 const grantHistoryAccess = ref(true)
+const foundFirstName = ref('')
+const checkStatus = ref('')
 const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
 const collaborators = ref([])
 
-// Sync isOpen with show prop
+const CHECK_MESSAGES = {
+  'already-collaborator': 'This person is already a collaborator on this passport.',
+  'already-invited': "An invite is already pending for this email - they haven't signed up yet.",
+  'is-owner': "That's your own email address - you already own this passport.",
+}
+
+const checkMessage = ref('')
+const checkMessageTone = ref('info')
+
+function resetForm() {
+  step.value = 'search'
+  email.value = ''
+  role.value = ''
+  grantHistoryAccess.value = true
+  foundFirstName.value = ''
+  checkStatus.value = ''
+  checkMessage.value = ''
+  error.value = ''
+  success.value = ''
+}
+
 watch(
   () => props.show,
   (newVal) => {
     isOpen.value = newVal
     if (newVal) {
       loadCollaborators()
-      // Reset form
-      email.value = ''
-      role.value = ''
-      grantHistoryAccess.value = true
-      error.value = ''
-      success.value = ''
+      resetForm()
     }
   },
 )
 
-// Sync show prop with isOpen
 watch(isOpen, (newVal) => {
   emit('update:show', newVal)
 })
@@ -180,9 +252,37 @@ const loadCollaborators = async () => {
   }
 }
 
-const handleAdd = async () => {
+const handleCheckEmail = async () => {
   if (!email.value) return
+  error.value = ''
+  checkMessage.value = ''
+  isLoading.value = true
+  try {
+    const result = await checkCollaboratorEmail(props.passportId, email.value)
+    checkStatus.value = result.status
+    if (result.status === 'found') {
+      foundFirstName.value = result.firstName || ''
+      step.value = 'add'
+    } else if (result.status === 'not-found') {
+      step.value = 'invite'
+    } else {
+      checkMessage.value = CHECK_MESSAGES[result.status] || "Couldn't check that email."
+      checkMessageTone.value = result.status === 'already-invited' ? 'info' : 'warning'
+    }
+  } catch (err) {
+    console.error('Failed to check email:', err)
+    error.value = err?.data?.message || "Couldn't check that email. Please try again."
+  } finally {
+    isLoading.value = false
+  }
+}
 
+function goToInviteStep() {
+  checkMessage.value = ''
+  step.value = 'invite'
+}
+
+const handleAdd = async () => {
   error.value = ''
   success.value = ''
   isLoading.value = true
@@ -193,23 +293,39 @@ const handleAdd = async () => {
       historyAccess: grantHistoryAccess.value,
     })
     success.value = response.message || 'Collaborator added successfully!'
-    email.value = ''
-    role.value = ''
-    grantHistoryAccess.value = true
-
-    // Reload collaborators list
+    resetForm()
     await loadCollaborators()
-
-    // Emit event
     emit('added', response.collaborator)
-
-    // Clear success message after 3 seconds
     setTimeout(() => {
       success.value = ''
     }, 3000)
   } catch (err) {
     console.error('Failed to add collaborator:', err)
     error.value = err?.data?.message || 'Failed to add collaborator'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleInvite = async () => {
+  error.value = ''
+  success.value = ''
+  isLoading.value = true
+
+  try {
+    await inviteCollaborator(props.passportId, email.value, {
+      role: role.value || undefined,
+      historyAccess: grantHistoryAccess.value,
+    })
+    success.value = `Invitation sent to ${email.value}.`
+    emit('invited', { email: email.value })
+    resetForm()
+    setTimeout(() => {
+      success.value = ''
+    }, 3000)
+  } catch (err) {
+    console.error('Failed to send invite:', err)
+    error.value = err?.data?.message || 'Failed to send invite'
   } finally {
     isLoading.value = false
   }
@@ -225,14 +341,8 @@ const handleRemove = async (collaboratorId) => {
   try {
     const response = await removeCollaborator(props.passportId, collaboratorId)
     success.value = response.message || 'Collaborator removed successfully!'
-
-    // Reload collaborators list
     await loadCollaborators()
-
-    // Emit event
     emit('removed', collaboratorId)
-
-    // Clear success message after 3 seconds
     setTimeout(() => {
       success.value = ''
     }, 3000)
@@ -277,10 +387,59 @@ const getInitials = (firstName, lastName) => {
   margin-bottom: 24px;
 }
 
+.modal-info--invite {
+  background: #f2fbfa;
+  border: 1px solid rgba(0, 161, 154, 0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
 .info-text {
   color: #666;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.found-email {
+  font-size: 13px;
+  color: #00857f;
+  font-weight: 600;
+  margin: -12px 0 20px;
+}
+
+.check-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.check-message p {
+  margin: 0;
+}
+.check-message--info {
+  background: #eef6ff;
+  border: 1px solid #cfe3fb;
+  color: #2a5b8c;
+}
+.check-message--warning {
+  background: #fff7ea;
+  border: 1px solid #f4e0b5;
+  color: #8a6a1f;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: #00857f;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 0;
 }
 
 .form-group {
@@ -487,5 +646,3 @@ select.form-input {
   cursor: not-allowed;
 }
 </style>
-
-
