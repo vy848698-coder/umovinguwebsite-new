@@ -41,7 +41,7 @@
               {{ section?.title || '' }}
             </span>
             <div class="qpanel-icon" aria-hidden="true">
-              <OPIcon :name="section?.key || section?.imageKey || 'ownershipProfile'" class="w-[32px] h-[32px]" />
+              <OPIcon :name="section?.key || section?.imageKey || 'ownershipProfile'" class="w-[116px] h-[88px]" />
             </div>
             <h1 class="qpanel-title">{{ task.title || firstQuestionLabel }}</h1>
             <p class="qpanel-sub">{{ task.description || section?.description || 'Official property record' }}</p>
@@ -378,7 +378,7 @@
         </div>
       </main>
 
-      <SiteFooter />
+      <SiteFooter wide />
     </template>
 
     <HelpDrawer :show="showHelp" :content="activeHelpContent" mode="buyer" @close="showHelp = false" />
@@ -913,11 +913,15 @@ function downloadFile(url: string, name: string) {
 }
 .qpanel-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #00a19a; }
 .qpanel-icon {
-  width: 62px; height: 62px; border-radius: 18px; margin: 20px 0 18px;
-  background: rgba(0, 161, 154, 0.08);
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  display: flex; align-items: center; justify-content: center;
+  height: 88px; margin: 20px 0 18px;
+  display: flex; align-items: center; justify-content: flex-start;
   position: relative; z-index: 1;
+}
+/* Bare illustration, no tile, same size as the seller task sidebar. */
+.qpanel-icon :deep(img) {
+  width: 116px; height: 88px;
+  object-fit: contain; object-position: left center;
+  filter: drop-shadow(0 5px 7px rgba(35, 29, 69, 0.14));
 }
 .qpanel-title { font-size: 28px; font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; color: #0a0f2c; margin: 0 0 8px; position: relative; z-index: 1; }
 .qpanel-sub { color: #52646d; font-size: 14.5px; font-weight: 500; line-height: 1.45; margin: 0; position: relative; z-index: 1; }
@@ -1034,7 +1038,9 @@ function downloadFile(url: string, name: string) {
 
 /* ── Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 980px) {
-  .btw-layout { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr): a plain 1fr track grows to its widest no-wrap child
+     and gets clipped in a narrow window. */
+  .btw-layout { grid-template-columns: minmax(0, 1fr); }
   .btw-aside { position: static; }
 }
 @media (max-width: 899px) {
@@ -1058,6 +1064,31 @@ function downloadFile(url: string, name: string) {
   .qpanel { padding: 22px; }
   .qpanel-title { font-size: 24px; }
 }
+@media (max-width: 420px) {
+  .hsw-brand-beta { display: none; }
+  .hsw-shell { width: calc(100% - 20px); }
+  .qhead-title { font-size: 26px; }
+  .qpanel { padding: 18px 16px; }
+  .qpanel-title { font-size: 20px; }
+  .qnav { padding-left: 12px; padding-right: 12px; }
+}
+
+/* Footer at the bottom of the window when the question is short: the root
+   is a column and the page grows, instead of leaving an empty band under
+   the footer on tall screens. */
+.bt-root { display: flex; flex-direction: column; }
+.bt-root > .btw-layout,
+.bt-root > .btw-loading { flex: 1 0 auto; }
+
+/* Big desktop (>1366px): the 1366 layout scaled up (--wide-zoom from the
+   head script in nuxt.config.ts). Help/Video modals zoom themselves. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  .btw-layout {
+    zoom: var(--wide-zoom, 1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btw-spinner { animation: none; }
   .qseg, .qnav, .qpanel-btn { transition: none; }

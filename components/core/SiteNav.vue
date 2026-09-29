@@ -18,7 +18,7 @@
       <nav class="site-links" aria-label="Primary navigation">
         <button type="button" :class="{ active: navIsActive('/homescore') }" @click="navigateTo('/homescore')">HomeScore</button>
         <template v-if="signedIn">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
+          <button v-if="!hideExploreSignedIn" type="button" :class="{ active: navIsActive('/explore') }" @click="navigateTo('/explore')">Explore</button>
           <button type="button" :class="{ active: navIsActive('/passport') }" @click="navigateTo('/passport')">Passport</button>
           <button type="button" :class="{ active: navIsActive('/marketplace') }" @click="navigateTo('/marketplace')">Marketplace</button>
           <button type="button" :class="{ active: navIsActive('/profile/learn') }" @click="navigateTo('/profile/learn')">Learn</button>
@@ -61,7 +61,7 @@
       <div class="site-panel" :class="{ open: mobileOpen }">
         <button type="button" :class="{ active: navIsActive('/homescore') }" @click="goMobile('/homescore')">HomeScore</button>
         <template v-if="signedIn">
-          <button type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
+          <button v-if="!hideExploreSignedIn" type="button" :class="{ active: navIsActive('/explore') }" @click="goMobile('/explore')">Explore</button>
           <button type="button" @click="goMobile('/passport')">Passport</button>
           <button type="button" @click="goMobile('/marketplace')">Marketplace</button>
           <button type="button" @click="goMobile('/profile/learn')">Learn</button>
@@ -83,6 +83,10 @@
 </template>
 
 <script setup lang="ts">
+// hideExploreSignedIn: drop the Explore link for signed-in users only
+// (the /homescore menu). Guests always keep it.
+defineProps<{ hideExploreSignedIn?: boolean }>()
+
 const route = useRoute()
 const mobileOpen = ref(false)
 

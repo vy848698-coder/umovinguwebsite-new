@@ -1,7 +1,7 @@
 <template>
   <div class="hs-root">
 
-    <SiteNav />
+    <SiteNav hide-explore-signed-in />
 
     <main class="hs-web-shell hs-main">
       <!-- ── Hero ───────────────────────────────────────────────────── -->

@@ -229,7 +229,7 @@
       </section>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
   </div>
 </template>
@@ -1868,6 +1868,44 @@ async function submitNotify() {
 
   .footer-intro {
     grid-column: auto;
+  }
+
+  /* The rotated passport card hangs below its box; give it room so it no
+     longer sits on top of the value strip, and keep it off the edge. */
+  .hero-visual {
+    min-height: 430px;
+  }
+
+  .passport-card {
+    left: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-beta {
+    display: none;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(26px, 10vw, 34px);
+  }
+
+  .passport-card {
+    width: min(200px, 78%);
+    padding: 16px;
+  }
+
+  .hero-house {
+    height: 210px;
+  }
+}
+
+/* Big desktop (>1366px): the 1366 layout scaled up (--wide-zoom from the
+   head script in nuxt.config.ts). Content wrappers only, never the root. */
+@media (min-width: 1367px) {
+  .nav-inner,
+  .marketplace-main {
+    zoom: var(--wide-zoom, 1);
   }
 }
 

@@ -1056,32 +1056,20 @@ const handleViewProfile = () => {
   width: 22px;
 }
 /* Section icons are full-colour illustrations (white pages, navy, teal), so
-   they sit on light tiles at a readable size. A teal/amber fill with a
-   brightness(0) invert(1) filter flattened them into white blobs. Status is
-   carried by the tile's tint and border instead. */
+   they sit bare on the white card at a readable size with a soft light
+   shadow. Status is carried by the card's left bar, not the icon. */
 .task-icon {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: 15px;
+  width: 56px;
+  height: 56px;
   display: grid;
   place-items: center;
-  background: #f7f6fa;
-  border: 1px solid #ebe9f1;
-  box-sizing: border-box;
 }
 .task-icon :deep(img) {
-  width: 34px !important;
-  height: 34px !important;
+  width: 52px !important;
+  height: 52px !important;
   object-fit: contain;
-}
-.task-icon.done {
-  background: #e6f8f7;
-  border-color: #9fdcd8;
-}
-.task-icon.progress {
-  background: #fff5e3;
-  border-color: #f6cf85;
+  filter: drop-shadow(0 6px 8px rgba(35, 29, 69, 0.14));
 }
 .task-info {
   flex: 1;

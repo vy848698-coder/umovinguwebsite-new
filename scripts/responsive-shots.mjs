@@ -102,7 +102,28 @@ const ACCESS_REQ = {
     description: 'Independent mortgage broker', fcaNumber: '123456', websiteUrl: 'https://example.com' },
   grant: { id: 'g-1', scopes: ['identity', 'proof_of_deposit'], expiresAt: '2026-10-20T10:00:00.000Z', revokedAt: null, lastUsedAt: null, useCount: 0 },
 }
+// Buyer view of a seller's passport (/buyer-passport/*): 17 sections, the
+// first partly answered. Routes: /buyer-passport/bp-view,
+// /buyer-passport/section/sec-11?passportId=bp-view,
+// /buyer-passport/section/task/task-11-2?passportId=bp-view&sectionId=sec-11
+const BUYER_VIEW = {
+  passport: { id: 'bp-view', addressLine: '100, Arbury Avenue', addressLine1: '100, Arbury Avenue', postcode: 'CV6 6EX', type: 'SELLER', city: 'Coventry' },
+  property: { estimatedPrice: 173000, epcRating: 'D', epcScore: 67, homeScore: 67, propertyType: 'Terraced', sqft: 850, titleNumber: 'WM123456', yearBuilt: 1930, tenure: 'Freehold' },
+  sections: SECTIONS.map((s, si) => ({
+    ...s,
+    tasks: s.tasks.slice(0, 2).map((t, ti) => ({
+      ...t,
+      questions: [
+        { id: `${t.id}-n`, type: 'NOTE', question: 'Notes' },
+        { id: `${t.id}-q`, type: 'TEXT', question: 'Does the seller have to pay any charges relating to the property (excluding any payments such as council tax, utility charges, etc.), for example payments to a management company?',
+          answer: si === 0 && ti === 0 ? { answerText: 'No, there are no other charges.' } : null },
+      ],
+    })),
+  })),
+}
 function buyerMockFor(p) {
+  if (/^\/passport\/[^/]+\/buyer-view$/.test(p)) return BUYER_VIEW
+  if (/^\/passport\/[^/]+\/(comparables|notes)$/.test(p)) return []
   if (p === '/buyer-profile') return BUYER
   if (p === '/buyer-profile/shares') return []
   if (p === '/buyer-profile/access-requests') return [ACCESS_REQ]
@@ -135,6 +156,28 @@ function dashMockFor(p) {
   if (p === '/property/watches') return PROPS.slice(1, 3)
   if (p === '/property/recently-viewed') return PROPS
   if (p === '/property/for-you') return { items: PROPS, needsPostcode: false }
+  // /passport/collections: one collection + loose passports in two cities.
+  if (p === '/collection/my') {
+    const pp = (i, line, city, pc, type, done, status) => ({
+      id: `pc-${i}`, addressLine1: line, city, postcode: pc, type, status,
+      totalSections: 17, completedSections: done, updatedAt: `2026-09-2${i}T10:00:00.000Z`,
+    })
+    return {
+      collections: [{ id: 'col-1', name: 'Coventry lets', items: [
+        { id: 'ci-1', passport: pp(1, '14 Willow Lane', 'Coventry', 'CV5 8HE', 'LANDLORD', 6, 'DRAFT') },
+        { id: 'ci-2', passport: pp(2, '9 Mill Street', 'Coventry', 'CV1 4AB', 'LANDLORD', 11, 'DRAFT') },
+      ] }],
+      uncollectedPassports: [
+        pp(3, '7 Harbour Road', 'Bristol', 'BS1 4RN', 'SELLER', 8, 'DRAFT'),
+        pp(4, 'The Old Rectory, Church Street', 'Stratford-upon-Avon', 'CV37 6HB', 'SELLER', 17, 'PUBLISHED'),
+        pp(5, '100 Dulverton Avenue', 'Coventry', 'CV5 8HE', 'SELLER', 2, 'DRAFT'),
+      ],
+    }
+  }
+  if (p === '/passport/buyer-access') return [{
+    id: 'ba-1', passportId: 'pc-9', addressLine1: '22 Queens Court', postcode: 'LS1 2AB',
+    property: { epcRating: 'B' }, purchasedAt: '2026-09-12T10:00:00.000Z',
+  }]
   return buyerMockFor(p)
 }
 function mockFor(url) {

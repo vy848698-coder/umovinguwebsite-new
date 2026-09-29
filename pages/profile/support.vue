@@ -831,6 +831,17 @@ const faqs = [
   .hs-chat-btn { width: 100%; justify-content: center; }
   .hs-footer-grid { grid-template-columns: 1fr; gap: 22px; }
   .hs-footer-grid, .hs-footer-bottom { padding-left: 16px; padding-right: 16px; }
+  .hs-status-card { padding: 16px; gap: 12px; }
+  .hs-status-icon { width: 40px; height: 40px; border-radius: 12px; }
+}
+
+/* Very narrow windows: icon above the text so the title and the
+   "All operational" pill get the card's full width instead of wrapping
+   word by word into the arrow. */
+@media (max-width: 380px) {
+  .hs-status-card { flex-direction: column; align-items: flex-start; padding-right: 36px; }
+  .hs-status-content { width: 100%; }
+  .hs-status-arrow { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -382,6 +382,15 @@ const addPassport = async (passport) => {
 .cdm-slide-enter-active .cdm-sheet, .cdm-slide-leave-active .cdm-sheet { transition: transform 0.25s ease, opacity 0.2s ease; }
 .cdm-slide-enter-from .cdm-sheet, .cdm-slide-leave-to .cdm-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
 
+/* Big desktop: scale the dialog like the rest of the site (--wide-zoom);
+   vh caps are divided back so the zoomed box still fits the window. */
+@media (min-width: 1367px) {
+  .cdm-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(85vh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px));
+  }
+}
+
 </style>
 
 
