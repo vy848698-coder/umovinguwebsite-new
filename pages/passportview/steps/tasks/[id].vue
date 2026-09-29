@@ -35,12 +35,8 @@
           {{ currentStep?.title || '' }}
         </span>
 
-        <div class="side-icon">
-          <OPIcon
-            v-if="currentStep?.icon"
-            :name="currentStep.icon"
-            class="w-[48px] h-[48px]"
-          />
+        <div v-if="currentStep?.icon" class="side-icon">
+          <OPIcon :name="currentStep.icon" class="w-[116px] h-[88px]" />
         </div>
 
         <h1 class="side-title">{{ currentStep?.title || '' }}</h1>
@@ -1483,22 +1479,23 @@ const handleContinue = () => {
   background: #2fd0c6;
 }
 
-/* The section illustration sits straight on the dark hero, no tile — a
-   teal tile + white-silhouette filter flattened it, and a white tile boxed
-   it in. A soft drop shadow grounds it instead. */
+/* The section illustration sits straight on the dark hero, no tile. The
+   PNGs are cut out of a white background, so their white parts must be
+   opaque in the file itself or the navy shows through and reads as blur.
+   Any shadow here is short and light; a heavy one smudged the edges. */
 .side-icon {
-  width: 96px;
-  height: 84px;
+  height: 88px;
   margin: 28px 0 24px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 .side-icon :deep(img) {
-  width: 84px !important;
-  height: 84px !important;
+  width: 116px !important;
+  height: 88px !important;
   object-fit: contain;
-  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.35));
+  object-position: left center;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.18));
 }
 
 .side-title {

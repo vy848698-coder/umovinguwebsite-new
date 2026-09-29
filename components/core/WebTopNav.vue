@@ -306,14 +306,19 @@ watch(
     transform: scaleY(1);
     opacity: 1;
     pointer-events: auto;
-    max-height: 440px;
+    /* Room for every link plus a page's own extra button (Learn adds
+       "Chat History"); 440px clipped the last one. */
+    max-height: 600px;
     margin: 8px 0 12px;
     padding: 10px;
     border: 1px solid #dbe7f3;
     box-shadow: 0 14px 24px rgba(21, 58, 95, 0.1);
   }
 
-  .webtop-mobile-panel button {
+  /* :slotted() so buttons a page passes in through #mobile-extra get the
+     same shape; scoped styles don't reach slot content otherwise. */
+  .webtop-mobile-panel button,
+  .webtop-mobile-panel :slotted(button) {
     border: 1px solid #dde8f3;
     background: #fff;
     color: #22405f;

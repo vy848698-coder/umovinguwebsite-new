@@ -43,7 +43,7 @@
               </span>
               <div class="ov-heading">
                 <div class="ov-icon-tile" aria-hidden="true">
-                  <OPIcon :name="section.key || section.imageKey || 'ownershipProfile'" class="w-[34px] h-[34px]" />
+                  <OPIcon :name="section.key || section.imageKey || 'ownershipProfile'" class="w-[88px] h-[68px]" />
                 </div>
                 <div class="ov-heading-text">
                   <h1 class="ov-title">{{ section.title }}</h1>
@@ -212,7 +212,7 @@
             </div>
             <div class="ov-task-card" @click="goToTask(task.id)">
               <div class="ov-task-icon" aria-hidden="true">
-                <OPIcon :name="section.key || section.imageKey || 'ownershipProfile'" class="w-[24px] h-[24px]" />
+                <OPIcon :name="section.key || section.imageKey || 'ownershipProfile'" class="w-[60px] h-[52px]" />
               </div>
               <div class="ov-task-main">
                 <h3 class="ov-task-title">
@@ -280,7 +280,7 @@
         </div>
       </main>
 
-      <SiteFooter />
+      <SiteFooter wide />
     </template>
 
     <!-- File preview bottom sheet -->
@@ -786,10 +786,16 @@ function downloadAllFiles() {
 .ov-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #00a19a; }
 .ov-heading { display: flex; align-items: center; gap: 16px; margin: 18px 0 22px; }
 .ov-icon-tile {
-  width: 62px; height: 62px; border-radius: 18px; flex-shrink: 0;
-  background: rgba(0, 161, 154, 0.08);
-  border: 1px solid rgba(0, 161, 154, 0.18);
+  width: 88px; height: 68px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+}
+/* Section illustrations sit bare, no tile, at a readable size (same as the
+   seller pages). A short light shadow grounds them. */
+.ov-icon-tile :deep(img),
+.ov-task-icon :deep(img) {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 7px rgba(35, 29, 69, 0.14));
 }
 .ov-heading-text { min-width: 0; }
 .ov-title { font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -0.025em; color: #0a0f2c; margin: 0 0 6px; }
@@ -904,16 +910,12 @@ function downloadAllFiles() {
 }
 .ov-task-card:hover { transform: translateY(-2px); border-color: rgba(0, 161, 154, 0.35); box-shadow: 0 16px 34px -22px rgba(15, 118, 110, 0.6); }
 .ov-task-icon {
-  width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
-  background: rgba(0, 161, 154, 0.08);
-  border: 1px solid rgba(0, 161, 154, 0.18);
+  width: 60px; height: 52px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease;
 }
 .ov-task-card:hover .ov-task-icon {
   transform: scale(1.06) rotate(-3deg);
-  background: rgba(0, 161, 154, 0.14);
-  border-color: rgba(0, 161, 154, 0.32);
 }
 .ov-task-main { flex: 1; min-width: 0; }
 .ov-task-title { font-size: 17px; font-weight: 700; color: #0a1f3d; margin: 0 0 10px; line-height: 1.3; }
@@ -1047,7 +1049,7 @@ function downloadAllFiles() {
   .ov-hero { padding: 22px 20px; }
   .ov-title { font-size: 26px; }
   .ov-heading { gap: 12px; margin: 14px 0 18px; }
-  .ov-icon-tile { width: 52px; height: 52px; border-radius: 15px; }
+  .ov-icon-tile { width: 68px; height: 54px; }
   .section-stats { grid-template-columns: 1fr; }
   .ov-tl-item { gap: 12px; }
   .ov-task-card { padding: 16px 18px; }
@@ -1068,6 +1070,48 @@ function downloadAllFiles() {
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
 }
 .files-sheet-handle { display: none; }
+
+/* Footer at the bottom of the window when the section is short: the root
+   is a column and the page grows, instead of leaving an empty band under
+   the footer on tall screens. */
+.bs-root { display: flex; flex-direction: column; }
+.bs-root > .bs-page,
+.bs-root > .bsw-loading { flex: 1 0 auto; }
+
+@media (max-width: 420px) {
+  .hsw-brand-beta { display: none; }
+  .hsw-shell { width: calc(100% - 20px); }
+  .ov-hero { padding: 20px 16px; }
+  .ov-title { font-size: 22px; }
+  .ov-heading { flex-wrap: wrap; }
+  .ov-progress-card { flex-direction: column; text-align: center; }
+  .ov-task-card { padding: 14px; gap: 10px; }
+  /* The task icon repeats the section icon; dropping it gives the title
+     and "No answers yet" tag the row. */
+  .ov-task-icon { display: none; }
+  .ov-task-tag { white-space: nowrap; }
+  .ov-tl-item { gap: 10px; }
+  /* Expert card: icon above the copy instead of a column beside it. */
+  .ov-expert-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .ov-expert-title { font-size: 19px; }
+}
+
+/* Big desktop (>1366px): the 1366 layout scaled up (--wide-zoom from the
+   head script in nuxt.config.ts). The files sheet and lightbox are
+   teleported outside the page, so they zoom on their own with their vh
+   caps divided back. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  .bs-page,
+  .files-sheet,
+  .lightbox-panel {
+    zoom: var(--wide-zoom, 1);
+  }
+  .files-sheet { max-height: min(calc(78vh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px)); }
+  .lightbox-panel { max-height: calc(90vh / var(--wide-zoom, 1)); }
+  .lightbox-img { max-height: calc(80vh / var(--wide-zoom, 1)); }
+  .lightbox-iframe { height: calc(75vh / var(--wide-zoom, 1)); }
+}
 .sheet-enter-active .files-sheet, .sheet-leave-active .files-sheet { transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease; }
 .sheet-enter-from .files-sheet, .sheet-leave-to .files-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
 

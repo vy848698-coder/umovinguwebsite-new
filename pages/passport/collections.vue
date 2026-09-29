@@ -430,7 +430,7 @@
       </section>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Create collection modal -->
     <CreateCollectionModal
@@ -2299,15 +2299,17 @@ const executeDelete = async () => {
 
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 980px) {
+  /* minmax(0, 1fr): a plain 1fr track grows to its widest no-wrap child
+     and gets clipped in a narrow window. */
   .ppw-hero-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 36px;
   }
   .ppw-visual {
     min-height: 320px;
   }
   .ppw-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
   .ppw-aside {
@@ -2350,10 +2352,72 @@ const executeDelete = async () => {
     justify-content: space-between;
   }
   .passport-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .ppw-stat {
     min-width: calc(50% - 7px);
+  }
+  .ppw-sort-select {
+    min-width: 0;
+  }
+  .prop-card-foot {
+    flex-wrap: wrap;
+  }
+}
+
+/* Phones: same hero, fitted. The passport illustration is laid out at its
+   desktop size and zoomed down so the book + floating chips keep their
+   arrangement instead of spilling off the edge. */
+@media (max-width: 520px) {
+  .ppw-head h1 {
+    font-size: clamp(26px, 10vw, 38px);
+  }
+  .ppw-lede {
+    font-size: 15px;
+  }
+  .ppw-visual {
+    zoom: 0.72;
+    min-height: 0;
+    padding: 0 26px;
+  }
+  .coll-resume {
+    gap: 10px;
+    padding: 12px;
+  }
+  .coll-resume-book {
+    width: 68px;
+  }
+  .coll-resume-book :deep(.passport-container) {
+    height: 68px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ppn-brand-beta {
+    display: none;
+  }
+  .ppn-actions {
+    gap: 6px;
+  }
+  .ppw-stat {
+    min-width: 100%;
+  }
+  .ppw-visual {
+    zoom: 0.56;
+  }
+  .coll-resume-book {
+    display: none;
+  }
+}
+
+/* Big desktop (>1366px): the 1366 layout scaled up (--wide-zoom from the
+   head script in nuxt.config.ts). Content wrappers only, never the
+   full-height root. */
+@media (min-width: 1367px) {
+  .ppn-nav-inner,
+  .ppw-main,
+  .delete-modal {
+    zoom: var(--wide-zoom, 1);
   }
 }
 

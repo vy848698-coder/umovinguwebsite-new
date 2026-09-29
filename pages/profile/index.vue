@@ -1362,6 +1362,13 @@ const deleteAccount = async () => {
     flex-direction: column;
   }
 
+  /* flex: 1 (basis 0) squashes the 52px height once the row turns into a
+     column; keep the buttons full height when stacked. */
+  .pf-danger-btn,
+  .pf-logout-btn {
+    flex: none;
+  }
+
   .pf-footer-grid {
     grid-template-columns: 1fr;
     gap: 22px;

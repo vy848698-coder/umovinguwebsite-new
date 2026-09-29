@@ -450,7 +450,8 @@ function askWith(text: string) {
 }
 .learn-btn.solid:hover { background: #00857f; }
 .learn-btn.ghost { background: #fff; color: #231d45; border-color: #e7e2d6; }
-.learn-mobile-chat {
+/* Scoped under the panel so it outranks WebTopNav's :slotted(button) base. */
+.webtop-mobile-panel .learn-mobile-chat {
   border: 0;
   color: #fff;
   background: #00a19a;

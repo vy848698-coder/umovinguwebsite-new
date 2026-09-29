@@ -592,7 +592,7 @@
     </template>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- Notes FAB -->
     <Teleport to="body">
@@ -2166,5 +2166,46 @@ async function deleteNote(noteId: string) {
   .bp-records-grid { grid-template-columns: 1fr; }
   .bp-hero-stats { gap: 22px; }
   .bpw-main { padding-top: 16px; }
+  /* Download buttons drop under their text instead of squeezing it into a
+     one-word column and poking out of the card. */
+  .buyer-pdf-row { flex-wrap: wrap; }
+  .buyer-pdf-info { flex-basis: calc(100% - 60px); }
+  .buyer-pdf-btn { margin-left: auto; }
+}
+@media (max-width: 420px) {
+  .hsw-brand-beta { display: none; }
+  .hsw-actions { gap: 6px; }
+  /* Back shows its arrow only, sized like the share button. font-size: 0
+     hides the word visually but screen readers still read "Back". */
+  .hsw-back { width: 40px; padding: 0; justify-content: center; gap: 0; font-size: 0; }
+  .bpw-shell,
+  .hsw-shell { width: calc(100% - 20px); }
+  .bp-hero { padding: 24px 16px; border-radius: 22px; }
+  .bp-hero-stats { gap: 14px; flex-wrap: wrap; }
+  .bp-hero-stat-lbl { letter-spacing: 0.04em; }
+  .bp-hero-metaline { overflow-wrap: anywhere; }
+  .bp-hero-actions { flex-direction: column; align-items: stretch; }
+  .buyer-pdf-row { padding: 14px; }
+  .buyer-pdf-btn { width: 100%; justify-content: center; margin-left: 0; }
+}
+/* The search field's input keeps a ~150px intrinsic width; let it shrink so
+   the filter button stays inside the card in narrow windows. */
+.buyer-search-input,
+.buyer-search-input input { min-width: 0; }
+
+/* Big desktop (>1366px): the 1366 layout scaled up (--wide-zoom from the
+   head script in nuxt.config.ts). The notes button, sheets and toast are
+   teleported outside the page, so they zoom on their own and their vh cap
+   is divided back. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  .bpw-main,
+  .notes-fab,
+  .sheet-panel,
+  .buyer-save-toast {
+    zoom: var(--wide-zoom, 1);
+  }
+  .sheet-panel { max-height: calc(84vh / var(--wide-zoom, 1)); }
+  .bpw-main .buyer-loading { min-height: calc(50vh / var(--wide-zoom, 1)); }
 }
 </style>

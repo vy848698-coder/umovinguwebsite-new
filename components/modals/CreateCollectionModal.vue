@@ -339,6 +339,15 @@ const submit = async () => {
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 .modal-enter-active .ccm-sheet, .modal-leave-active .ccm-sheet { transition: transform 0.2s, opacity 0.2s; }
 .modal-enter-from .ccm-sheet, .modal-leave-to .ccm-sheet { transform: scale(0.95); opacity: 0; }
+
+/* Big desktop: scale the dialog like the rest of the site (--wide-zoom);
+   the vh cap is divided back so the zoomed box still fits the window. */
+@media (min-width: 1367px) {
+  .ccm-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(80vh / var(--wide-zoom, 1));
+  }
+}
 </style>
 
 
