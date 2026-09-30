@@ -625,9 +625,7 @@
     <div ref="epcDrawerEl" class="epc-drawer anim-3" :class="{ open: epcDrawerOpen }">
       <div class="epc-drawer-head" @click="toggleEpcDrawer">
         <div class="epc-drawer-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 4 14 11 14 11 22 20 10 13 10" fill="currentColor" />
-          </svg>
+          <img src="/homescore-icon/epcAssessment.png" alt="" loading="lazy" />
         </div>
         <div class="epc-drawer-info">
           <div class="epc-drawer-title">Full EPC breakdown</div>
@@ -1692,7 +1690,7 @@ const stats = computed<StatRow[]>(() => {
       lines: elecRecs.length
         ? [
             {
-              icon: '/homescore-icon/lightning.png',
+              icon: '/homescore-icon/sun.png',
               title: elecRecs[0]?.title || 'Solar PV panels',
               sub: elecRecs[0]?.description || "EPC's final step. Crosses you into Band C.",
               amt: fmtSaving(elecRecs[0]) || 'No saving listed',
@@ -1728,7 +1726,7 @@ const stats = computed<StatRow[]>(() => {
       thirdTileSub: 'EPC rating',
       lines: [
         {
-          icon: '/homescore-icon/tap.png',
+          icon: '/homescore-icon/waterDroplet.png',
           title: e.hotwaterDescription || 'Hot water',
           sub: `Hot water rated <b>${effRating(e.hotWaterEnergyEff)}</b> on the EPC.`,
           amt: effRating(e.hotWaterEnergyEff),
@@ -1737,7 +1735,7 @@ const stats = computed<StatRow[]>(() => {
         ...(plumbRecs.length
           ? [
               {
-                icon: '/homescore-icon/tap.png',
+                icon: '/homescore-icon/sun.png',
                 title: plumbRecs[0]?.title || 'Solar water heating',
                 sub: plumbRecs[0]?.description || 'Roof collector pre-heats water from the sun.',
                 amt: fmtSaving(plumbRecs[0]) || 'No saving listed',
@@ -1984,7 +1982,7 @@ const epcItems = computed<EpcItem[]>(() => {
   if (swhRec) {
     items.push({
       id: 'solar-water',
-      icon: '/homescore-icon/tap.png',
+      icon: '/homescore-icon/sun.png',
       title: 'Solar water heating',
       sub: 'Not present · recommended on EPC',
       rating: 'Not installed',
@@ -2779,12 +2777,8 @@ const watchersDisplay = computed(() => {
   border-bottom: 1px solid var(--border-soft);
 }
 .ssp-head-icon {
-  box-sizing: border-box;
-  width: 34px;
-  height: 34px;
-  padding: 5px;
-  border-radius: 10px;
-  background: var(--accent-paler);
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -2839,14 +2833,14 @@ const watchersDisplay = computed(() => {
   font-size: 11.5px;
 }
 .ssp-bar-icon {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   flex-shrink: 0;
 }
 .ssp-bar-label {
-  width: 80px;
-  font-size: 11px;
+  width: 84px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
@@ -3335,17 +3329,17 @@ const watchersDisplay = computed(() => {
   padding: 5px 0;
 }
 .stat-icon {
-  font-size: 14px;
-  width: 26px;
+  font-size: 18px;
+  width: 36px;
   text-align: center;
   flex-shrink: 0;
 }
-.stat-icon img { width: 26px; height: 26px; object-fit: contain; display: block; }
+.stat-icon img { width: 36px; height: 36px; object-fit: contain; display: block; }
 .stat-label {
   /* Wide enough for the two-word labels to wrap to two tidy lines rather
      than breaking mid-word. */
-  width: 96px;
-  font-size: 11.5px;
+  width: 104px;
+  font-size: 12.5px;
   line-height: 1.3;
   font-weight: 700;
   color: var(--text);
@@ -3375,9 +3369,9 @@ const watchersDisplay = computed(() => {
   background: linear-gradient(90deg, var(--accent), var(--accent-light));
 }
 .stat-value {
-  width: 46px;
+  width: 48px;
   text-align: right;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--text);
   flex-shrink: 0;
@@ -3461,11 +3455,10 @@ const watchersDisplay = computed(() => {
 .stat-cost-line + .stat-cost-line {
   border-top: 1px solid var(--border-soft);
 }
+/* Icon straight on the card, no tinted tile behind it. */
 .stat-cost-bullet {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: var(--bg);
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3474,7 +3467,7 @@ const watchersDisplay = computed(() => {
   margin-top: 1px;
   overflow: hidden;
 }
-.stat-cost-bullet img { width: 20px; height: 20px; object-fit: contain; }
+.stat-cost-bullet img { width: 30px; height: 30px; object-fit: contain; }
 .stat-cost-info {
   flex: 1;
   min-width: 0;
@@ -3568,20 +3561,19 @@ const watchersDisplay = computed(() => {
 .epc-drawer-head:hover {
   background: var(--accent-paler);
 }
+/* 3D EPC illustration straight on the card, no tinted tile behind it. */
 .epc-drawer-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--accent-paler);
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--accent-dark);
 }
-.epc-drawer-icon svg {
-  width: 18px;
-  height: 18px;
+.epc-drawer-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .epc-drawer-info {
   flex: 1;
@@ -3668,8 +3660,8 @@ const watchersDisplay = computed(() => {
 }
 .epc-item {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   padding: 11px 0;
   border-bottom: 1px solid var(--border-soft);
   cursor: pointer;
@@ -3682,26 +3674,25 @@ const watchersDisplay = computed(() => {
   background: var(--accent-paler);
 }
 .epc-item-icon {
-  font-size: 16px;
-  width: 28px;
+  font-size: 20px;
+  width: 38px;
   text-align: center;
   flex-shrink: 0;
-  padding-top: 1px;
 }
-.epc-item-icon img { width: 28px; height: 28px; object-fit: contain; display: block; }
+.epc-item-icon img { width: 38px; height: 38px; object-fit: contain; display: block; }
 .epc-item-body {
   flex: 1;
   min-width: 0;
   padding-right: 6px;
 }
 .epc-item-title {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 800;
   color: var(--text);
   margin-bottom: 2px;
 }
 .epc-item-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.4;
@@ -3747,7 +3738,7 @@ const watchersDisplay = computed(() => {
   color: var(--accent-dark);
 }
 .epc-item-expand {
-  padding: 0 0 14px 34px;
+  padding: 0 0 14px 50px;
   animation: fadeSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .epc-flag,
@@ -4496,18 +4487,18 @@ const watchersDisplay = computed(() => {
 }
 
 .hsh-eyebrow {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.3px;
   text-transform: uppercase;
   font-weight: 800;
   color: #9DEFDB;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 9px;
 }
 .hsh-eyebrow-ic {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -4824,7 +4815,12 @@ const watchersDisplay = computed(() => {
     align-items: center;
     padding: 18px 24px;
   }
-  .hs-report > .stat-card > .stat-row { min-height: 54px; }
+  .hs-report > .stat-card > .stat-row { min-height: 58px; gap: 14px; }
+  .hs-report > .stat-card .stat-icon,
+  .hs-report > .stat-card .stat-icon img { width: 42px; height: 42px; }
+  .hs-report > .stat-card .stat-label { width: 118px; font-size: 13px; }
+  .hs-report > .stat-card .stat-value { font-size: 12.5px; }
+  .hs-row--stats .score-strip-ic { width: 78px; height: 78px; }
   .hs-report > .stat-card > .stat-expand { grid-column: 1 / -1; }
   .stat-card > .epc-drawer { margin: 0; }
   .stat-card > .epc-drawer:not(.open) .epc-drawer-head { padding: 9px 14px; }
@@ -4843,6 +4839,12 @@ const watchersDisplay = computed(() => {
   .hs-report > .fork-section .fork-grid {
     grid-template-columns: 1fr;
   }
+}
+/* Phones: the two cost cards share ~340px, so the artwork shrinks to
+   keep the figures clear of it. */
+@media (max-width: 600px) {
+  .score-strip-item { padding: 12px 10px; gap: 6px; }
+  .score-strip-ic { width: 44px; height: 44px; align-self: flex-start; }
 }
 
 

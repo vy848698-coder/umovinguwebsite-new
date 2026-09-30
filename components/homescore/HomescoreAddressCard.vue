@@ -83,32 +83,25 @@
       </div>
     </div>
     <div v-else class="hsc-viewers">
-      <!-- Binoculars-style watching glyph. The earlier eye-with-pupil
-           icon was too close to the "show password" eye used in form
-           fields; this one reads as "spotting / monitoring" — much
-           closer to the actual meaning of "watching this property". -->
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="rgba(255,255,255,.92)"
-        stroke-width="1.9"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-        style="flex: none"
-      >
-        <circle cx="6" cy="15" r="4" />
-        <circle cx="18" cy="15" r="4" />
-        <path d="M10 15h4" />
-        <path d="M4.5 11l1.5 -5h2l1 5" />
-        <path d="M19.5 11l-1.5 -5h-2l-1 5" />
-      </svg>
+      <!-- Real 3D binoculars (same asset as the app clone and the rest
+           of the app's "watching" UI) instead of a hand-drawn line glyph. -->
+      <img
+        src="/op-icons/misc/exploreWatching.png"
+        alt=""
+        class="hsc-viewers-ic"
+        loading="lazy"
+      />
       <div class="hsc-vtxt">
         <b>{{ watchersDisplay }}</b>
         <span>&nbsp;{{ watchersCount === 1 ? 'is' : 'are' }} watching this property</span>
       </div>
+    </div>
+
+    <!-- Passport status, always last (ported from the app clone): locked
+         padlock until a Passport is published, unlocked once it is. -->
+    <div class="hsc-viewers hsc-passport-row">
+      <img :src="passportRowIcon" alt="" class="hsc-viewers-ic" loading="lazy" />
+      <div class="hsc-vtxt"><b>{{ passportRowLabel }}</b></div>
     </div>
   </div>
 </template>
@@ -139,6 +132,18 @@ const props = withDefaults(
     watchersCount: 0,
     passportState: 'unclaimed',
   },
+)
+
+// Same wording as the owner quiz screen's passport status.
+const passportRowLabel = computed(() => {
+  if (props.passportState === 'published') return 'Passport published'
+  if (props.passportState === 'inProgress') return 'Passport in progress'
+  return 'No Passport yet'
+})
+const passportRowIcon = computed(() =>
+  props.passportState === 'published'
+    ? '/op-icons/claim/padlockUnlocked.png'
+    : '/op-icons/claim/padlock.png',
 )
 
 const metaLine = computed(() => {
@@ -307,8 +312,8 @@ const watchersDisplay = computed(() => {
   flex: none;
 }
 .hsc-idc {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 2px solid #262046;
   display: flex;
@@ -318,6 +323,14 @@ const watchersDisplay = computed(() => {
   flex: none;
 }
 .hsc-idc:nth-child(n + 2) { margin-left: -8px; }
+/* 3D row icons (binoculars, padlock) sized to match the avatar stack. */
+.hsc-viewers-ic {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+}
 .hsc-vtxt {
   font-size: 12.5px;
   line-height: 1.35;
