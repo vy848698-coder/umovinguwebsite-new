@@ -670,10 +670,13 @@
         <template v-for="(item, idx) in epcItems" :key="item.id">
           <div
             class="epc-item"
-            :class="{
-              open: expandedEpcItem === item.id,
-              'epc-item--wide': epcLastWide && idx === epcItems.length - 1,
-            }"
+            :class="[
+              `is-${item.ratingClass}`,
+              {
+                open: expandedEpcItem === item.id,
+                'epc-item--wide': epcLastWide && idx === epcItems.length - 1,
+              },
+            ]"
             @click="toggleEpcItem(item.id)"
           >
             <div class="epc-item-icon"><img v-if="isImg(item.icon)" :src="item.icon" alt="" loading="lazy" /><template v-else>{{ item.icon }}</template></div>
@@ -3829,8 +3832,10 @@ const watchersDisplay = computed(() => {
     align-items: center;
     /* Tiles in a row stretch to the tallest; keep every title on the same line. */
     align-content: start;
-    gap: 10px 8px;
-    padding: 14px 14px 15px;
+    gap: 8px 8px;
+    position: relative;
+    overflow: hidden;
+    padding: 16px 14px 14px;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
@@ -3849,12 +3854,31 @@ const watchersDisplay = computed(() => {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12);
   }
-  .epc-item-icon { grid-area: icon; width: 44px; }
-  .epc-item-icon img { width: 44px; height: 44px; }
-  .epc-item-rating { grid-area: rating; }
-  .epc-item-chev { grid-area: chev; margin-left: 0; }
+  /* Thin rating-coloured strip along the top edge of each tile. */
+  .epc-item::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--border);
+  }
+  .epc-item.is-good::before { background: linear-gradient(90deg, var(--accent), #5fd3c6); }
+  .epc-item.is-average::before { background: linear-gradient(90deg, #e6a23c, #f5c46b); }
+  .epc-item.is-poor::before { background: linear-gradient(90deg, var(--error), #f58f8f); }
+  /* The 3D icon is the hero of the tile; copy steps down beneath it. */
+  .epc-item-icon { grid-area: icon; width: 64px; }
+  .epc-item-icon img {
+    width: 64px;
+    height: 64px;
+    filter: drop-shadow(0 8px 10px rgba(15, 23, 42, 0.14));
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .epc-item:hover .epc-item-icon img { transform: translateY(-3px) scale(1.05); }
+  .epc-item-rating { grid-area: rating; align-self: start; font-size: 9px; }
+  .epc-item-chev { grid-area: chev; align-self: start; margin-left: 0; font-size: 13px; line-height: 20px; }
   .epc-item-body { grid-area: body; padding-right: 0; }
-  .epc-item-title { font-size: 14px; margin-bottom: 3px; }
+  .epc-item-title { font-size: 13px; margin-bottom: 2px; letter-spacing: -0.1px; }
+  .epc-item-sub { font-size: 11.5px; line-height: 1.45; }
   /* An opened item's detail spans the whole grid, under its row. */
   .epc-item-expand {
     grid-column: 1 / -1;
@@ -4951,8 +4975,11 @@ const watchersDisplay = computed(() => {
     grid-column: 1 / -1;
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas: 'icon body rating chev';
-    column-gap: 14px;
+    column-gap: 16px;
+    align-items: center;
   }
+  .hs-report .epc-item--wide .epc-item-rating,
+  .hs-report .epc-item--wide .epc-item-chev { align-self: center; }
   .hs-report .epc-drawer-body { padding: 0 20px 20px; }
 }
 
