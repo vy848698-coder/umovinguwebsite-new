@@ -647,15 +647,35 @@
             <div class="epc-grade-letter" :style="{ background: epcPotentialColor }">{{ epcPotentialRating || '?' }}</div>
             <div class="epc-grade-sub">Potential · {{ epcPotentialScore ?? 'not available' }}</div>
           </div>
+          <!-- At-a-glance tally of the item ratings below. -->
+          <div class="epc-tally" aria-label="Ratings summary">
+            <span
+              v-for="t in epcRatingTally"
+              :key="t.cls"
+              class="epc-tally-chip"
+              :class="t.cls"
+            ><b>{{ t.count }}</b> {{ t.label }}</span>
+          </div>
           <div class="epc-saving">
             <div class="epc-saving-num">£{{ formatNum(potentialSaving) }}/yr</div>
             <div class="epc-saving-sub">potential saving</div>
           </div>
         </div>
 
-        <!-- 12 EPC items, each clickable to expand -->
-        <template v-for="item in epcItems" :key="item.id">
-          <div class="epc-item" @click="toggleEpcItem(item.id)">
+        <!-- EPC items, each clickable to expand. A list on phones; on wider
+             screens a grid of compact tiles (icon + rating on top, copy
+             below) so the whole breakdown fits in a few short rows. An
+             opened item's detail spans the full width under its row. -->
+        <div class="epc-items">
+        <template v-for="(item, idx) in epcItems" :key="item.id">
+          <div
+            class="epc-item"
+            :class="{
+              open: expandedEpcItem === item.id,
+              'epc-item--wide': epcLastWide && idx === epcItems.length - 1,
+            }"
+            @click="toggleEpcItem(item.id)"
+          >
             <div class="epc-item-icon"><img v-if="isImg(item.icon)" :src="item.icon" alt="" loading="lazy" /><template v-else>{{ item.icon }}</template></div>
             <div class="epc-item-body">
               <div class="epc-item-title">{{ item.title }}</div>
@@ -676,6 +696,7 @@
             </div>
           </div>
         </template>
+        </div><!-- /epc-items -->
 
       </div>
     </div>
@@ -1125,6 +1146,21 @@ const epcColor = computed(() => {
 
 // ── Quick stats strip — popout panel toggle ──────────────────────
 const activePanel = ref<'bills' | 'co2' | 'street' | null>(null)
+// In the 3-column desktop grid a lone last tile would leave two empty
+// slots, so it stretches across the row as a horizontal card instead.
+const epcLastWide = computed(() => epcItems.value.length % 3 === 1)
+// Counts of the Full EPC breakdown item ratings, for the summary tally.
+const epcRatingTally = computed(() => {
+  const order: { cls: 'good' | 'average' | 'poor' | 'nodata'; label: string }[] = [
+    { cls: 'good', label: 'Good' },
+    { cls: 'average', label: 'Average' },
+    { cls: 'poor', label: 'Poor' },
+    { cls: 'nodata', label: 'No rating' },
+  ]
+  return order
+    .map((o) => ({ ...o, count: epcItems.value.filter((i) => i.ratingClass === o.cls).length }))
+    .filter((o) => o.count > 0)
+})
 // PassportClaimBox only draws a card for these two states; the layout's
 // Passport cell exists only then, so the cost cards can take the full row.
 const hasClaimCard = computed(
@@ -3741,6 +3777,91 @@ const watchersDisplay = computed(() => {
   padding: 0 0 14px 50px;
   animation: fadeSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Rating tally in the summary row: one chip per rating class present. */
+.epc-tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: 14px;
+}
+.epc-tally-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: var(--card);
+}
+.epc-tally-chip b { font-weight: 800; }
+.epc-tally-chip.good { color: var(--accent-dark); border-color: var(--accent-pale); }
+.epc-tally-chip.average { color: #7a5500; border-color: #e6a23c; }
+.epc-tally-chip.poor { color: var(--error); border-color: var(--error-light); }
+.epc-tally-chip.nodata { color: var(--text-faint); }
+
+@media (max-width: 900px) {
+  /* Phones / tablets: the tally drops under the grades as its own line. */
+  .epc-summary { flex-wrap: wrap; }
+  .epc-tally { order: 5; flex-basis: 100%; margin-left: 0; }
+}
+
+/* ── Tiles: from 601px the EPC items become a grid of compact cards ── */
+@media (min-width: 601px) {
+  .epc-items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    gap: 12px;
+    padding-top: 16px;
+  }
+  .epc-item,
+  .epc-item:last-of-type {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'icon . rating chev'
+      'body body body body';
+    align-items: center;
+    /* Tiles in a row stretch to the tallest; keep every title on the same line. */
+    align-content: start;
+    gap: 10px 8px;
+    padding: 14px 14px 15px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition:
+      transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .epc-item:hover {
+    background: var(--card);
+    border-color: rgba(0, 161, 154, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px -16px rgba(0, 120, 112, 0.45);
+  }
+  .epc-item.open {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12);
+  }
+  .epc-item-icon { grid-area: icon; width: 44px; }
+  .epc-item-icon img { width: 44px; height: 44px; }
+  .epc-item-rating { grid-area: rating; }
+  .epc-item-chev { grid-area: chev; margin-left: 0; }
+  .epc-item-body { grid-area: body; padding-right: 0; }
+  .epc-item-title { font-size: 14px; margin-bottom: 3px; }
+  /* An opened item's detail spans the whole grid, under its row. */
+  .epc-item-expand {
+    grid-column: 1 / -1;
+    padding: 2px 2px 4px;
+  }
+}
+
 .epc-flag,
 .epc-fix {
   padding: 10px 12px;
@@ -4825,6 +4946,14 @@ const watchersDisplay = computed(() => {
   .stat-card > .epc-drawer { margin: 0; }
   .stat-card > .epc-drawer:not(.open) .epc-drawer-head { padding: 9px 14px; }
   .stat-card > .epc-drawer.open { grid-column: 1 / -1; margin-top: 10px; }
+  .hs-report .epc-items { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .hs-report .epc-item--wide {
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'icon body rating chev';
+    column-gap: 14px;
+  }
+  .hs-report .epc-drawer-body { padding: 0 20px 20px; }
 }
 
 @media (max-width: 900px) {
