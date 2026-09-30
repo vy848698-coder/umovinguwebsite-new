@@ -61,12 +61,17 @@
     </template>
 
     <template v-if="hasEpcData">
-    <!-- Desktop web layout: centred 1140px shell with a two-column grid
-         (left = address / claim / gauge · right = stats / street / EPC).
+    <!-- Desktop web layout: centred 1140px shell built from full-width
+         rows, each pairing cards of similar height, so no column runs
+         longer than its neighbour and leaves an empty gap:
+           1. address card + HomeScore card
+           2. running costs & CO2 (+ Passport state card when there is one)
+           3. street comparison banner
+           4. score breakdown (two-column list + full EPC breakdown)
          Collapses to a single column below 900px. -->
     <div class="hs-report">
-    <div class="hs-cols">
-    <div class="hs-col hs-col--left">
+    <!-- Row 1: the property + its score -->
+    <div class="hs-row hs-row--hero">
     <!-- ── HomeScore address card (port of prisma/homescore-card.html).
              Shared component used here AND on the owner-quiz screen so
              both surfaces show the same hero. -->
@@ -83,21 +88,6 @@
         :passport-state="passportState"
       />
     </div>
-
-    <!-- Claim / Passport-state box + explainer drawers. Driven by the real
-         passport state: unclaimed → navy "This property is unclaimed" card;
-         published → the gold published-Passport card. In progress shows no
-         card, matching the mobile app. -->
-    <PassportClaimBox
-      :state="passportState"
-      :progress-pct="passportProgressPct"
-      :sections-done="passportSectionsDone"
-      :sections-total="passportSectionsTotal"
-      :property-id="property?.id ?? null"
-      @claim-passport="$emit('claim-passport')"
-      @watch="$emit('buy-passport')"
-      @buy="$emit('buy-passport')"
-    />
 
     <!-- ── HomeScore card (animated outline + gauge + band + footer) ── -->
     <div class="score-card anim-2" data-tour="score">
@@ -149,6 +139,84 @@
         </div>
       </div>
     </div>
+    </div><!-- /hs-row--hero -->
+
+    <!-- Row 2: running costs & impact, plus the Passport-state card
+         (unclaimed / published) as a third cell when there is one. -->
+    <div class="hs-row hs-row--stats" :class="{ 'has-claim': hasClaimCard }">
+    <div class="hs-cell hs-cell--strip">
+    <!-- ── Quick stats strip (2 clickable cards) ───────────────────── -->
+    <div class="score-strip-h">Estimated running costs &amp; impact</div>
+    <div class="score-strip-card anim-3" data-tour="overpay">
+      <div
+        class="score-strip-item clickable"
+        :class="{ active: activePanel === 'bills' }"
+        @click="togglePanel('bills')"
+      >
+        <div class="score-strip-txt">
+          <div class="score-strip-eyebrow">Est. running cost</div>
+          <div class="score-strip-num">
+            £{{ formatNum(annualCost) }}<span class="strip-unit">/year</span>
+          </div>
+          <template v-if="potentialSaving > 0">
+            <div class="score-strip-sub">Potential saving</div>
+            <div class="score-strip-save">
+              £{{ formatNum(potentialSaving) }}<span class="strip-unit">/year</span>
+            </div>
+          </template>
+        </div>
+        <img
+          class="score-strip-ic"
+          src="/homescore-icon/wallet.png"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <div
+        class="score-strip-item clickable"
+        :class="{ active: activePanel === 'co2' }"
+        @click="togglePanel('co2')"
+      >
+        <div class="score-strip-txt">
+          <div class="score-strip-eyebrow">CO₂ emissions</div>
+          <div class="score-strip-num">
+            {{ co2NowDisplay.toFixed(1) }}<span class="strip-unit">t/year</span>
+          </div>
+          <div class="score-strip-sub">UK average</div>
+          <div class="score-strip-save score-strip-save--muted">
+            6.0<span class="strip-unit">t/year</span>
+          </div>
+        </div>
+        <img
+          class="score-strip-ic"
+          src="/homescore-icon/environmental.png"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+    </div>
+
+    </div><!-- /hs-cell--strip -->
+    <div v-if="hasClaimCard" class="hs-cell hs-cell--claim">
+    <div class="score-strip-h">Property Passport</div>
+    <!-- Passport-state box + explainer drawers. Driven by the real
+         passport state: unclaimed → navy "This property is unclaimed" card;
+         published → the gold published-Passport card. In progress shows no
+         card, matching the mobile app. -->
+    <PassportClaimBox
+      :state="passportState"
+      :progress-pct="passportProgressPct"
+      :sections-done="passportSectionsDone"
+      :sections-total="passportSectionsTotal"
+      :property-id="property?.id ?? null"
+      @claim-passport="$emit('claim-passport')"
+      @watch="$emit('buy-passport')"
+      @buy="$emit('buy-passport')"
+    />
+
+    </div><!-- /hs-cell--claim -->
+    </div><!-- /hs-row--stats -->
+
     <!-- ── BILLS PANEL ─────────────────────────────────────────────── -->
     <div v-if="activePanel === 'bills'" class="score-strip-panel open">
       <div class="ssp-head">
@@ -238,6 +306,70 @@
         <div class="ssp-foot-arrow">›</div>
       </div>
     </div>
+
+
+    <!-- ── STREET HERO CARD (ported 1:1 from `.hero` in the
+         umu-owner-journey prototype) ─────────────────────────────── -->
+    <div
+      class="hs-street-hero anim-3"
+      :class="{ active: activePanel === 'street' }"
+      @click="openStreetMap()"
+    >
+      <div class="hsh-eyebrow">
+        <img src="/homescore-icon/houseSearch.png" alt="" class="hsh-eyebrow-ic" loading="lazy" />
+        How does this home compare?
+      </div>
+
+      <!-- Rank on the left, the mini street strip on the right. -->
+      <div class="hsh-main">
+        <div class="hsh-rankrow">
+          <template v-if="hasStreetRank">
+            <span class="hsh-big">#{{ streetRank }}</span>
+            <span class="hsh-rmeta">of {{ streetTotal }} homes</span>
+          </template>
+          <template v-else>
+            <span class="hsh-big">N/A</span>
+            <span class="hsh-rmeta">street rank pending</span>
+          </template>
+        </div>
+        <div class="hsh-preview" aria-hidden="true">
+          <div
+            v-for="(p, i) in streetHeroPins"
+            :key="i"
+            class="hsh-ph"
+            :class="{ you: p.isYou }"
+          >
+            <span class="hsh-cd" :style="{ background: p.dot }" />
+          </div>
+        </div>
+      </div>
+
+      <p v-if="streetDiff != null && streetDiff !== 0" class="hsh-line">
+        This home is estimated to cost
+        <b>£{{ formatNum(Math.abs(streetDiff)) }} {{ streetDiff < 0 ? 'less' : 'more' }}</b>
+        per year to run than the street average.
+      </p>
+      <p v-else-if="streetDiff === 0" class="hsh-line">
+        This home costs about the same to run as the street average.
+      </p>
+      <p v-else class="hsh-line">
+        Not enough neighbouring homes have EPC data to compare running costs yet.
+      </p>
+
+      <div class="hsh-foot">
+        <span v-if="(potentialSaving ?? 0) > 0" class="hsh-projchip">
+          <span>
+            ↑ With the suggested improvements<template v-if="epcPotentialRating">, it could reach EPC <b>{{ epcPotentialRating }}</b></template>
+            and save around <b>£{{ formatNum(potentialSaving) }}/year</b>
+          </span>
+        </span>
+        <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
+          Explore your street
+          <span class="hsh-cta-ar">→</span>
+        </button>
+      </div>
+    </div>
+
 
     <!-- ── STREET PANEL ────────────────────────────────────────────── -->
     <div v-if="activePanel === 'street'" class="score-strip-panel open">
@@ -417,122 +549,6 @@
         3-bed in {{ outwardPostcode }} (Land Reg data).
       </div>
     </div>
-    </div><!-- /hs-col--left -->
-
-    <div class="hs-col hs-col--right">
-    <!-- ── Quick stats strip (2 clickable cards) ───────────────────── -->
-    <div class="score-strip-h">Estimated running costs &amp; impact</div>
-    <div class="score-strip-card anim-3" data-tour="overpay">
-      <div
-        class="score-strip-item clickable"
-        :class="{ active: activePanel === 'bills' }"
-        @click="togglePanel('bills')"
-      >
-        <div class="score-strip-txt">
-          <div class="score-strip-eyebrow">Est. running cost</div>
-          <div class="score-strip-num">
-            £{{ formatNum(annualCost) }}<span class="strip-unit">/year</span>
-          </div>
-          <template v-if="potentialSaving > 0">
-            <div class="score-strip-sub">Potential saving</div>
-            <div class="score-strip-save">
-              £{{ formatNum(potentialSaving) }}<span class="strip-unit">/year</span>
-            </div>
-          </template>
-        </div>
-        <img
-          class="score-strip-ic"
-          src="/homescore-icon/wallet.png"
-          alt=""
-          loading="lazy"
-        />
-      </div>
-      <div
-        class="score-strip-item clickable"
-        :class="{ active: activePanel === 'co2' }"
-        @click="togglePanel('co2')"
-      >
-        <div class="score-strip-txt">
-          <div class="score-strip-eyebrow">CO₂ emissions</div>
-          <div class="score-strip-num">
-            {{ co2NowDisplay.toFixed(1) }}<span class="strip-unit">t/year</span>
-          </div>
-          <div class="score-strip-sub">UK average</div>
-          <div class="score-strip-save score-strip-save--muted">
-            6.0<span class="strip-unit">t/year</span>
-          </div>
-        </div>
-        <img
-          class="score-strip-ic"
-          src="/homescore-icon/environmental.png"
-          alt=""
-          loading="lazy"
-        />
-      </div>
-    </div>
-
-    <!-- ── STREET HERO CARD (ported 1:1 from `.hero` in the
-         umu-owner-journey prototype) ─────────────────────────────── -->
-    <div
-      class="hs-street-hero anim-3"
-      :class="{ active: activePanel === 'street' }"
-      @click="openStreetMap()"
-    >
-      <div class="hsh-eyebrow">
-        <img src="/homescore-icon/houseSearch.png" alt="" class="hsh-eyebrow-ic" loading="lazy" />
-        How does this home compare?
-      </div>
-
-      <!-- Rank on the left, the mini street strip on the right. -->
-      <div class="hsh-main">
-        <div class="hsh-rankrow">
-          <template v-if="hasStreetRank">
-            <span class="hsh-big">#{{ streetRank }}</span>
-            <span class="hsh-rmeta">of {{ streetTotal }} homes</span>
-          </template>
-          <template v-else>
-            <span class="hsh-big">N/A</span>
-            <span class="hsh-rmeta">street rank pending</span>
-          </template>
-        </div>
-        <div class="hsh-preview" aria-hidden="true">
-          <div
-            v-for="(p, i) in streetHeroPins"
-            :key="i"
-            class="hsh-ph"
-            :class="{ you: p.isYou }"
-          >
-            <span class="hsh-cd" :style="{ background: p.dot }" />
-          </div>
-        </div>
-      </div>
-
-      <p v-if="streetDiff != null && streetDiff !== 0" class="hsh-line">
-        This home is estimated to cost
-        <b>£{{ formatNum(Math.abs(streetDiff)) }} {{ streetDiff < 0 ? 'less' : 'more' }}</b>
-        per year to run than the street average.
-      </p>
-      <p v-else-if="streetDiff === 0" class="hsh-line">
-        This home costs about the same to run as the street average.
-      </p>
-      <p v-else class="hsh-line">
-        Not enough neighbouring homes have EPC data to compare running costs yet.
-      </p>
-
-      <div class="hsh-foot">
-        <span v-if="(potentialSaving ?? 0) > 0" class="hsh-projchip">
-          <span>
-            ↑ With the suggested improvements<template v-if="epcPotentialRating">, it could reach EPC <b>{{ epcPotentialRating }}</b></template>
-            and save around <b>£{{ formatNum(potentialSaving) }}/year</b>
-          </span>
-        </span>
-        <button class="hsh-cta" type="button" @click.stop="openStreetMap()">
-          Explore your street
-          <span class="hsh-cta-ar">→</span>
-        </button>
-      </div>
-    </div>
-
 
     <!-- ── STAT BREAKDOWN (5 rows · expandable) ─────────────────────── -->
     <div class="section-h-row">
@@ -604,7 +620,6 @@
           </div>
         </div>
       </template>
-    </div>
 
     <!-- ── FULL EPC DRAWER ─────────────────────────────────────────── -->
     <div ref="epcDrawerEl" class="epc-drawer anim-3" :class="{ open: epcDrawerOpen }">
@@ -666,8 +681,8 @@
 
       </div>
     </div>
-    </div><!-- /hs-col--right -->
-    </div><!-- /hs-cols -->
+    </div><!-- /stat-card -->
+
 
     <!-- ── FORK SECTION ───────────────────────────────────────────────
          Branching driven by ownership + passport state:
@@ -1112,6 +1127,11 @@ const epcColor = computed(() => {
 
 // ── Quick stats strip — popout panel toggle ──────────────────────
 const activePanel = ref<'bills' | 'co2' | 'street' | null>(null)
+// PassportClaimBox only draws a card for these two states; the layout's
+// Passport cell exists only then, so the cost cards can take the full row.
+const hasClaimCard = computed(
+  () => props.passportState === 'unclaimed' || props.passportState === 'published',
+)
 function togglePanel(p: 'bills' | 'co2' | 'street') {
   activePanel.value = activePanel.value === p ? null : p
 }
@@ -4641,42 +4661,75 @@ const watchersDisplay = computed(() => {
   .hsh-ph.you { animation: none; }
 }
 
-/* ══ Desktop web layout — two-column HomeScore snapshot ═══════════
-   The ported view is a single mobile column; on the web canvas we lay
-   it out as a centred 1140px shell with the address / claim / gauge in
-   the left column and stats / street / EPC in the right, then the
-   connection fork spanning full width beneath. Collapses to one column
-   (mobile rhythm intact) below 900px. */
+/* ══ Desktop web layout — row-based HomeScore snapshot ═════════════
+   The ported view is a single mobile column. On the web canvas it used to
+   be split into two independent columns, and the right one always ran
+   far longer than the left, leaving an empty gap. Now the page is a
+   centred 1140px shell of full-width rows, each pairing cards of similar
+   height (see the template comment), so every row ends level. Collapses
+   to one column (mobile rhythm intact) below 900px. */
 .hs-report {
   width: min(1140px, calc(100% - 48px));
   margin: 0 auto;
   padding: 24px 0 56px;
 }
 
-.hs-cols {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 22px;
-  align-items: start;
-}
-
-.hs-col {
-  min-width: 0;
-}
-
-/* Cards fill their column — drop the mobile 20px side gutters. */
-.hs-col > * {
+/* Cards own no side gutters here: the shell and rows do. */
+.hs-report > *,
+.hs-row > *,
+.hs-cell > * {
   margin-inline: 0;
 }
 
-/* Connection fork spans both columns; its intent cards sit side by side. */
-.hs-report > .fork-section {
-  margin: 26px 0 0;
+.hs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.hs-report > .hs-row + .hs-row { margin-top: 22px; }
+.hs-row > .hs-addr-card-wrap,
+.hs-row > .score-card { margin-top: 0; }
+
+/* Row 2 cells: heading on top, card fills the rest so both cells end level. */
+.hs-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.hs-cell > .score-strip-h { margin: 0 0 8px; }
+.hs-cell > .score-strip-card { flex: 1; margin: 0; }
+.hs-cell--claim :deep(.pcb) {
+  flex: 1;
+  display: flex;
+  margin: 0;
+}
+.hs-cell--claim :deep(.pcb-box),
+.hs-cell--claim :deep(.pcb-pubwrap) {
+  flex: 1;
+  height: auto;
 }
 
-/* Even 2-column grid for the intent cards — 2×2 for the owner's four
-   options, 1×2 for the guest / non-owner pair. Rows stretch so cards in a
-   row match height even when copy wraps to two lines. */
+/* Detail panels open full width, straight under the card that opens them. */
+.hs-report > .score-strip-panel { margin-top: 16px; }
+.hs-report > .hs-street-hero { margin-top: 22px; }
+
+/* Score breakdown: heading + card, the full EPC breakdown sits inside it. */
+.hs-report > .section-h-row { padding: 26px 4px 10px; }
+.hs-report > .stat-card { margin-top: 0; }
+.stat-card > .epc-drawer {
+  margin: 12px 0 0;
+  box-shadow: none;
+}
+
+/* Connection fork spans the shell; its intent cards sit side by side. */
+.hs-report > .fork-section {
+  margin: 26px 0 0;
+  padding-inline: 0;
+}
+
+/* Even 2-column grid for the owner's four options. Rows stretch so cards
+   in a row match height even when copy wraps to two lines. */
 .hs-report > .fork-section .fork-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4690,10 +4743,81 @@ const watchersDisplay = computed(() => {
 }
 
 @media (min-width: 901px) {
-  /* Align the tops of both columns cleanly. */
-  .hs-col > *:first-child {
-    margin-top: 0;
+  /* Row 1: address card beside the HomeScore card, equal height. */
+  .hs-row--hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hs-row--hero > .hs-addr-card-wrap { display: flex; }
+  .hs-row--hero > .hs-addr-card-wrap :deep(.hsc-card) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
+  .hs-row--hero > .score-card {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Gauge + verdict centred in the space above the footer. */
+  .hs-row--hero > .score-card .score-top {
+    flex: 1;
+    align-items: center;
+  }
+  .hs-row--hero > .score-card .score-gauge { width: 124px; height: 124px; }
+  .hs-row--hero > .score-card .gn-big { font-size: 40px; }
+  .hs-row--hero > .score-card .score-band { font-size: 21px; }
+  .hs-row--hero > .score-card .score-explainer { font-size: 13.5px; }
+
+  /* Row 2: cost cards take two thirds beside the Passport card. */
+  .hs-row--stats.has-claim { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+
+  /* Row 3: the street banner reads left to right. Its inner wrappers
+     dissolve into one grid: rank and verdict on the left, the street
+     strip and projection in the middle, the CTA on the right. */
+  .hs-report > .hs-street-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) 230px;
+    grid-template-areas:
+      'eye  pins cta'
+      'rank pins cta'
+      'line chip cta';
+    column-gap: 32px;
+    row-gap: 6px;
+    align-items: center;
+    padding: 22px 26px;
+  }
+  .hs-report > .hs-street-hero .hsh-main,
+  .hs-report > .hs-street-hero .hsh-foot { display: contents; }
+  .hs-report > .hs-street-hero .hsh-eyebrow { grid-area: eye; }
+  .hs-report > .hs-street-hero .hsh-rankrow { grid-area: rank; }
+  .hs-report > .hs-street-hero .hsh-preview {
+    grid-area: pins;
+    justify-self: start;
+    align-self: end;
+  }
+  .hs-report > .hs-street-hero .hsh-line { grid-area: line; margin: 0; align-self: start; }
+  .hs-report > .hs-street-hero .hsh-projchip { grid-area: chip; align-self: start; }
+  .hs-report > .hs-street-hero .hsh-cta {
+    grid-area: cta;
+    align-self: center;
+    padding: 16px;
+  }
+
+  /* Row 4: the five score lines in two columns; the full EPC breakdown
+     fills the sixth slot. An opened line's detail, or the opened EPC
+     breakdown, spans both columns; `dense` backfills the slot beside it. */
+  .hs-report > .stat-card {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    column-gap: 44px;
+    row-gap: 4px;
+    align-items: center;
+    padding: 18px 24px;
+  }
+  .hs-report > .stat-card > .stat-row { min-height: 54px; }
+  .hs-report > .stat-card > .stat-expand { grid-column: 1 / -1; }
+  .stat-card > .epc-drawer { margin: 0; }
+  .stat-card > .epc-drawer:not(.open) .epc-drawer-head { padding: 9px 14px; }
+  .stat-card > .epc-drawer.open { grid-column: 1 / -1; margin-top: 10px; }
 }
 
 @media (max-width: 900px) {
@@ -4701,10 +4825,9 @@ const watchersDisplay = computed(() => {
     width: min(520px, calc(100% - 32px));
     padding: 8px 0 40px;
   }
-  .hs-cols {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
+  .hs-row { gap: 14px; }
+  .hs-report > .hs-row + .hs-row { margin-top: 14px; }
+  .hs-report > .hs-street-hero { margin-top: 14px; }
   .hs-report > .fork-section .fork-options,
   .hs-report > .fork-section .fork-grid {
     grid-template-columns: 1fr;
