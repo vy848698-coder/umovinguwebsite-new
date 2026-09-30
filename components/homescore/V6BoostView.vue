@@ -1433,28 +1433,20 @@ function formatFileSize(bytes: number): string {
   flex-shrink: 0;
   overflow: hidden;
 }
-/* The 3D PNGs are tight crops on an opaque near-white canvas: fill the tile
-   and multiply-blend so that canvas melts into the tile colour. */
+/* The 3D PNGs are tight crops: let them fill the tile so they read clearly. */
 .boost-row-icon-img {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  mix-blend-mode: multiply;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .boost-row:hover .boost-row-icon-img {
   transform: scale(1.07) translateY(-1px);
 }
-/* Rows showing a real PNG icon share one soft teal pearl tile, not the
-   per-tone tint. Extra .has-img raises specificity above the
-   .boost-row-icon.<tone> rules. */
+/* Rows showing a real PNG icon have no tile: just the icon on the card.
+   Extra .has-img raises specificity above the .boost-row-icon.<tone> rules. */
 .boost-row-icon.has-img.has-img {
-  background:
-    radial-gradient(120% 90% at 30% 15%, #ffffff 0%, rgba(255, 255, 255, 0) 60%),
-    linear-gradient(150deg, #f4faf9 0%, #e3f2ef 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 161, 154, 0.1),
-    inset 0 -6px 12px -8px rgba(0, 120, 112, 0.18);
+  background: none;
 }
 .boost-row-icon.yellow {
   background: #fff6d5;
