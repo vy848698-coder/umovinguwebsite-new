@@ -728,22 +728,17 @@
            the property already has a verified owner. -->
       <template v-else-if="isLoggedIn && passportState !== 'unclaimed'">
         <div class="fork-eyebrow">What you can do here</div>
-        <div class="fork-options fork-options--single">
-          <!-- Same navy styling + icon + copy as the buyer tile below
-               (.fork-tile--buyer), laid out full width since there is no
-               "I own this property" tile to sit beside. -->
-          <button class="fork-opt buyer" type="button" @click="$emit('interested')">
-            <div class="fork-opt-icon"><img src="/homescore-icon/houseInterested.png" alt="" loading="lazy" /></div>
-            <div class="fork-opt-body">
-              <div class="fork-opt-title">I'm interested in this property</div>
-              <div class="fork-opt-sub">
+        <div class="fork-grid fork-grid--single">
+          <button class="fork-tile fork-tile--buyer" type="button" @click="$emit('interested')">
+            <img src="/homescore-icon/houseInterested.png" alt="" class="fork-tile-icon" loading="lazy" />
+            <span class="fork-tile-body">
+              <span class="fork-tile-title">I'm interested in this property</span>
+              <span class="fork-tile-sub">
                 Explore its running costs, risks and the questions worth asking
                 before you buy.
-              </div>
-            </div>
-            <span class="fork-tile-arrow fork-tile-arrow--buyer" aria-hidden="true">
-              <Icon name="i-lucide-arrow-right" />
+              </span>
             </span>
+            <Icon name="i-lucide-arrow-right" class="fork-tile-arrow" />
           </button>
         </div>
       </template>
@@ -754,8 +749,8 @@
            property". The claim CTA auth-gates on tap if needed. -->
       <template v-else>
         <div class="fork-eyebrow">What's your connection to this property?</div>
-        <!-- Horizontal tiles: big 3D icon left, copy in the middle, arrow
-             right, so there is no dead space above or below the text. -->
+        <!-- Same compact solid tiles as the level-up screen's pathway /
+             passport buttons: teal owner tile, navy buyer tile. -->
         <div class="fork-grid">
           <button class="fork-tile fork-tile--owner" type="button" @click="$emit('claim')">
             <img src="/homescore-icon/homeScoreCard.png" alt="" class="fork-tile-icon" loading="lazy" />
@@ -765,24 +760,19 @@
                 Take the HomeScore quiz to tell us what's changed, unlock a more
                 accurate score and start building your Property Passport.
               </span>
-              <span class="fork-tile-lock"><Icon name="i-lucide-lock" /> Secure &amp; private</span>
             </span>
-            <span class="fork-tile-arrow fork-tile-arrow--owner" aria-hidden="true">
-              <Icon name="i-lucide-arrow-right" />
-            </span>
+            <Icon name="i-lucide-arrow-right" class="fork-tile-arrow" />
           </button>
           <button class="fork-tile fork-tile--buyer" type="button" @click="$emit('interested')">
             <img src="/homescore-icon/houseInterested.png" alt="" class="fork-tile-icon" loading="lazy" />
             <span class="fork-tile-body">
-              <span class="fork-tile-title fork-tile-title--buyer">I'm interested in this property</span>
-              <span class="fork-tile-sub fork-tile-sub--buyer">
+              <span class="fork-tile-title">I'm interested in this property</span>
+              <span class="fork-tile-sub">
                 Explore its running costs, risks and the questions worth asking
                 before you buy.
               </span>
             </span>
-            <span class="fork-tile-arrow fork-tile-arrow--buyer" aria-hidden="true">
-              <Icon name="i-lucide-arrow-right" />
-            </span>
+            <Icon name="i-lucide-arrow-right" class="fork-tile-arrow" />
           </button>
         </div>
       </template>
@@ -2111,7 +2101,7 @@ const watchersDisplay = computed(() => {
 .hs-v6-score :is(.app-header-title, .hs-addr-line, .score-band, .gn-big,
   .ssp-head-title, .ssp-bar-amt, .ssp-total-num, .ssp-cell-num,
   .stat-cost-title, .epc-grade-letter, .epc-saving-num,
-  .fork-opt-title, .fork-tile-title) {
+  .fork-opt-title) {
   font-weight: 700;
 }
 .hs-v6-score :is(.app-header-sub, .hs-addr-meta, .score-explainer,
@@ -3913,147 +3903,65 @@ const watchersDisplay = computed(() => {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Buyer option when someone else has claimed the property: the navy
-   buyer tile below, laid out full width (icon left, text right). */
-.fork-opt.buyer {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
-.fork-opt.buyer:hover {
-  border-color: var(--primary);
-  filter: brightness(1.08);
-  box-shadow: 0 14px 30px -14px rgba(35, 29, 69, 0.55);
-}
-.fork-opt.buyer .fork-opt-title { color: #fff; }
-.fork-opt.buyer .fork-opt-sub { color: rgba(255, 255, 255, 0.75); }
 
-/* ── Fork grid (guest / unclaimed): owner + buyer tiles side by side ──
-   Each tile is one horizontal row: big icon, copy, arrow. */
+/* ── Fork grid (guest / unclaimed): owner + buyer tiles ──────────────
+   1:1 with the level-up screen's .lu-tile buttons: compact solid tiles,
+   icon left, copy, arrow right. */
 .fork-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 720px) {
+  .fork-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .fork-grid--single { grid-template-columns: 1fr; }
 }
 .fork-tile {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-width: 0;
-  text-align: left;
-  padding: 16px 18px 16px 14px;
-  border-radius: 20px;
-  border: 1px solid transparent;
+  width: 100%;
+  padding: 18px 20px;
+  border: none;
+  border-radius: 18px;
+  color: #ffffff;
   font-family: inherit;
+  text-align: left;
   cursor: pointer;
-  transition:
-    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.22s ease,
-    border-color 0.22s ease;
+  transition: transform 0.15s, filter 0.15s;
 }
-.fork-tile:hover { transform: translateY(-2px); }
+.fork-tile:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .fork-tile:focus-visible,
 .fork-opt:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 .fork-tile--owner {
-  background: var(--accent-paler);
-  border-color: var(--accent-pale);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 12px 28px -18px rgba(0, 120, 112, 0.35);
-}
-.fork-tile--owner:hover {
-  border-color: rgba(0, 161, 154, 0.35);
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.04),
-    0 22px 40px -20px rgba(0, 120, 112, 0.5);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 6px 18px rgba(0, 161, 154, 0.3);
 }
 .fork-tile--buyer {
   background: var(--primary);
-  border-color: rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.08),
-    0 14px 30px -16px rgba(35, 29, 69, 0.55);
+  box-shadow: 0 6px 18px rgba(35, 29, 69, 0.25);
 }
-.fork-tile--buyer:hover {
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 24px 42px -18px rgba(35, 29, 69, 0.7);
-}
-/* The 3D house is the hero of each tile: bigger than the copy beside it. */
-.fork-tile-icon {
-  width: 92px;
-  height: 92px;
-  object-fit: contain;
-  flex-shrink: 0;
-  filter: drop-shadow(0 10px 12px rgba(15, 23, 42, 0.16));
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.fork-tile:hover .fork-tile-icon { transform: translateY(-3px) scale(1.05); }
-.fork-tile-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
+.fork-tile-icon { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
+.fork-tile-body { flex: 1; min-width: 0; display: block; }
 .fork-tile-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.3px;
-  line-height: 1.25;
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #ffffff;
 }
-.fork-tile-title--buyer { color: #fff; }
 .fork-tile-sub {
-  font-size: 12px;
+  display: block;
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.45;
+  margin-top: 3px;
+  opacity: 0.86;
 }
-.fork-tile-sub--buyer { color: rgba(255, 255, 255, 0.72); }
-.fork-tile-lock {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  align-self: flex-start;
-  margin-top: 4px;
-  padding: 4px 10px 4px 8px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid var(--accent-pale);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent-dark);
-  white-space: nowrap;
-}
-.fork-tile-lock :deep(svg) { width: 12px; height: 12px; }
-.fork-tile-arrow {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.22s ease;
-}
-.fork-tile-arrow :deep(svg) { width: 18px; height: 18px; }
-.fork-tile:hover .fork-tile-arrow,
-.fork-opt:hover .fork-tile-arrow { transform: translateX(3px); }
-.fork-tile-arrow--owner {
-  background: var(--accent-dark);
-  box-shadow: 0 8px 16px -6px rgba(0, 120, 112, 0.6);
-}
-.fork-tile-arrow--buyer { background: rgba(255, 255, 255, 0.14); }
-.fork-tile--buyer:hover .fork-tile-arrow--buyer,
-.fork-opt.buyer:hover .fork-tile-arrow--buyer {
-  background: var(--accent);
-}
+.fork-tile-arrow { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* ── EPC NOT AVAILABLE empty state ──────────────────────────── */
 /* Compact property header shown above the no-EPC card so the user
@@ -4750,28 +4658,6 @@ const watchersDisplay = computed(() => {
   height: 100%;
   align-items: center;
 }
-/* A lone option (buyer, property claimed by someone else) spans the row. */
-.hs-report > .fork-section .fork-options--single {
-  grid-template-columns: 1fr;
-}
-
-/* Desktop: the owner / buyer tiles get room to breathe. */
-@media (min-width: 901px) {
-  .hs-report > .fork-section .fork-grid { gap: 16px; }
-  .hs-report > .fork-section .fork-tile {
-    padding: 20px 24px 20px 18px;
-    gap: 20px;
-    border-radius: 22px;
-  }
-  .hs-report > .fork-section .fork-tile-icon { width: 124px; height: 124px; }
-  .hs-report > .fork-section .fork-tile-title { font-size: 17px; }
-  .hs-report > .fork-section .fork-tile-sub { font-size: 13px; }
-  .hs-report > .fork-section .fork-tile-arrow { width: 44px; height: 44px; }
-  .hs-report > .fork-section .fork-opt.buyer { padding: 18px 24px 18px 20px; gap: 18px; }
-  .hs-report > .fork-section .fork-opt.buyer .fork-opt-icon { width: 104px; height: 104px; }
-  .hs-report > .fork-section .fork-opt.buyer .fork-opt-title { font-size: 17px; }
-  .hs-report > .fork-section .fork-opt.buyer .fork-opt-sub { font-size: 13px; }
-}
 
 @media (min-width: 901px) {
   /* Align the tops of both columns cleanly. */
@@ -4789,21 +4675,12 @@ const watchersDisplay = computed(() => {
     grid-template-columns: 1fr;
     gap: 0;
   }
-  .hs-report > .fork-section .fork-options {
-    grid-template-columns: 1fr;
-  }  .hs-report > .fork-section .fork-grid {
+  .hs-report > .fork-section .fork-options,
+  .hs-report > .fork-section .fork-grid {
     grid-template-columns: 1fr;
   }
 }
-/* Phones: a slightly smaller icon so the copy keeps a readable measure. */
-@media (max-width: 600px) {
-  .hs-report > .fork-section .fork-tile {
-    gap: 12px;
-    padding: 14px 14px 14px 10px;
-  }
-  .hs-report > .fork-section .fork-tile-icon { width: 76px; height: 76px; }
-  .hs-report > .fork-section .fork-tile-arrow { width: 36px; height: 36px; }
-}
+
 
 /* ── Centred dialog on every screen size ─────────────────────────────
    This used to dock to the bottom edge like a phone bottom sheet, which on
