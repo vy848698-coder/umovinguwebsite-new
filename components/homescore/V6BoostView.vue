@@ -159,7 +159,7 @@
         <div class="boost-row-title">{{ d.title }}</div>
         <div class="boost-row-sub">Verified · +{{ d.mrDelta }}% Upfront Ready</div>
       </div>
-      <div class="boost-row-check">✓</div>
+      <div class="boost-row-check"><Icon name="i-lucide-check" /></div>
     </div>
     <div
       v-if="currentDoc"
@@ -180,7 +180,7 @@
         <div class="boost-row-title">{{ currentDoc.title }}</div>
         <div class="boost-row-sub">{{ currentDoc.sub }}</div>
       </div>
-      <div class="boost-row-plus">＋</div>
+      <div class="boost-row-plus"><Icon name="i-lucide-plus" /></div>
     </div>
 
     <!-- All documents uploaded celebration -->
@@ -192,7 +192,7 @@
           Passport ready to publish · share with buyers, lenders, agents
         </div>
       </div>
-      <div class="boost-row-chev">›</div>
+      <div class="boost-row-chev"><Icon name="i-lucide-chevron-right" /></div>
     </div>
     </div><!-- /boost-block--upload -->
 
@@ -264,7 +264,7 @@
         <div class="boost-row-title">{{ b.title }}</div>
         <div class="boost-row-sub">{{ b.sub }}</div>
       </div>
-      <div class="boost-row-chev">›</div>
+      <div class="boost-row-chev"><Icon name="i-lucide-chevron-right" /></div>
     </div>
     </div><!-- /boost-block--book -->
 
@@ -901,25 +901,32 @@ function formatFileSize(bytes: number): string {
     padding-top: 22px;
   }
   .hs-v6-boost .boost-row {
-    padding: 20px 22px;
-    border-radius: 16px;
-    gap: 16px;
+    padding: 16px 22px 16px 16px;
+    border-radius: 22px;
+    gap: 20px;
+    margin-top: 6px;
+    margin-bottom: 6px;
   }
   .hs-v6-boost .boost-row-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
   }
   .hs-v6-boost .boost-row-title {
-    font-size: 15.5px;
+    font-size: 17px;
   }
   .hs-v6-boost .boost-row-sub {
-    font-size: 12.5px;
+    font-size: 13px;
+    margin-top: 5px;
   }
   .hs-v6-boost .boost-row-plus {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     font-size: 20px;
+  }
+  .hs-v6-boost .boost-row-chev {
+    width: 40px;
+    height: 40px;
   }
 
   /* Big hero headline, matching the mock. */
@@ -1331,6 +1338,14 @@ function formatFileSize(bytes: number): string {
 }
 .boost-section-h .ico {
   font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-paler);
+  color: var(--accent-dark);
+  box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.12);
 }
 .pill-progress {
   margin-left: auto;
@@ -1348,20 +1363,31 @@ function formatFileSize(bytes: number): string {
 .boost-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 6px 20px;
-  padding: 14px 16px;
+  gap: 14px;
+  margin: 8px 20px;
+  padding: 12px 14px 12px 12px;
   background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 18px;
   cursor: pointer;
-  transition: all 0.15s;
-  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 28px -16px rgba(15, 23, 42, 0.18);
 }
 .boost-row:hover {
-  border-color: var(--accent-pale);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 161, 154, 0.1);
+  border-color: rgba(0, 161, 154, 0.28);
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 20px 38px -18px rgba(0, 120, 112, 0.34);
+}
+.boost-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .boost-row.added {
   background: var(--accent-paler);
@@ -1397,9 +1423,9 @@ function formatFileSize(bytes: number): string {
   border: 1.5px solid #ffc107;
 }
 .boost-row-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1407,15 +1433,28 @@ function formatFileSize(bytes: number): string {
   flex-shrink: 0;
   overflow: hidden;
 }
+/* The 3D PNGs are tight crops on an opaque near-white canvas: fill the tile
+   and multiply-blend so that canvas melts into the tile colour. */
 .boost-row-icon-img {
-  width: 34px;
-  height: 34px;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
+  mix-blend-mode: multiply;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-/* Rows showing a real PNG icon sit on plain white, not the tinted tile.
-   Extra .has-img raises specificity above the .boost-row-icon.<tone> rules. */
+.boost-row:hover .boost-row-icon-img {
+  transform: scale(1.07) translateY(-1px);
+}
+/* Rows showing a real PNG icon share one soft teal pearl tile, not the
+   per-tone tint. Extra .has-img raises specificity above the
+   .boost-row-icon.<tone> rules. */
 .boost-row-icon.has-img.has-img {
-  background: #fff;
+  background:
+    radial-gradient(120% 90% at 30% 15%, #ffffff 0%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(150deg, #f4faf9 0%, #e3f2ef 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 161, 154, 0.1),
+    inset 0 -6px 12px -8px rgba(0, 120, 112, 0.18);
 }
 .boost-row-icon.yellow {
   background: #fff6d5;
@@ -1441,22 +1480,22 @@ function formatFileSize(bytes: number): string {
   min-width: 0;
 }
 .boost-row-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.2px;
-  line-height: 1.2;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
 }
 .boost-row-sub {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
-  margin-top: 3px;
+  margin-top: 4px;
   line-height: 1.45;
 }
 .boost-row-plus {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: white;
@@ -1466,7 +1505,13 @@ function formatFileSize(bytes: number): string {
   font-size: 18px;
   font-weight: 300;
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(0, 161, 154, 0.35);
+  box-shadow:
+    0 6px 14px -4px rgba(0, 161, 154, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.boost-row:hover .boost-row-plus {
+  transform: scale(1.08) rotate(90deg);
 }
 .boost-row-check {
   width: 32px;
@@ -1482,9 +1527,24 @@ function formatFileSize(bytes: number): string {
   flex-shrink: 0;
 }
 .boost-row-chev {
-  font-size: 18px;
-  color: var(--text-faint);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--text-secondary);
   flex-shrink: 0;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.boost-row:hover .boost-row-chev {
+  background: var(--accent);
+  color: #fff;
+  transform: translateX(2px);
 }
 
 /* Next step card · 1:1 with `.nextstep` from umu-owner-journey
@@ -1776,6 +1836,10 @@ function formatFileSize(bytes: number): string {
 .boost-section-h .ico :deep(svg) { width: 13px; height: 13px; }
 .boost-row-icon :deep(svg),
 .bd-upload-ico :deep(svg) { width: 22px; height: 22px; }
+.boost-row-icon :deep(svg) { width: 26px; height: 26px; }
+.boost-row-chev :deep(svg) { width: 17px; height: 17px; }
+.boost-row-plus :deep(svg) { width: 19px; height: 19px; }
+.boost-row-check :deep(svg) { width: 17px; height: 17px; stroke-width: 3; }
 .bcv-ico :deep(svg) { width: 27px; height: 27px; }
 .bd-dropzone-icon { color: var(--accent-dark); }
 .bd-dropzone-icon :deep(svg) { width: 30px; height: 30px; margin: 0 auto; }
