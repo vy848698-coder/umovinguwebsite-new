@@ -57,11 +57,13 @@
             >
               ?
             </button>
-            <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
+            <!-- The main score page always offers a fresh search, so the
+                 user can look up another property from here. -->
+            <button class="hsw-back" type="button" aria-label="Back to search" @click="goToSearch">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              {{ inPageBackLabel }}
+              Back to search
             </button>
             <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
           </div>
@@ -7172,6 +7174,12 @@ function backToScreen(target: Screen) {
   screen.value = target
 }
 
+// Main score page navbar: back to the HomeScore search to look up another
+// property.
+function goToSearch() {
+  router.push('/homescore')
+}
+
 function goBack() {
   // Retrace the actual forward path: pop the last screen we came from.
   let prev = screenHistory.value.pop()
@@ -7336,11 +7344,16 @@ async function loadInitialScreen() {
       passportStatus.value = status
       isPropertyOwner.value = status.isOwner ?? false
       isPassportCollaborator.value = status.isCollaborator ?? false
+      // A failed status call comes back as "no passport". Don't let that
+      // wipe the public /property/:id flags seeded above, or a claimed home
+      // would read as unclaimed and offer "I own this property".
+      const pub: any = property.value
+      const passportExists = !!status.hasPassport || !!pub?.hasPassport
       hasOtherOwnerPassport.value =
-        !!status.hasPassport && !status.isOwner && !status.isCollaborator
-      isOtherPassportPublished.value = !!(
-        status.hasPassport && status.isPublished
-      )
+        passportExists && !status.isOwner && !status.isCollaborator
+      isOtherPassportPublished.value = status.hasPassport
+        ? !!status.isPublished
+        : !!pub?.passportPublished
     }
 
     // Restore "already notified" state from localStorage
