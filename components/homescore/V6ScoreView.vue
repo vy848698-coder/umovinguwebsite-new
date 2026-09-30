@@ -728,14 +728,22 @@
            the property already has a verified owner. -->
       <template v-else-if="isLoggedIn && passportState !== 'unclaimed'">
         <div class="fork-eyebrow">What you can do here</div>
-        <div class="fork-options">
-          <button class="fork-opt primary" type="button" @click="$emit('interested')">
-            <div class="fork-opt-icon"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></div>
+        <div class="fork-options fork-options--single">
+          <!-- Same navy styling + icon + copy as the buyer tile below
+               (.fork-tile--buyer), laid out full width since there is no
+               "I own this property" tile to sit beside. -->
+          <button class="fork-opt buyer" type="button" @click="$emit('interested')">
+            <div class="fork-opt-icon"><img src="/homescore-icon/houseInterested.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">I'm interested in this property</div>
-              <div class="fork-opt-sub">Full running costs, risks and questions to ask before you offer.</div>
+              <div class="fork-opt-sub">
+                Explore its running costs, risks and the questions worth asking
+                before you buy.
+              </div>
             </div>
-            <div class="fork-opt-chev">›</div>
+            <span class="fork-tile-arrow fork-tile-arrow--buyer" aria-hidden="true">
+              <Icon name="i-lucide-arrow-right" />
+            </span>
           </button>
         </div>
       </template>
@@ -746,22 +754,33 @@
            property". The claim CTA auth-gates on tap if needed. -->
       <template v-else>
         <div class="fork-eyebrow">What's your connection to this property?</div>
-        <div class="fork-options">
-          <button class="fork-opt primary" type="button" @click="$emit('claim')">
-            <div class="fork-opt-icon"><img src="/homescore-icon/house.png" alt="" loading="lazy" /></div>
-            <div class="fork-opt-body">
-              <div class="fork-opt-title">I own this property</div>
-              <div class="fork-opt-sub">Take the quiz to level up your stats and get your real score.</div>
+        <div class="fork-grid">
+          <button class="fork-tile fork-tile--owner" type="button" @click="$emit('claim')">
+            <img src="/homescore-icon/homeScoreCard.png" alt="" class="fork-tile-icon-top" loading="lazy" />
+            <div class="fork-tile-title">I own this property</div>
+            <div class="fork-tile-sub">
+              Take the HomeScore quiz to tell us what's changed, unlock a more
+              accurate score and start building your Property Passport.
             </div>
-            <div class="fork-opt-chev">›</div>
+            <div class="fork-tile-bottom-row">
+              <span class="fork-tile-lock"><Icon name="i-lucide-lock" /> Secure &amp; private</span>
+              <span class="fork-tile-arrow fork-tile-arrow--owner" aria-hidden="true">
+                <Icon name="i-lucide-arrow-right" />
+              </span>
+            </div>
           </button>
-          <button class="fork-opt" type="button" @click="$emit('interested')">
-            <div class="fork-opt-icon"><img src="/homescore-icon/magnifier.png" alt="" loading="lazy" /></div>
-            <div class="fork-opt-body">
-              <div class="fork-opt-title">I'm interested in this property</div>
-              <div class="fork-opt-sub">Full running costs, risks and questions to ask before you offer.</div>
+          <button class="fork-tile fork-tile--buyer" type="button" @click="$emit('interested')">
+            <img src="/homescore-icon/houseInterested.png" alt="" class="fork-tile-icon-top" loading="lazy" />
+            <div class="fork-tile-title fork-tile-title--buyer">I'm interested in this property</div>
+            <div class="fork-tile-sub fork-tile-sub--buyer">
+              Explore its running costs, risks and the questions worth asking
+              before you buy.
             </div>
-            <div class="fork-opt-chev">›</div>
+            <div class="fork-tile-bottom-row fork-tile-bottom-row--buyer">
+              <span class="fork-tile-arrow fork-tile-arrow--buyer" aria-hidden="true">
+                <Icon name="i-lucide-arrow-right" />
+              </span>
+            </div>
           </button>
         </div>
       </template>
@@ -2090,7 +2109,7 @@ const watchersDisplay = computed(() => {
 .hs-v6-score :is(.app-header-title, .hs-addr-line, .score-band, .gn-big,
   .ssp-head-title, .ssp-bar-amt, .ssp-total-num, .ssp-cell-num,
   .stat-cost-title, .epc-grade-letter, .epc-saving-num,
-  .fork-opt-title) {
+  .fork-opt-title, .fork-tile-title) {
   font-weight: 700;
 }
 .hs-v6-score :is(.app-header-sub, .hs-addr-meta, .score-explainer,
@@ -3849,22 +3868,17 @@ const watchersDisplay = computed(() => {
 .fork-opt.primary:hover {
   filter: brightness(1.04);
 }
+/* Icons sit straight on the card, no tinted tile behind them. */
 .fork-opt-icon {
   font-size: 22px;
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: var(--accent-paler);
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  overflow: hidden;
 }
-.fork-opt-icon img { width: 40px; height: 40px; object-fit: contain; }
-.fork-opt.primary .fork-opt-icon {
-  background: rgba(255, 255, 255, 0.18);
-}
+.fork-opt-icon img { width: 100%; height: 100%; object-fit: contain; }
 .fork-opt-body {
   flex: 1;
   min-width: 0;
@@ -3896,6 +3910,115 @@ const watchersDisplay = computed(() => {
 .fork-opt.primary .fork-opt-chev {
   color: rgba(255, 255, 255, 0.7);
 }
+
+/* Buyer option when someone else has claimed the property: the navy
+   buyer tile below, laid out full width (icon left, text right). */
+.fork-opt.buyer {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.fork-opt.buyer:hover {
+  border-color: var(--primary);
+  filter: brightness(1.08);
+  box-shadow: 0 14px 30px -14px rgba(35, 29, 69, 0.55);
+}
+.fork-opt.buyer .fork-opt-title { color: #fff; }
+.fork-opt.buyer .fork-opt-sub { color: rgba(255, 255, 255, 0.75); }
+
+/* ── Fork grid (guest / unclaimed): owner + buyer tiles side by side ── */
+.fork-grid {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.fork-tile {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 18px 16px 16px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.2s ease;
+}
+.fork-tile:hover { transform: translateY(-2px); }
+.fork-tile:focus-visible,
+.fork-opt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.fork-tile--owner {
+  background: var(--accent-paler);
+  border-color: var(--accent-pale);
+}
+.fork-tile--owner:hover { box-shadow: 0 14px 30px -16px rgba(0, 120, 112, 0.45); }
+.fork-tile--buyer { background: var(--primary); }
+.fork-tile--buyer:hover { box-shadow: 0 14px 30px -14px rgba(35, 29, 69, 0.6); }
+.fork-tile-icon-top {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 12px;
+  transition: transform 0.25s ease;
+}
+.fork-tile:hover .fork-tile-icon-top { transform: translateY(-3px) scale(1.04); }
+.fork-tile-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+.fork-tile-title--buyer { color: #fff; }
+.fork-tile-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.fork-tile-sub--buyer { color: rgba(255, 255, 255, 0.75); }
+.fork-tile-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+.fork-tile-bottom-row--buyer { justify-content: flex-end; }
+.fork-tile-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+.fork-tile-lock :deep(svg) { width: 13px; height: 13px; }
+.fork-tile-arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.fork-tile-arrow :deep(svg) { width: 17px; height: 17px; }
+.fork-tile:hover .fork-tile-arrow,
+.fork-opt:hover .fork-tile-arrow { transform: translateX(3px); }
+.fork-tile-arrow--owner { background: var(--accent-dark); }
+.fork-tile-arrow--buyer { background: rgba(255, 255, 255, 0.16); }
 
 /* ── EPC NOT AVAILABLE empty state ──────────────────────────── */
 /* Compact property header shown above the no-EPC card so the user
@@ -4591,6 +4714,33 @@ const watchersDisplay = computed(() => {
 .hs-report > .fork-section .fork-opt {
   height: 100%;
   align-items: center;
+}
+/* A lone option (buyer, property claimed by someone else) spans the row. */
+.hs-report > .fork-section .fork-options--single {
+  grid-template-columns: 1fr;
+}
+
+/* Desktop: the owner / buyer tiles get room to breathe. */
+@media (min-width: 901px) {
+  .hs-report > .fork-section .fork-grid { gap: 16px; }
+  .hs-report > .fork-section .fork-tile {
+    padding: 26px 28px 22px;
+    border-radius: 22px;
+  }
+  .hs-report > .fork-section .fork-tile-icon-top {
+    width: 104px;
+    height: 104px;
+    margin-bottom: 16px;
+  }
+  .hs-report > .fork-section .fork-tile-title { font-size: 19px; margin-bottom: 8px; }
+  .hs-report > .fork-section .fork-tile-sub { font-size: 13.5px; max-width: 46ch; }
+  .hs-report > .fork-section .fork-tile-bottom-row { padding-top: 18px; }
+  .hs-report > .fork-section .fork-tile-lock { font-size: 12px; }
+  .hs-report > .fork-section .fork-tile-arrow { width: 42px; height: 42px; }
+  .hs-report > .fork-section .fork-opt.buyer { padding: 18px 24px 18px 20px; gap: 18px; }
+  .hs-report > .fork-section .fork-opt.buyer .fork-opt-icon { width: 76px; height: 76px; }
+  .hs-report > .fork-section .fork-opt.buyer .fork-opt-title { font-size: 17px; }
+  .hs-report > .fork-section .fork-opt.buyer .fork-opt-sub { font-size: 13px; }
 }
 
 @media (min-width: 901px) {
