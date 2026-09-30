@@ -3,7 +3,7 @@
        (pages/index.vue .lp-nav). Shared by /homescore and /explore so the
        pages a visitor moves between all carry one identical bar. -->
   <header class="site-nav">
-    <div class="site-nav-shell site-nav-inner">
+    <div class="site-nav-shell site-nav-inner" :class="{ 'has-back': hsBack?.visible }">
       <button class="site-brand" type="button" @click="navigateTo('/')">
         <img src="/op-icons/logo.png" alt="umovingu" class="site-brand-logo" />
         <span class="site-brand-name">umovingu</span>
@@ -33,6 +33,20 @@
       </nav>
 
       <div class="site-actions">
+        <!-- /homescore: back to the HomeScore page the user came from. Only
+             shown when there is one (see useHomescoreTrail). -->
+        <button
+          v-if="hsBack?.visible"
+          class="site-btn ghost site-back"
+          type="button"
+          :aria-label="hsBack.label"
+          @click="hsBack.go"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>{{ hsBack.label }}</span>
+        </button>
         <template v-if="signedIn">
           <button class="site-btn ghost" type="button" @click="navigateTo('/profile')">Profile</button>
           <button class="site-btn solid" type="button" @click="navigateTo('/dashboard')">Dashboard</button>
@@ -85,7 +99,10 @@
 <script setup lang="ts">
 // hideExploreSignedIn: drop the Explore link for signed-in users only
 // (the /homescore menu). Guests always keep it.
-defineProps<{ hideExploreSignedIn?: boolean }>()
+// homescoreBack: show a Back button to the previous HomeScore page, when
+// the user arrived here from one (/homescore uses it).
+const props = defineProps<{ hideExploreSignedIn?: boolean; homescoreBack?: boolean }>()
+const hsBack = props.homescoreBack ? useHomescoreBack(null) : null
 
 const route = useRoute()
 const mobileOpen = ref(false)
@@ -260,6 +277,19 @@ watch(
   border-color: #00a19a;
 }
 
+.site-btn.site-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-left: 14px;
+}
+
+.site-back svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 .site-toggle,
 .site-panel,
 .site-backdrop {
@@ -302,6 +332,11 @@ watch(
   .site-links,
   .site-btn.ghost {
     display: none;
+  }
+
+  /* Back stays in the bar: it is the one way out that isn't in the menu. */
+  .site-btn.site-back {
+    display: inline-flex;
   }
 
   .site-toggle {
@@ -387,6 +422,18 @@ watch(
   .site-actions {
     gap: 8px;
   }
+
+  /* Arrow only on phones; the label stays as the accessible name. */
+  .site-btn.site-back {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .site-back span {
+    display: none;
+  }
 }
 
 @media (max-width: 400px) {
@@ -426,6 +473,14 @@ watch(
   .site-btn.solid {
     padding: 9px 12px;
     font-size: 13px;
+  }
+}
+
+/* With the Back arrow in the bar there is one more button to fit, so the
+   BETA tag goes a little earlier. */
+@media (max-width: 440px) {
+  .has-back .site-brand-beta {
+    display: none;
   }
 }
 

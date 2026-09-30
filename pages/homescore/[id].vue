@@ -57,11 +57,11 @@
             >
               ?
             </button>
-            <button class="hsw-back" type="button" @click="goBack">
+            <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              New search
+              {{ inPageBackLabel }}
             </button>
             <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
           </div>
@@ -123,11 +123,11 @@
             <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
           </nav>
           <div class="hsw-actions">
-            <button class="hsw-back" type="button" @click="goBack">
+            <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              Back to score
+              {{ inPageBackLabel }}
             </button>
             <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
           </div>
@@ -170,11 +170,11 @@
             <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
           </nav>
           <div class="hsw-actions">
-            <button class="hsw-back" type="button" @click="goBack">
+            <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              Back to score
+              {{ inPageBackLabel }}
             </button>
             <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
           </div>
@@ -211,11 +211,11 @@
             <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
           </nav>
           <div class="hsw-actions">
-            <button class="hsw-back" type="button" @click="goBack">
+            <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              Back to score
+              {{ inPageBackLabel }}
             </button>
             <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
           </div>
@@ -255,11 +255,11 @@
             <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
           </nav>
           <div class="hsw-actions">
-            <button class="hsw-back" type="button" @click="goBack">
+            <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              Back to score
+              {{ inPageBackLabel }}
             </button>
             <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
           </div>
@@ -291,11 +291,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'landing'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -717,11 +717,11 @@
               >
                 ?
               </button>
-              <button class="hsw-back" type="button" @click="screen = 'landing'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                HomeScore
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -1010,11 +1010,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'results'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back to results
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -1240,11 +1240,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'publish'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -1366,11 +1366,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'kyc'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -1479,11 +1479,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'results'">
+              <button class="hsw-back" type="button" aria-label="Back to score" @click="backToScreen('results')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                My HomeScore
+                Back to score
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -1620,11 +1620,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'results'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -2014,11 +2014,11 @@
               >
                 ?
               </button>
-              <button class="hsw-back" type="button" @click="screen = 'landing'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                HomeScore
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -3156,11 +3156,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'results'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back to score
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -3346,11 +3346,11 @@
               <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
             </nav>
             <div class="hsw-actions">
-              <button class="hsw-back" type="button" @click="screen = 'quick-wins'">
+              <button class="hsw-back" type="button" :aria-label="inPageBackLabel" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
-                Back
+                {{ inPageBackLabel }}
               </button>
               <button class="hsw-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
             </div>
@@ -3783,6 +3783,7 @@ import WatchPropertyDrawer from '~/components/property/WatchPropertyDrawer.vue'
 import BuyerVerifyCard from '~/components/property/BuyerVerifyCard.vue'
 import VerifyBuyerDrawer from '~/components/property/VerifyBuyerDrawer.vue'
 import { useHomescoreTour } from '~/composables/useHomescoreTour'
+import { useHomescoreTrail } from '~/composables/useHomescoreTrail'
 import type { TopWin, Opportunity } from '~/types/homescore'
 import { QUESTIONS } from '~/utils/homescoreScoring'
 
@@ -3901,6 +3902,74 @@ watch(screen, (next, prev) => {
     const last = screenHistory.value[screenHistory.value.length - 1]
     if (last !== prev) screenHistory.value.push(prev)
   }
+})
+
+// ── HomeScore trail (cross-page back navigation) ──────────────
+// This page's entry in the trail remembers the screen the user is on and
+// the screen-back stack above, so leaving for running costs / street /
+// pathway / passport and pressing Back there lands on this exact screen,
+// with the in-page back buttons still retracing correctly.
+const hsTrail = useHomescoreTrail()
+// Off until the first load has decided (or restored) the screen, so the
+// loading transitions don't overwrite the screen we are about to restore.
+let trailSynced = false
+let deepLinkedScreen = false
+function syncTrail() {
+  if (!trailSynced || screen.value === 'loading') return
+  hsTrail.saveScreen(route.path, screen.value, screenHistory.value)
+}
+watch([screen, screenHistory], syncTrail, { deep: true })
+
+function resumeFromTrail() {
+  const entry = hsTrail.currentEntry(route.path)
+  const saved = entry?.screen as Screen | undefined
+  if (deepLinkedScreen || !saved || saved === 'loading') return
+  if (saved === 'questions') {
+    const firstUnanswered = QUESTIONS.findIndex(
+      (q) => !(answers.value as Record<string, string>)[q.id],
+    )
+    step.value = firstUnanswered >= 0 ? firstUnanswered : 0
+  }
+  screen.value = saved
+  screenHistory.value = ((entry?.stack ?? []) as Screen[]).filter(
+    (s) => s !== 'loading' && s !== saved,
+  )
+}
+
+// The landing navbar's back button: names the HomeScore page it returns to,
+// or reads "New search" when that is the search page (or there is none).
+const trailReady = ref(false)
+const hsPrevEntry = computed(() => {
+  void hsTrail.trail.value.length
+  return trailReady.value ? hsTrail.previousEntry(route.path) : undefined
+})
+const landingBackLabel = computed(() => {
+  const prev = hsPrevEntry.value
+  if (!prev || prev.path === '/homescore') return 'New search'
+  return hsTrail.labelFor(prev)
+})
+
+// Every screen's navbar back button runs goBack(), so it names where that
+// lands: the screen before this one, else the HomeScore page before this one.
+const SCREEN_BACK_LABEL: Partial<Record<Screen, string>> = {
+  landing: 'Back to score',
+  questions: 'Back to questions',
+  'no-epc-estimator': 'Back to estimator',
+  'level-up': 'Back to your level',
+  boost: 'Back to boost',
+  results: 'Back to score',
+  publish: 'Back to publish',
+  kyc: 'Back to verification',
+  passport: 'Back to passport',
+  'buyer-results': 'Back to report',
+  'quick-wins': 'Back to quick wins',
+  'move-ready': 'Back to move ready',
+}
+const inPageBackLabel = computed(() => {
+  const prev = screenHistory.value[screenHistory.value.length - 1]
+    ?? SCREEN_PATH[screen.value]?.slice(-1)[0]
+  if (prev && prev !== 'loading') return SCREEN_BACK_LABEL[prev] ?? 'Back'
+  return landingBackLabel.value
 })
 
 type PassportTab = 'sections' | 'street' | 'buyers'
@@ -7092,6 +7161,17 @@ function goToClaim() {
   router.push(`/claim/${propertyId}`)
 }
 
+// Back to an earlier screen, dropping everything after it from the stack
+// (used once a flow is finished, e.g. published → score, so Back doesn't
+// retrace into the verification steps that are already done).
+function backToScreen(target: Screen) {
+  const i = screenHistory.value.lastIndexOf(target)
+  screenHistory.value =
+    i >= 0 ? screenHistory.value.slice(0, i) : [...(SCREEN_PATH[target] ?? [])]
+  navigatingBack = true
+  screen.value = target
+}
+
 function goBack() {
   // Retrace the actual forward path: pop the last screen we came from.
   let prev = screenHistory.value.pop()
@@ -7110,6 +7190,9 @@ function goBack() {
     screen.value = prev
     return
   }
+  // Out of in-page screens: return to the HomeScore page the user came
+  // from (search page, running costs, street...), restored as they left it.
+  if (hsTrail.back(route.path)) return
   // Landing screen — step back in history so we return to wherever we came
   // from (property page, explore, etc.) without pushing a new entry. Falls
   // back to the property page if the user landed here directly.
@@ -7150,6 +7233,21 @@ async function saveToBackend() {
 // ── Lifecycle ─────────────────────────────────────────────────
 
 onMounted(async () => {
+  try {
+    await loadInitialScreen()
+  } finally {
+    // Every exit of the first load (including its early returns) ends here:
+    // coming back to this page restores the screen it was left on, and from
+    // now on screen changes are recorded for back navigation.
+    resumeFromTrail()
+    historyReady = true
+    trailSynced = true
+    trailReady.value = true
+    syncTrail()
+  }
+})
+
+async function loadInitialScreen() {
   // Load property data — also returns hasPassport / passportPublished for guests.
   try {
     const res = await fetch(`${config.public.apiBase}/property/${propertyId}`)
@@ -7336,12 +7434,13 @@ onMounted(async () => {
     // Rebuild the path this deep link should be treated as having come
     // from so back-navigation retraces properly.
     seedScreenHistory(screen.value)
+    // An explicit ?screen= wins over the screen remembered in the trail.
+    deepLinkedScreen = true
   }
 
   // Everything above is initial-load noise; only user-driven transitions
-  // from here on belong on the back stack.
-  historyReady = true
-})
+  // from here on belong on the back stack (turned on in onMounted).
+}
 
 watch(showResult, (shown) => {
   if (shown && screen.value === 'questions') {
@@ -7558,6 +7657,19 @@ watch(screen, (s) => {
   }
   .hsw-nav-inner {
     min-height: 56px;
+  }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to running
+   costs") cannot crowd the bar; the label stays as its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
   }
 }
 

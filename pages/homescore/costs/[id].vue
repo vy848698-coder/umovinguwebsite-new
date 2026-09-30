@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="rc-nav-actions">
-          <button class="rc-nav-back" type="button" @click="router.back()">
+          <button class="rc-nav-back" type="button" :aria-label="hsBack.label" @click="hsBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back
+            {{ hsBack.label }}
           </button>
           <button class="rc-nav-cta" type="button" @click="navigateTo('/claim')">Claim Passport</button>
         </div>
@@ -758,6 +758,9 @@ const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
 const propertyId = route.params.id as string
+// Navbar Back: the HomeScore page the user came from (restored on the screen
+// they left), else this property's score when they landed here directly.
+const hsBack = useHomescoreBack(() => `/homescore/${propertyId}`, 'Back to score')
 
 const property = ref<any>(null)
 const data = ref<RunningCosts | null>(null)
@@ -1936,6 +1939,19 @@ function onUpload() {
   }
   .rc-aside .cost-hero-num {
     font-size: 38px;
+  }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to report")
+   can't push it off the bar. The label stays as its accessible name. */
+@media (max-width: 520px) {
+  .rc-nav-back {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
   }
 }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="mp-postjob">
     <div class="app-header">
-      <button class="back-btn" type="button" @click="router.back()" aria-label="Back">
+      <button class="back-btn" type="button" :aria-label="hsBack.label" @click="hsBack.go">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
@@ -101,6 +101,8 @@
 import { ref } from 'vue'
 
 const router = useRouter()
+// Header back arrow: the previous HomeScore page (see useHomescoreTrail).
+const hsBack = useHomescoreBack(() => '/homescore')
 
 const category = ref('insulation')
 const title = ref('Cavity wall insulation - 15 Woodfield Rd')

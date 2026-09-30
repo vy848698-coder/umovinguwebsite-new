@@ -22,14 +22,13 @@
 
         <div class="pw-nav-actions">
           <button
-            v-if="showPathwayBackButton"
             class="pw-nav-back"
             type="button"
             @click="onBack"
-            aria-label="Back"
+            :aria-label="hsBack.label"
           >
             <Icon name="i-lucide-arrow-left" class="pw-nav-back-arrow" />
-            Back
+            {{ hsBack.label }}
           </button>
         </div>
       </div>
@@ -431,10 +430,17 @@ function navGo(path: string) {
 
 const router = useRouter()
 const route = useRoute()
-const showPathwayBackButton = computed(
-  () => (route.query.from as string | undefined) === 'landing',
-)
 const propertyId = computed(() => String(route.params.id))
+// Navbar Back: the HomeScore page the user came from, restored on the exact
+// screen they left. Opened directly, it falls back to the score screen named
+// in `?from=` (see onBack).
+const hsBack = useHomescoreBack(
+  () =>
+    `/homescore/${propertyId.value}?screen=${encodeURIComponent(
+      (route.query.from as string) || 'level-up',
+    )}`,
+  'Back to score',
+)
 const config = useRuntimeConfig()
 
 // Real property data fetched on mount so the pathway page shows the
@@ -782,19 +788,13 @@ function goToPassport() {
   router.push(`/homescore/passport/${propertyId.value}`)
 }
 
-// Back button — restore the homescore screen the user was on before they
-// opened the pathway page (passed via `?from=level-up` etc.). Falls back
-// to `level-up` because that's the only place the pathway button lives
-// today. Bypassing `router.back()` ensures the in-page screen state is
-// recreated even if the browser history was nuked.
+// Back button — the HomeScore trail returns to the page the user came from
+// with its screen restored. Without a trail (pathway opened directly) it
+// falls back to the homescore screen named in `?from=level-up` etc., via
+// `replace` so the pathway URL leaves browser history and back-navigating
+// from that screen doesn't bounce into the pathway again.
 function onBack() {
-  // `replace` rather than `push` so the pathway URL gets removed from
-  // browser history. Otherwise back-navigating from the resulting
-  // homescore page would bounce the user right back into the pathway
-  // they just left, breaking the in-page screen-history retracing
-  // (level-up → questions → landing → exit).
-  const from = (route.query.from as string) || 'level-up'
-  router.replace(`/homescore/${propertyId.value}?screen=${encodeURIComponent(from)}`)
+  hsBack.go()
 }
 
 </script>
@@ -1988,5 +1988,15 @@ function onBack() {
   .pw-ring { width: 74px; height: 74px; }
   .mission-card { padding: 18px; }
   .pw-nav-inner { width: calc(100% - 32px); }
+  /* Back shrinks to its arrow so a long label can't push it off the bar;
+     the label stays as its accessible name. */
+  .pw-nav-back {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>
