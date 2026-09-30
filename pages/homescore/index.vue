@@ -1,7 +1,7 @@
 <template>
   <div class="hs-root">
 
-    <SiteNav hide-explore-signed-in />
+    <SiteNav hide-explore-signed-in homescore-back />
 
     <main class="hs-web-shell hs-main">
       <!-- ── Hero ───────────────────────────────────────────────────── -->

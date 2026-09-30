@@ -3,12 +3,18 @@
     <WebTopNav>
       <template #actions>
         <button class="pb-nav-back" type="button" @click="onBack">
-          <Icon name="i-lucide-arrow-left" /> Back
+          <Icon name="i-lucide-arrow-left" /> {{ hsBack.label }}
         </button>
       </template>
     </WebTopNav>
 
     <div class="pb-page">
+      <!-- Phones: the navbar folds its actions into the menu, so Back sits
+           at the top of the page instead (same target and label). -->
+      <button class="pb-mobile-back" type="button" @click="onBack">
+        <Icon name="i-lucide-arrow-left" /> {{ hsBack.label }}
+      </button>
+
       <!-- ── Page head ─────────────────────────────────────────────── -->
       <div class="pb-head anim-1">
         <div class="pb-head-eyebrow">Your passport dashboard</div>
@@ -535,8 +541,11 @@ function goToMilestones() {
 function goToMarketplace() {
   router.push('/marketplace')
 }
+// Navbar Back: the HomeScore page the user came from (restored on the screen
+// they left), else this property's score when they landed here directly.
+const hsBack = useHomescoreBack(() => `/homescore/${propertyId.value}`, 'Back to score')
 function onBack() {
-  router.back()
+  hsBack.go()
 }
 </script>
 
@@ -609,6 +618,27 @@ function onBack() {
   cursor: pointer;
 }
 .pb-nav-back :deep(svg) { width: 15px; height: 15px; }
+
+/* Shown only where WebTopNav hides its actions (<= 980px). */
+.pb-mobile-back {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  padding: 9px 14px;
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  background: #fff;
+  color: #231d45;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pb-mobile-back :deep(svg) { width: 15px; height: 15px; }
+@media (max-width: 980px) {
+  .pb-mobile-back { display: inline-flex; }
+}
 
 /* ── Page head ─────────────────────────────────────────────────────── */
 .pb-head { margin-bottom: 18px; }

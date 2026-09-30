@@ -2,6 +2,11 @@
   <div class="mp-hub">
     <!-- App header -->
     <div class="app-header">
+      <button class="back-btn" type="button" :aria-label="hsBack.label" @click="hsBack.go">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
       <div class="app-header-logo">🏠</div>
       <div class="app-header-info">
         <div class="app-header-title">Marketplace</div>
@@ -252,6 +257,8 @@ import { useMarketplaceMock } from '~/composables/useMarketplaceMock'
 
 const router = useRouter()
 const route = useRoute()
+// Header back arrow: the previous HomeScore page (see useHomescoreTrail).
+const hsBack = useHomescoreBack(() => '/homescore')
 const { suppliers, categories, jobs, messages: _messages, badges, leaderboard } = useMarketplaceMock()
 
 const searchQuery = ref('')
@@ -351,6 +358,20 @@ function goMatched(category: string) {
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.back-btn svg { width: 16px; height: 16px; }
 .app-header-logo {
   font-size: 1.375rem;
   width: 36px;
