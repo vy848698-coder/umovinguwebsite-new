@@ -663,20 +663,17 @@
         </div>
 
         <!-- EPC items, each clickable to expand. A list on phones; on wider
-             screens a grid of compact tiles (icon + rating on top, copy
-             below) so the whole breakdown fits in a few short rows. An
-             opened item's detail spans the full width under its row. -->
+             screens compact horizontal cards (two per row on desktop) so
+             the whole breakdown fits in a few short rows. An opened
+             item's detail spans the full width under its row. -->
         <div class="epc-items">
         <template v-for="(item, idx) in epcItems" :key="item.id">
           <div
             class="epc-item"
-            :class="[
-              `is-${item.ratingClass}`,
-              {
-                open: expandedEpcItem === item.id,
-                'epc-item--wide': epcLastWide && idx === epcItems.length - 1,
-              },
-            ]"
+            :class="{
+              open: expandedEpcItem === item.id,
+              'epc-item--wide': epcLastWide && idx === epcItems.length - 1,
+            }"
             @click="toggleEpcItem(item.id)"
           >
             <div class="epc-item-icon"><img v-if="isImg(item.icon)" :src="item.icon" alt="" loading="lazy" /><template v-else>{{ item.icon }}</template></div>
@@ -1149,9 +1146,9 @@ const epcColor = computed(() => {
 
 // ── Quick stats strip — popout panel toggle ──────────────────────
 const activePanel = ref<'bills' | 'co2' | 'street' | null>(null)
-// In the 3-column desktop grid a lone last tile would leave two empty
-// slots, so it stretches across the row as a horizontal card instead.
-const epcLastWide = computed(() => epcItems.value.length % 3 === 1)
+// In the 2-column desktop grid an odd last card would sit beside an
+// empty slot, so it stretches across the row instead.
+const epcLastWide = computed(() => epcItems.value.length % 2 === 1)
 // Counts of the Full EPC breakdown item ratings, for the summary tally.
 const epcRatingTally = computed(() => {
   const order: { cls: 'good' | 'average' | 'poor' | 'nodata'; label: string }[] = [
@@ -3813,32 +3810,31 @@ const watchersDisplay = computed(() => {
   .epc-tally { order: 5; flex-basis: 100%; margin-left: 0; }
 }
 
-/* ── Tiles: from 601px the EPC items become a grid of compact cards ── */
+/* ── Cards: from 601px each EPC item is a compact horizontal card
+   (icon | title + detail | rating), the same shape as the score rows
+   above, so there is no dead space inside a card. One column on
+   tablets, two on desktop (see the row layout block). ── */
 @media (min-width: 601px) {
   .epc-items {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     grid-auto-flow: row dense;
-    gap: 12px;
+    gap: 10px;
     padding-top: 16px;
   }
   .epc-item,
   .epc-item:last-of-type {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto auto;
-    grid-template-areas:
-      'icon . rating chev'
-      'body body body body';
+    grid-template-areas: 'icon body rating chev';
     align-items: center;
-    /* Tiles in a row stretch to the tallest; keep every title on the same line. */
-    align-content: start;
-    gap: 8px 8px;
-    position: relative;
-    overflow: hidden;
-    padding: 16px 14px 14px;
+    column-gap: 14px;
+    min-height: 78px;
+    padding: 10px 14px 10px 12px;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     transition:
       transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
       box-shadow 0.2s ease,
@@ -3854,31 +3850,19 @@ const watchersDisplay = computed(() => {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.12);
   }
-  /* Thin rating-coloured strip along the top edge of each tile. */
-  .epc-item::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 3px;
-    background: var(--border);
-  }
-  .epc-item.is-good::before { background: linear-gradient(90deg, var(--accent), #5fd3c6); }
-  .epc-item.is-average::before { background: linear-gradient(90deg, #e6a23c, #f5c46b); }
-  .epc-item.is-poor::before { background: linear-gradient(90deg, var(--error), #f58f8f); }
-  /* The 3D icon is the hero of the tile; copy steps down beneath it. */
-  .epc-item-icon { grid-area: icon; width: 64px; }
+  .epc-item-icon { grid-area: icon; width: 56px; }
   .epc-item-icon img {
-    width: 64px;
-    height: 64px;
-    filter: drop-shadow(0 8px 10px rgba(15, 23, 42, 0.14));
+    width: 56px;
+    height: 56px;
+    filter: drop-shadow(0 6px 8px rgba(15, 23, 42, 0.14));
     transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .epc-item:hover .epc-item-icon img { transform: translateY(-3px) scale(1.05); }
-  .epc-item-rating { grid-area: rating; align-self: start; font-size: 9px; }
-  .epc-item-chev { grid-area: chev; align-self: start; margin-left: 0; font-size: 13px; line-height: 20px; }
+  .epc-item:hover .epc-item-icon img { transform: translateY(-2px) scale(1.05); }
   .epc-item-body { grid-area: body; padding-right: 0; }
-  .epc-item-title { font-size: 13px; margin-bottom: 2px; letter-spacing: -0.1px; }
-  .epc-item-sub { font-size: 11.5px; line-height: 1.45; }
+  .epc-item-title { font-size: 13.5px; margin-bottom: 2px; letter-spacing: -0.1px; }
+  .epc-item-sub { font-size: 12px; line-height: 1.45; }
+  .epc-item-rating { grid-area: rating; font-size: 9px; }
+  .epc-item-chev { grid-area: chev; margin-left: -6px; font-size: 13px; }
   /* An opened item's detail spans the whole grid, under its row. */
   .epc-item-expand {
     grid-column: 1 / -1;
@@ -4970,16 +4954,8 @@ const watchersDisplay = computed(() => {
   .stat-card > .epc-drawer { margin: 0; }
   .stat-card > .epc-drawer:not(.open) .epc-drawer-head { padding: 9px 14px; }
   .stat-card > .epc-drawer.open { grid-column: 1 / -1; margin-top: 10px; }
-  .hs-report .epc-items { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-  .hs-report .epc-item--wide {
-    grid-column: 1 / -1;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    grid-template-areas: 'icon body rating chev';
-    column-gap: 16px;
-    align-items: center;
-  }
-  .hs-report .epc-item--wide .epc-item-rating,
-  .hs-report .epc-item--wide .epc-item-chev { align-self: center; }
+  .hs-report .epc-items { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .hs-report .epc-item--wide { grid-column: 1 / -1; }
   .hs-report .epc-drawer-body { padding: 0 20px 20px; }
 }
 
