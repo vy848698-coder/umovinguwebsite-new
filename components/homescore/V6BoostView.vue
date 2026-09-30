@@ -125,7 +125,7 @@
       <p class="bes-p">
         Your <b>street rank and the public register</b> still read
         {{ officialPublicRating }}·{{ officialPublicScore }} from
-        {{ officialPublicYear }} — so the work you've done isn't showing
+        {{ officialPublicYear }}, so the work you've done isn't showing
         where it counts. A new EPC syncs the public record to your verified
         score.
       </p>
@@ -329,7 +329,7 @@
         <div v-if="uploadError" class="bd-upload-err" role="alert">{{ uploadError }}</div>
 
         <div class="bd-upload-note">
-          <Icon name="i-lucide-lock" /> We read the key details only — the file is stored against your
+          <Icon name="i-lucide-lock" /> We read the key details only. The file is stored against your
           property and never shared without your say-so.
         </div>
       </div>
@@ -411,7 +411,7 @@ const docs = [
     img: '/Boost/utilityBills.png',
     tone: 'yellow',
     title: 'Utility bills',
-    sub: 'See your actual spend vs your EPC estimate — most impactful first step',
+    sub: 'See your actual spend vs your EPC estimate. The most impactful first step',
     mrDelta: 22,
     ppDelta: 12,
   },
@@ -704,11 +704,11 @@ const isLastDoc = computed(
 // numeric uplift, so the user reads concrete value, not just a percentage.
 const docImpacts: Record<string, string> = {
   bills:
-    "We'll cross-check your real spend against your EPC estimate — buyers see the verified figure, not the public one.",
-  gas: 'Uploaded — kept on file against your property. Buyer-side visibility, and a marker for solicitors that annual gas safety is in place.',
-  eicr: 'Uploaded — buyers see the EICR is on file against your property. Full verification runs at conveyancing.',
+    "We'll cross-check your real spend against your EPC estimate, so buyers see the verified figure, not the public one.",
+  gas: 'Uploaded and kept on file against your property. Buyer-side visibility, and a marker for solicitors that annual gas safety is in place.',
+  eicr: 'Uploaded. Buyers see the EICR is on file against your property. Full verification runs at conveyancing.',
   boiler:
-    'Uploaded — service history stored against the property. Buyers can see maintenance is up-to-date.',
+    'Uploaded. Service history stored against the property. Buyers can see maintenance is up-to-date.',
 }
 const celebrateImpact = computed(() => {
   const id = celebrateDoc.value?.id
@@ -1988,5 +1988,17 @@ function formatFileSize(bytes: number): string {
   font-size: 0.7813rem;
   font-weight: 600;
   line-height: 1.45;
+}
+
+/* Big screens: scale the laptop layout up (--wide-zoom = width / 1366, set
+   in nuxt.config.ts). Header + body zoom, not the root: the upload
+   BaseDrawer sits inside the root and already zooms itself. The celebration
+   card is teleported to <body>, so it zooms on its own. */
+@media (min-width: 1367px) {
+  .boost-header,
+  .boost-body,
+  .bcv-card {
+    zoom: var(--wide-zoom, 1);
+  }
 }
 </style>

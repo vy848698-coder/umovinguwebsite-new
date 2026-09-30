@@ -107,7 +107,7 @@
               <div class="boost-explain-num">1</div>
               <div class="boost-explain-icon path"><Icon name="i-lucide-route" /></div>
               <div class="boost-explain-text">
-                <b>Follow the pathway</b> — take recommended steps to keep
+                <b>Follow the pathway</b>: take recommended steps to keep
                 climbing your HomeScore.
               </div>
             </div>
@@ -116,7 +116,7 @@
               <div class="boost-explain-num">2</div>
               <div class="boost-explain-icon boost"><Icon name="i-lucide-zap" /></div>
               <div class="boost-explain-text">
-                <b>Boost your score</b> — add docs and book pros to grow your
+                <b>Boost your score</b>: add docs and book pros to grow your
                 Passport.
               </div>
             </div>
@@ -182,7 +182,7 @@
           </div>
           <div class="stat-value">{{ s.before }} → {{ s.value }}/{{ s.max }}</div>
           <div class="stat-gain-pill" :class="{ zero: s.gain === 0 }">
-            {{ s.gain > 0 ? '+' + s.gain : '–' }}
+            {{ s.gain > 0 ? '+' + s.gain : '0' }}
           </div>
         </div>
       </div>
@@ -314,7 +314,7 @@ const headline = computed(() => {
   }
   return {
     title: 'Your HomeScore is confirmed',
-    sub: "Your answers match what's on your public EPC record - no change to your score.",
+    sub: "Your answers match what's on your public EPC record, so no change to your score.",
   }
 })
 
@@ -350,7 +350,7 @@ const toRingOffset = computed(
 // is no per-question CO2 figure to sum.
 const carbonSavedDisplay = computed(() => {
   if (props.delta <= 0) return '0 tonnes/year'
-  if (props.co2Now == null || props.co2Potential == null) return '—'
+  if (props.co2Now == null || props.co2Potential == null) return 'Not available'
   const totalGap = props.co2Now - props.co2Potential
   const scoreGap = Math.max(1, 100 - props.fromScore)
   const share = Math.max(0, Math.min(1, props.delta / scoreGap))

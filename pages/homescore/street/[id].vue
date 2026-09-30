@@ -58,7 +58,7 @@
                   <span class="cursor" />
                 </div>
                 <div class="hs-addr-meta">
-                  {{ property?.postcode || '—' }}
+                  {{ property?.postcode || 'Postcode unavailable' }}
                   <template v-if="property?.propertyType">
                     · {{ property.propertyType }}</template
                   >
@@ -126,7 +126,7 @@
             <img class="renters-icon" src="/homescore-icon/house.png" alt="" loading="lazy" />
             <div class="renters-text">
               <b>Renting?</b> You can still check your street and challenge your
-              supplier. You don't need to own the property — just know your address.
+              supplier. You don't need to own the property, just know your address.
             </div>
           </div>
         </div>
@@ -169,7 +169,7 @@
                   </div>
                   <div class="street-rank-body">
                     <div class="street-rank-addr">
-                      {{ r.addr }}<template v-if="r.you"> — this property</template>
+                      {{ r.addr }}<template v-if="r.you"> (this property)</template>
                     </div>
                     <div class="street-rank-meta">{{ r.meta }}</div>
                   </div>
@@ -190,7 +190,7 @@
                   ><span
                     class="street-legend-dot"
                     style="background: #e6a23c"
-                  />£1,500–£2,000</span
+                  />£1,500 to £2,000</span
                 >
                 <span class="street-legend-item"
                   ><span class="street-legend-dot" style="background: #c73e36" />Over
@@ -212,7 +212,7 @@
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- ── Tour overlay ────────────────────────────────────────── -->
     <TourCoach :tour="tour" />
@@ -1351,6 +1351,15 @@ const tour = useHomescoreTour({
   .hss-back,
   .hss-tour {
     transition: none;
+  }
+}
+
+/* Big screens (>1366px): the laptop layout scaled up (--wide-zoom = width /
+   1366, nuxt.config.ts). Nav row + main zoom, never the full-height root. */
+@media (min-width: 1367px) {
+  .hss-nav-inner,
+  .hss-main {
+    zoom: var(--wide-zoom, 1);
   }
 }
 </style>

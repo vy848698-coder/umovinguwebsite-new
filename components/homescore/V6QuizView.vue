@@ -274,7 +274,7 @@
               type="button"
               @click="needAnswerModalOpen = false"
             >
-              Got it — let's answer
+              Got it, let's answer
             </button>
           </div>
         </div>
@@ -295,7 +295,7 @@
             <div class="modal-grip" />
             <div class="modal-head">
               <div class="modal-eyebrow"><img src="/homescore-icon/boostBolt.png" alt="" loading="lazy" />Shortcut</div>
-              <div class="modal-title">Upload a bill — skip the quiz</div>
+              <div class="modal-title">Upload a bill and skip the quiz</div>
               <div class="modal-sub">
                 Your last gas or electricity bill tells us your real running
                 cost in seconds. More accurate than the EPC estimate.
@@ -330,7 +330,7 @@
             <div class="modal-read-row">
               <img class="modal-read-icon" src="/homescore-icon/magnifier.png" alt="" loading="lazy" />
               <div class="modal-read-text">
-                We'll read your <b>kWh</b>, <b>tariff</b> and <b>supplier</b> —
+                We'll read your <b>kWh</b>, <b>tariff</b> and <b>supplier</b>, and
                 that's all. The bill itself isn't stored after extraction.
               </div>
             </div>
@@ -470,7 +470,7 @@ const FALLBACK_QUESTS: Quest[] = [
     stat: 'structure',
     pts: 1,
     save: 40,
-    cost: '£100–£350',
+    cost: '£100 to £350',
     grant: null,
   },
   {
@@ -478,11 +478,11 @@ const FALLBACK_QUESTS: Quest[] = [
     n: 2,
     title: 'Cavity wall insulation',
     summary: 'Recommended on EPC',
-    desc: 'Fill cavity walls to cut heat loss — usually the biggest single annual saving.',
+    desc: 'Fill cavity walls to cut heat loss. Usually the biggest single annual saving.',
     stat: 'structure',
     pts: 8,
     save: 224,
-    cost: '£500–£1,500',
+    cost: '£500 to £1,500',
     grant: null,
   },
   {
@@ -494,7 +494,7 @@ const FALLBACK_QUESTS: Quest[] = [
     stat: 'structure',
     pts: 3,
     save: 97,
-    cost: '£800–£1,200',
+    cost: '£800 to £1,200',
     grant: null,
   },
   {
@@ -502,7 +502,7 @@ const FALLBACK_QUESTS: Quest[] = [
     n: 4,
     title: 'Low energy lighting',
     summary: 'Recommended on EPC',
-    desc: 'Swap remaining fittings to LED — the cheapest single EPC step.',
+    desc: 'Swap remaining fittings to LED, the cheapest single EPC step.',
     stat: 'efficiency',
     pts: 1,
     save: 45,
@@ -518,7 +518,7 @@ const FALLBACK_QUESTS: Quest[] = [
     stat: 'plumbing',
     pts: 1,
     save: 40,
-    cost: '£4,000–£6,000',
+    cost: '£4,000 to £6,000',
     grant: null,
   },
   {
@@ -530,7 +530,7 @@ const FALLBACK_QUESTS: Quest[] = [
     stat: 'electrics',
     pts: 9,
     save: 248,
-    cost: '£9,000–£14,000',
+    cost: '£9,000 to £14,000',
     grant: 'SEG',
   },
 ]
@@ -629,7 +629,7 @@ const QUESTS = computed<Quest[]>(() => {
       stat,
       pts,
       save: Number(r?.typicalSaving ?? 0) || 0,
-      cost: r?.costRange || '—',
+      cost: r?.costRange || 'Cost varies',
       grant,
       resultingSap,
       resultingGrade: resultingSap != null ? sapToGrade(resultingSap) : null,
@@ -638,7 +638,7 @@ const QUESTS = computed<Quest[]>(() => {
 })
 
 const OPT = {
-  yes: { label: 'Yes — done', icon: '✓', cls: 'opt-yes', mult: 1.0 },
+  yes: { label: 'Yes, done', icon: '✓', cls: 'opt-yes', mult: 1.0 },
   different: {
     label: 'Done something different',
     icon: '↻',
@@ -1550,4 +1550,15 @@ watch(
 /* Modal transitions */
 .bill-modal-enter-active, .bill-modal-leave-active { transition: opacity 0.25s ease; }
 .bill-modal-enter-from, .bill-modal-leave-to { opacity: 0; }
+
+/* Big screens: the modals live on <body>, so they scale themselves to match
+   the zoomed page (--wide-zoom = width / 1366). */
+@media (min-width: 1367px) {
+  .modal-sheet {
+    zoom: var(--wide-zoom, 1);
+    /* Zoom multiplies dvh, so the cap divides it back out. */
+    max-height: calc(100dvh / var(--wide-zoom, 1) - 32px);
+    overflow-y: auto;
+  }
+}
 </style>

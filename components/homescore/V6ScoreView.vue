@@ -29,7 +29,7 @@
       <div class="hs-noepc-cta anim-1">
         <div class="hs-noepc-cta-title">This property has no EPC</div>
         <div class="hs-noepc-cta-body">
-          No problem — answer 20 quick questions about the home and we'll
+          No problem. Answer 20 quick questions about the home and we'll
           build an <b>estimated HomeScore</b>, the same way an assessor
           fills gaps using the property's age.
         </div>
@@ -45,7 +45,7 @@
         <div class="hs-noepc-info-i">i</div>
         <div>
           Where you're not sure, we assume what's <b>typical for the
-          property's age</b> — exactly like the official RdSAP method.
+          property's age</b>, exactly like the official RdSAP method.
           Every confident answer tightens your estimate.
         </div>
       </div>
@@ -144,7 +144,7 @@
           <line x1="12" y1="8" x2="12.01" y2="8" />
         </svg>
         <div>
-          Based on a <b>{{ epcYear || '—' }} EPC</b>. Your real score may be higher if
+          Based on a <b>{{ epcYear || 'recorded' }} EPC</b>. Your real score may be higher if
           improvements have been made.
         </div>
       </div>
@@ -225,7 +225,7 @@
       </div>
       <div class="ssp-total-row">
         <div class="ssp-total-label">Recoverable</div>
-        <div class="ssp-total-num">–{{ (co2NowDisplay - co2Potential).toFixed(1) }}t CO₂/yr</div>
+        <div class="ssp-total-num">{{ (co2NowDisplay - co2Potential).toFixed(1) }}t CO₂/yr</div>
       </div>
       <div class="ssp-equiv">
         <Icon name="i-lucide-car" class="ssp-equiv-icon" />
@@ -246,13 +246,13 @@
         <div class="ssp-head-info">
           <div class="ssp-head-title">Your street, ranked by energy cost</div>
           <div class="ssp-head-sub">
-            {{ property?.postcode || '—' }}<template v-if="hasStreetRank"> · {{ streetTotal }} homes</template> · estimated from EPC data
+            {{ property?.postcode || 'Postcode unavailable' }}<template v-if="hasStreetRank"> · {{ streetTotal }} homes</template> · estimated from EPC data
           </div>
         </div>
         <div class="ssp-head-close" @click="activePanel = null">×</div>
       </div>
       <div class="ssp-rank-hero">
-        <div class="ssp-rank-num">{{ hasStreetRank ? `#${streetRank}` : '—' }}</div>
+        <div class="ssp-rank-num">{{ hasStreetRank ? `#${streetRank}` : 'N/A' }}</div>
         <div class="ssp-rank-info">
           <div class="ssp-rank-label">
             <template v-if="hasStreetRank">{{ streetRankOrdinal }} cheapest of {{ streetTotal }} homes</template>
@@ -275,7 +275,7 @@
           <span class="ssp-street-legend-dot" style="background:#2EAB55" />Under £1,200/yr
         </span>
         <span class="ssp-street-legend-item">
-          <span class="ssp-street-legend-dot" style="background:#E6A23C" />£1,200–£1,800
+          <span class="ssp-street-legend-dot" style="background:#E6A23C" />£1,200 to £1,800
         </span>
         <span class="ssp-street-legend-item">
           <span class="ssp-street-legend-dot" style="background:#E74C5E" />Over £1,800/yr
@@ -383,7 +383,7 @@
       <!-- Selected house tooltip -->
       <div class="ssp-street-tooltip" :class="{ you: selectedHouse.isYou }">
         <span class="ssp-street-tooltip-num">
-          No. {{ selectedHouse.num }}{{ selectedHouse.isYou ? ' — You' : '' }}
+          No. {{ selectedHouse.num }}{{ selectedHouse.isYou ? ' (You)' : '' }}
         </span>
         <span
           class="ssp-street-tooltip-rating"
@@ -407,7 +407,7 @@
           </div>
         </div>
         <div class="ssp-street-projection-saving">
-          <div class="ssp-street-projection-saving-num">–£{{ formatNum(potentialSaving) }}</div>
+          <div class="ssp-street-projection-saving-num">£{{ formatNum(potentialSaving) }}</div>
           <div class="ssp-street-projection-saving-sub">/yr saved</div>
         </div>
       </div>
@@ -491,7 +491,7 @@
             <span class="hsh-rmeta">of {{ streetTotal }} homes</span>
           </template>
           <template v-else>
-            <span class="hsh-big">—</span>
+            <span class="hsh-big">N/A</span>
             <span class="hsh-rmeta">street rank pending</span>
           </template>
         </div>
@@ -559,7 +559,7 @@
             <div class="stat-expand-meta-tile">
               <div class="stat-expand-meta-eyebrow">EPC steps</div>
               <div class="stat-expand-meta-num" :class="s.steps > 0 ? 'cost' : 'save'">
-                {{ s.steps > 0 ? s.steps : '—' }}
+                {{ s.steps > 0 ? s.steps : 'None' }}
               </div>
               <div class="stat-expand-meta-sub">
                 {{ s.steps > 0 ? 'recommended' : 'none recommended' }}
@@ -572,7 +572,7 @@
                   £{{ s.saving
                   }}<span style="font-size: 9px; color: var(--text-secondary)">/yr</span>
                 </template>
-                <template v-else>—</template>
+                <template v-else>£0</template>
               </div>
               <div class="stat-expand-meta-sub">
                 {{ s.saving > 0 ? s.savingSub : 'nothing to gain' }}
@@ -580,7 +580,7 @@
             </div>
             <div class="stat-expand-meta-tile">
               <div class="stat-expand-meta-eyebrow">{{ s.thirdTileLabel }}</div>
-              <div class="stat-expand-meta-num">{{ s.thirdTileNum || '—' }}</div>
+              <div class="stat-expand-meta-num">{{ s.thirdTileNum || 'None' }}</div>
               <div class="stat-expand-meta-sub">{{ s.thirdTileSub }}</div>
             </div>
           </div>
@@ -626,13 +626,13 @@
         <!-- Summary row: current → potential -->
         <div class="epc-summary">
           <div class="epc-grade">
-            <div class="epc-grade-letter" :style="{ background: epcColor }">{{ epcRating || '—' }}</div>
+            <div class="epc-grade-letter" :style="{ background: epcColor }">{{ epcRating || '?' }}</div>
             <div class="epc-grade-sub">Current · {{ displayScore }}</div>
           </div>
           <div class="epc-arrow">→</div>
           <div class="epc-grade">
-            <div class="epc-grade-letter" :style="{ background: epcPotentialColor }">{{ epcPotentialRating || '—' }}</div>
-            <div class="epc-grade-sub">Potential · {{ epcPotentialScore ?? '—' }}</div>
+            <div class="epc-grade-letter" :style="{ background: epcPotentialColor }">{{ epcPotentialRating || '?' }}</div>
+            <div class="epc-grade-sub">Potential · {{ epcPotentialScore ?? 'not available' }}</div>
           </div>
           <div class="epc-saving">
             <div class="epc-saving-num">£{{ formatNum(potentialSaving) }}/yr</div>
@@ -690,7 +690,7 @@
             <div class="fork-opt-icon"><img src="/homescore-icon/growthChart.png" alt="" loading="lazy" /></div>
             <div class="fork-opt-body">
               <div class="fork-opt-title">Go to your dashboard</div>
-              <div class="fork-opt-sub">Your home base — Passport, docs &amp; everything in one place.</div>
+              <div class="fork-opt-sub">Your home base: Passport, docs &amp; everything in one place.</div>
             </div>
             <div class="fork-opt-chev">›</div>
           </button>
@@ -803,7 +803,7 @@
               <div class="claim-step-num">3</div>
               <div class="claim-step-body">
                 <div class="claim-step-title">Take the owner quiz</div>
-                <div class="claim-step-sub">6–8 EPC questions · earns your real HomeScore</div>
+                <div class="claim-step-sub">6 to 8 EPC questions · earns your real HomeScore</div>
               </div>
             </div>
           </div>
@@ -926,7 +926,7 @@ const billsSplitDisplay = computed(() => {
 const streetRankLabel = computed(() => {
   const r = props.streetRank
   const t = props.streetTotal
-  if (r == null || t == null || t <= 0) return '—'
+  if (r == null || t == null || t <= 0) return 'Not ranked yet'
   const ratio = r / t
   if (ratio <= 0.33) return 'top of street'
   if (ratio <= 0.5) return 'above avg'
@@ -1451,7 +1451,7 @@ const epc = computed<any>(() => {
 function fmtSaving(rec: any | null): string {
   const v = Number(rec?.typicalSaving ?? 0)
   if (!v) return ''
-  return `–£${Math.round(v)}/yr`
+  return `Save £${Math.round(v)}/yr`
 }
 
 const stats = computed<StatRow[]>(() => {
@@ -1555,7 +1555,7 @@ const stats = computed<StatRow[]>(() => {
       ],
       footText: heatRecs.length
         ? `<b>${heatRecs.length} EPC step${heatRecs.length > 1 ? 's' : ''}</b> can lift heating →`
-        : '<b>Your strongest stat.</b> No EPC recommendations live here — heating is sorted.',
+        : '<b>Your strongest stat.</b> No EPC recommendations live here, so heating is sorted.',
     },
     {
       id: 'structure',
@@ -1657,7 +1657,7 @@ const stats = computed<StatRow[]>(() => {
               icon: '/homescore-icon/lightning.png',
               title: elecRecs[0]?.title || 'Solar PV panels',
               sub: elecRecs[0]?.description || "EPC's final step. Crosses you into Band C.",
-              amt: fmtSaving(elecRecs[0]) || '—',
+              amt: fmtSaving(elecRecs[0]) || 'No saving listed',
               amtSub: elecRecs[0]?.costRange || '',
             },
           ]
@@ -1702,7 +1702,7 @@ const stats = computed<StatRow[]>(() => {
                 icon: '/homescore-icon/tap.png',
                 title: plumbRecs[0]?.title || 'Solar water heating',
                 sub: plumbRecs[0]?.description || 'Roof collector pre-heats water from the sun.',
-                amt: fmtSaving(plumbRecs[0]) || '—',
+                amt: fmtSaving(plumbRecs[0]) || 'No saving listed',
                 amtSub: plumbRecs[0]?.costRange || '',
               },
             ]
@@ -1971,7 +1971,7 @@ const epcItems = computed<EpcItem[]>(() => {
       rating: 'Not installed',
       ratingClass: 'nodata',
       flagOk: false,
-      flagText: 'Listed as a recommended improvement — generates electricity from sunlight.',
+      flagText: 'Listed as a recommended improvement. Generates electricity from sunlight.',
       fix: {
         label: 'EPC recommendation',
         text: `${pvRec.description || pvRec.title}. ${pvRec.typicalSaving ? `Saves <b>£${pvRec.typicalSaving}/yr</b>.` : ''} ${pvRec.costRange ? `Cost <b>${pvRec.costRange}</b>.` : ''}`,
@@ -2615,6 +2615,12 @@ const watchersDisplay = computed(() => {
 .score-strip-txt {
   flex: 1;
   min-width: 0;
+}
+/* Small phones: side by side, each tile is too narrow for its icon plus
+   "£1,391/year", so the tiles stack one per row. */
+@media (max-width: 380px) {
+  .score-strip-card { flex-direction: column; }
+  .score-strip-item { flex: none; }
 }
 .score-strip-ic {
   width: 58px;
@@ -4424,6 +4430,11 @@ const watchersDisplay = computed(() => {
   gap: 6px;
   flex: none;
 }
+/* Narrow phones: "of 14 homes" can't shrink (nowrap), so the house strip
+   drops under the rank instead of sliding over it. */
+@media (max-width: 460px) {
+  .hsh-main { flex-wrap: wrap; row-gap: 16px; }
+}
 .hsh-ph {
   position: relative;
   width: 22px;
@@ -4619,4 +4630,12 @@ const watchersDisplay = computed(() => {
 .claim-modal-enter-from .claim-sheet,
 .claim-modal-leave-to .claim-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
 
+/* Big screens: the sheet lives on <body>, so it scales itself to match the
+   zoomed page (--wide-zoom). Zoom multiplies dvh, so the cap divides it out. */
+@media (min-width: 1367px) {
+  .claim-sheet {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(90dvh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px));
+  }
+}
 </style>

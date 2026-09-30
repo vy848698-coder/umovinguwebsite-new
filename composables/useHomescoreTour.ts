@@ -53,7 +53,9 @@ function scrollTargetIntoView(el: HTMLElement) {
   const r = el.getBoundingClientRect()
   const gap = 16
   const room = vh - inset - gap * 2
-  const needed = r.height + TOUR_TIP_SPACE
+  // The tip scales with the page on big screens (--wide-zoom), so its space does too.
+  const zoom = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1
+  const needed = r.height + TOUR_TIP_SPACE * zoom
   const offset = needed <= room ? (room - needed) / 2 : 0
   const desiredTop = inset + gap + offset
   const delta = r.top - desiredTop
