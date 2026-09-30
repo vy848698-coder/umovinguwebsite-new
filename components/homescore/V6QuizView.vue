@@ -16,9 +16,19 @@
               <Icon name="i-lucide-home" />
               {{ property.propertyType }}
             </span>
+            <span v-if="floorAreaSqm" class="nd-chip">
+              <Icon name="i-lucide-ruler" />
+              {{ floorAreaSqm }}m²
+            </span>
             <span class="nd-chip nd-chip--epc">
               <span class="nd-chip-grade" :style="{ background: epcColor }">{{ epcRating || '?' }}</span>
               EPC rating
+              <span class="nd-chip-hook">{{ epcHook }}</span>
+            </span>
+            <span class="nd-chip nd-chip--score">
+              <Icon name="i-lucide-zap" />
+              <span>HomeScore <b>{{ initialScore }}</b>/100</span>
+              <span class="nd-chip-hook">{{ homeScoreHook }}</span>
             </span>
           </div>
 
@@ -26,6 +36,10 @@
             <span class="nd-social"><span class="nd-social-dot is-live" /><b>{{ searchesTodayDisplay }}</b>&nbsp;checked this HomeScore today</span>
             <span class="nd-social-sep">·</span>
             <span class="nd-social"><span class="nd-social-dot" /><b>{{ watchersDisplay }}</b>&nbsp;{{ (watchersCount || 0) === 1 ? 'is' : 'are' }} watching this property</span>
+            <span class="nd-social nd-social--passport">
+              <Icon :name="passportState === 'published' ? 'i-lucide-lock-open' : 'i-lucide-lock'" />
+              <b>{{ passportStatusLabel }}</b>
+            </span>
           </div>
 
           <!-- Claim / passport-state card (drawer driven by headless
@@ -169,7 +183,29 @@
             <div class="nd-eyebrow">HAS YOUR HOME HAD THESE IMPROVEMENTS?</div>
             <h2 class="nq-quiz-title">Answer what you know</h2>
           </div>
-          <span class="nq-quiz-count">{{ answeredCount }} / {{ QUESTS.length }} answered</span>
+        </div>
+
+        <!-- "N things could have changed" card (app parity): what the EPC
+             recommended, and a dot per question that fills as it's answered. -->
+        <div class="nq-changed">
+          <img class="nq-changed-ico" src="/homescore-icon/thingsChanged.png" alt="" loading="lazy" />
+          <div class="nq-changed-body">
+            <div class="nq-changed-title">{{ QUESTS.length }} {{ QUESTS.length === 1 ? 'thing' : 'things' }} could have changed</div>
+            <div class="nq-changed-sub">
+              Your {{ epcYear || 'latest' }} EPC recommended these improvements. Tell us what's happened since.
+            </div>
+          </div>
+          <div class="nq-changed-right">
+            <span class="nq-quiz-count">{{ answeredCount }} of {{ QUESTS.length }} answered</span>
+            <div class="nq-step-dots" aria-hidden="true">
+              <span
+                v-for="q in QUESTS"
+                :key="'dot-' + q.id"
+                class="nq-step-dot"
+                :class="{ done: !!questState[q.id] }"
+              />
+            </div>
+          </div>
         </div>
 
         <div class="nq-quest-grid">
@@ -194,17 +230,25 @@
             <div v-if="openQuest === q.id" class="nq-quest-detail">
               <p class="nq-quest-desc">{{ q.desc }}</p>
 
-              <div class="nq-quest-impact">
-                <span class="nq-impact-chip">
-                  <Icon name="i-lucide-sparkles" /> +{{ q.pts }} pts
-                </span>
-                <span class="nq-impact-chip">
-                  <Icon name="i-lucide-piggy-bank" /> saves ~£{{ q.save }}/yr
-                </span>
-                <span class="nq-impact-chip">
-                  <Icon name="i-lucide-tag" /> {{ q.cost }}
-                </span>
-                <span v-if="q.grant" class="nq-impact-chip is-grant">
+              <div class="nq-quest-stats">
+                <div class="nq-stat">
+                  <div class="nq-stat-eyebrow"><Icon name="i-lucide-sparkles" /> Estimated score impact</div>
+                  <div class="nq-stat-val">+{{ q.pts }} HomeScore points</div>
+                  <div v-if="q.resultingSap != null" class="nq-stat-note">could improve score to {{ q.resultingSap }}</div>
+                </div>
+                <div class="nq-stat">
+                  <div class="nq-stat-eyebrow"><Icon name="i-lucide-piggy-bank" /> Estimated saving</div>
+                  <div class="nq-stat-val">~£{{ q.save }}</div>
+                  <div class="nq-stat-note">per year</div>
+                </div>
+                <div class="nq-stat">
+                  <div class="nq-stat-eyebrow"><Icon name="i-lucide-tag" /> Typical investment</div>
+                  <div class="nq-stat-val">{{ q.cost }}</div>
+                  <div class="nq-stat-note">estimated cost</div>
+                </div>
+              </div>
+              <div v-if="q.grant" class="nq-quest-impact">
+                <span class="nq-impact-chip is-grant">
                   <Icon name="i-lucide-gift" /> {{ q.grant }}
                 </span>
               </div>
@@ -219,7 +263,7 @@
                 </span>
               </div>
 
-              <div class="nq-quest-question">Has this been done since the last EPC?</div>
+              <div class="nq-quest-question">Has this been done since your last EPC?</div>
               <div class="nq-quest-options">
                 <button
                   v-for="(o, key) in OPT"
@@ -240,7 +284,7 @@
         <!-- ── Finish CTA ───────────────────────────────────────────── -->
         <div class="nq-finish">
           <button class="nq-finish-btn" type="button" @click="onFinish">
-            Get my real HomeScore
+            Reveal my updated HomeScore
             <Icon name="i-lucide-arrow-right" />
           </button>
           <div v-if="answeredCount < QUESTS.length" class="nq-finish-hint">
@@ -262,7 +306,7 @@
           @click.self="needAnswerModalOpen = false"
         >
           <div class="need-answer-sheet" @click.stop>
-            <div class="need-answer-icon"><Icon name="i-lucide-list-checks" /></div>
+            <div class="need-answer-icon"><img src="/homescore-icon/clipboard.png" alt="" loading="lazy" /></div>
             <div class="need-answer-title">Answer at least one question</div>
             <div class="need-answer-sub">
               To work out your updated EPC and real HomeScore, we need to know
@@ -629,7 +673,8 @@ const QUESTS = computed<Quest[]>(() => {
       stat,
       pts,
       save: Number(r?.typicalSaving ?? 0) || 0,
-      cost: r?.costRange || 'Cost varies',
+      // EPC ranges arrive as '£500 - £1,500'; show them without a dash.
+      cost: r?.costRange ? String(r.costRange).replace(/\s*[-–—]\s*/g, ' to ') : 'Cost varies',
       grant,
       resultingSap,
       resultingGrade: resultingSap != null ? sapToGrade(resultingSap) : null,
@@ -638,9 +683,9 @@ const QUESTS = computed<Quest[]>(() => {
 })
 
 const OPT = {
-  yes: { label: 'Yes, done', icon: '✓', cls: 'opt-yes', mult: 1.0 },
+  yes: { label: "Yes, it's been done", icon: '✓', cls: 'opt-yes', mult: 1.0 },
   different: {
-    label: 'Done something different',
+    label: 'Something different was done',
     icon: '↻',
     cls: 'opt-different',
     mult: 0.5,
@@ -654,9 +699,9 @@ type OptKey = keyof typeof OPT
 // Lucide icon per answer option (memory: use <Icon> not emoji).
 const OPT_ICON: Record<OptKey, string> = {
   yes: 'i-lucide-check',
-  different: 'i-lucide-rotate-ccw',
-  notyet: 'i-lucide-minus',
-  na: 'i-lucide-ban',
+  different: 'i-lucide-refresh-cw',
+  notyet: 'i-lucide-clock',
+  na: 'i-lucide-minus',
 }
 
 // ── Claim / passport drawer (headless PassportClaimBox, driven from the
@@ -700,6 +745,33 @@ const addressLine = computed(() => {
   const p = props.property
   if (!p) return 'Your property'
   return p.addressLine1 || p.fullAddress || 'Your property'
+})
+
+// Address details the app's address card shows (floor area, EPC and
+// HomeScore hooks, passport status); same wording as HomescoreAddressCard.
+const floorAreaSqm = computed(() => {
+  const p = props.property
+  return p?.floorAreaSqm ?? p?.sqm ?? p?.floorArea ?? null
+})
+const epcHook = computed(() => {
+  const r = (props.epcRating || '').toUpperCase()
+  if (r === 'A' || r === 'B') return 'Top-band efficiency'
+  if (r === 'C') return 'Lower running costs'
+  if (r === 'D') return 'Room to improve'
+  if (r) return 'High running costs'
+  return 'No EPC on record'
+})
+const homeScoreHook = computed(() => {
+  const s = props.initialScore || 0
+  if (s >= 80) return 'Top of the street'
+  if (s >= 60) return 'Above average'
+  if (s >= 40) return 'Around average'
+  return 'Below average'
+})
+const passportStatusLabel = computed(() => {
+  if (props.passportState === 'published') return 'Passport published'
+  if (props.passportState === 'inProgress') return 'Passport in progress'
+  return 'No Passport yet'
 })
 
 const addressMeta = computed(() => {
@@ -932,6 +1004,19 @@ watch(
 }
 .nd-chip svg { width: 14px; height: 14px; opacity: 0.7; }
 .nd-chip--epc { padding-left: 6px; color: #231d45; }
+.nd-chip-hook {
+  padding-left: 8px;
+  margin-left: 2px;
+  border-left: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.nd-chip--score { color: #231d45; }
+.nd-chip--score b { font-weight: 800; }
+.nd-chip--score svg { color: var(--accent-dark); opacity: 1; }
+/* Passport status gets its own row, like the app's address card. */
+.nd-social--passport { flex-basis: 100%; }
+.nd-social--passport svg { width: 14px; height: 14px; color: var(--accent-dark); }
 .nd-chip-grade {
   display: inline-flex;
   align-items: center;
@@ -1167,6 +1252,59 @@ watch(
   white-space: nowrap;
 }
 
+/* "N things could have changed" card */
+.nq-changed {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: var(--accent-paler);
+  border: 1px solid var(--accent-pale);
+}
+.nq-changed-ico { width: 44px; height: 44px; object-fit: contain; flex-shrink: 0; }
+.nq-changed-body { flex: 1; min-width: 0; }
+.nq-changed-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #231d45;
+}
+.nq-changed-sub {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.nq-changed-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.nq-step-dots { display: flex; align-items: center; gap: 14px; position: relative; }
+.nq-step-dots::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  height: 1.5px;
+  background: rgba(0, 161, 154, 0.35);
+}
+.nq-step-dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--accent);
+  transition: background 0.2s;
+}
+.nq-step-dot.done { background: var(--accent); }
+
 .nq-quest-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1275,6 +1413,45 @@ watch(
 }
 .nq-impact-chip.is-grant svg { color: #b07d16; }
 
+/* Three labelled stat boxes (app parity: score impact / saving / cost) */
+.nq-quest-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.nq-stat {
+  padding: 12px 14px;
+  background: #fff;
+  min-width: 0;
+}
+.nq-stat + .nq-stat { border-left: 1px solid var(--border); }
+.nq-stat-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.nq-stat-eyebrow svg { width: 12px; height: 12px; flex-shrink: 0; color: var(--accent-dark); }
+.nq-stat-val {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #231d45;
+}
+.nq-stat-note {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
 .nq-quest-resulting {
   display: flex;
   align-items: center;
@@ -1341,6 +1518,11 @@ watch(
   transition: background 0.14s, color 0.14s;
 }
 .nq-opt-ico svg { width: 15px; height: 15px; }
+/* Each answer carries its own colour, like the app's option tiles. */
+.nq-opt-btn.opt-yes .nq-opt-ico { background: var(--accent); color: #fff; border-radius: 50%; }
+.nq-opt-btn.opt-different .nq-opt-ico { background: #7c6ff0; color: #fff; border-radius: 50%; }
+.nq-opt-btn.opt-not-yet .nq-opt-ico { background: #eef0f4; color: #4a4566; border-radius: 50%; }
+.nq-opt-btn.opt-na .nq-opt-ico { background: #b5b6bb; color: #fff; border-radius: 50%; }
 
 /* Selected states — tinted per answer semantics */
 .nq-opt-btn.selected { color: #fff; }
@@ -1431,6 +1613,10 @@ watch(
   .nq-scorecard-body { flex-direction: column; align-items: flex-start; }
   .nq-quest-options { grid-template-columns: 1fr; }
   .nd-block-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .nq-changed { flex-wrap: wrap; padding: 14px 16px; }
+  .nq-changed-right { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+  .nq-quest-stats { grid-template-columns: minmax(0, 1fr); }
+  .nq-stat + .nq-stat { border-left: 0; border-top: 1px solid var(--border); }
 }
 
 /* ═══════════════ MODALS (need-answer + bill upload) ═══════════════ */
@@ -1486,6 +1672,7 @@ watch(
   color: var(--accent-dark);
 }
 .need-answer-icon svg { width: 28px; height: 28px; }
+.need-answer-icon img { width: 40px; height: 40px; object-fit: contain; }
 .need-answer-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
 .need-answer-sub {
   margin: 10px 0 22px;
