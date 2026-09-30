@@ -1,6 +1,6 @@
 <template>
   <div class="pb-shell">
-    <WebTopNav>
+    <WebTopNav wide>
       <template #actions>
         <button class="pb-nav-back" type="button" @click="onBack">
           <Icon name="i-lucide-arrow-left" /> {{ hsBack.label }}
@@ -53,7 +53,7 @@
                     :stroke-dashoffset="188.5 - (188.5 * homeScorePct) / 100"
                   />
                 </svg>
-                <span class="pb-ring-val"><b>{{ homeScore || '—' }}</b></span>
+                <span class="pb-ring-val"><b>{{ homeScore || 'N/A' }}</b></span>
               </span>
               <span class="pb-ring-cap">HomeScore</span>
               <span class="pb-ring-sub accent">{{ homeScoreBand }}</span>
@@ -246,7 +246,7 @@
       </div><!-- /pb-cols -->
     </div>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <!-- ── Auth-required popup ───────────────────────────────────────
          A guest tapping "Claim my Passport" gets this choice rather than
@@ -1283,5 +1283,15 @@ function onBack() {
   .pbauth-leave-active,
   .pbauth-enter-active .pbauth-card,
   .pbauth-leave-active .pbauth-card { transition: none; }
+}
+
+/* Big screens (>1366px): the laptop layout scaled up (--wide-zoom = width /
+   1366, nuxt.config.ts). The page body zooms (the navbar + footer take
+   `wide`); the auth popup lives on <body>, so its card zooms itself. */
+@media (min-width: 1367px) {
+  .pb-page,
+  .pbauth-card {
+    zoom: var(--wide-zoom, 1);
+  }
 }
 </style>

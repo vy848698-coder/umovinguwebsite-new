@@ -307,7 +307,7 @@
             <p class="simw-kicker"><span class="simw-kicker-dot" />Accuracy check</p>
             <h1>Refine your HomeScore</h1>
             <p class="simw-lede">
-              Tell us what's been done since the EPC — we'll score your home on reality, not old assumptions.
+              Tell us what's been done since the EPC and we'll score your home on reality, not old assumptions.
             </p>
           </div>
 
@@ -339,7 +339,7 @@
           </div>
           <div class="sim-hero-body">
             Your EPC is from <b>{{ simEpcYear }}</b
-            >. A lot may have changed. Tell us what's been done — we'll give you
+            >. A lot may have changed. Tell us what's been done and we'll give you
             a score based on reality, not old assumptions. This also makes your
             street comparison more accurate.
           </div>
@@ -379,7 +379,7 @@
                 Aim for Level C (55+) to unlock the upgrade marketplace
               </div>
               <div v-else class="sim-score-aim sim-score-aim--hit">
-                ✓ Level C reached — upgrade marketplace unlocked
+                ✓ Level C reached, upgrade marketplace unlocked
               </div>
               <div class="sim-score-grade">
                 {{
@@ -510,7 +510,7 @@
                     class="sim-step-btn done"
                     @click.stop="simAnswer(s.id, 'done')"
                   >
-                    <Icon name="i-lucide-check" />{{ s.doneLabel || 'Yes — done' }}
+                    <Icon name="i-lucide-check" />{{ s.doneLabel || 'Yes, done' }}
                   </button>
                   <button
                     type="button"
@@ -552,9 +552,9 @@
                   simParsedBill?.annualSpend && simParsedBill.annualSpend > 0
                 "
               >
-                Bill read — £{{ simParsedBill.annualSpend.toLocaleString() }}/yr
+                Bill read: £{{ simParsedBill.annualSpend.toLocaleString() }}/yr
               </template>
-              <template v-else>Bill uploaded — score updated</template>
+              <template v-else>Bill uploaded, score updated</template>
             </div>
             <div class="sim-bill-sub">
               <template v-if="simParsedBill?.supplier">
@@ -580,7 +580,7 @@
           <div>
             <div class="sim-bill-title">Tap to upload a recent energy bill</div>
             <div class="sim-bill-sub">
-              We'll read the total spend and update your HomeScore — no manual
+              We'll read the total spend and update your HomeScore, no manual
               entry needed.
             </div>
           </div>
@@ -651,7 +651,7 @@
             <div class="sim-diff-handle" />
             <div class="sim-diff-title">What did you do instead?</div>
             <div class="sim-diff-body">
-              Tell us what improvement you made — even if it's not on the EPC
+              Tell us what improvement you made, even if it's not on the EPC
               list. This updates your score and helps your neighbours compare
               their options.
             </div>
@@ -665,7 +665,7 @@
               <div class="sim-diff-tip-text">
                 <b>This won't show on your EPC</b> until it's reassessed. A new
                 EPC costs around <b>£50</b> and could move your rating from F to
-                C — improving your score, your property's value, and your
+                C, improving your score, your property's value, and your
                 street's data for everyone.
               </div>
             </div>
@@ -797,7 +797,7 @@
             }}<span class="unit"> / year</span>
           </div>
           <div class="pq-overpay-sub">
-            Based on your quiz answers — a more accurate picture than public EPC
+            Based on your quiz answers. A more accurate picture than public EPC
             data alone.
           </div>
           <button
@@ -1156,7 +1156,7 @@
         <div class="pub-anon">
           <img class="pub-anon-icon" src="/homescore-icon/padlock.png" alt="" loading="lazy" />
           <div>
-            <b>Published anonymously</b> — only the data above is shared, never
+            <b>Published anonymously</b>. Only the data above is shared, never
             your name or personal details.
           </div>
         </div>
@@ -1210,7 +1210,7 @@
             class="pub-cta-skip"
             @click="screen = 'results'"
           >
-            Not now — maybe later
+            Not now, maybe later
           </button>
         </div>
 
@@ -1542,21 +1542,21 @@
             <div class="kyc-updates-row">
               <img class="kyc-updates-icon" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
               <div>
-                <b>Your HomeScore</b> — reflects actual property data, not EPC
+                <b>Your HomeScore</b> reflects actual property data, not EPC
                 estimates
               </div>
             </div>
             <div class="kyc-updates-row">
               <img class="kyc-updates-icon" src="/homescore-icon/lightbulb.png" alt="" loading="lazy" />
               <div>
-                <b>Energy cost benchmarks</b> — more accurate for similar homes
+                <b>Energy cost benchmarks</b> become more accurate for similar homes
                 nearby
               </div>
             </div>
             <div class="kyc-updates-row">
               <img class="kyc-updates-icon" src="/homescore-icon/houseSearch.png" alt="" loading="lazy" />
               <div>
-                <b>Street-level data pool</b> — every owner who publishes
+                <b>Street-level data pool</b>: every owner who publishes
                 improves it further
               </div>
             </div>
@@ -1746,7 +1746,7 @@
                 <div>
                   <div class="hs-pp-unlock-name">Document vault</div>
                   <div class="hs-pp-unlock-sub">
-                    EPC, gas safety, EICR, warranties — all in one place.
+                    EPC, gas safety, EICR, warranties, all in one place.
                   </div>
                 </div>
               </div>
@@ -1755,7 +1755,7 @@
                 <div>
                   <div class="hs-pp-unlock-name">14-day completion</div>
                   <div class="hs-pp-unlock-sub">
-                    vs the UK average of 179 days — verified sellers close
+                    vs the UK average of 179 days. Verified sellers close
                     faster.
                   </div>
                 </div>
@@ -1784,7 +1784,7 @@
             </div>
           </div>
           <button class="hs-btn-ghost" @click="screen = 'results'">
-            Maybe later — keep my score
+            Maybe later, keep my score
           </button>
           <div style="height: 40px" />
         </div>
@@ -1852,7 +1852,7 @@
           <!-- Street stats -->
           <div v-if="streetStats" class="hs-street-stats">
             <div class="hs-street-stats-title">
-              {{ property?.postcode }} — Street Overview
+              {{ property?.postcode }}: Street Overview
             </div>
             <div class="hs-street-stats-grid">
               <div class="hs-stat-box brand">
@@ -3400,7 +3400,7 @@
           <div class="mrw-grid">
             <div class="mrw-col">
         <!-- Steps -->
-        <div class="hs-qw-section-label">What happens next — 3 steps</div>
+        <div class="hs-qw-section-label">What happens next: 3 steps</div>
         <div class="hs-mr-steps">
           <div class="hs-mr-step">
             <div class="hs-mr-step-ic">1</div>
@@ -3417,7 +3417,7 @@
             <div>
               <div class="hs-mr-step-title">Confirm your identity</div>
               <div class="hs-mr-step-body">
-                Quick ID check — photo of your passport or driving licence plus
+                Quick ID check: photo of your passport or driving licence plus
                 a selfie. Powered by Onfido.
               </div>
             </div>
@@ -3439,7 +3439,7 @@
             <div>
               <div class="hs-mr-step-title">Your score becomes verified</div>
               <div class="hs-mr-step-body">
-                Your HomeScore is upgraded from estimated to verified — and your
+                Your HomeScore is upgraded from estimated to verified, and your
                 Property Passport is live.
               </div>
             </div>
@@ -3495,7 +3495,7 @@
     </template>
 
     <!-- Shared site footer (all web screens; hidden during the brief loader) -->
-    <SiteFooter v-if="screen !== 'loading'" />
+    <SiteFooter v-if="screen !== 'loading'" wide />
 
     <!-- Watch this property drawer (buyer notification preferences) -->
     <WatchPropertyDrawer
@@ -3683,7 +3683,7 @@
           <div class="qw-modal-body">
             <p class="qw-modal-intro">
               We'll read the total spend from your bill and refine your
-              HomeScore — more accurate than EPC estimates alone.
+              HomeScore. More accurate than EPC estimates alone.
             </p>
 
             <!-- Pending file preview -->
@@ -3824,12 +3824,12 @@ const resultTour = useHomescoreTour({
     {
       sel: '[data-tour="score"]',
       title: 'Your HomeScore',
-      body: 'A score from 0–100 showing how energy efficient this property is. The higher the score, the lower the likely running costs.',
+      body: 'A score from 0 to 100 showing how energy efficient this property is. The higher the score, the lower the likely running costs.',
     },
     {
       sel: '[data-tour="breakdown"]',
       title: 'Score breakdown',
-      body: 'Each category contributes to the overall score. Shorter bars mean more room to improve — and more potential savings.',
+      body: 'Each category contributes to the overall score. Shorter bars mean more room to improve and more potential savings.',
     },
     {
       sel: '[data-tour="intent"]',
@@ -4476,7 +4476,7 @@ const epcExplain = computed(() => {
   if (s >= 92) {
     label = 'Exceptional'
     body =
-      'Among the <b>most efficient homes</b> in the UK — less than 3% of properties achieve this rating. Modern construction, low running costs.'
+      'Among the <b>most efficient homes</b> in the UK. Less than 3% of properties achieve this rating. Modern construction, low running costs.'
     confTone = 'good'
   } else if (s >= 81) {
     label = 'Highly efficient'
@@ -4486,12 +4486,12 @@ const epcExplain = computed(() => {
   } else if (s >= 69) {
     label = 'Above average'
     body =
-      'Better than most UK homes — the UK average is around <b>60–65</b>. Small upgrades could lift this to a B.'
+      'Better than most UK homes. The UK average is around <b>60 to 65</b>. Small upgrades could lift this to a B.'
     confTone = 'ok'
   } else if (s >= 55) {
     label = 'Typical UK home'
     body =
-      'In line with the <b>average British home</b>. Real upside available — cavity wall, glazing or boiler upgrades can lift this to a C or B.'
+      'In line with the <b>average British home</b>. Real upside available: cavity wall, glazing or boiler upgrades can lift this to a C or B.'
     confTone = 'ok'
   } else if (s >= 39) {
     label = 'Period property'
@@ -4501,7 +4501,7 @@ const epcExplain = computed(() => {
   } else if (s >= 21) {
     label = 'Upgrade potential'
     body =
-      'These homes have the <b>most savings potential</b>. Typical upgrades cut running costs by £200–600 a year.'
+      'These homes have the <b>most savings potential</b>. Typical upgrades cut running costs by £200 to £600 a year.'
     confTone = 'warn'
   } else {
     label = 'Renovation potential'
@@ -4575,7 +4575,7 @@ const DEFAULT_OPPS: Opportunity[] = [
   {
     icon: '🌡️',
     title: 'Fit a smart thermostat',
-    sub: 'Could save ~£130/yr — low cost, high impact.',
+    sub: 'Could save ~£130/yr. Low cost, high impact.',
   },
 ]
 
@@ -4656,7 +4656,7 @@ const liveHint = computed(() => {
   if (deltaInfo.value.show) {
     if (deltaInfo.value.val > 0) return "You're boosting your energy score!"
     if (deltaInfo.value.val < 0)
-      return 'Your score dipped — try another option.'
+      return 'Your score dipped. Try another option.'
   }
   if (selectedNarr.value) return selectedNarr.value
   if (!currentAnswer.value)
@@ -4667,10 +4667,10 @@ const liveHint = computed(() => {
 
 const scoreBand = computed(() => {
   const s = liveScore.value
-  if (s >= 80) return 'Excellent — top of the market'
-  if (s >= 65) return 'Strong — better than most'
-  if (s >= 50) return 'Average — room to improve'
-  if (s >= 35) return 'Below average — fixable'
+  if (s >= 80) return 'Excellent, top of the market'
+  if (s >= 65) return 'Strong, better than most'
+  if (s >= 50) return 'Average, room to improve'
+  if (s >= 35) return 'Below average, fixable'
   return 'Plenty of opportunities'
 })
 
@@ -4765,7 +4765,7 @@ const carbonVsAvg = computed(() => {
   const diff = carbonKg.value - CARBON_BASELINE
   if (Math.abs(diff) < 100) return 'Roughly the same as the UK average'
   if (diff < 0)
-    return `${Math.abs(diff).toLocaleString()} kg below the UK average — great work`
+    return `${Math.abs(diff).toLocaleString()} kg below the UK average. Great work`
   return `${diff.toLocaleString()} kg above the UK average of ${CARBON_BASELINE.toLocaleString()} kg`
 })
 
@@ -4858,7 +4858,7 @@ const neighbourhood = computed(() => {
       detail: 'Double glazed · EPC C',
     },
     {
-      label: `${addr} — you`,
+      label: `${addr} (you)`,
       score: s,
       isYou: true,
       detail: 'Your current status',
@@ -4971,8 +4971,8 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'loft',
     title: 'Increase loft insulation to 270mm',
     meta: 'Currently 75mm · EPC: Average',
-    desc: 'Your EPC records 75mm of loft insulation — the recommended level is 270mm. Topping this up is one of the cheapest and most effective improvements available.',
-    impact: 'Score +2 pts · saves ~£40/yr · cost £100–£350',
+    desc: 'Your EPC records 75mm of loft insulation. The recommended level is 270mm. Topping this up is one of the cheapest and most effective improvements available.',
+    impact: 'Score +2 pts · saves ~£40/yr · cost £100 to £350',
     question: 'Has this been done since the last EPC?',
     scoreDelta: 2,
     costSaving: 40,
@@ -4982,9 +4982,9 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'cavity',
     title: 'Cavity wall insulation',
     meta: 'Uninsulated cavity · EPC: Poor',
-    desc: 'The biggest single saving available. Part of the cavity wall is uninsulated — filling it stops heat escaping through the walls. ECO4 or Warm Homes grants may cover the full cost.',
+    desc: 'The biggest single saving available. Part of the cavity wall is uninsulated. Filling it stops heat escaping through the walls. ECO4 or Warm Homes grants may cover the full cost.',
     impact:
-      'Score +7 pts · saves ~£224/yr · cost £500–£1,500 · ECO4 grant may apply',
+      'Score +7 pts · saves ~£224/yr · cost £500 to £1,500 · ECO4 grant may apply',
     question: 'Has cavity wall insulation been filled since the last EPC?',
     scoreDelta: 7,
     costSaving: 224,
@@ -4994,8 +4994,8 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'floor',
     title: 'Floor insulation',
     meta: 'Suspended floor, no insulation · EPC: N/A',
-    desc: 'The suspended timber floor has no insulation — cold air from below makes rooms harder to heat. Insulating this improves both comfort and efficiency.',
-    impact: 'Score +3 pts · saves ~£97/yr · cost £800–£1,200',
+    desc: 'The suspended timber floor has no insulation, so cold air from below makes rooms harder to heat. Insulating this improves both comfort and efficiency.',
+    impact: 'Score +3 pts · saves ~£97/yr · cost £800 to £1,200',
     question: 'Has floor insulation been added since the last EPC?',
     scoreDelta: 3,
     costSaving: 97,
@@ -5005,10 +5005,10 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'led',
     title: 'Low energy lighting throughout',
     meta: '15% low energy lighting · EPC: Poor',
-    desc: 'Only 15% of fixed lighting outlets use low energy bulbs. Switching all to LED is quick, cheap and immediate — no installer required.',
+    desc: 'Only 15% of fixed lighting outlets use low energy bulbs. Switching all to LED is quick, cheap and immediate, no installer required.',
     impact: 'Score +2 pts · saves ~£45/yr · cost just £110',
     question: 'Have you switched to LED lighting since the last EPC?',
-    doneLabel: 'Yes — mostly LED now',
+    doneLabel: 'Yes, mostly LED now',
     scoreDelta: 2,
     costSaving: 45,
     co2Delta: 0.1,
@@ -5018,9 +5018,9 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     title: 'Solar water heating',
     meta: 'No solar thermal on EPC',
     desc: 'Solar thermal panels use the sun to heat your water, reducing how hard your boiler works.',
-    impact: 'Score +1 pt · saves ~£40/yr · cost £4,000–£6,000',
+    impact: 'Score +1 pt · saves ~£40/yr · cost £4,000 to £6,000',
     question: 'Has solar water heating been installed since the last EPC?',
-    doneLabel: 'Yes — fitted',
+    doneLabel: 'Yes, fitted',
     scoreDelta: 1,
     costSaving: 40,
     co2Delta: 0.1,
@@ -5029,11 +5029,11 @@ const SIM_STEP_DEFS: Omit<SimStep, 'status'>[] = [
     id: 'solar-pv',
     title: 'Solar photovoltaic panels',
     meta: 'No solar PV on EPC · recommended',
-    desc: 'Solar PV generates electricity from sunlight — cutting your electricity bill and earning Smart Export Guarantee payments for surplus energy.',
+    desc: 'Solar PV generates electricity from sunlight, cutting your electricity bill and earning Smart Export Guarantee payments for surplus energy.',
     impact:
       'Score +8 pts · saves ~£248/yr · Smart Export Guarantee payments too',
     question: 'Have solar panels been installed since the last EPC?',
-    doneLabel: 'Yes — panels fitted',
+    doneLabel: 'Yes, panels fitted',
     scoreDelta: 8,
     costSaving: 248,
     co2Delta: 1.0,
@@ -5300,7 +5300,7 @@ async function saveSimBill() {
     showToast({ message: msg, iconEmoji: '✓' })
     closeSimBillDrawer()
   } catch (e) {
-    simBillError.value = 'Upload failed — please try again.'
+    simBillError.value = 'Upload failed. Please try again.'
   } finally {
     simBillUploading.value = false
   }
@@ -5498,7 +5498,7 @@ const simEpcNudge = computed<{
       variant: 'bill',
       icon: '/homescore-icon/utilityBills.png',
       title: 'Your actual spend is feeding your score',
-      body: `Your utility bill is more accurate than any EPC estimate. Your HomeScore, bills figure and carbon footprint now reflect what you're really paying — not what a ${simEpcYear.value} survey guessed.`,
+      body: `Your utility bill is more accurate than any EPC estimate. Your HomeScore, bills figure and carbon footprint now reflect what you're really paying, not what a ${simEpcYear.value} survey guessed.`,
     }
   }
   if (simScore.value >= 69) {
@@ -5506,23 +5506,23 @@ const simEpcNudge = computed<{
       variant: 'good',
       icon: '/homescore-icon/shield.png',
       title: 'Your home is already performing well',
-      body: "Your updated score reflects the improvements you've made. You're in a strong position — no urgent action needed on your EPC right now.",
+      body: "Your updated score reflects the improvements you've made. You're in a strong position. No urgent action needed on your EPC right now.",
     }
   }
   if (simAnsweredCount.value >= 3 && simBillsDelta.value >= 60) {
     return {
       variant: 'improved',
       icon: '/homescore-icon/clipboardChecklist.png',
-      title: "Your HomeScore is updated — your official EPC isn't",
-      body: "The changes you've added are now reflected in your HomeScore, bills estimate and carbon footprint. Your official EPC won't change until you commission a new assessment — worth considering if you're thinking of selling.",
-      ctaLabel: 'Get a new EPC — from £50 →',
+      title: "Your HomeScore is updated, but your official EPC isn't",
+      body: "The changes you've added are now reflected in your HomeScore, bills estimate and carbon footprint. Your official EPC won't change until you commission a new assessment. Worth considering if you're thinking of selling.",
+      ctaLabel: 'Get a new EPC from £50 →',
     }
   }
   return {
     variant: 'neutral',
     icon: '/homescore-icon/target.png',
     title: 'Every improvement counts',
-    body: `As you answer the questions above, your bills estimate, carbon footprint and HomeScore update in real time — based on what's actually been done, not just your ${simEpcYear.value} EPC.`,
+    body: `As you answer the questions above, your bills estimate, carbon footprint and HomeScore update in real time, based on what's actually been done, not just your ${simEpcYear.value} EPC.`,
   }
 })
 
@@ -6950,7 +6950,7 @@ const qwDocs = [
   {
     key: 'utility-bills',
     label: 'Utility Bills',
-    sub: 'See your actual spend vs your EPC estimate — most impactful first step',
+    sub: 'See your actual spend vs your EPC estimate. The most impactful first step',
     pts: 12,
     icon: '💡',
     img: '/Boost/utilityBills.png',
@@ -6968,7 +6968,7 @@ const qwDocs = [
   {
     key: 'gas',
     label: 'Gas Safety Certificate',
-    sub: 'Annual boiler service — Gas Safe registered engineer',
+    sub: 'Annual boiler service by a Gas Safe registered engineer',
     pts: 10,
     icon: '🔧',
     img: '/homescore-icon/gasSafety.png',
@@ -6977,7 +6977,7 @@ const qwDocs = [
   {
     key: 'epc',
     label: 'EPC Certificate',
-    sub: 'Energy rating — required for any sale or rental',
+    sub: 'Energy rating, required for any sale or rental',
     pts: 8,
     icon: '⚡',
     img: '/homescore-icon/epcAssessment.png',
@@ -6986,7 +6986,7 @@ const qwDocs = [
   {
     key: 'eicr',
     label: 'EICR Report',
-    sub: 'Electrical check — removes a major buyer concern',
+    sub: 'Electrical check that removes a major buyer concern',
     pts: 7,
     icon: '🔌',
     img: '/homescore-icon/electrician.png',
@@ -17090,4 +17090,29 @@ button.bv-rc-head:hover {
 }
 .sim-diff-handle { display: none; }
 
+/* ── Big screens (>1366px) ────────────────────────────────────────────
+   The 1366px laptop layout is the design; wider monitors show that same
+   layout scaled up (--wide-zoom = width / 1366, set in nuxt.config.ts).
+   Every screen zooms its nav row + main content (the V6 views are their
+   own roots; Boost zooms its header + body itself, around its drawer),
+   never the full-height screen roots, because zoom multiplies vh.
+   Pop-ups teleported to <body> zoom their own dialog box. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  main.hsw-shell,
+  .ppw-main,
+  .hs-v6-score,
+  .hs-v6-quiz,
+  .hs-v6-levelup,
+  .v6-noepc-est,
+  .hs-loading-wrap,
+  .hs-authgate-card {
+    zoom: var(--wide-zoom, 1);
+  }
+  .hs-loading-wrap { min-height: calc(60vh / var(--wide-zoom, 1)); }
+  .qw-modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: calc(88vh / var(--wide-zoom, 1));
+  }
+}
 </style>

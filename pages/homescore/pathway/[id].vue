@@ -194,7 +194,7 @@
             <div class="pathway-empty-title">No improvements on this EPC</div>
             <div class="pathway-empty-sub">
               The certificate for this property doesn't list any energy-saving
-              steps — usually means it's already in good shape.
+              steps, which usually means it's already in good shape.
             </div>
           </div>
 
@@ -223,7 +223,7 @@
                   </div>
                   <div class="mission-meta">
                     <template v-if="m.done">
-                      You said this is in place — upload {{ m.docLabel }} to verify it on your Passport.
+                      You said this is in place. Upload {{ m.docLabel }} to verify it on your Passport.
                     </template>
                     <template v-else>{{ m.meta }}</template>
                   </div>
@@ -411,7 +411,7 @@
     </div><!-- /hs-v6-pathway -->
 
     <!-- Shared site footer (full-bleed) -->
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -728,7 +728,8 @@ const missions = computed<Mission[]>(() => {
         `Step ${idx + 1} on this property's EPC pathway.`,
       pts: sap > 0 ? `→ ${sap} ${grade}` : `Step ${idx + 1}`,
       save: r?.typicalSaving ? `£${r.typicalSaving}/yr` : '',
-      cost: r?.costRange || '',
+      // EPC ranges arrive as "£500 - £1,500"; show them without a dash.
+      cost: (r?.costRange || '').replace(/\s*[-–—]\s*/g, ' to '),
       supplierLabel: supplierLabelForRec(title),
       done: doneInfo.done,
       docKey: doneInfo.docKey,
@@ -1998,5 +1999,18 @@ function onBack() {
     justify-content: center;
     font-size: 0;
   }
+}
+
+/* Big screens (>1366px): the laptop layout scaled up (--wide-zoom = width /
+   1366, nuxt.config.ts). Nav row + page body zoom, never the full-height
+   shell. The verify-documents sheet lives on <body>, so it zooms itself and
+   divides its dvh cap back out (zoom multiplies it). */
+@media (min-width: 1367px) {
+  .pw-nav-inner,
+  .hs-v6-pathway,
+  .vd-sheet {
+    zoom: var(--wide-zoom, 1);
+  }
+  .vd-sheet { max-height: calc(92dvh / var(--wide-zoom, 1)); }
 }
 </style>

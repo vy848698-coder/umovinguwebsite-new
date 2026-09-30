@@ -34,7 +34,7 @@
       <h1>Full running costs</h1>
       <p class="rc-lede">
         Everything it costs to run
-        {{ property?.addressLine1 || 'this property' }} — energy from the
+        {{ property?.addressLine1 || 'this property' }}: energy from the
         <template v-if="data.epcYear">{{ data.epcYear }} EPC</template>
         <template v-else>EPC data</template>, other costs estimated for
         {{ property?.postcode?.split(' ')[0] || 'this area' }}.
@@ -315,7 +315,7 @@
         <div class="cost-card-foot-note">
           With all improvements: could fall to £{{
             fmt(tween(data.energy.potentialTotal))
-          }}/yr — saving £{{ fmt(tween(data.energy.potentialSaving)) }}
+          }}/yr, saving £{{ fmt(tween(data.energy.potentialSaving)) }}
         </div>
       </div>
 
@@ -445,7 +445,7 @@
                 <template v-if="data.energyDetail.gasKwh"
                   >{{ fmt(data.energyDetail.gasKwh) }} kWh/yr</template
                 >
-                <template v-else>—</template>
+                <template v-else>Not available</template>
               </div>
               <div class="rc-detail-meta">heating + hot water</div>
             </div>
@@ -457,7 +457,7 @@
                 <template v-if="data.energyDetail.electricityKwh"
                   >~{{ fmt(data.energyDetail.electricityKwh) }} kWh/yr</template
                 >
-                <template v-else>—</template>
+                <template v-else>Not available</template>
               </div>
               <div class="rc-detail-meta">estimated · no smart meter</div>
             </div>
@@ -482,7 +482,7 @@
                   }}
                   kWh/m²/yr</template
                 >
-                <template v-else>—</template>
+                <template v-else>Not available</template>
               </div>
               <div class="rc-detail-meta">
                 target under
@@ -681,7 +681,7 @@
     </template>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
   </div>
 </template>
 
@@ -783,7 +783,7 @@ onMounted(async () => {
       data.value = await costsRes.json()
     }
   } catch {
-    error.value = 'Network error — please try again.'
+    error.value = 'Network error. Please try again.'
   } finally {
     loading.value = false
   }
@@ -1959,6 +1959,15 @@ function onUpload() {
   .rc-nav-back,
   .rc-nav-cta {
     transition: none;
+  }
+}
+
+/* Big screens (>1366px): the laptop layout scaled up (--wide-zoom = width /
+   1366, nuxt.config.ts). Nav row + main zoom, never the full-height root. */
+@media (min-width: 1367px) {
+  .rc-nav-inner,
+  .rc-main {
+    zoom: var(--wide-zoom, 1);
   }
 }
 </style>

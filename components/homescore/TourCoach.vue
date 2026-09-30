@@ -98,16 +98,31 @@ const spotlightStyle = computed(() => {
   }
 })
 
+// The zoom of the page the tip points at. On big screens the HomeScore pages
+// scale up with CSS zoom (--wide-zoom), so read it off the target itself;
+// the CSS variable is only the fallback for browsers without currentCSSZoom.
+function pageZoom() {
+  if (typeof window === 'undefined') return 1
+  const el = props.tour.targetEl.value as (HTMLElement & { currentCSSZoom?: number }) | null
+  if (el && (el.currentCSSZoom ?? 0) > 0) return el.currentCSSZoom as number
+  const z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--wide-zoom'))
+  return z > 0 ? z : 1
+}
+
 const injectPos = computed(() => !!targetRect.value)
 const injectStyle = computed(() => {
   const r = targetRect.value
   if (!r) return {}
+  // The tip lives on <body>, outside the zoomed page, so it takes the same
+  // zoom. Everything below is in screen pixels, then divided by the zoom
+  // because the tip's own top/left/width get multiplied by it.
+  const zoom = pageZoom()
   const vw = typeof window !== 'undefined' ? window.innerWidth : 360
-  const cardWidth = Math.min(vw - 32, 360)
+  const cardWidth = Math.min(vw - 32, 360 * zoom)
   // Centre horizontally; sit below the target, else above it, but never up
   // under the sticky navbar or off the bottom of the screen.
   const vh = typeof window !== 'undefined' ? window.innerHeight : 640
-  const h = injectHeight.value
+  const h = injectHeight.value * zoom
   const gap = 16
   const minTop = topInset.value + 12
   const maxTop = vh - h - 12
@@ -118,9 +133,10 @@ const injectStyle = computed(() => {
   top = Math.max(minTop, Math.min(maxTop, top))
   const left = Math.max(16, Math.min(vw - cardWidth - 16, r.left + r.width / 2 - cardWidth / 2))
   return {
-    top: `${top}px`,
-    left: `${left}px`,
-    width: `${cardWidth}px`,
+    top: `${top / zoom}px`,
+    left: `${left / zoom}px`,
+    width: `${cardWidth / zoom}px`,
+    zoom,
   }
 })
 </script>

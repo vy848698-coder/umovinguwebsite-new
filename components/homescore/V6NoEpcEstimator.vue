@@ -134,7 +134,7 @@
             </svg>
             <div class="ring-val">
               <b>{{ result.mid }}</b>
-              <span>est. {{ result.lo }}–{{ result.hi }}</span>
+              <span>est. {{ result.lo }} to {{ result.hi }}</span>
             </div>
           </div>
           <div class="result-side">
@@ -282,7 +282,7 @@ const SECTION_ICONS: Record<string, string> = {
 function sectionIcon(s: string): string {
   return SECTION_ICONS[s] ?? '/homescore-icon/homeScoreCard.png'
 }
-const U = "Not sure — use typical for this home's age"
+const U = "Not sure, use typical for this home's age"
 const QS: Question[] = [
   { s: 'Property basics', t: 'What type of property is it?', cat: 'structure', w: 1, opts: [
     ['Detached house', '🏡', 0.5],
@@ -293,25 +293,25 @@ const QS: Question[] = [
   ] },
   { s: 'Property basics', t: 'Roughly when was it built?', sub: "The age band sets the assumptions for anything you're unsure about.", cat: 'structure', w: 3, opts: [
     ['Before 1900', '🕰️', 0.15],
-    ['1900–1929', '', 0.2],
-    ['1930–1949', '', 0.3],
-    ['1950–1966', '', 0.4],
-    ['1967–1982', '', 0.5],
-    ['1983–1995', '', 0.65],
-    ['1996–2011', '', 0.8],
+    ['1900 to 1929', '', 0.2],
+    ['1930 to 1949', '', 0.3],
+    ['1950 to 1966', '', 0.4],
+    ['1967 to 1982', '', 0.5],
+    ['1983 to 1995', '', 0.65],
+    ['1996 to 2011', '', 0.8],
     ['2012 or later', '✨', 0.95],
   ] },
   { s: 'Property basics', t: 'How big is it, roughly?', cat: 'efficiency', w: 3, opts: [
-    ['Under 70m² · 1–2 bed', '', 0.8],
-    ['70–100m² · 2–3 bed', '', 0.65],
-    ['100–150m² · 3–4 bed', '', 0.5],
+    ['Under 70m² · 1 to 2 bed', '', 0.8],
+    ['70 to 100m² · 2 to 3 bed', '', 0.65],
+    ['100 to 150m² · 3 to 4 bed', '', 0.5],
     ['Over 150m² · 4+ bed', '', 0.35],
     [U, '🤷', 0.55, 1],
   ] },
   { s: 'Property basics', t: 'Any extensions?', cat: 'structure', w: 1, opts: [
     ['No extensions', '', 0.7],
-    ['Yes — built after 2000', '', 0.8],
-    ['Yes — older extension', '', 0.5],
+    ['Yes, built after 2000', '', 0.8],
+    ['Yes, older extension', '', 0.5],
     [U, '🤷', 0.6, 1],
   ] },
   { s: 'Walls, roof & floor', t: 'What are the external walls?', sub: 'Tip: bricks in an alternating long/short pattern usually means solid walls.', cat: 'structure', w: 5, opts: [
@@ -322,14 +322,14 @@ const QS: Question[] = [
     [U, '🤷', 0.45, 1],
   ] },
   { s: 'Walls, roof & floor', t: 'Have the walls been insulated?', cat: 'structure', w: 4, opts: [
-    ['Yes — cavity or solid-wall insulation', '✅', 0.9],
+    ['Yes, cavity or solid-wall insulation', '✅', 0.9],
     ['No', '❌', 0.3],
     ['No cavity to fill (solid walls)', '', 0.2],
     [U, '🤷', 0.5, 1],
   ] },
   { s: 'Walls, roof & floor', t: 'How much loft insulation is there?', cat: 'structure', w: 5, opts: [
     ['270mm+ (over ankle deep)', '🧤', 0.95],
-    ['100–250mm', '', 0.65],
+    ['100 to 250mm', '', 0.65],
     ['A thin layer (under 100mm)', '', 0.35],
     ['None', '❌', 0.1],
     ['No loft (flat roof / top-floor flat)', '', 0.5],
@@ -337,8 +337,8 @@ const QS: Question[] = [
   ] },
   { s: 'Walls, roof & floor', t: 'Is there a loft conversion?', cat: 'structure', w: 1, opts: [
     ['No conversion', '', 0.7],
-    ['Yes — insulated when converted', '✅', 0.8],
-    ['Yes — not insulated', '❌', 0.3],
+    ['Yes, insulated when converted', '✅', 0.8],
+    ['Yes, not insulated', '❌', 0.3],
     [U, '🤷', 0.55, 1],
   ] },
   { s: 'Walls, roof & floor', t: "What's under the ground floor?", cat: 'structure', w: 2, opts: [
@@ -371,7 +371,7 @@ const QS: Question[] = [
   ] },
   { s: 'Heating & hot water', t: 'How old is the boiler?', cat: 'heating', w: 6, opts: [
     ['Under 5 years', '✨', 0.95],
-    ['5–15 years', '', 0.7],
+    ['5 to 15 years', '', 0.7],
     ['Over 15 years', '', 0.35],
     ['Back boiler (behind a fire)', '🕰️', 0.15],
     ['No boiler', '', 0.5],
@@ -386,7 +386,7 @@ const QS: Question[] = [
     [U, '🤷', 0.5, 1],
   ] },
   { s: 'Heating & hot water', t: 'How is hot water heated?', cat: 'plumbing', w: 20, opts: [
-    ['Combi boiler — no cylinder', '🚿', 0.85],
+    ['Combi boiler, no cylinder', '🚿', 0.85],
     ['Cylinder with factory foam insulation', '', 0.7],
     ['Cylinder with a loose jacket', '', 0.55],
     ['Cylinder, uninsulated', '❌', 0.25],
@@ -516,10 +516,10 @@ const livePillText = computed(() => {
   const est = calc()
   const lo = band(est.hi)
   const hi = band(est.lo)
-  const rangeTxt = lo === hi ? `likely ${lo}` : `${lo}–${hi}`
+  const rangeTxt = lo === hi ? `likely ${lo}` : `${lo} to ${hi}`
   const anyAnswered = answers.value.some((a) => a !== null)
-  if (!anyAnswered) return 'Current estimate: —'
-  return `Current estimate: ${est.lo}–${est.hi} · ${rangeTxt}`
+  if (!anyAnswered) return 'Current estimate: answer a question to start'
+  return `Current estimate: ${est.lo} to ${est.hi} · ${rangeTxt}`
 })
 
 function pick(i: number) {
@@ -564,7 +564,7 @@ const ringOffset = computed(() => 314 * (1 - result.value.mid / 100))
 const resultTitle = computed(() => {
   const r = result.value
   const sameBand = band(r.lo) === band(r.hi)
-  return sameBand ? `Likely band ${band(r.mid)}` : `Likely ${band(r.hi)}–${band(r.lo)}`
+  return sameBand ? `Likely band ${band(r.mid)}` : `Likely ${band(r.hi)} to ${band(r.lo)}`
 })
 
 const boosts = computed(() => {
@@ -589,7 +589,7 @@ const resultBody = computed(() => {
   const boostFragment = nB
     ? ` <b>${nB} step${nB > 1 ? 's' : ''}</b> below could lift it further.`
     : ' This home is already performing strongly.'
-  return `We estimate <b>${r.lo}–${r.hi} out of 100</b>.${boostFragment}`
+  return `We estimate <b>${r.lo} to ${r.hi} out of 100</b>.${boostFragment}`
 })
 
 const resultNote = computed(() => {
@@ -599,7 +599,7 @@ const resultNote = computed(() => {
   const unsurePart = unsure
     ? `${unsure} answer${unsure > 1 ? 's' : ''} used age-typical defaults; confirming them tightens the range. `
     : ''
-  return `Estimated from <b>your answers today</b> — no EPC exists for this property. ${unsurePart}Book an accredited assessment to make it official.`
+  return `Estimated from <b>your answers today</b>, as no EPC exists for this property. ${unsurePart}Book an accredited assessment to make it official.`
 })
 
 const estBills = computed(() =>
