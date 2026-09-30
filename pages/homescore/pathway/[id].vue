@@ -58,7 +58,7 @@
               Here's how your home could improve further.
             </h1>
             <div class="pw-pagehead-sub">
-              <Icon name="i-lucide-map-pin" /> {{ addressLine }}
+              <Icon name="i-lucide-map-pin" /> {{ addressLine }}<template v-if="fromScore"> · EPC {{ fromLevel }}</template>
             </div>
           </div>
           <img
@@ -181,10 +181,11 @@
           <!-- Section heading -->
           <div class="section-h-row">
             <div class="section-h">
-              EPC's {{ missions.length }} step{{ missions.length === 1 ? '' : 's' }} · in published order
+              {{ missions.length }} recommended improvement{{ missions.length === 1 ? '' : 's' }} · in the EPC's published order
             </div>
             <div v-if="fromScore && toScore" class="section-h-sub">
               {{ fromScore }} → {{ toScore }} points
+              <span v-if="toScore > fromScore" class="section-h-sub-muted">Potential (+{{ toScore - fromScore }})</span>
             </div>
           </div>
 
@@ -228,17 +229,31 @@
                     <template v-else>{{ m.meta }}</template>
                   </div>
                 </div>
+                <button
+                  v-if="!m.done"
+                  class="mission-add-btn"
+                  type="button"
+                  :aria-label="`Add ${m.title} to your shortlist`"
+                  @click.stop="openInstallerSheet(m)"
+                >
+                  <Icon name="i-lucide-plus" />
+                </button>
               </div>
-              <div v-if="!m.done" class="mission-rewards">
-                <span v-if="m.pts" class="quest-reward stat">
-                  <Icon name="i-lucide-arrow-up-right" />{{ m.pts }}
-                </span>
-                <span v-if="m.save" class="quest-reward money">
-                  <Icon name="i-lucide-piggy-bank" />{{ m.save }}
-                </span>
-                <span v-if="m.cost" class="quest-reward grant">
-                  <Icon name="i-lucide-tag" />{{ m.cost }}
-                </span>
+              <div v-if="!m.done" class="mission-stats-row">
+                <div class="mission-stat">
+                  <div class="mission-stat-label"><Icon name="i-lucide-arrow-up-right" /> HomeScore</div>
+                  <div class="mission-stat-val mission-stat-val--score">
+                    {{ m.scoreFrom }} → {{ m.scoreTo }}<span v-if="m.grade" class="mission-stat-grade">{{ m.grade }}</span>
+                  </div>
+                </div>
+                <div class="mission-stat">
+                  <div class="mission-stat-label"><Icon name="i-lucide-piggy-bank" /> Save</div>
+                  <div class="mission-stat-val mission-stat-val--save">{{ m.save || 'Not listed' }}</div>
+                </div>
+                <div class="mission-stat">
+                  <div class="mission-stat-label"><Icon name="i-lucide-tag" /> Est. cost</div>
+                  <div class="mission-stat-val mission-stat-val--cost">{{ m.cost || 'Not listed' }}</div>
+                </div>
               </div>
               <div class="mission-actions">
                 <template v-if="m.done">
@@ -313,14 +328,14 @@
               type="button"
               @click="openMarketplaceSheet"
             >
-              <Icon name="i-lucide-shopping-cart" /> Join the marketplace early access
+              <Icon name="i-lucide-shopping-cart" /> {{ earlyAccessJoined ? 'Request another professional' : 'Join the marketplace early access' }}
             </button>
             <button
               class="bottom-cta-secondary"
               type="button"
               @click="openTrackerSheet"
             >
-              <Icon name="i-lucide-list-checks" /> See your requests
+              <Icon name="i-lucide-list-checks" /> View my requests
             </button>
           </div>
         </div><!-- /pw-side -->
@@ -337,6 +352,7 @@
         :postcode="propertyPostcode"
         :address="addressLine"
         :initial-state="installerInitialState"
+        :hide-routes="installerHideRoutes"
       />
 
       <!-- Floating "Verify your answers" pill — re-opens the modal if the
@@ -530,6 +546,11 @@ const installerSheetOpen = ref(false)
 const installerKind = ref<InstallerKind>('other')
 const installerMeasureTitle = ref('')
 const installerInitialState = ref<SheetState>('routes')
+// Grant banner opens a grant-check-only sheet (no per-measure routes screen).
+const installerHideRoutes = ref(false)
+// Shared with InstallerFlowSheet via the same useState key: true once the
+// user has joined marketplace early access anywhere in the app.
+const earlyAccessJoined = useState<boolean>('installer-early-access-joined', () => false)
 
 // Rough mapping mission title → trade kind. Only used to pick which
 // accreditation copy (TrustMark vs MCS) the drawer shows; everything
@@ -545,6 +566,7 @@ function openInstallerSheet(m: { title: string }) {
   installerKind.value = kindForMissionTitle(m.title)
   installerMeasureTitle.value = m.title
   installerInitialState.value = 'routes'
+  installerHideRoutes.value = false
   installerSheetOpen.value = true
 }
 
@@ -554,16 +576,19 @@ function openGrantCheckSheet() {
   installerKind.value = 'other'
   installerMeasureTitle.value = ''
   installerInitialState.value = 'elig'
+  installerHideRoutes.value = true
   installerSheetOpen.value = true
 }
 
 function openTrackerSheet() {
   installerInitialState.value = 'tracker'
+  installerHideRoutes.value = false
   installerSheetOpen.value = true
 }
 
 function openMarketplaceSheet() {
-  installerInitialState.value = 'market'
+  installerInitialState.value = earlyAccessJoined.value ? 'ea-form' : 'market'
+  installerHideRoutes.value = false
   installerSheetOpen.value = true
 }
 
@@ -637,6 +662,9 @@ interface Mission {
   title: string
   meta: string
   pts: string
+  scoreFrom: number
+  scoreTo: number
+  grade: string
   save: string
   cost: string
   supplierLabel: string
@@ -714,11 +742,16 @@ const missions = computed<Mission[]>(() => {
     if (Number.isFinite(an) && Number.isFinite(bn)) return an - bn
     return 0
   })
+  // Each step's HomeScore runs from the previous step's result to this one's.
+  let prevScore = fromScore.value
   return sorted.map((r: any, idx: number) => {
     const title = r?.title || r?.improvementDescr || 'EPC recommendation'
     const sap = Number(r?.resultingSap ?? 0)
     const grade = sap > 0 ? gradeFor(sap) : ''
     const doneInfo = isMissionDone(title, quizAnswers.value)
+    const scoreFrom = prevScore
+    const scoreTo = sap > 0 ? Math.round(sap) : prevScore
+    prevScore = scoreTo
     return {
       id: String(r?.id ?? idx),
       icon: iconForRec(title),
@@ -727,7 +760,10 @@ const missions = computed<Mission[]>(() => {
         r?.description ||
         `Step ${idx + 1} on this property's EPC pathway.`,
       pts: sap > 0 ? `→ ${sap} ${grade}` : `Step ${idx + 1}`,
-      save: r?.typicalSaving ? `£${r.typicalSaving}/yr` : '',
+      scoreFrom,
+      scoreTo,
+      grade,
+      save: r?.typicalSaving ? `~£${r.typicalSaving}/year` : '',
       // EPC ranges arrive as "£500 - £1,500"; show them without a dash.
       cost: (r?.costRange || '').replace(/\s*[-–—]\s*/g, ' to '),
       supplierLabel: supplierLabelForRec(title),
@@ -1422,6 +1458,9 @@ function onBack() {
   gap: 12px;
   padding: 4px 4px 2px;
 }
+@media (max-width: 560px) {
+  .section-h-row { flex-direction: column; gap: 4px; }
+}
 .section-h {
   font-size: 11px;
   font-weight: 800;
@@ -1606,6 +1645,77 @@ function onBack() {
   background: var(--purple-pale);
   color: var(--purple);
   border: 1px solid var(--purple-border);
+}
+
+/* Labelled stats per step (HomeScore / Save / Est. cost), app parity. */
+.mission-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.mission-stat { padding: 10px 12px; min-width: 0; }
+.mission-stat + .mission-stat { border-left: 1px solid var(--border-soft); }
+.mission-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.mission-stat-label :deep(svg) { width: 12px; height: 12px; flex-shrink: 0; }
+.mission-stat-val {
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #231d45;
+}
+.mission-stat-val--score { color: var(--accent-dark); }
+.mission-stat-val--save { color: #966400; }
+.mission-stat-val--cost { color: var(--purple); }
+@media (max-width: 460px) {
+  .mission-stats-row { grid-template-columns: minmax(0, 1fr); }
+  .mission-stat { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .mission-stat-val { margin-top: 0; text-align: right; }
+  .mission-stat + .mission-stat { border-left: 0; border-top: 1px solid var(--border-soft); }
+}
+.mission-stat-grade {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+}
+
+/* "+" add to shortlist, top right of each step */
+.mission-add-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--accent-pale);
+  background: var(--accent-paler);
+  color: var(--accent-dark);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mission-add-btn :deep(svg) { width: 17px; height: 17px; }
+.mission-add-btn:hover { background: var(--accent); color: #fff; }
+
+.section-h-sub-muted {
+  margin-left: 6px;
+  font-weight: 600;
+  color: var(--text-faint);
 }
 .mission-actions {
   display: flex;

@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="open" class="ifs-overlay" @click.self="close">
-      <div class="ifs-sheet" role="dialog" aria-modal="true">
+      <div class="ifs-sheet" role="dialog" aria-modal="true" :aria-label="sheetTitle">
         <div class="ifs-handle" />
         <div class="ifs-scroll">
 
@@ -104,8 +104,8 @@
               </div>
             </div>
 
-            <span class="ifs-indicative"><Icon name="i-lucide-triangle-alert" /> Indicative only — your installer confirms at survey</span>
-            <button class="ifs-back-link" @click="state = 'routes'">‹ Back</button>
+            <span class="ifs-indicative"><Icon name="i-lucide-triangle-alert" /> Indicative only. Your installer confirms at survey</span>
+            <button class="ifs-back-link" @click="backFromElig">‹ Back</button>
           </div>
 
           <!-- STATE: eligibility result -->
@@ -118,7 +118,7 @@
             <div v-else class="ifs-result-hero ifs-result-hero--none">
               <img class="ifs-rh-ic" src="/homescore-icon/magnifier.png" alt="" loading="lazy" />
               <h3>No means-tested grants flagged</h3>
-              <p>You may not qualify for the income-based schemes, but installers can still check local offers — and paying direct is always an option. We'll match either way.</p>
+              <p>You may not qualify for the income-based schemes, but installers can still check local offers, and paying direct is always an option. We'll match either way.</p>
             </div>
 
             <div v-if="grants.length" class="ifs-grant-list">
@@ -141,14 +141,14 @@
             </div>
 
             <button class="ifs-submit" @click="goForm">Get matched with eligible installers</button>
-            <button class="ifs-back-link" @click="state = 'routes'">‹ Start over</button>
+            <button class="ifs-back-link" @click="startOverFromResult">‹ Start over</button>
           </div>
 
           <!-- STATE: capture form -->
           <div v-else-if="state === 'form'" class="ifs-state">
             <div class="ifs-eyebrow">Get matched</div>
             <h3 class="ifs-title">Line up installers</h3>
-            <p class="ifs-lede">Just the basics — we'll come back with vetted installers. No obligation.</p>
+            <p class="ifs-lede">Just the basics. We'll come back with vetted installers. No obligation.</p>
 
             <div class="ifs-prop-lock">
               <img src="/homescore-icon/houseSearch.png" alt="" class="ifs-pl-ic" loading="lazy" />
@@ -168,7 +168,7 @@
             </div>
 
             <button class="ifs-submit" @click="goConfirm">Request matches</button>
-            <button class="ifs-back-link" @click="state = 'routes'">‹ Back</button>
+            <button class="ifs-back-link" @click="backFromForm">‹ Back</button>
           </div>
 
           <!-- STATE: match confirm -->
@@ -187,7 +187,7 @@
                 <img class="ifs-passport-ic" src="/homescore-icon/homeScoreCard.png" alt="" loading="lazy" />
                 <p>Every match request helps us bring installers to <b>{{ postcode || 'your area' }}</b> faster.</p>
               </div>
-              <button class="ifs-primary" @click="afterConfirm">See your requests</button>
+              <button class="ifs-primary" @click="afterConfirm">View my requests</button>
             </div>
           </div>
 
@@ -207,7 +207,7 @@
             <div v-else class="ifs-track">
               <div v-for="(r, i) in requests" :key="i" class="ifs-track-item">
                 <div class="ifs-track-top">
-                  <img class="ifs-t-ic" src="/homescore-icon/wrench.png" alt="" loading="lazy" />
+                  <img class="ifs-t-ic" :src="iconForRequest(r.measure)" alt="" loading="lazy" />
                   <div>
                     <div class="ifs-t-name">{{ r.measure }}</div>
                     <div class="ifs-t-date">{{ r.date }}</div>
@@ -233,8 +233,13 @@
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
               </div>
-              <h3>Marketplace — early access</h3>
-              <p>We're onboarding vetted local trades right now. Join early access and we'll open your marketplace the moment installers cover {{ postcode || 'your area' }}.</p>
+              <h3>Marketplace early access</h3>
+              <p>
+                We're building your local marketplace around real homeowner
+                demand. Join early access and we'll let you know as soon as
+                vetted professionals are available for
+                <b>{{ postcode || 'your area' }}</b>.
+              </p>
             </div>
             <div class="ifs-promise">
               <div class="ifs-promise-row">
@@ -242,8 +247,8 @@
                   <img src="/homescore-icon/shield.png" alt="" loading="lazy" />
                 </div>
                 <div>
-                  <div class="ifs-p-title">UMU-verified suppliers</div>
-                  <div class="ifs-p-sub">ID, insurance and accreditation checked before they list.</div>
+                  <div class="ifs-p-title">UMU-verified professionals</div>
+                  <div class="ifs-p-sub">Identity, insurance and relevant accreditations checked before they appear.</div>
                 </div>
               </div>
               <div class="ifs-promise-row">
@@ -251,8 +256,8 @@
                   <img src="/homescore-icon/trustPadlock.png" alt="" loading="lazy" />
                 </div>
                 <div>
-                  <div class="ifs-p-title">Payments in escrow</div>
-                  <div class="ifs-p-sub">Held via UProtect, released when work's signed off.</div>
+                  <div class="ifs-p-title">Protected payments</div>
+                  <div class="ifs-p-sub">Where available, payments can be held securely until work is signed off.</div>
                 </div>
               </div>
               <div class="ifs-promise-row">
@@ -260,8 +265,8 @@
                   <img src="/homescore-icon/gift.png" alt="" loading="lazy" />
                 </div>
                 <div>
-                  <div class="ifs-p-title">Grant-ready</div>
-                  <div class="ifs-p-sub">TrustMark & ECO4-registered trades for funded work.</div>
+                  <div class="ifs-p-title">Funding-aware matching</div>
+                  <div class="ifs-p-sub">We'll prioritise appropriately registered professionals where funded work requires it.</div>
                 </div>
               </div>
             </div>
@@ -272,8 +277,8 @@
           <!-- STATE: early-access form -->
           <div v-else-if="state === 'ea-form'" class="ifs-state">
             <div class="ifs-eyebrow">Early access</div>
-            <h3 class="ifs-title">Get in the queue for {{ postcode || 'your area' }}</h3>
-            <p class="ifs-lede">We'll open your marketplace the moment vetted trades cover your postcode. Tell us what to prioritise.</p>
+            <h3 class="ifs-title">Help us build the right network for {{ postcode || 'your area' }}</h3>
+            <p class="ifs-lede">Tell us which professionals matter most to you. We'll use local demand to prioritise who we onboard first and let you know when matching is available.</p>
 
             <div class="ifs-prop-lock">
               <span class="ifs-pl-ic ifs-pl-ic--pin">
@@ -283,11 +288,11 @@
               </span>
               <div>
                 <div class="ifs-pl-label">Postcode area</div>
-                <div class="ifs-pl-val">{{ postcode || '—' }}</div>
+                <div class="ifs-pl-val">{{ postcode || 'Postcode unavailable' }}</div>
               </div>
             </div>
 
-            <div class="ifs-ea-q">Which trades matter most to you?</div>
+            <div class="ifs-ea-q">Which professionals matter most to you?</div>
             <div class="ifs-ea-chips">
               <button
                 v-for="c in interestChoices"
@@ -305,9 +310,32 @@
               <label>Your name</label>
               <input v-model="eaName" type="text" placeholder="e.g. Maxine Wilson" />
             </div>
+            <div class="ifs-ea-q">How should we contact you?</div>
+            <div class="ifs-contact-toggle">
+              <button
+                type="button"
+                class="ifs-contact-opt"
+                :class="{ on: contactMethod === 'email' }"
+                @click="contactMethod = 'email'"
+              >
+                <Icon name="i-lucide-mail" /> Email
+              </button>
+              <button
+                type="button"
+                class="ifs-contact-opt"
+                :class="{ on: contactMethod === 'mobile' }"
+                @click="contactMethod = 'mobile'"
+              >
+                <Icon name="i-lucide-smartphone" /> Mobile
+              </button>
+            </div>
             <div class="ifs-field">
-              <label>Email or mobile</label>
-              <input v-model="eaContact" type="text" placeholder="We'll tell you when it opens" />
+              <input
+                v-model="eaContact"
+                :type="contactMethod === 'email' ? 'email' : 'tel'"
+                :placeholder="contactMethod === 'email' ? 'e.g. maxine.wilson@email.com' : 'e.g. 07700 900123'"
+                :aria-label="contactMethod === 'email' ? 'Email address' : 'Mobile number'"
+              />
             </div>
 
             <button class="ifs-submit" @click="submitEarly">Join early access</button>
@@ -317,19 +345,25 @@
           <!-- STATE: early-access confirm -->
           <div v-else-if="state === 'ea-confirm'" class="ifs-state">
             <div class="ifs-confirm">
-              <div class="ifs-tick">
+              <div class="ifs-tick ifs-tick--sparkly">
+                <svg class="ifs-tick-sparkle ifs-tick-sparkle--1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>
+                <svg class="ifs-tick-sparkle ifs-tick-sparkle--2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>
+                <svg class="ifs-tick-sparkle ifs-tick-sparkle--3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" /></svg>
                 <span class="ifs-ring" />
                 <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
               </div>
-              <h3>You're on the early list</h3>
+              <h3>You're on the early access list!</h3>
               <p>
-                We'll email you the moment vetted trades cover
-                <b>{{ postcode || 'your area' }}</b>.
+                We'll contact you as soon as suitable vetted professionals are
+                available for <b>{{ postcode || 'your area' }}</b>.
                 <span v-if="interests.length">We'll prioritise <b>{{ interests.join(', ').toLowerCase() }}</b> for your area.</span>
               </p>
               <div class="ifs-passport">
                 <img class="ifs-passport-ic" src="/homescore-icon/growthChart.png" alt="" loading="lazy" />
-                <p>Your interest helps us decide <b>which trades to onboard first</b> — the more demand in {{ postcode || 'your area' }}, the sooner it opens.</p>
+                <div>
+                  <div class="ifs-passport-title">Your request helps shape the marketplace</div>
+                  <p>The more demand we see for a trade in your area, the sooner we can prioritise onboarding suitable professionals.</p>
+                </div>
               </div>
               <button class="ifs-primary" @click="close">Back to pathway</button>
             </div>
@@ -358,6 +392,10 @@ const props = withDefaults(defineProps<{
   postcode?: string | null
   address?: string
   initialState?: StateName
+  /** When true, this sheet only ever shows the grant-check flow (elig →
+   *  result → its "get matched" continuation). There's no 'routes' screen
+   *  to fall back to, so back / start over stay within that flow. */
+  hideRoutes?: boolean
 }>(), {
   kind: 'other',
   measureTitle: '',
@@ -365,6 +403,7 @@ const props = withDefaults(defineProps<{
   postcode: '',
   address: '',
   initialState: 'routes',
+  hideRoutes: false,
 })
 
 const emit = defineEmits<{
@@ -373,12 +412,31 @@ const emit = defineEmits<{
 }>()
 
 const state = ref<StateName>('routes')
+
+// Per-state accessible name for the role="dialog" sheet.
+const SHEET_STATE_TITLES: Record<StateName, string> = {
+  routes: '',
+  elig: 'Grant eligibility check',
+  result: '',
+  form: 'Line up installers',
+  confirm: "You're on the list",
+  tracker: 'Match requests',
+  market: 'Marketplace early access',
+  'ea-form': 'Early access',
+  'ea-confirm': "You're on the early access list",
+}
+const sheetTitle = computed(() => {
+  if (state.value === 'routes') return trade.value.title
+  if (state.value === 'result') return grants.value.length ? 'You may qualify for funding' : 'Funding results'
+  return SHEET_STATE_TITLES[state.value]
+})
 const eligStep = ref(1)
 const answers = reactive<{ tenure?: string; benefits?: string; income?: string }>({})
 const formName = ref('')
 const formContact = ref('')
 const eaName = ref('')
 const eaContact = ref('')
+const contactMethod = ref<'email' | 'mobile'>('email')
 const interests = ref<string[]>([])
 
 // Match requests survive: (a) sheet close/reopen — the outer `v-if`
@@ -392,6 +450,23 @@ interface TrackedRequest {
   status: 'sourcing'
   grant: string | null
 }
+// Same measure → icon mapping as the pathway page's iconForRec (the request's
+// measure is that page's mission title), so a tracked request shows the icon
+// of the step it came from instead of a generic wrench.
+function iconForRequest(measure: string): string {
+  const t = (measure ?? '').toLowerCase()
+  if (/solar pv|photovoltaic/.test(t)) return '/homescore-icon/lightning.png'
+  if (/solar (?:water|thermal)/.test(t)) return '/homescore-icon/lightning.png'
+  if (/(loft|roof)/.test(t)) return '/homescore-icon/roof.png'
+  if (/(cavity|wall)/.test(t)) return '/homescore-icon/walls.png'
+  if (/floor/.test(t)) return '/homescore-icon/floor.png'
+  if (/(led|light)/.test(t)) return '/homescore-icon/lightbulb.png'
+  if (/(boiler|heat pump|heating)/.test(t)) return '/homescore-icon/boiler.png'
+  if (/thermostat|controls/.test(t)) return '/homescore-icon/heatingControls.png'
+  if (/hot water|cylinder/.test(t)) return '/homescore-icon/tap.png'
+  return '/homescore-icon/wrench.png'
+}
+
 const REQUESTS_LS_KEY = 'umu.installer.requests'
 const requests = useState<TrackedRequest[]>('installer-requests', () => [])
 onMounted(() => {
@@ -407,6 +482,18 @@ onMounted(() => {
 function persistRequests() {
   try { localStorage.setItem(REQUESTS_LS_KEY, JSON.stringify(requests.value)) } catch {}
 }
+
+// Whether the user has already joined marketplace early access. The pathway
+// page reads the same useState key to swap "Join the marketplace early
+// access" for "Request another professional". Mirrored to localStorage.
+const EARLY_ACCESS_LS_KEY = 'umu.installer.earlyAccessJoined'
+const earlyAccessJoined = useState<boolean>('installer-early-access-joined', () => false)
+onMounted(() => {
+  if (earlyAccessJoined.value) return
+  try {
+    earlyAccessJoined.value = localStorage.getItem(EARLY_ACCESS_LS_KEY) === '1'
+  } catch { /* inaccessible LS is fine, leave false */ }
+})
 
 
 const { send: sendCapture } = useCaptureEvent()
@@ -507,9 +594,9 @@ const trade = computed(() => {
 })
 
 const interestChoices = [
-  { value: 'Insulation', label: 'Insulation', icon: '/homescore-icon/bricks.png' },
+  { value: 'Insulation', label: 'Insulation', icon: '/homescore-icon/walls.png' },
   { value: 'Solar & battery', label: 'Solar & battery', icon: '/homescore-icon/lightning.png' },
-  { value: 'Heat pumps', label: 'Heat pumps', icon: '/homescore-icon/boiler.png' },
+  { value: 'Heat pumps', label: 'Heat pumps', icon: '/homescore-icon/flame.png' },
   { value: 'Windows & doors', label: 'Windows & doors', icon: '/homescore-icon/windows.png' },
   { value: 'General trades', label: 'General trades', icon: '/homescore-icon/wrench.png' },
 ]
@@ -527,7 +614,7 @@ function computeGrants() {
     g.push({ ic: '/homescore-icon/house.png', name: 'Warm Homes: Local Grant', desc: 'Up to £15k for insulation & heating in low-EPC homes.', tag: 'Likely' })
     g.push({ ic: '/homescore-icon/lightning.png', name: 'ECO4', desc: 'Supplier-funded upgrades for eligible households.', tag: 'Likely' })
   } else if (eligibleTenure && income === 'high' && benefits === 'no') {
-    g.push({ ic: '/homescore-icon/bricks.png', name: 'Great British Insulation Scheme', desc: 'Not fully means-tested — Council Tax band & EPC based.', tag: 'Possible' })
+    g.push({ ic: '/homescore-icon/bricks.png', name: 'Great British Insulation Scheme', desc: 'Not fully means-tested. Based on Council Tax band and EPC.', tag: 'Possible' })
   }
   grants.value = g
   lastGrantContext = g.length ? g.map((x) => x.name).join(', ') : null
@@ -535,7 +622,7 @@ function computeGrants() {
 
 const grantLine = computed(() =>
   answers.tenure && (answers.benefits === 'yes' || answers.income === 'low')
-    ? " — and we'll factor in the grants you may qualify for"
+    ? ", and we'll factor in the grants you may qualify for"
     : '',
 )
 
@@ -546,6 +633,23 @@ function startElig() {
   answers.income = undefined
   eligStep.value = 1
   state.value = 'elig'
+}
+
+// Grant-check-only entry (props.hideRoutes): there's no 'routes' screen to
+// return to, so "back" closes the sheet and "start over" restarts the quiz.
+function backFromElig() {
+  if (props.hideRoutes) close()
+  else state.value = 'routes'
+}
+function startOverFromResult() {
+  if (props.hideRoutes) startElig()
+  else state.value = 'routes'
+}
+function backFromForm() {
+  // In hideRoutes mode 'form' can only be reached from the grant check's
+  // result, so go back there rather than to the hidden routes screen.
+  if (props.hideRoutes) state.value = 'result'
+  else state.value = 'routes'
 }
 
 function answer(key: 'tenure' | 'benefits' | 'income', value: string) {
@@ -630,8 +734,10 @@ function submitEarly() {
       contact: eaContact.value || undefined,
       consentToContact: true,
     },
-    data: { interests: [...interests.value] },
+    data: { interests: [...interests.value], contactMethod: contactMethod.value },
   })
+  earlyAccessJoined.value = true
+  try { localStorage.setItem(EARLY_ACCESS_LS_KEY, '1') } catch {}
   state.value = 'ea-confirm'
 }
 
@@ -1110,6 +1216,63 @@ watch(() => props.open, (o) => {
   font-weight: 500;
 }
 .ifs-passport p b { color: #231d45 }
+.ifs-passport-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #231d45;
+  margin-bottom: 3px;
+}
+
+/* early access: sparkles around the tick */
+.ifs-tick--sparkly { overflow: visible }
+.ifs-tick-sparkle {
+  position: absolute;
+  width: 14px !important;
+  height: 14px !important;
+  stroke: none !important;
+  fill: #f5b83d !important;
+  stroke-dasharray: none !important;
+  animation: ifs-twinkle 1.8s ease-in-out infinite !important;
+}
+.ifs-tick-sparkle--1 { top: -4px; right: -6px }
+.ifs-tick-sparkle--2 { bottom: 2px; left: -10px; width: 10px !important; height: 10px !important; animation-delay: 0.4s !important }
+.ifs-tick-sparkle--3 { top: 10px; left: -14px; width: 8px !important; height: 8px !important; fill: #00a19a !important; animation-delay: 0.8s !important }
+@keyframes ifs-twinkle {
+  0%, 100% { transform: scale(0.8); opacity: 0.55 }
+  50% { transform: scale(1.1); opacity: 1 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ifs-tick-sparkle { animation: none !important }
+}
+
+/* early access: Email / Mobile toggle */
+.ifs-contact-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.ifs-contact-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px;
+  border-radius: 12px;
+  border: 1.5px solid #e9e7f0;
+  background: #fbfafe;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b6880;
+  cursor: pointer;
+}
+.ifs-contact-opt svg { width: 16px; height: 16px }
+.ifs-contact-opt.on {
+  border-color: #00a19a;
+  background: #e6f5f4;
+  color: #00857f;
+}
 
 /* tracker */
 .ifs-track { display: flex; flex-direction: column; gap: 12px; margin-top: 16px }
