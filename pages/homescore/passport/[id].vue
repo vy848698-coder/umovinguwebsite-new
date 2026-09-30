@@ -1058,16 +1058,12 @@ function onBack() {
 }
 button.pb-doc-card { cursor: pointer; }
 button.pb-doc-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
-/* Mint stage with a soft glow under the artwork. */
+/* Artwork sits straight on the white card, no tinted stage. */
 .pb-doc-art {
   position: relative;
   display: grid;
   place-items: center;
   min-height: 118px;
-  background:
-    radial-gradient(70px 34px at 50% 80%, rgba(0, 161, 154, 0.2), transparent 70%),
-    linear-gradient(180deg, #f2fbf9 0%, #e4f5f2 100%);
-  border-right: 1px solid #e6f3f0;
 }
 .pb-doc-ic {
   width: 84px;
@@ -1159,16 +1155,12 @@ button.pb-doc-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2
   box-shadow: 0 16px 34px rgba(35, 29, 69, 0.12);
 }
 .pb-pro-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
-/* Artwork on a soft mint stage with a glow under it. */
+/* Artwork sits straight on the white card, no tinted stage. */
 .pb-pro-art {
   position: relative;
   display: grid;
   place-items: center;
   height: 150px;
-  background:
-    radial-gradient(120px 60px at 50% 82%, rgba(0, 161, 154, 0.18), transparent 70%),
-    linear-gradient(180deg, #f2fbf9 0%, #e6f6f3 100%);
-  border-bottom: 1px solid #e6f3f0;
 }
 .pb-pro-ic {
   position: relative;
@@ -1258,7 +1250,6 @@ button.pb-doc-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2
     height: auto;
     min-height: 100%;
     border-bottom: 0;
-    border-right: 1px solid #e6f3f0;
   }
   .pb-pro-ic { width: 88px; height: 88px; }
   .pb-pro-body { padding: 14px 16px 0; }
@@ -1286,32 +1277,14 @@ button.pb-doc-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2
   box-shadow: 0 16px 40px rgba(35, 29, 69, 0.09);
   overflow: hidden;
 }
-/* Full-width illustrated header: the passport on a mint stage with a
-   glow and two soft rings behind it. */
+/* Full-width illustrated header: the passport straight on the white card,
+   no tinted stage or rings behind it. */
 .pb-claim-stage {
   position: relative;
   display: grid;
   place-items: center;
-  padding: 28px 20px 18px;
-  background:
-    radial-gradient(160px 70px at 50% 88%, rgba(0, 161, 154, 0.26), transparent 70%),
-    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.8), transparent 38%),
-    linear-gradient(180deg, #effaf7 0%, #d9f1ec 100%);
-  border-bottom: 1px solid #dcefeb;
-  overflow: hidden;
+  padding: 28px 20px 8px;
 }
-.pb-claim-stage::before,
-.pb-claim-stage::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 161, 154, 0.16);
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-.pb-claim-stage::before { width: 230px; height: 230px; }
-.pb-claim-stage::after { width: 310px; height: 310px; border-color: rgba(0, 161, 154, 0.09); }
 .pb-claim-art {
   position: relative;
   z-index: 1;
@@ -1321,7 +1294,7 @@ button.pb-doc-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2
 .pb-claim-art img {
   width: 196px;
   height: auto;
-  filter: drop-shadow(0 18px 26px rgba(0, 110, 103, 0.3));
+  filter: drop-shadow(0 14px 18px rgba(35, 29, 69, 0.16));
   transition: transform 0.35s ease;
 }
 .pb-claim:hover .pb-claim-art img { transform: translateY(-4px) rotate(-1.5deg); }
