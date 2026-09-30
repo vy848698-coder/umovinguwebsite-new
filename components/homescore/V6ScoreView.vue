@@ -777,6 +777,13 @@
         </div>
       </template>
     </div>
+
+    <!-- Trust line under the connection options (from the app clone):
+         reassurance sits outside the buttons so the tiles stay clean. -->
+    <p class="hs-trust-note">
+      <Icon name="i-lucide-lock" class="hs-trust-ic" />
+      <span><strong>Secure &amp; private.</strong> We'll never share your information without your permission.</span>
+    </p>
     </div><!-- /hs-report -->
     </template><!-- /hasEpcData -->
 
@@ -3962,6 +3969,29 @@ const watchersDisplay = computed(() => {
   opacity: 0.86;
 }
 .fork-tile-arrow { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* Trust line centred under the connection tiles. */
+.hs-trust-note {
+  margin: 16px auto 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.hs-trust-note strong {
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+/* Inline so the lock stays beside the first word when the line wraps. */
+.hs-trust-ic {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  color: var(--accent-dark);
+}
 
 /* ── EPC NOT AVAILABLE empty state ──────────────────────────── */
 /* Compact property header shown above the no-EPC card so the user
