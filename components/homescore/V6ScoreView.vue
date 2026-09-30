@@ -745,7 +745,7 @@
         <div class="fork-eyebrow">What you can do here</div>
         <div class="fork-grid fork-grid--single">
           <button class="fork-tile fork-tile--buyer" type="button" @click="$emit('interested')">
-            <img src="/homescore-icon/houseInterested.png" alt="" class="fork-tile-icon" loading="lazy" />
+            <img src="/homescore-icon/interestedinthisproperty.png" alt="" class="fork-tile-icon" loading="lazy" />
             <span class="fork-tile-body">
               <span class="fork-tile-title">I'm interested in this property</span>
               <span class="fork-tile-sub">
@@ -768,7 +768,7 @@
              passport buttons: teal owner tile, navy buyer tile. -->
         <div class="fork-grid">
           <button class="fork-tile fork-tile--owner" type="button" @click="$emit('claim')">
-            <img src="/homescore-icon/homeScoreCard.png" alt="" class="fork-tile-icon" loading="lazy" />
+            <img src="/homescore-icon/ownthisproperty.png" alt="" class="fork-tile-icon" loading="lazy" />
             <span class="fork-tile-body">
               <span class="fork-tile-title">I own this property</span>
               <span class="fork-tile-sub">
@@ -779,7 +779,7 @@
             <Icon name="i-lucide-arrow-right" class="fork-tile-arrow" />
           </button>
           <button class="fork-tile fork-tile--buyer" type="button" @click="$emit('interested')">
-            <img src="/homescore-icon/houseInterested.png" alt="" class="fork-tile-icon" loading="lazy" />
+            <img src="/homescore-icon/interestedinthisproperty.png" alt="" class="fork-tile-icon" loading="lazy" />
             <span class="fork-tile-body">
               <span class="fork-tile-title">I'm interested in this property</span>
               <span class="fork-tile-sub">
@@ -3971,7 +3971,18 @@ const watchersDisplay = computed(() => {
   background: var(--primary);
   box-shadow: 0 6px 18px rgba(35, 29, 69, 0.25);
 }
-.fork-tile-icon { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
+.fork-tile-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.22));
+  transition: transform 0.25s ease;
+}
+.fork-tile:hover .fork-tile-icon { transform: translateY(-2px) scale(1.04); }
+@media (min-width: 901px) {
+  .fork-tile-icon { width: 80px; height: 80px; }
+}
 .fork-tile-body { flex: 1; min-width: 0; display: block; }
 .fork-tile-title {
   display: block;
