@@ -41,11 +41,11 @@ const showHandover = computed(() => props.status === 'FLAG' || props.status === 
 const outcomeExplanation = computed(() => {
   switch (props.status) {
     case 'RESOLVED':
-      return `Nothing further to address for "${props.pathway.name}" - your evidence is saved in your passport.`
+      return `Nothing further to address for "${props.pathway.name}". Your evidence is saved in your passport.`
     case 'CHECK':
       return `This is known and documented, or there's still a homeowner step to finish for "${props.pathway.name}".`
     case 'FLAG':
-      return `You've done everything you can yourself for "${props.pathway.name}" - this is now ready for a conveyancer to review.`
+      return `You've done everything you can yourself for "${props.pathway.name}". This is now ready for a conveyancer to review.`
     case 'ESCALATE':
       return `"${props.pathway.name}" needs a legal judgement before selling. Please speak to a conveyancer.`
     default:

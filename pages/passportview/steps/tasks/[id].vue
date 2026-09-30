@@ -272,8 +272,13 @@
                      inline below the question when the just-saved answer
                      matched a known trigger. Most questions aren't mapped to
                      pathway content yet, so this stays empty for now. -->
+                <!-- Keyed per step (and per failed attempt): the card marks
+                     itself busy once an option is chosen, so each new step,
+                     or a retry after a failed save, needs a fresh card or
+                     every button would stay disabled. -->
                 <PathwayStepCard
                   v-if="activePathway && activePathway.journey.status === 'IN_PROGRESS'"
+                  :key="`${activePathway.journey.id}:${activePathway.journey.currentStepId}:${activePathway.journey.stepAnswers.length}:${pathwayAttempt}`"
                   :passport-id="String(route.query.propertyId || '')"
                   :pathway="activePathway.pathway"
                   :current-step-id="activePathway.journey.currentStepId"
@@ -406,6 +411,9 @@ const isSaving = ref(false)
 // which aren't mapped to pathway content yet — see usePathways.ts.
 const { getGuidanceAndPathway, advanceJourney, deferJourney } = usePathways()
 const activePathway = ref(null) // { pathway, journey } | null
+// Bumped when advancing a pathway step fails, to remount the step card
+// with its options enabled again so the user can retry.
+const pathwayAttempt = ref(0)
 let pendingFinishAfterSaveQuestionId = null
 
 async function onPathwayAnswer(payload) {
@@ -422,6 +430,7 @@ async function onPathwayAnswer(payload) {
     activePathway.value = { pathway: activePathway.value.pathway, journey }
   } catch (err) {
     console.error('Failed to advance pathway:', err)
+    pathwayAttempt.value++
   }
 }
 

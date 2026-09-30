@@ -78,7 +78,7 @@
         <div class="modal-info modal-info--invite">
           <p class="info-text">
             We couldn't find an Umovingu account for <strong>{{ email }}</strong>.
-            You can invite them to join Umovingu - they'll be added as a
+            You can invite them to join Umovingu. They'll be added as a
             collaborator on this passport automatically as soon as they sign up.
           </p>
         </div>
@@ -210,8 +210,8 @@ const collaborators = ref([])
 
 const CHECK_MESSAGES = {
   'already-collaborator': 'This person is already a collaborator on this passport.',
-  'already-invited': "An invite is already pending for this email - they haven't signed up yet.",
-  'is-owner': "That's your own email address - you already own this passport.",
+  'already-invited': "An invite is already pending for this email. They haven't signed up yet.",
+  'is-owner': "That's your own email address. You already own this passport.",
 }
 
 const checkMessage = ref('')
@@ -292,8 +292,10 @@ const handleAdd = async () => {
       role: role.value || undefined,
       historyAccess: grantHistoryAccess.value,
     })
-    success.value = response.message || 'Collaborator added successfully!'
+    // Reset first: resetForm() clears `success`, so setting it before the
+    // reset wiped the confirmation before it was ever shown.
     resetForm()
+    success.value = response.message || 'Collaborator added successfully!'
     await loadCollaborators()
     emit('added', response.collaborator)
     setTimeout(() => {
@@ -317,9 +319,11 @@ const handleInvite = async () => {
       role: role.value || undefined,
       historyAccess: grantHistoryAccess.value,
     })
-    success.value = `Invitation sent to ${email.value}.`
-    emit('invited', { email: email.value })
+    const invitedEmail = email.value
+    emit('invited', { email: invitedEmail })
+    // Reset first: resetForm() clears `success` (and the email it names).
     resetForm()
+    success.value = `Invitation sent to ${invitedEmail}.`
     setTimeout(() => {
       success.value = ''
     }, 3000)

@@ -89,7 +89,7 @@ async function onFilesSelected(e: Event) {
       evidenceFiles.value.push(result.fileUrl)
     }
   } catch (err: any) {
-    uploadError.value = err?.data?.message || 'Failed to upload — please try again.'
+    uploadError.value = err?.data?.message || 'Failed to upload. Please try again.'
   } finally {
     uploading.value = false
   }
