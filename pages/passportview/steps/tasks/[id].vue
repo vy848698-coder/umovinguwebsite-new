@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="navigateTo(backToStepsUrl)">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to section
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -376,6 +376,7 @@ import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import PathwayStepCard from '~/components/passport-view/PathwayStepCard.vue'
 import PathwayOutcomeCard from '~/components/passport-view/PathwayOutcomeCard.vue'
 import { usePathways } from '~/composables/usePathways'
+import { usePassportBack, usePassportTrail } from '~/composables/usePassportTrail'
 
 const route = useRoute()
 const router = useRouter()
@@ -566,6 +567,30 @@ const backToStepsUrl = computed(() => {
   return `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`
 })
 
+// Navbar Back: the passport page the user came from (on the screen they
+// left), else this question's section when they landed here directly.
+const ppBack = usePassportBack(() => backToStepsUrl.value, 'Back to section')
+// The question on screen is saved onto this page's trail entry, so coming
+// Back here (from Help, the expert page, the section...) lands on it again.
+const ppTrail = usePassportTrail()
+
+// A finished section goes back to its section page: stepping back through
+// history when that's where the user came from, so the browser's Back
+// doesn't lead into the questions they have just finished.
+function goToSection() {
+  return ppTrail.returnTo(`/passportview/steps/${stepId}`, backToStepsUrl.value)
+}
+
+// Only saved once the questions have loaded (and any saved question has been
+// reopened), so the previous task's question can't overwrite it first.
+const questionRestored = ref(false)
+watch(
+  () => currentQuestion.value?.id,
+  (id) => {
+    if (questionRestored.value && id) ppTrail.saveScreen(route.path, { questionId: id })
+  },
+)
+
 const displayedQuestion = ref('')
 const displayedDescription = ref('')
 const displayedHelp = ref('')
@@ -669,6 +694,14 @@ onMounted(async () => {
   // loadSectionQuestions would otherwise land (first unanswered in this task).
   if (route.query.questionId) {
     goToQuestion(String(route.query.questionId))
+  }
+
+  // Coming back to this entry: reopen the question the user was on.
+  const savedQuestionId = ppTrail.savedScreen(route.path)?.questionId
+  if (typeof savedQuestionId === 'string') goToQuestion(savedQuestionId)
+  questionRestored.value = true
+  if (currentQuestion.value?.id) {
+    ppTrail.saveScreen(route.path, { questionId: currentQuestion.value.id })
   }
 
   // Load property images for the home story task
@@ -843,16 +876,12 @@ async function finishAfterSave(questionId) {
     // Defensive fallback — every question answered but the backend didn't
     // report sectionCompleted (e.g. completeTask failed); still let the user
     // continue rather than getting stuck on this page.
-    router.push(
-      `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-    )
+    goToSection()
     return
   }
   const hasMoreQuestions = moveToNextQuestion()
   if (!hasMoreQuestions) {
-    router.push(
-      `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-    )
+    goToSection()
   }
 }
 
@@ -1289,9 +1318,7 @@ const updateAnswer = async (answer) => {
       if (taskResult?.sectionCompleted) {
         await showSectionCompleteWithRealPoints(taskResult)
       } else {
-        router.push(
-          `/passportview/steps/${stepId}?propertyId=${route.query.propertyId}`,
-        )
+        goToSection()
       }
     } catch (error) {
       console.error('Error completing NOTE question:', error)
@@ -1414,7 +1441,10 @@ const handleNextQuestion = () => {
 }
 
 const handleContinue = () => {
-  router.push(`/passportview/${route.query.propertyId}`)
+  ppTrail.returnTo(
+    `/passportview/${route.query.propertyId}`,
+    `/passportview/${route.query.propertyId}`,
+  )
 }
 </script>
 
@@ -2074,5 +2104,17 @@ const handleContinue = () => {
   .tk-split { zoom: var(--wide-zoom, 1); }
   /* Still ends at the bottom of the window, below the (taller) nav. */
   .tk-side { min-height: calc(100dvh / var(--wide-zoom, 1) - 66px); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="goBack">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -33,7 +33,7 @@
         <h1>Talk to a property expert</h1>
         <p class="exw-lede">
           Get professional guidance on your transaction from a verified RICS &amp;
-          Law Society specialist — typically within 3 working days.
+          Law Society specialist, typically within 3 working days.
         </p>
       </div>
 
@@ -165,7 +165,7 @@
           <circle cx="12" cy="8" r="1" fill="#00a19a"/>
         </svg>
         <p class="notice-text">
-          Enquiries are reviewed Monday–Friday. For urgent matters contact your solicitor directly.
+          Enquiries are reviewed Monday to Friday. For urgent matters contact your solicitor directly.
           umu experts provide guidance only and do not constitute legal advice.
         </p>
       </div>
@@ -180,13 +180,20 @@
 
 <script setup lang="ts">
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import { usePassportBack, PASSPORT_HOME } from '~/composables/usePassportTrail'
 
 definePageMeta({ middleware: 'auth' })
 
-const router = useRouter()
-function goBack() {
-  router.back()
-}
+const route = useRoute()
+// Navbar Back: the passport page the user came from (on the screen they
+// left). Landing here directly, it goes to the section that links here: a
+// seller's section, a buyer's section, else the passport collection.
+const ppBack = usePassportBack(() => {
+  const q = route.query
+  if (q.propertyId && q.stepId) return `/passportview/steps/${q.stepId}?propertyId=${q.propertyId}`
+  if (q.passportId && q.sectionId) return `/buyer-passport/section/${q.sectionId}?passportId=${q.passportId}`
+  return PASSPORT_HOME
+}, 'Back to section')
 
 const specialisms = [
   {
@@ -395,7 +402,6 @@ async function submitEnquiry() {
 }
 @media (max-width: 640px) {
   .hsw-shell { width: calc(100% - 24px); }
-  .hsw-back { display: none; }
 }
 
 /* ── Big screens ──────────────────────────────────────────────────────
@@ -406,5 +412,17 @@ async function submitEnquiry() {
    1366px or below. */
 @media (min-width: 1367px) {
   .hsw-shell { zoom: var(--wide-zoom, 1); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

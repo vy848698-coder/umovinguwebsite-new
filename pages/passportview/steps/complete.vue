@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="router.back()">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -45,11 +45,16 @@
 
 <script setup>
 import { usePassportSteps } from '~/composables/usePassportSteps'
+import { usePassportBack } from '~/composables/usePassportTrail'
 const { steps } = usePassportSteps()
 const route = useRoute()
 const router = useRouter()
 const passportId = route.params.id
 const stepId = route.params.stepId
+
+// Navbar Back: the passport page the user came from (on the screen they
+// left), else the passport collection.
+const ppBack = usePassportBack()
 
 const goNextStep = () => {
   const idx = steps.value.findIndex((s) => s.id === stepId)
@@ -161,7 +166,6 @@ const goNextStep = () => {
 }
 @media (max-width: 640px) {
   .hsw-shell { width: calc(100% - 24px); }
-  .hsw-back { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sc-cta { transition: none; }
@@ -176,5 +180,17 @@ const goNextStep = () => {
 @media (min-width: 1367px) {
   .hsw-shell { zoom: var(--wide-zoom, 1); }
   .scw-main { min-height: calc(100dvh / var(--wide-zoom, 1) - 66px); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

@@ -19,11 +19,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="goBack">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back
+            {{ ppBack.label }}
           </button>
           <button class="hsw-cta" type="button" :disabled="!passport" @click="openTenantShare">Share</button>
         </div>
@@ -382,7 +382,7 @@
           <div class="lp-modal-body">
             <p class="lp-modal-intro">
               We'll create a separate seller passport on the same property and transfer the docs you already
-              hold for letting. Both passports stay live - you can keep letting in parallel.
+              hold for letting. Both passports stay live, so you can keep letting in parallel.
             </p>
             <div class="lp-modal-section">
               <div class="lp-modal-label">Will transfer</div>
@@ -438,7 +438,7 @@
             <div v-if="isInfoSheetSection" class="lp-leg-note">
               <div class="lp-leg-note-t">⚖️ The law changed on 1 May 2026</div>
               <div class="lp-leg-note-s">
-                The <b>How to Rent guide was withdrawn</b> under the Renters' Rights Act 2025. Landlords now serve <b>The Renters' Rights Act Information Sheet 2026</b>. You must give the <b>official GOV.UK PDF</b> (a link on its own is not valid) - as a printed copy or attached to an email/text. Fines reach £7,000 for non-compliance.
+                The <b>How to Rent guide was withdrawn</b> under the Renters' Rights Act 2025. Landlords now serve <b>The Renters' Rights Act Information Sheet 2026</b>. You must give the <b>official GOV.UK PDF</b> (a link on its own is not valid), as a printed copy or attached to an email/text. Fines reach £7,000 for non-compliance.
               </div>
             </div>
             <template v-if="isInfoSheetSection">
@@ -456,7 +456,7 @@
                 </div>
                 <div class="lp-leg-link-go">{{ link.download ? '⬇' : '↗' }}</div>
               </a>
-              <div class="lp-modal-hint" style="margin-bottom:12px">Once you've served the Information Sheet, record it below - proof of service matters if a tenancy is ever challenged.</div>
+              <div class="lp-modal-hint" style="margin-bottom:12px">Once you've served the Information Sheet, record it below. Proof of service matters if a tenancy is ever challenged.</div>
             </template>
 
             <!-- EPC auto-pull banner - client feedback #3: "pulled straight
@@ -477,7 +477,7 @@
                  physical alarm (client feedback #4, prototype's datesBody). -->
             <template v-if="isAlarmsSection">
               <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">
-                <b>No certificate required.</b> Record each alarm separately - where it is, when it was tested, and when the unit expires. Alarms must be tested on the first day of every new tenancy.
+                <b>No certificate required.</b> Record each alarm separately: where it is, when it was tested, and when the unit expires. Alarms must be tested on the first day of every new tenancy.
               </p>
               <div v-for="(row, i) in alarmRows" :key="i" class="lp-repeat-block">
                 <div class="lp-repeat-head">
@@ -584,7 +584,7 @@
                 </label>
               </div>
               <button type="button" class="lp-add-row" @click="addOccupierRow()">＋ Add another occupier</button>
-              <p class="lp-modal-hint">If status is unlimited (British/Irish citizen or settled status), leave "Recheck by" blank - no follow-up needed. We'll remind you 30 days before any recheck date.</p>
+              <p class="lp-modal-hint">If status is unlimited (British/Irish citizen or settled status), leave "Recheck by" blank, as no follow-up is needed. We'll remind you 30 days before any recheck date.</p>
             </template>
 
             <!-- Multi-copy certificate retention (client feedback 1a/3) -
@@ -601,7 +601,7 @@
                   <img src="/op-icons/misc/waterDroplet.png" alt="" class="lp-leg-cta-ic-img" loading="lazy" />
                   <div class="lp-leg-cta-bd">
                     <div class="lp-leg-cta-t">Start guided assessment</div>
-                    <div class="lp-leg-cta-s">Six quick questions - no professional needed for a standard home</div>
+                    <div class="lp-leg-cta-s">Six quick questions, no professional needed for a standard home</div>
                   </div>
                   <div class="lp-leg-cta-go">›</div>
                 </div>
@@ -643,12 +643,12 @@
                   <img src="/op-icons/investment/clipboardChecklist.png" alt="" class="lp-leg-cta-ic-img" loading="lazy" />
                   <div class="lp-leg-cta-bd">
                     <div class="lp-leg-cta-t" style="color:#7a5500">Run check-out</div>
-                    <div class="lp-leg-cta-s" style="color:#8a6420">At end of tenancy - compares against the check-in above</div>
+                    <div class="lp-leg-cta-s" style="color:#8a6420">At end of tenancy, compared against the check-in above</div>
                   </div>
                   <div class="lp-leg-cta-go" style="color:#a06b1a">›</div>
                 </div>
                 <div class="mlabel" style="margin-top:16px">Or add your own</div>
-                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:10px">Already have an inventory report? Upload it here instead - or attach photos alongside the one you build above.</p>
+                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:10px">Already have an inventory report? Upload it here instead, or attach photos alongside the one you build above.</p>
               </template>
 
               <!-- Tenancy Agreement - generate in umovingu, or upload an
@@ -658,7 +658,7 @@
                   <img src="/op-icons/misc/signature.png" alt="" class="lp-leg-cta-ic-img" loading="lazy" />
                   <div class="lp-leg-cta-bd">
                     <div class="lp-leg-cta-t">Create a tenancy agreement</div>
-                    <div class="lp-leg-cta-s">Assured periodic tenancy - the written statement built in</div>
+                    <div class="lp-leg-cta-s">Assured periodic tenancy with the written statement built in</div>
                   </div>
                   <div class="lp-leg-cta-go">›</div>
                 </div>
@@ -721,7 +721,7 @@
                    above (client feedback item #7). -->
               <template v-if="isDepositSection">
                 <div class="mlabel" style="margin-top:16px">Served prescribed information</div>
-                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:10px">Upload the signed copy of the prescribed information you actually <b>served to the tenant</b> - your proof it was given within 30 days.</p>
+                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:10px">Upload the signed copy of the prescribed information you actually <b>served to the tenant</b> as your proof it was given within 30 days.</p>
                 <div v-for="doc in piCopyDocs" :key="doc.id" class="lp-doc-preview" style="margin-bottom:10px">
                   <div class="lp-doc-preview-icon"><img src="/op-icons/passportview/titleDeedsAndPlan.png" alt="" class="lp-doc-preview-icon-img" loading="lazy" /></div>
                   <div class="lp-doc-preview-info">
@@ -768,7 +768,7 @@
                 </div>
 
                 <div class="mlabel" style="margin-top:16px">What the prescribed information must contain</div>
-                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:6px">The law requires you give the tenant this within 30 days of receiving the deposit - check, serve, then upload the signed copy above.</p>
+                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:6px">The law requires you give the tenant this within 30 days of receiving the deposit. Check, serve, then upload the signed copy above.</p>
                 <div v-for="item in PI_CHECKLIST" :key="item.t" class="lp-pi-item">
                   <div class="lp-pi-check">✓</div>
                   <div class="lp-pi-tx">
@@ -786,7 +786,7 @@
                    upload question), tenant-facing notes, and appliance
                    cover/breakdown insurance details. -->
               <template v-if="isWhiteGoodsSection">
-                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">Keep everything for the white goods you provide - so the tenant can use them, and you're covered if one fails.</p>
+                <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">Keep everything for the white goods you provide, so the tenant can use them, and you're covered if one fails.</p>
 
                 <div class="mlabel">Appliances provided</div>
                 <div v-for="(a, i) in wgAppliances" :key="i" class="lp-repeat-block">
@@ -849,12 +849,12 @@
 
                 <div class="mform-section" style="margin-top:18px">
                   <div class="mform-label">How things work (optional)</div>
-                  <textarea v-model="wgHowItWorks" class="lp-inv-note" style="min-height:80px" placeholder="Instructions for the tenant - e.g. 'The washing machine door needs a firm push to lock. Dishwasher salt is under the sink.'" />
+                  <textarea v-model="wgHowItWorks" class="lp-inv-note" style="min-height:80px" placeholder="Instructions for the tenant, e.g. 'The washing machine door needs a firm push to lock. Dishwasher salt is under the sink.'" />
                 </div>
 
                 <div class="mlabel" style="margin-top:18px">Appliance cover / breakdown insurance</div>
                 <div class="mform-section">
-                  <input v-model="wgCoverProvider" type="text" class="mform-input" placeholder="Provider - e.g. Domestic &amp; General" />
+                  <input v-model="wgCoverProvider" type="text" class="mform-input" placeholder="Provider, e.g. Domestic &amp; General" />
                 </div>
                 <div class="lp-two-col">
                   <input v-model="wgCoverPolicyNumber" type="text" class="mform-input" placeholder="Policy number" />
@@ -957,9 +957,9 @@
                   :max="isDepositSection ? todayDateStr : undefined"
                   :min="isDepositSection ? undefined : todayDateStr"
                 />
-                <p v-if="isDepositSection" class="lp-modal-hint">The date the deposit was registered with the scheme - must be within 30 days of receiving it.</p>
+                <p v-if="isDepositSection" class="lp-modal-hint">The date the deposit was registered with the scheme. It must be within 30 days of receiving it.</p>
                 <p v-else class="lp-modal-hint">
-                  <template v-if="drawerCadenceLabel"><b>{{ drawerCadenceLabel }}</b> - </template>we'll remind you 30 days before this date so you can stay compliant.
+                  <template v-if="drawerCadenceLabel"><b>{{ drawerCadenceLabel }}</b>: </template>we'll remind you 30 days before this date so you can stay compliant.
                 </p>
               </div>
 
@@ -1042,7 +1042,7 @@
           <div class="lp-assess-scroll">
             <div class="lp-assess-intro-ic"><img src="/op-icons/misc/waterDroplet.png" alt="" class="lp-assess-intro-ic-img" loading="lazy" /></div>
             <div class="lp-assess-intro-h">You can usually do this yourself</div>
-            <div class="lp-assess-intro-s">For a standard home, the law lets a competent landlord carry out their own Legionella risk assessment - there's no such thing as a required "Legionella certificate". We'll guide you through it.</div>
+            <div class="lp-assess-intro-s">For a standard home, the law lets a competent landlord carry out their own Legionella risk assessment. There's no such thing as a required "Legionella certificate". We'll guide you through it.</div>
             <div class="lp-assess-info">
               <div class="lp-assess-info-t">What you'll get</div>
               <div class="lp-assess-info-s">Six short questions on your water system → a scored risk level → tailored control actions → a dated record on the Passport with a 2-year review reminder.</div>
@@ -1185,7 +1185,7 @@
           <div class="lp-assess-steps"><div class="lp-assess-step on" /><div class="lp-assess-step" /></div>
           <div class="lp-assess-scroll">
             <div class="lp-assess-qh" style="font-size:19px">Type &amp; furnishing</div>
-            <div class="lp-assess-qs">The property is already on your Passport - we just need how it's let.</div>
+            <div class="lp-assess-qs">The property is already on your Passport, so we just need how it's let.</div>
             <div class="mlabel">Furnishing</div>
             <div class="lp-inv-chiprow">
               <button type="button" class="lp-inv-chip" :class="{ on: invFurnishing === 'furnished' }" @click="invFurnishing = 'furnished'"><img src="/op-icons/investment/armchair.png" alt="" class="lp-inv-chip-ic" loading="lazy" /><span>Furnished</span></button>
@@ -1331,7 +1331,7 @@
             </div>
           </div>
           <div class="lp-assess-scroll">
-            <div class="section-heading">Fixtures - condition &amp; cleanliness</div>
+            <div class="section-heading">Fixtures: condition &amp; cleanliness</div>
             <div v-for="item in invCurRoom.items.filter((i) => i.type === 'fixture')" :key="item.name" class="lp-inv-item">
               <div class="lp-inv-item-top">
                 <div class="lp-inv-item-n">{{ item.name }}</div>
@@ -1626,7 +1626,7 @@
               </button>
             </template>
             <template v-else>
-              <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">Share this link with your tenant. No account needed - they'll review the inventory (including any evidence photos) and sign with a drawn signature.</p>
+              <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">Share this link with your tenant. No account needed, they'll review the inventory (including any evidence photos) and sign with a drawn signature.</p>
               <div v-if="invGeneratingLink" class="lp-modal-hint">Generating link…</div>
               <template v-else-if="invTenantLinkUrl">
                 <div class="lp-tn-linkbox">{{ invTenantLinkUrl }}</div>
@@ -1635,7 +1635,7 @@
               <button type="button" class="btn-secondary" style="width:100%;margin-top:8px" @click="downloadInventoryPdf">
                 Download PDF instead
               </button>
-              <p class="lp-modal-hint" style="margin-top:6px;margin-bottom:0">Prefer to send it yourself - by email, WhatsApp or in person for a wet-ink signature? Download a full report with the room-by-room record and evidence photos.</p>
+              <p class="lp-modal-hint" style="margin-top:6px;margin-bottom:0">Prefer to send it yourself by email, WhatsApp or in person for a wet-ink signature? Download a full report with the room-by-room record and evidence photos.</p>
             </template>
             <p v-if="drawerError" class="lp-modal-error">{{ drawerError }}</p>
 
@@ -1646,7 +1646,7 @@
             </div>
             <div class="lp-tn-audit-row">
               <span class="lp-tn-audit-dot" :class="{ done: invTenantSigned }" />
-              <span>Tenant signed{{ invSavedRecord?.audit?.tenant ? ' · ' + new Date(invSavedRecord.audit.tenant.signedAt).toLocaleDateString('en-GB') : ' - pending' }}</span>
+              <span>Tenant signed{{ invSavedRecord?.audit?.tenant ? ' · ' + new Date(invSavedRecord.audit.tenant.signedAt).toLocaleDateString('en-GB') : ' (pending)' }}</span>
             </div>
           </div>
           <div class="lp-assess-foot">
@@ -1678,7 +1678,7 @@
             <div class="lp-assess-intro-ic"><img src="/op-icons/misc/signature.png" alt="" class="lp-assess-intro-ic-img" loading="lazy" /></div>
             <div class="lp-assess-intro-h">Build your tenancy agreement</div>
             <div class="lp-assess-intro-s">Since 1 May 2026 every new tenancy is an assured periodic tenancy, and you must give the tenant a written statement of the key terms before they sign. umovingu builds it and folds the written statement in.</div>
-            <div class="lp-tn-verbadge">🛡️ <b>Template {{ TN_TEMPLATE_VERSION }}</b> - reviewed for the Renters' Rights Act. <span class="lp-tn-pending">Placeholder pending legal review.</span></div>
+            <div class="lp-tn-verbadge">🛡️ <b>Template {{ TN_TEMPLATE_VERSION }}</b>, reviewed for the Renters' Rights Act. <span class="lp-tn-pending">Placeholder pending legal review.</span></div>
             <div class="mlabel" style="margin-top:20px">What we fill in for you</div>
             <div class="lp-tn-mand">
               <div class="lp-tn-mand-t">📋 Mandatory written-statement terms</div>
@@ -1692,7 +1692,7 @@
             </div>
           </div>
           <div class="lp-assess-foot">
-            <button class="btn-primary" type="button" style="width:100%" @click="startTnWizard">Start - takes 3 minutes →</button>
+            <button class="btn-primary" type="button" style="width:100%" @click="startTnWizard">Start, takes 3 minutes →</button>
           </div>
         </div>
 
@@ -1730,7 +1730,7 @@
             <template v-else-if="tnStep === 1">
               <div class="lp-tn-mand" style="margin-left:0;margin-right:0">
                 <div class="lp-tn-mand-t">📋 Added automatically</div>
-                <div class="lp-tn-mand-s">Because it's an assured periodic tenancy we fold in the required terms - rolling tenancy, rent increase once a year by s13 notice, notice periods, no Section 21, pet requests.</div>
+                <div class="lp-tn-mand-s">Because it's an assured periodic tenancy we fold in the required terms: rolling tenancy, rent increase once a year by s13 notice, notice periods, no Section 21, pet requests.</div>
               </div>
               <div class="lp-two-col">
                 <div class="mform-section">
@@ -1790,12 +1790,12 @@
               </template>
               <div class="lp-tn-docver">Generated by umovingu · Template {{ TN_TEMPLATE_VERSION }} (placeholder, pending legal review)<br />Based on a template. Not legal advice.</div>
             </div>
-            <div class="lp-tn-legalnote"><b>Before you use this:</b> check the details suit your situation. The template reflects current law but doesn't replace legal advice on anything unusual (company lets, high rent, HMOs, lodgers) - and hasn't yet had its clause wording reviewed by a solicitor.</div>
+            <div class="lp-tn-legalnote"><b>Before you use this:</b> check the details suit your situation. The template reflects current law but doesn't replace legal advice on anything unusual (company lets, high rent, HMOs, lodgers), and hasn't yet had its clause wording reviewed by a solicitor.</div>
             <p v-if="drawerError" class="lp-modal-error">{{ drawerError }}</p>
           </div>
           <div class="lp-assess-foot">
             <button class="btn-primary" type="button" style="width:100%" :disabled="tnSaving" @click="saveTenancyAgreement">
-              {{ tnSaving ? 'Saving…' : 'Looks good - save to Passport' }}
+              {{ tnSaving ? 'Saving…' : 'Looks good, save to Passport' }}
             </button>
           </div>
         </div>
@@ -1839,7 +1839,7 @@
               <div class="lp-tn-step-ic">🔄</div>
               <div class="lp-tn-step-bd">
                 <div class="lp-tn-step-t">Kept up to date</div>
-                <div class="lp-tn-step-s">{{ tnUpToDate ? 'Built on the current template' : 'Built on an older template - review and re-issue' }}</div>
+                <div class="lp-tn-step-s">{{ tnUpToDate ? 'Built on the current template' : 'Built on an older template, review and re-issue' }}</div>
                 <span class="lp-tn-step-pill" :class="{ done: tnUpToDate }">{{ tnUpToDate ? 'Up to date' : 'Review needed' }}</span>
               </div>
               <div class="lp-tn-step-go">›</div>
@@ -1869,7 +1869,7 @@
                 <div class="lp-tn-status-s">
                   {{ tnUpToDate
                     ? `Built on Template ${TN_TEMPLATE_VERSION}, the current version. Nothing to do.`
-                    : `Your agreement was built on Template ${tnSavedRecord?.templateVersion ?? '-'}. Template ${TN_TEMPLATE_VERSION} is current - review and re-issue below.` }}
+                    : `Your agreement was built on Template ${tnSavedRecord?.templateVersion ?? 'unknown'}. Template ${TN_TEMPLATE_VERSION} is current, so review and re-issue below.` }}
                 </div>
               </div>
             </div>
@@ -1879,7 +1879,7 @@
               <div v-for="h in TN_TEMPLATE_HISTORY" :key="h.version" class="lp-tn-history-row">
                 <div class="lp-tn-history-dot" :class="{ current: h.version === TN_TEMPLATE_VERSION }" />
                 <div class="lp-tn-step-bd">
-                  <div class="lp-tn-history-v">{{ h.version }}{{ h.version === TN_TEMPLATE_VERSION ? ' - current' : '' }}</div>
+                  <div class="lp-tn-history-v">{{ h.version }}{{ h.version === TN_TEMPLATE_VERSION ? ' (current)' : '' }}</div>
                   <div v-if="h.date" class="lp-tn-history-date">{{ h.date }}</div>
                   <div class="lp-tn-history-changes">{{ h.changes }}</div>
                 </div>
@@ -1931,7 +1931,7 @@
               <div class="lp-assess-intro-s">{{ new Date(tnSavedRecord?.audit?.tenant?.signedAt ?? '').toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }}</div>
             </template>
             <template v-else>
-              <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">Share this link with your tenant. No account needed - they'll review the agreement and sign with a drawn signature.</p>
+              <p class="lp-modal-hint" style="margin-top:0;margin-bottom:14px">Share this link with your tenant. No account needed, they'll review the agreement and sign with a drawn signature.</p>
               <div v-if="tnGeneratingLink" class="lp-modal-hint">Generating link…</div>
               <template v-else-if="tnTenantLinkUrl">
                 <div class="lp-tn-linkbox">{{ tnTenantLinkUrl }}</div>
@@ -1947,7 +1947,7 @@
             </div>
             <div class="lp-tn-audit-row">
               <span class="lp-tn-audit-dot" :class="{ done: tnTenantSigned }" />
-              <span>Tenant signed{{ tnSavedRecord?.audit?.tenant ? ' · ' + new Date(tnSavedRecord.audit.tenant.signedAt).toLocaleDateString('en-GB') : ' - pending'}}</span>
+              <span>Tenant signed{{ tnSavedRecord?.audit?.tenant ? ' · ' + new Date(tnSavedRecord.audit.tenant.signedAt).toLocaleDateString('en-GB') : ' (pending)'}}</span>
             </div>
           </div>
           <div class="lp-assess-foot">
@@ -2007,6 +2007,7 @@ import SegmentedSwitch from '~/components/core/SegmentedSwitch.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import SignaturePad from '~/components/ui/SignaturePad.vue'
 import { landlordSectionIconUrl } from '~/utils/landlordSectionIcons'
+import { usePassportHomeBack, usePassportTrail } from '~/composables/usePassportTrail'
 
 definePageMeta({ title: 'Landlord Passport - UmovingU', middleware: 'auth' })
 
@@ -2026,6 +2027,26 @@ const activeTab = ref<'compliance' | 'vault' | 'tenancy'>('compliance')
 // List vs map view for the Compliance tab - mirrors the seller passport
 // pattern, including the same SegmentedSwitch options shape.
 const complianceView = ref<'list' | 'map'>('list')
+
+// Navbar Back: this is the landlord passport's main screen, so it always
+// goes to the passport collection (stepping back through history when the
+// user came from there).
+const ppBack = usePassportHomeBack()
+// The tab and Compliance view are saved onto this page's trail entry, so
+// coming Back here (from the linked seller passport, say) lands on them.
+const ppTrail = usePassportTrail()
+onMounted(() => {
+  const saved = ppTrail.savedScreen(route.path)
+  if (saved?.tab === 'compliance' || saved?.tab === 'vault' || saved?.tab === 'tenancy') {
+    activeTab.value = saved.tab
+  }
+  if (saved?.view === 'list' || saved?.view === 'map') complianceView.value = saved.view
+  watch(
+    [activeTab, complianceView],
+    ([tab, view]) => ppTrail.saveScreen(route.path, { tab, view }),
+    { immediate: true },
+  )
+})
 const viewOptions = [
   // Same registry keys the seller passport's List/Map toggle uses, so both
   // passport types show the identical 3D emblems.
@@ -2650,7 +2671,7 @@ const LEG_QUESTIONS: LegQuestion[] = [
   {
     num: 'Temperatures', key: 'temp',
     h: 'Do you know the water temperatures?',
-    s: 'Bacteria thrive between 20–45°C. Cold should stay below 20°C; hot should reach 50°C+ within a minute.',
+    s: 'Bacteria thrive between 20 and 45°C. Cold should stay below 20°C; hot should reach 50°C+ within a minute.',
     opts: [
       { t: 'Yes - hot ≥50°C, cold <20°C', d: 'Outside the danger range', ic: '/op-icons/legionella/waterThermometer.png', w: 0 },
       { t: 'Not measured yet', d: 'We\'ll add "check temperatures" to your actions', ic: '/op-icons/misc/question.png', w: 1 },
@@ -2808,7 +2829,7 @@ async function saveLegAssessment() {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: {
-        title: `Legionella risk assessment review due${addr ? ` - ${addr}` : ''}`,
+        title: `Legionella risk assessment review due${addr ? ` · ${addr}` : ''}`,
         date: nextReviewStr,
         type: 'compliance-renewal',
         notes: 'Auto-added from your Landlord Passport compliance section.',
@@ -4118,7 +4139,7 @@ async function saveMultiCopyExpiry() {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: {
-          title: `${drawerSection.value?.title ?? 'Compliance'} renewal due${addr ? ` - ${addr}` : ''}`,
+          title: `${drawerSection.value?.title ?? 'Compliance'} renewal due${addr ? ` · ${addr}` : ''}`,
           date: drawerExpiryDraft.value,
           type: 'compliance-renewal',
           notes: 'Auto-added from your Landlord Passport compliance section.',
@@ -4240,7 +4261,7 @@ async function saveDrawerList() {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: {
-            title: `Right to Rent recheck due - ${occ.name || 'occupier'}${addr ? ` · ${addr}` : ''}`,
+            title: `Right to Rent recheck due: ${occ.name || 'occupier'}${addr ? ` · ${addr}` : ''}`,
             date: occ.recheckBy,
             type: 'compliance-renewal',
             notes: 'Auto-added from your Landlord Passport Right to Rent section.',
@@ -4263,7 +4284,7 @@ async function saveDrawerList() {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: {
-            title: `${label} due for replacement${row.location ? ` - ${row.location}` : ''}${addr ? ` · ${addr}` : ''}`,
+            title: `${label} due for replacement${row.location ? ` · ${row.location}` : ''}${addr ? ` · ${addr}` : ''}`,
             date: row.expiry,
             type: 'compliance-renewal',
             notes: 'Auto-added from your Landlord Passport Alarms section.',
@@ -4333,7 +4354,7 @@ async function saveDrawerForm() {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: {
-          title: `${drawerSection.value?.title ?? 'Compliance'} renewal due${addr ? ` - ${addr}` : ''}`,
+          title: `${drawerSection.value?.title ?? 'Compliance'} renewal due${addr ? ` · ${addr}` : ''}`,
           date: drawerExpiryDraft.value,
           type: 'compliance-renewal',
           notes: 'Auto-added from your Landlord Passport compliance section.',
@@ -4422,7 +4443,6 @@ async function copyTenantShare() {
   }
 }
 
-const goBack = useGoBack('/profile')
 
 onMounted(loadPassport)
 
@@ -6400,7 +6420,6 @@ const SectionCard = defineComponent({
 
 @media (max-width: 640px) {
   .lp-body { width: calc(100% - 24px); }
-  .hsw-back { display: none; }
   .lpw-head-house { display: none; }
 }
 
@@ -6557,6 +6576,18 @@ const SectionCard = defineComponent({
   .lp-assess {
     zoom: var(--wide-zoom, 1);
     height: min(calc(88vh / var(--wide-zoom, 1)), 860px);
+  }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
   }
 }
 </style>

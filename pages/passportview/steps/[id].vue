@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="navigateTo(backToPassportUrl)">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to Passport
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -29,9 +29,9 @@
     <main class="hsw-shell stw-main">
       <!-- Breadcrumb -->
       <nav class="stw-crumbs" aria-label="Breadcrumb">
-        <button type="button" @click="navigateTo('/passport')">Passport</button>
+        <button type="button" @click="ppTrail.returnTo(PASSPORT_HOME, PASSPORT_HOME)">Passport</button>
         <span aria-hidden="true">/</span>
-        <button type="button" @click="navigateTo(backToPassportUrl)">Sections</button>
+        <button type="button" @click="ppTrail.returnTo(backToPassportUrl, backToPassportUrl)">Sections</button>
         <span aria-hidden="true">/</span>
         <strong>{{ currentStep?.title || '' }}</strong>
       </nav>
@@ -277,6 +277,11 @@ import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
+import {
+  usePassportBack,
+  usePassportTrail,
+  PASSPORT_HOME,
+} from '~/composables/usePassportTrail'
 
 const route = useRoute()
 const router = useRouter()
@@ -292,6 +297,15 @@ const stepId = route.params.id
 const backToPassportUrl = computed(() => {
   return `/passportview/${route.query.propertyId}`
 })
+
+// Navbar Back: the passport page the user came from (on the screen they
+// left), else this section's passport when they landed here directly.
+// Breadcrumbs step back through history too when that is where they lead.
+const ppBack = usePassportBack(
+  () => (route.query.propertyId ? backToPassportUrl.value : PASSPORT_HOME),
+  'Back to passport',
+)
+const ppTrail = usePassportTrail()
 
 // Balance / level / streak for the SectionProgressCard — fetched once on
 // mount rather than kept continuously live: it's a point-in-time display,
@@ -1416,9 +1430,6 @@ const handleViewProfile = () => {
   .hsw-shell {
     width: calc(100% - 24px);
   }
-  .hsw-back {
-    display: none;
-  }
   .hero-num {
     font-size: 150px;
   }
@@ -1438,5 +1449,17 @@ const handleViewProfile = () => {
    1366px or below. */
 @media (min-width: 1367px) {
   .hsw-shell { zoom: var(--wide-zoom, 1); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

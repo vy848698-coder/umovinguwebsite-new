@@ -25,11 +25,11 @@
           >
             ?
           </button>
-          <button class="hsw-back" type="button" @click="navigateTo('/passport')">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            All passports
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -745,7 +745,7 @@
             >
               Mark as addressed
             </button>
-            <p class="hist-fineprint">Addressed means you've taken a step — it does not certify legal compliance.</p>
+            <p class="hist-fineprint">Addressed means you've taken a step. It does not certify legal compliance.</p>
           </template>
           <template v-else-if="historyDrawerEvent">
             <div class="hist-row"><span>Section</span><b>{{ formatSectionLabel(historyDrawerEvent.sectionId) }}</b></div>
@@ -862,6 +862,7 @@ import BuyerActionDrawer from '~/components/passport/BuyerActionDrawer.vue'
 import Toast from '~/components/ui/Toast.vue'
 import { useAppToast } from '~/composables/useCustomToast'
 import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
+import { usePassportHomeBack, usePassportTrail } from '~/composables/usePassportTrail'
 
 // Guided tour — auto-runs once per browser, replays from the "?" button.
 const passportTourRef = ref(null)
@@ -895,7 +896,7 @@ const passportTourSteps = [
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import { usePassportCollaborators } from '~/composables/usePassportCollaborators'
 import { usePathways } from '~/composables/usePathways'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 
 definePageMeta({
   middleware: 'auth',
@@ -906,6 +907,15 @@ const { getCollaborators } = usePassportCollaborators()
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
+
+// Navbar Back: this is the main passport screen, so it always goes to the
+// passport collection (stepping back through history when the user came
+// from there).
+const ppBack = usePassportHomeBack()
+// The tab / view / history filter the user is on is saved onto this page's
+// trail entry, so coming Back here from a section, a question or the buyer
+// view lands on the same screen they left.
+const ppTrail = usePassportTrail()
 
 // Collaborator state
 const collaborators = ref([])
@@ -972,6 +982,20 @@ function matchStrokeColor(score) {
 }
 
 onMounted(async () => {
+  // Coming back to this entry: put the user on the screen they left before
+  // anything renders; the tab's data loads once the passport is known.
+  const saved = ppTrail.savedScreen(route.path)
+  if (saved?.view === 'list' || saved?.view === 'map') viewMode.value = saved.view
+  if (typeof saved?.historyCategory === 'string') historyCategory.value = saved.historyCategory
+  const savedTab = typeof saved?.tab === 'string' ? saved.tab : null
+  if (savedTab) activeTab.value = savedTab
+  watch(
+    [activeTab, viewMode, historyCategory],
+    ([tab, view, category]) =>
+      ppTrail.saveScreen(route.path, { tab, view, historyCategory: category }),
+    { immediate: true },
+  )
+
   // Quickly probe the passport type so we can hand landlord passports off
   // to the dedicated landlord view before we kick off the heavy seller-side
   // data loaders below.
@@ -1019,6 +1043,8 @@ onMounted(async () => {
       fetchBuyerData(passport.propertyId)
       fetchPropertyHomeScore(passport.propertyId)
     }
+    // Load the restored tab's own data (street/buyers already load above).
+    if (savedTab === 'vault' || savedTab === 'history') setTab(savedTab)
     fetchResumeTarget()
   } catch (e) {
     console.error('Failed to load passport address', e)
@@ -1712,13 +1738,13 @@ const EVENT_DISPLAY = {
   COLLABORATOR_SCOPE_CHANGED: { title: 'Collaborator access changed', icon: 'i-lucide-user', dotClass: 'navy' },
   SHARE_LINK_CREATED: { title: 'Share link created', icon: 'i-lucide-link', dotClass: 'navy' },
   BUYER_ACCESS_GRANTED: { title: 'Buyer access granted', icon: 'i-lucide-key-round', dotClass: 'navy' },
-  PASSPORT_PUBLISHED: { title: 'Passport published — live to buyers', icon: 'i-lucide-rocket', dotClass: 'navy' },
-  PASSPORT_UNPUBLISHED: { title: 'Passport unpublished — back to private', icon: 'i-lucide-lock', dotClass: 'navy' },
+  PASSPORT_PUBLISHED: { title: 'Passport published and live to buyers', icon: 'i-lucide-rocket', dotClass: 'navy' },
+  PASSPORT_UNPUBLISHED: { title: 'Passport unpublished, back to private', icon: 'i-lucide-lock', dotClass: 'navy' },
   SECTION_VISIBILITY_CHANGED: { title: 'Section visibility changed', icon: 'i-lucide-globe', dotClass: 'navy' },
 }
 
 function formatSectionLabel(sectionId) {
-  if (!sectionId) return '—'
+  if (!sectionId) return 'Section'
   return sectionId
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/_/g, ' ')
@@ -1736,7 +1762,7 @@ function actorLabelFor(e) {
 function eventDisplay(e) {
   const base = EVENT_DISPLAY[e.eventType] || { title: e.eventType, icon: 'i-lucide-dot', dotClass: '' }
   let title = base.title
-  if (e.sectionId && !base.isAction) title = `${formatSectionLabel(e.sectionId)} — ${base.title.toLowerCase()}`
+  if (e.sectionId && !base.isAction) title = `${formatSectionLabel(e.sectionId)}: ${base.title.toLowerCase()}`
   if (base.isAction && actionsById.value[e.entityId]) {
     title = `${actionsById.value[e.entityId].title}`
   }
@@ -3793,10 +3819,6 @@ const groupedHistory = computed(() => {
     grid-template-columns: 1fr;
   }
 
-  .hsw-back {
-    display: none;
-  }
-
   .pp-hero-bottom {
     gap: 14px;
   }
@@ -4372,5 +4394,17 @@ const groupedHistory = computed(() => {
   .hsw-shell { zoom: var(--wide-zoom, 1); }
   /* History detail panel is outside the shell, so it scales on its own. */
   .hist-drawer { zoom: var(--wide-zoom, 1); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

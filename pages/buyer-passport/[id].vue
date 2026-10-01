@@ -25,11 +25,11 @@
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
           </button>
-          <button class="hsw-back" type="button" @click="goBack">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="goBack">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back
+            {{ ppBack.label }}
           </button>
           <button v-if="data" class="hsw-ask" type="button" @click="askSeller">
             Ask the seller
@@ -177,7 +177,7 @@
               <div class="buyer-eyebrow">Solicitor-grade</div>
               <h2 class="buyer-section-title">Documents &amp; forms</h2>
               <p class="buyer-section-sub">
-                Ready-to-share packs — the paperwork a buyer's solicitor asks for
+                Ready-to-share packs: the paperwork a buyer's solicitor asks for
                 on day one.
               </p>
 
@@ -194,7 +194,7 @@
                 <div class="buyer-pdf-info">
                   <p class="buyer-pdf-title">Full Property Report</p>
                   <p class="buyer-pdf-sub">
-                    All questions &amp; answers — share with solicitors
+                    All questions &amp; answers to share with solicitors
                   </p>
                 </div>
                 <button
@@ -223,7 +223,7 @@
                 <div class="buyer-pdf-info">
                   <p class="buyer-pdf-title">TA6 Property Information Form</p>
                   <p class="buyer-pdf-sub">
-                    Law Society 6th edition — pre-filled with passport data
+                    Law Society 6th edition, pre-filled with passport data
                   </p>
                 </div>
                 <button
@@ -255,7 +255,7 @@
                 <div class="buyer-pdf-info">
                   <p class="buyer-pdf-title">TA7 Leasehold Information Form</p>
                   <p class="buyer-pdf-sub">
-                    Law Society 5th edition — lease, ground rent &amp; service charge
+                    Law Society 5th edition: lease, ground rent &amp; service charge
                     details
                   </p>
                 </div>
@@ -286,7 +286,7 @@
                 <div class="buyer-pdf-info">
                   <p class="buyer-pdf-title">TA10 Fixtures &amp; Fittings Form</p>
                   <p class="buyer-pdf-sub">
-                    What stays, what goes — pre-filled from seller's passport
+                    What stays and what goes, pre-filled from seller's passport
                   </p>
                 </div>
                 <button
@@ -494,7 +494,7 @@
                   </span>
                   <div class="bp-pd-text">
                     <div class="bp-pd-label">Property type</div>
-                    <div class="bp-pd-value">{{ data.property.propertyType || '—' }}</div>
+                    <div class="bp-pd-value">{{ data.property.propertyType || 'Not available' }}</div>
                   </div>
                 </div>
                 <div class="bp-pd-item">
@@ -503,7 +503,7 @@
                   </span>
                   <div class="bp-pd-text">
                     <div class="bp-pd-label">Title number</div>
-                    <div class="bp-pd-value">{{ data.property.titleNumber || '—' }}</div>
+                    <div class="bp-pd-value">{{ data.property.titleNumber || 'Not available' }}</div>
                   </div>
                 </div>
                 <div class="bp-pd-item">
@@ -516,7 +516,7 @@
                       {{
                         data.property.sqft
                           ? data.property.sqft.toLocaleString() + ' sqft'
-                          : '—'
+                          : 'Not available'
                       }}
                     </div>
                   </div>
@@ -532,7 +532,7 @@
                         {{ data.property.epcRating }}
                         <span class="bp-pd-chip">To improve</span>
                       </template>
-                      <template v-else>—</template>
+                      <template v-else>Not available</template>
                     </div>
                   </div>
                 </div>
@@ -551,7 +551,7 @@
                   </span>
                   <div class="bp-pd-text">
                     <div class="bp-pd-label">Year built</div>
-                    <div class="bp-pd-value">{{ data.property.yearBuilt || '—' }}</div>
+                    <div class="bp-pd-value">{{ data.property.yearBuilt || 'Not available' }}</div>
                   </div>
                 </div>
               </div>
@@ -582,7 +582,7 @@
                 {{
                   passportProgress === 100
                     ? 'All sections completed by the seller.'
-                    : "The seller is still completing some sections — you'll see updates here as they land."
+                    : "The seller is still completing some sections, so you'll see updates here as they land."
                 }}
               </p>
             </div>
@@ -692,7 +692,7 @@
 
           <div v-if="!shareUrl" class="share-intro">
             <p class="share-hint">
-              Generate a link that lets anyone view this passport for 3 hours —
+              Generate a link that lets anyone view this passport for 3 hours,
               no login required.
             </p>
             <button
@@ -755,7 +755,7 @@ const buyerTourSteps = [
   {
     selector: '.bp-col-main',
     title: 'Everything in one place',
-    body: 'Documents, surveys, the seller\'s answers and the property history — no more chasing for paperwork.',
+    body: 'Documents, surveys, the seller\'s answers and the property history, so no more chasing for paperwork.',
   },
   {
     selector: '[data-tour="records"]',
@@ -774,6 +774,7 @@ const buyerTourSteps = [
   },
 ]
 import UnderReview from '~/components/passport-view/UnderReview.vue'
+import { usePassportBack, usePassportTrail } from '~/composables/usePassportTrail'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -791,6 +792,19 @@ const data = ref<any>(null)
 const loading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
+
+// Navbar Back: the passport page the user came from (the seller view they
+// switched from, the collection...), on the screen they left it. Landing
+// here directly, it goes to the passport collection.
+const ppBack = usePassportBack()
+// The section search is saved onto this page's trail entry, so coming Back
+// from a section finds the same filtered list.
+const ppTrail = usePassportTrail()
+onMounted(() => {
+  const saved = ppTrail.savedScreen(route.path)
+  if (typeof saved?.search === 'string') searchQuery.value = saved.search
+})
+watch(searchQuery, (search) => ppTrail.saveScreen(route.path, { search }))
 const generatingPdf = ref(false)
 const generatingTA6 = ref(false)
 const generatingTA7 = ref(false)
@@ -838,7 +852,7 @@ const cityLine = computed(() => {
 // Normalize tenure — EPC returns occupancy type, not legal tenure (freehold/leasehold)
 const displayTenure = computed(() => {
   const raw = (data.value?.property?.tenure || '').trim()
-  if (!raw) return '—'
+  if (!raw) return 'Not available'
   const lower = raw.toLowerCase()
   if (lower === 'f' || lower === 'freehold') return 'Freehold'
   if (lower === 'l' || lower === 'leasehold') return 'Leasehold'
@@ -848,7 +862,7 @@ const displayTenure = computed(() => {
     lower.includes('rented') ||
     lower.includes('unknown')
   )
-    return '—'
+    return 'Not available'
   return raw
 })
 
@@ -873,7 +887,7 @@ const overallProgressPct = computed(() => passportProgress.value)
 const heroHsScore = computed(() => {
   const score =
     data.value?.property?.homeScore ?? data.value?.property?.epcScore
-  return typeof score === 'number' ? score : '—'
+  return typeof score === 'number' ? score : 'N/A'
 })
 const heroDocsCount = computed(() => {
   if (!data.value?.sections) return 0
@@ -963,7 +977,7 @@ function toggleSaveToProfile() {
   // The real save endpoint can hook in here later.
 }
 function askSeller() {
-  const url = `/contact/${data.value?.passport?.id ?? passportId}?prefill=I've reviewed the Passport — I'd like to ask about…`
+  const url = `/contact/${data.value?.passport?.id ?? passportId}?prefill=I've reviewed the Passport and I'd like to ask about…`
   router.push(url)
 }
 
@@ -1104,7 +1118,7 @@ function downloadTA10() {
 }
 
 function goBack() {
-  router.back()
+  ppBack.go()
 }
 
 function goToSection(sectionId: string) {
@@ -1259,8 +1273,8 @@ async function deleteNote(noteId: string) {
 .hsw-links button.active { color: var(--teal-dark); background: rgba(0, 161, 154, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 161, 154, 0.24); }
 .hsw-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .hsw-iconbtn {
-  width: 40px; height: 40px;
-  border-radius: 11px;
+  width: 42px; height: 42px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink-soft);
@@ -1272,11 +1286,11 @@ async function deleteNote(noteId: string) {
 }
 .hsw-iconbtn svg { width: 17px; height: 17px; }
 .hsw-iconbtn:hover { border-color: var(--teal); color: var(--navy); }
-.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
+.hsw-back { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.16s, transform 0.16s; }
 .hsw-back:hover { border-color: var(--teal); transform: translateY(-1px); }
 .hsw-back svg { width: 15px; height: 15px; }
 .hsw-ask {
-  height: 40px; padding: 0 18px; border-radius: 999px; border: none;
+  height: 42px; padding: 0 18px; border-radius: 10px; border: none;
   background: linear-gradient(135deg, var(--teal), var(--teal-dark));
   color: #fff; font-family: inherit; font-size: 14px; font-weight: 800;
   letter-spacing: -0.01em; cursor: pointer; flex-shrink: 0;
@@ -2175,9 +2189,6 @@ async function deleteNote(noteId: string) {
 @media (max-width: 420px) {
   .hsw-brand-beta { display: none; }
   .hsw-actions { gap: 6px; }
-  /* Back shows its arrow only, sized like the share button. font-size: 0
-     hides the word visually but screen readers still read "Back". */
-  .hsw-back { width: 40px; padding: 0; justify-content: center; gap: 0; font-size: 0; }
   .bpw-shell,
   .hsw-shell { width: calc(100% - 20px); }
   .bp-hero { padding: 24px 16px; border-radius: 22px; }
@@ -2207,5 +2218,17 @@ async function deleteNote(noteId: string) {
   }
   .sheet-panel { max-height: calc(84vh / var(--wide-zoom, 1)); }
   .bpw-main .buyer-loading { min-height: calc(50vh / var(--wide-zoom, 1)); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>
