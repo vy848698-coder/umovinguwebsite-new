@@ -286,14 +286,26 @@
                   rel="noopener"
                 >
                   <span class="dsh-news-band" :class="`dsh-news-band--${n.tag}`" />
+                  <!-- Each story leads with its own topic icon (set per item
+                       in the news files), big and on plain white, so the
+                       rail scans by picture as in the reference app. -->
+                  <span v-if="n.icon" class="dsh-news-img">
+                    <img :src="n.icon" alt="" loading="lazy" />
+                  </span>
                   <span class="dsh-news-bd">
                     <span class="dsh-news-tag" :class="`dsh-news-tag--${n.tag}`">{{ n.tagLabel }}</span>
                     <strong class="dsh-news-t">{{ n.title }}</strong>
                     <small class="dsh-news-s">{{ n.summary }}</small>
-                    <small class="dsh-news-src">
-                      {{ n.source }}
-                      <Icon name="i-lucide-external-link" />
-                    </small>
+                    <span class="dsh-news-foot">
+                      <small class="dsh-news-src">
+                        <span class="dsh-news-src-t">{{ n.source }}</span>
+                        <Icon name="i-lucide-external-link" />
+                      </small>
+                      <span class="dsh-news-more">
+                        Read more
+                        <Icon name="i-lucide-arrow-right" />
+                      </span>
+                    </span>
                   </span>
                   </a>
                 </div>
@@ -315,25 +327,42 @@
                 </div>
               </div>
 
-              <div class="nfy">
+              <!-- Side-by-side action cards, each led by its own big 3D icon on
+                   plain white. The grid follows the number of actions (one
+                   to four, depending on role), so a row is never half empty;
+                   a single action becomes one wide card instead. -->
+              <div class="nfy" :class="`nfy--n${Math.min(nextActions.length, 4)}`">
                 <p v-if="stalenessLine" class="nfy-stale">
                   <Icon name="i-lucide-clock" />
                   {{ stalenessLine }}
                 </p>
-                <button
-                  v-for="action in nextActions"
-                  :key="action.title"
-                  type="button"
-                  class="nfy-row"
-                  @click="navigateTo(action.to)"
-                >
-                  <img :src="action.icon" alt="" class="nfy-ic" loading="lazy" />
-                  <span class="nfy-body">
-                    <strong>{{ action.title }}</strong>
-                    <small>{{ action.sub }}</small>
-                  </span>
-                  <Icon name="i-lucide-chevron-right" class="nfy-chev" />
-                </button>
+                <div class="nfy-grid">
+                  <button
+                    v-for="action in nextActions"
+                    :key="action.title"
+                    type="button"
+                    class="nfy-card"
+                    @click="navigateTo(action.to)"
+                  >
+                    <img :src="action.icon" alt="" class="nfy-ic" loading="lazy" />
+                    <span class="nfy-body">
+                      <span class="nfy-tag">{{ action.tag }}</span>
+                      <strong class="nfy-t">{{ action.title }}</strong>
+                      <small class="nfy-s">{{ action.sub }}</small>
+                      <span v-if="action.progress != null" class="nfy-prog">
+                        <span class="nfy-prog-bar">
+                          <span class="nfy-prog-fill" :style="{ width: action.progress + '%' }" />
+                        </span>
+                        <span class="nfy-prog-v">{{ action.progress }}%</span>
+                      </span>
+                      <span v-else-if="action.meta" class="nfy-meta">{{ action.meta }}</span>
+                      <span class="nfy-cta">
+                        {{ action.cta }}
+                        <Icon name="i-lucide-arrow-right" />
+                      </span>
+                    </span>
+                  </button>
+                </div>
               </div>
             </section>
 
@@ -982,8 +1011,22 @@ const heroStats = computed(() => {
 })
 
 // ── "Next for you" rows, per role ──────────────────────────────────────
+// Every row has its own topic icon (the reference app's where it has one:
+// clipboard, bank, chain link) plus a short tag and call to action for the
+// card layout. Progress and meta lines only ever show real figures.
+interface NextAction {
+  title: string
+  sub: string
+  icon: string
+  to: string
+  tag: string
+  cta: string
+  progress?: number
+  meta?: string
+}
+
 const nextActions = computed(() => {
-  const rows: { title: string; sub: string; icon: string; to: string }[] = []
+  const rows: NextAction[] = []
 
   if (isBuyerView.value) {
     if (!buyerProfile.value) return rows
@@ -991,8 +1034,11 @@ const nextActions = computed(() => {
       rows.push({
         title: `Complete ${buyerIncompleteCount.value} ${buyerIncompleteCount.value === 1 ? 'item' : 'items'} in your Passport`,
         sub: 'Add documents and details to build your record.',
-        icon: '/dashboard-art/nextDocuments.png',
+        icon: '/op-icons/investment/clipboardChecklist.png',
         to: '/buyer-profile/build',
+        tag: 'Buyer Passport',
+        cta: 'Continue',
+        progress: Math.round(((5 - buyerIncompleteCount.value) / 5) * 100),
       })
     }
     if (!buyerIdVerified.value) {
@@ -1001,21 +1047,28 @@ const nextActions = computed(() => {
         sub: 'A verified ID is what sellers and agents check first.',
         icon: '/dashboard-art/nextIdentity.png',
         to: '/buyer-profile/build',
+        tag: 'Identity',
+        cta: 'Verify now',
       })
     }
     if (financePercent.value < 100) {
       rows.push({
         title: 'Upload proof of funds or AIP',
         sub: 'Strengthen your position and unlock more.',
-        icon: '/dashboard-art/nextFunds.png',
+        icon: '/op-icons/investment/bank.png',
         to: '/buyer-profile/build',
+        tag: 'Finances',
+        cta: 'Upload',
+        meta: financePercent.value > 0 ? 'Declared, waiting for review' : undefined,
       })
     }
     rows.push({
       title: 'Confirm your buying position',
       sub: 'Let agents and sellers know where you are in the chain.',
-      icon: '/dashboard-art/nextPosition.png',
+      icon: '/op-icons/investment/chainLink.png',
       to: '/buyer-profile/build',
+      tag: 'Chain position',
+      cta: 'Confirm',
     })
     return rows
   }
@@ -1023,11 +1076,15 @@ const nextActions = computed(() => {
   if (!passports.value.length) return rows
 
   if (incompleteItemCount.value > 0) {
+    const pct = primaryPassport.value.completionPercentage
     rows.push({
       title: `Complete ${incompleteItemCount.value} ${incompleteItemCount.value === 1 ? 'item' : 'items'} in your Passport`,
       sub: 'Add documents and details to build your record.',
-      icon: '/dashboard-art/nextDocuments.png',
+      icon: '/op-icons/investment/clipboardChecklist.png',
       to: `/passportview/${primaryPassport.value.id}`,
+      tag: isLandlord.value ? 'Rental Passport' : 'Property Passport',
+      cta: 'Continue',
+      progress: typeof pct === 'number' ? Math.round(pct) : undefined,
     })
   }
 
@@ -1035,16 +1092,26 @@ const nextActions = computed(() => {
     rows.push({
       title: 'Keep your compliance documents current',
       sub: 'Gas, electrical and EPC certificates your tenants can see.',
-      icon: '/dashboard-art/nextDocuments.png',
+      icon: '/op-icons/landlordPassport/gasSafetyCertificate.png',
       to: `/passportview/landlord/${primaryPassport.value.id}`,
+      tag: 'Compliance',
+      cta: 'Review documents',
     })
   }
 
+  const score = primaryPassport.value.homeScore
+  const potential = primaryPassport.value.homeScorePotential
   rows.push({
     title: 'Improve your EPC',
     sub: 'See how you could raise your score and cut running costs.',
-    icon: '/dashboard-art/nextEpc.png',
+    icon: '/op-icons/landlordPassport/epc.png',
     to: homeScoreHref.value,
+    tag: 'HomeScore',
+    cta: 'See how',
+    meta:
+      typeof score === 'number' && typeof potential === 'number' && potential > score
+        ? `HomeScore ${score}, could reach ${potential}`
+        : undefined,
   })
 
   return rows
@@ -1840,87 +1907,161 @@ onMounted(async () => {
    A checklist, so it reads as progress rather than a list of links: each
    row gets a numbered marker and the art sits on a tinted tile. */
 .nfy {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-  box-shadow: var(--sh-md);
+  container-type: inline-size;
 }
 .nfy-stale {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin: 0;
-  padding: 13px 22px;
-  background: linear-gradient(90deg, #fff8ed, #fffdf8);
-  border-bottom: 1px solid #fbe4bd;
+  margin: 0 0 14px;
+  padding: 11px 16px;
+  border: 1px solid #fbe4bd;
+  border-radius: 12px;
+  background: #fffaf1;
   font-size: 12.5px;
   font-weight: 700;
   color: #92400e;
 }
 .nfy-stale svg { width: 15px; height: 15px; flex-shrink: 0; }
-.nfy-row {
-  position: relative;
+.nfy-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--nfy-cols, 3), minmax(0, 1fr));
+  gap: 14px;
+}
+.nfy--n2 { --nfy-cols: 2; }
+.nfy--n3 { --nfy-cols: 3; }
+/* Four actions sit 2 x 2 in the main column, in one row on a wide one. */
+.nfy--n4 { --nfy-cols: 2; }
+@container (min-width: 900px) {
+  .nfy--n4 { --nfy-cols: 4; }
+}
+.nfy-card {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  padding: 18px 22px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px 20px 18px;
   text-align: left;
-  background: none;
-  border: none;
-  border-top: 1px solid #f0f2f6;
   font-family: inherit;
+  color: inherit;
   cursor: pointer;
-  transition: background 0.16s ease, padding-left 0.16s ease;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(15, 36, 62, 0.04), 0 8px 22px rgba(15, 36, 62, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.nfy-row:first-of-type { border-top: none; }
-.nfy-row:hover { background: #fbfdfd; padding-left: 26px; }
-/* Teal rail that grows in on hover — a cheap, quiet affordance. */
-.nfy-row::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--brand);
-  transform: scaleY(0);
-  transition: transform 0.18s ease;
+.nfy-card:hover {
+  transform: translateY(-3px);
+  border-color: #cfe7e4;
+  box-shadow: 0 16px 34px rgba(15, 36, 62, 0.1);
 }
-.nfy-row:hover::before { transform: scaleY(1); }
+.nfy-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
 .nfy-ic {
-  width: 48px;
-  height: 48px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   flex-shrink: 0;
-  padding: 5px;
-  border-radius: 13px;
-  background: linear-gradient(160deg, #f4f8fb, #eef4f3);
+  transition: transform 0.2s ease;
 }
-.nfy-body { flex: 1; min-width: 0; }
-.nfy-body strong {
-  display: block;
-  font-size: 15px;
+.nfy-card:hover .nfy-ic { transform: scale(1.06) rotate(-2deg); }
+.nfy-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+.nfy-tag {
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: -0.012em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #00857f;
 }
-.nfy-body small {
-  display: block;
-  margin-top: 3px;
-  font-size: 12.5px;
+.nfy-t {
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+.nfy-s {
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
   color: var(--ink-2);
 }
-.nfy-chev {
-  width: 20px;
-  height: 20px;
-  color: #c3c6d2;
-  flex-shrink: 0;
-  transition: color 0.16s ease, transform 0.16s ease;
+.nfy-prog {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin-top: 2px;
 }
-.nfy-row:hover .nfy-chev { color: var(--brand); transform: translateX(3px); }
+.nfy-prog-bar {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf1f5;
+}
+.nfy-prog-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+.nfy-prog-v {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.nfy-meta {
+  margin-top: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64708a;
+}
+.nfy-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #00857f;
+}
+.nfy-cta svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.16s ease;
+}
+.nfy-card:hover .nfy-cta svg { transform: translateX(3px); }
+/* One action, or a narrow column: icon beside the text instead of above. */
+.nfy--n1 .nfy-grid { grid-template-columns: 1fr; }
+.nfy--n1 .nfy-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+@container (max-width: 560px) {
+  .nfy-grid { grid-template-columns: 1fr; }
+  .nfy-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+  }
+  .nfy-ic { width: 68px; height: 68px; }
+}
 
 /* ── Side cards ────────────────────────────────────────────────────── */
 .dsh-card {
@@ -2051,11 +2192,26 @@ onMounted(async () => {
 .dsh-news-band--law { background: linear-gradient(90deg, #c73e36, #e0796f); }
 .dsh-news-band--update { background: linear-gradient(90deg, #00a19a, #4fd1c5); }
 .dsh-news-band--news { background: linear-gradient(90deg, #3f7fd0, #7aa9e8); }
+.dsh-news-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  padding-top: 14px;
+}
+.dsh-news-img img {
+  width: 124px;
+  height: 124px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+.dsh-news-card:hover .dsh-news-img img { transform: scale(1.05); }
 .dsh-news-bd {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 7px;
-  padding: 15px 16px 16px;
+  padding: 10px 16px 16px;
 }
 .dsh-news-tag {
   align-self: flex-start;
@@ -2082,20 +2238,49 @@ onMounted(async () => {
   color: #6b7089;
   /* Summaries vary a lot in length; clamp so the row stays even. */
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.dsh-news-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 6px;
 }
 .dsh-news-src {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: auto;
+  min-width: 0;
   font-size: 11.5px;
   font-weight: 700;
   color: #9aa7b8;
 }
-.dsh-news-src svg { width: 12px; height: 12px; }
+.dsh-news-src-t {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dsh-news-src svg { width: 12px; height: 12px; flex-shrink: 0; }
+.dsh-news-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #00857f;
+}
+.dsh-news-more svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.16s ease;
+}
+.dsh-news-card:hover .dsh-news-more svg { transform: translateX(3px); }
 .dsh-news-all {
   display: inline-flex;
   align-items: center;
@@ -2568,16 +2753,13 @@ onMounted(async () => {
   .dsh-stats { margin-top: 20px; padding-top: 18px; }
   .dsh-sec-head { gap: 12px; }
   .nfy-stale { padding: 12px 14px; }
-  .nfy-row { gap: 12px; padding: 14px; }
-  .nfy-row:hover { padding-left: 16px; }
-  .nfy-ic { width: 40px; height: 40px; }
+  .nfy-card { gap: 12px; padding: 14px; }
+  .nfy-ic { width: 64px; height: 64px; }
   .apc-info { padding: 18px 16px; }
   .apc-book { padding: 18px; }
 }
 @media (max-width: 300px) {
   .dsh-stat { flex: 1 1 100%; }
-  /* The whole row is the button; the chevron gives its width to the copy */
-  .nfy-chev { display: none; }
   .dsh-add { padding: 10px 16px 10px 10px; font-size: 13px; }
 }
 
