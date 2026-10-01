@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="goBack">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -105,8 +105,8 @@
     <div class="pd-next">
       <div class="pd-next-eyebrow">What happens next</div>
       <ul class="pd-next-list">
-        <li><strong>Your agent</strong> can use the Passport in marketing — properties with Passports sell ~12 weeks faster on average.</li>
-        <li><strong>Buyers</strong> get instant access to all the data they'd otherwise wait weeks for — title, surveys, EPC, planning history.</li>
+        <li><strong>Your agent</strong> can use the Passport in marketing, and properties with Passports sell ~12 weeks faster on average.</li>
+        <li><strong>Buyers</strong> get instant access to all the data they'd otherwise wait weeks for: title, surveys, EPC, planning history.</li>
         <li><strong>You</strong> can update or unshare at any time from <NuxtLink to="/passport/collections" class="pd-link">your Passport collection</NuxtLink>.</li>
       </ul>
     </div>
@@ -131,6 +131,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import Toast from '~/components/ui/Toast.vue'
 import { useAppToast } from '~/composables/useCustomToast'
+import { usePassportBack, usePassportTrail, PASSPORT_HOME } from '~/composables/usePassportTrail'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -183,7 +184,10 @@ onMounted(async () => {
 
 function viewPassport() {
   if (!passportId.value) return
-  router.push(`/passportview/${passportId.value}`)
+  // Steps back to the passport when the user came from it, so the browser's
+  // Back doesn't lead back into this summary.
+  const path = `/passportview/${passportId.value}`
+  ppTrail.returnTo(path, path)
 }
 
 function shareWithAgent() {
@@ -195,10 +199,13 @@ function goExplore() {
   router.push('/dashboard')
 }
 
-function goBack() {
-  if (passportId.value) router.push(`/passportview/${passportId.value}`)
-  else router.back()
-}
+// Navbar Back: the passport page the user came from (on the screen they
+// left), else this passport, else the passport collection.
+const ppBack = usePassportBack(
+  () => (passportId.value ? `/passportview/${passportId.value}` : PASSPORT_HOME),
+  'Back to passport',
+)
+const ppTrail = usePassportTrail()
 </script>
 
 <style scoped>
@@ -511,7 +518,6 @@ function goBack() {
 }
 @media (max-width: 640px) {
   .hsw-shell, .pdw-main { width: calc(100% - 24px); }
-  .hsw-back { display: none; }
 }
 
 /* ── Big screens ──────────────────────────────────────────────────────
@@ -523,5 +529,17 @@ function goBack() {
 @media (min-width: 1367px) {
   .hsw-shell,
   .pdw-main { zoom: var(--wide-zoom, 1); }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

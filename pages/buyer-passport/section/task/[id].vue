@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="navigateTo(backUrl)">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to Section
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -391,6 +391,7 @@ import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import { usePassportBack, usePassportTrail } from '~/composables/usePassportTrail'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -409,6 +410,21 @@ const showVideo = ref(false)
 const activeHelpContent = ref<any>(null)
 const activeVideoUrl = ref<string | null>(null)
 
+// Navbar Back: the passport page the user came from (on the screen they
+// left), else this answer's section when they landed here directly.
+const ppBack = usePassportBack(() => backUrl.value, 'Back to section')
+// The answer on screen is saved onto this page's trail entry, so coming
+// Back here (from the expert page, say) lands on it again.
+const ppTrail = usePassportTrail()
+const answerRestored = ref(false)
+watch(activeIndex, (index) => {
+  if (!answerRestored.value) return
+  ppTrail.saveScreen(route.path, {
+    questionIndex: index,
+    questionId: visibleQuestions.value[index]?.id ?? null,
+  })
+})
+
 onMounted(async () => {
   try {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -416,10 +432,20 @@ onMounted(async () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     activeIndex.value = taskStartIndex.value
+    // Coming back to this entry: reopen the answer the user was on.
+    const saved = ppTrail.savedScreen(route.path)
+    if (saved) {
+      const byId = visibleQuestions.value.findIndex((q: any) => q.id === saved.questionId)
+      const index = byId >= 0 ? byId : Number(saved.questionIndex)
+      if (Number.isInteger(index) && index >= 0 && index < visibleQuestions.value.length) {
+        activeIndex.value = index
+      }
+    }
   } catch (e) {
     console.error('Failed to load buyer view', e)
   } finally {
     loading.value = false
+    answerRestored.value = true
   }
 })
 
@@ -1055,7 +1081,6 @@ function downloadFile(url: string, name: string) {
 }
 @media (max-width: 640px) {
   .hsw-shell { width: calc(100% - 24px); }
-  .hsw-back { display: none; }
   .btw-layout { padding: 24px 0 60px; gap: 20px; }
   .qhead-title { font-size: 30px; }
   .task-item { padding: 22px 20px; }
@@ -1092,5 +1117,17 @@ function downloadFile(url: string, name: string) {
 @media (prefers-reduced-motion: reduce) {
   .btw-spinner { animation: none; }
   .qseg, .qnav, .qpanel-btn { transition: none; }
+}
+
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
 }
 </style>

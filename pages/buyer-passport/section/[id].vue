@@ -16,11 +16,11 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="hsw-actions">
-          <button class="hsw-back" type="button" @click="router.push(`/buyer-passport/${passportId}`)">
+          <button class="hsw-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to Passport
+            {{ ppBack.label }}
           </button>
         </div>
       </div>
@@ -93,7 +93,7 @@
             </div>
             <div class="ov-seller-info">
               <strong>Questions answered by seller</strong>
-              <small v-if="progress.lastUpdated !== '—'">Last updated {{ progress.lastUpdated }}</small>
+              <small v-if="progress.lastUpdated !== 'Not yet'">Last updated {{ progress.lastUpdated }}</small>
             </div>
             <div class="ov-seller-bar-bg">
               <div class="ov-seller-bar-fill" :style="{ width: progress.pct + '%' }" />
@@ -373,6 +373,7 @@ import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import { usePassportBack } from '~/composables/usePassportTrail'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -382,6 +383,13 @@ const config = useRuntimeConfig()
 
 const sectionId = route.params.id as string
 const passportId = route.query.passportId as string
+
+// Navbar Back: the passport page the user came from (on the screen they
+// left), else this passport's buyer view when they landed here directly.
+const ppBack = usePassportBack(
+  () => (passportId ? `/buyer-passport/${passportId}` : '/passport/collections'),
+  'Back to buyer view',
+)
 
 const allData = ref<any>(null)
 const loading = ref(true)
@@ -492,7 +500,7 @@ const sectionFiles = computed((): Array<{ url: string; name: string; question: s
 })
 
 const stats = computed(() => {
-  if (!section.value) return { included: 0, excluded: 0, offered: 0, lastUpdated: '—' }
+  if (!section.value) return { included: 0, excluded: 0, offered: 0, lastUpdated: 'Not yet' }
   let included = 0, excluded = 0, offered = 0
   let latestDate: Date | null = null
   for (const task of section.value.tasks) {
@@ -529,12 +537,12 @@ const stats = computed(() => {
   }
   const lastUpdated = latestDate
     ? latestDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-    : '—'
+    : 'Not yet'
   return { included, excluded, offered, lastUpdated }
 })
 
 const progress = computed(() => {
-  if (!section.value) return { answered: 0, total: 0, pct: 0, lastUpdated: '—' }
+  if (!section.value) return { answered: 0, total: 0, pct: 0, lastUpdated: 'Not yet' }
   let total = 0, answered = 0
   let latestDate: Date | null = null
   for (const task of section.value.tasks) {
@@ -553,7 +561,7 @@ const progress = computed(() => {
   const pct = total > 0 ? Math.round((answered / total) * 100) : 0
   const lastUpdated = latestDate
     ? latestDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-    : '—'
+    : 'Not yet'
   return { answered, total, pct, lastUpdated }
 })
 
@@ -1044,7 +1052,6 @@ function downloadAllFiles() {
 }
 @media (max-width: 640px) {
   .hsw-shell { width: calc(100% - 24px); }
-  .hsw-back { display: none; }
   .bs-page { padding: 24px 0 60px; gap: 20px; }
   .ov-hero { padding: 22px 20px; }
   .ov-title { font-size: 26px; }
@@ -1115,4 +1122,15 @@ function downloadAllFiles() {
 .sheet-enter-active .files-sheet, .sheet-leave-active .files-sheet { transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease; }
 .sheet-enter-from .files-sheet, .sheet-leave-to .files-sheet { transform: translateY(14px) scale(0.98); opacity: 0; }
 
+/* Phones: Back shrinks to its arrow so a long label ("Back to questions")
+   can't push it off the bar. The label stays its accessible name. */
+@media (max-width: 520px) {
+  .hsw-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+}
 </style>

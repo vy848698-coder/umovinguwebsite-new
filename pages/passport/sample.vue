@@ -16,6 +16,12 @@
           <button type="button" @click="navigateTo('/profile/learn')">Learn</button>
         </nav>
         <div class="spn-actions">
+          <button class="spn-back" type="button" :aria-label="ppBack.label" @click="ppBack.go">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            {{ ppBack.label }}
+          </button>
           <button class="spn-signin" type="button" @click="navigateTo('/onboarding/signin')">Sign in</button>
           <button class="spn-cta" type="button" @click="navigateTo('/onboarding/signup')">Get started</button>
         </div>
@@ -27,7 +33,7 @@
       <div class="sp-shell sp-banner-inner">
         <span class="sp-banner-pill">SAMPLE</span>
         <p class="sp-banner-text">
-          A demo passport for an illustrative property —
+          A demo passport for an illustrative property,
           <strong>not a real listing.</strong>
         </p>
       </div>
@@ -579,6 +585,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import PassportCard from '~/components/passport-view/PassportCard.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
+import { usePassportBack } from '~/composables/usePassportTrail'
 
 // Public page — no auth middleware. This is what people who haven't signed
 // up land on when they tap "See a sample Passport".
@@ -589,6 +596,10 @@ const roles = [
 ]
 const route = useRoute()
 const router = useRouter()
+// Navbar Back: the passport page the user came from (on the screen they
+// left). The sample is mostly opened from the public site, so landing here
+// directly it goes home.
+const ppBack = usePassportBack(() => '/', 'Back to home')
 const role = ref('seller')
 
 // Deep-link support: /passport/sample?sample=landlord mirrors the app's
@@ -736,7 +747,7 @@ const sections = [
 // Landlord perspective — grouped compliance record for 14 Hazel Grove.
 const landlordGroups = [
   {
-    label: 'Statutory — Annual / 5-yearly',
+    label: 'Statutory: Annual / 5-yearly',
     items: [
       {
         title: 'Gas Safety Certificate (CP12)',
@@ -830,21 +841,21 @@ const buyerDetails = [
 const buyerDownloads = [
   {
     title: 'Full Property Report',
-    sub: 'All questions & answers — share with solicitors',
+    sub: 'All questions & answers to share with solicitors',
     cta: 'Download PDF',
     tone: 'teal',
     icon: '/passport-seller-and-buyer-icon/clipboard.png',
   },
   {
     title: 'TA6 Property Information Form',
-    sub: 'Law Society 6th edition — pre-filled with passport data',
+    sub: 'Law Society 6th edition, pre-filled with passport data',
     cta: 'Download TA6',
     tone: 'purple',
     icon: '/passport-seller-and-buyer-icon/transactionInformation.png',
   },
   {
     title: 'TA10 Fixtures & Fittings Form',
-    sub: "What stays, what goes — pre-filled from seller's passport",
+    sub: "What stays and what goes, pre-filled from seller's passport",
     cta: 'Download TA10',
     tone: 'blue',
     icon: '/passport-seller-and-buyer-icon/fixturesAndFittings.png',
@@ -997,6 +1008,32 @@ const buyerRecords = [
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+.spn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.spn-back:hover {
+  border-color: rgba(0, 161, 154, 0.4);
+}
+
+.spn-back svg {
+  width: 15px;
+  height: 15px;
 }
 
 .spn-signin {
@@ -2862,6 +2899,17 @@ const buyerRecords = [
   }
   .by-recstats {
     gap: 24px;
+  }
+}
+
+/* Phones: Back shrinks to its arrow; the label stays its accessible name. */
+@media (max-width: 520px) {
+  .spn-back {
+    width: 42px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    font-size: 0;
   }
 }
 
