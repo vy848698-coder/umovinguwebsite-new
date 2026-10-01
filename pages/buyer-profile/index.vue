@@ -59,13 +59,14 @@
               {{ statusLabel }}
             </span>
           </div>
+          <Icon name="i-lucide-chevron-right" class="bph-hero-chev" />
         </div>
 
         <!-- Progress -->
         <div class="bph-progress-block">
           <div class="bph-progress-row">
             <span class="bph-progress-label">Passport progress</span>
-            <span class="bph-progress-pct">{{ progressPct }}%</span>
+            <span class="bph-progress-pct">{{ completedCount }} of 4 steps · {{ progressPct }}%</span>
           </div>
           <div class="bph-progress-track">
             <div class="bph-progress-fill" :style="{ width: progressPct + '%' }" />
@@ -97,30 +98,35 @@
 
       <!-- ── Right: checklist ── -->
       <div class="bph-content">
+        <!-- Step cards: a big icon on plain white, the step number as a tag,
+             and a clear status. The first unfinished step is highlighted as
+             the one to do next. -->
         <div class="bph-checklist">
-          <div
+          <button
             v-for="(item, i) in checklistItems"
             :key="item.key"
+            type="button"
             class="bph-check-row"
+            :class="{ 'is-done': item.done, 'is-next': item.key === nextKey }"
             @click="goToBuild"
           >
-            <div class="bph-check-icon" :class="{ 'is-done': item.done }">
-              <img :src="item.icon" alt="" loading="lazy" />
-            </div>
-            <div class="bph-check-body">
-              <div class="bph-check-title">{{ i + 1 }}. {{ item.title }}</div>
-              <div class="bph-check-sub">{{ item.sub }}</div>
-            </div>
-            <span v-if="item.done" class="bph-check-done">
-              <Icon name="heroicons:check-16-solid" class="bph-check-done-ic" />
+            <img class="bph-check-img" :src="item.icon" alt="" loading="lazy" />
+            <span class="bph-check-body">
+              <span class="bph-check-step">Step {{ i + 1 }}</span>
+              <span class="bph-check-title">{{ item.title }}</span>
+              <span class="bph-check-sub">{{ item.sub }}</span>
+            </span>
+            <span v-if="item.done" class="bph-check-pill bph-check-pill--done">
+              <Icon name="i-lucide-check" class="bph-check-pill-ic" />
               Complete
             </span>
-            <span class="bph-check-chev">
-              <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+            <span v-else-if="item.key === nextKey" class="bph-check-pill bph-check-pill--next">
+              {{ completedCount === 0 ? 'Start' : 'Continue' }}
+              <Icon name="i-lucide-arrow-right" class="bph-check-pill-ic" />
             </span>
-          </div>
+            <span v-else class="bph-check-pill bph-check-pill--todo">To do</span>
+            <Icon name="i-lucide-chevron-right" class="bph-check-chev" />
+          </button>
         </div>
       </div>
     </main>
@@ -132,7 +138,7 @@
         <h3 class="bph-sheet-title">What is a Buyer Passport?</h3>
         <p class="bph-sheet-body">
           A verified profile that shows sellers and agents you're a serious,
-          ready buyer — your identity, buying position, finances and chain
+          ready buyer: your identity, buying position, finances and chain
           position, all confirmed up front. Verified buyers get 3× more offers
           accepted.
         </p>
@@ -173,28 +179,28 @@ const stepDone = computed(() => {
 const checklistItems = computed(() => [
   {
     key: 'identity',
-    icon: '/op-icons/buyer-profile-build/idCard.png',
+    icon: '/buyer-profile-icon/idCard.png',
     title: 'Your identity',
     sub: 'Verify your identity to get started.',
     done: stepDone.value.identity,
   },
   {
     key: 'buying',
-    icon: '/op-icons/buyer-profile-build/target.png',
+    icon: '/buyer-profile-icon/target.png',
     title: 'Buying position',
     sub: 'Tell us about your buying plans.',
     done: stepDone.value.buying,
   },
   {
     key: 'finance',
-    icon: '/op-icons/buyer-profile-build/bank.png',
+    icon: '/buyer-profile-icon/bank.png',
     title: 'Finance',
     sub: 'Add proof of funds or mortgage position.',
     done: stepDone.value.finance,
   },
   {
     key: 'chain',
-    icon: '/op-icons/investment/chainLink.png',
+    icon: '/buyer-profile-icon/chainLink.png',
     title: 'Chain position',
     sub: 'Help sellers understand your position in the chain.',
     done: stepDone.value.chain,
@@ -203,6 +209,10 @@ const checklistItems = computed(() => [
 
 const completedCount = computed(
   () => Object.values(stepDone.value).filter(Boolean).length,
+)
+// The first unfinished step, highlighted as the one to do next.
+const nextKey = computed(
+  () => checklistItems.value.find((item) => !item.done)?.key ?? null,
 )
 const progressPct = computed(() => Math.round((completedCount.value / 4) * 100))
 const statusKey = computed(() => {
@@ -287,16 +297,29 @@ onMounted(async () => {
 
 /* ── Hero card ── */
 .bph-hero-card {
-  background: #fff; border: 1.5px solid #e2f1ea; border-radius: 20px;
-  padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer;
-  box-shadow: 0 10px 28px -12px rgba(0, 40, 38, 0.14);
-  transition: border-color 0.18s, box-shadow 0.18s;
+  background: #fff; border: 1px solid #e7ecf2; border-radius: 20px;
+  padding: 20px 18px 20px 20px; display: flex; align-items: center; gap: 18px; cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.04), 0 10px 26px rgba(15, 44, 76, 0.06);
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), border-color 0.2s, box-shadow 0.2s;
 }
-.bph-hero-card:hover { border-color: #b9e3da; box-shadow: 0 14px 34px -12px rgba(0, 40, 38, 0.2); }
-.bph-hero-icon { width: 76px; height: auto; object-fit: contain; flex-shrink: 0; }
+.bph-hero-card:hover {
+  transform: translateY(-2px);
+  border-color: #cfe7e4;
+  box-shadow: 0 16px 34px rgba(15, 44, 76, 0.1);
+}
+.bph-hero-icon {
+  width: 96px; height: auto; object-fit: contain; flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.bph-hero-card:hover .bph-hero-icon { transform: scale(1.04) rotate(-2deg); }
 .bph-hero-body { flex: 1; min-width: 0; }
 .bph-hero-title { color: #231d45; font-size: 17px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 4px; }
-.bph-hero-sub { color: #6b7089; font-size: 12.5px; line-height: 1.4; margin-bottom: 12px; }
+.bph-hero-sub { color: #6b7089; font-size: 12.5px; line-height: 1.45; margin-bottom: 12px; }
+.bph-hero-chev {
+  width: 20px; height: 20px; flex-shrink: 0; color: #c3c8d4;
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+.bph-hero-card:hover .bph-hero-chev { color: #00a19a; transform: translateX(3px); }
 .bph-status-pill {
   display: inline-flex; align-items: center; gap: 6px;
   background: #f2faf8; border: 1px solid #d7ece9; color: #00857f;
@@ -308,11 +331,12 @@ onMounted(async () => {
 
 /* ── Progress block ── */
 .bph-progress-block {
-  background: #fff; border: 1px solid #e8eef5; border-radius: 18px; padding: 18px 20px;
+  background: #fff; border: 1px solid #e7ecf2; border-radius: 18px; padding: 18px 20px;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.03);
 }
 .bph-progress-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
 .bph-progress-label { font-size: 14px; font-weight: 800; color: #231d45; }
-.bph-progress-pct { font-size: 13px; font-weight: 700; color: #94a3b8; }
+.bph-progress-pct { font-size: 12.5px; font-weight: 800; color: #00857f; }
 .bph-progress-track { height: 8px; border-radius: 100px; background: #e7e8ec; overflow: hidden; }
 .bph-progress-fill { height: 100%; background: #00a19a; border-radius: 100px; transition: width 0.3s ease; }
 .bph-progress-hint { font-size: 12.5px; color: #6b6783; line-height: 1.5; margin: 10px 0 0; }
@@ -329,41 +353,64 @@ onMounted(async () => {
 
 /* ── Secure banner ── */
 .bph-secure-banner {
-  background: #f2faf8; border: 1px solid #dcf0ee; border-radius: 16px;
-  padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
+  background: #fff; border: 1px solid #e7ecf2; border-radius: 16px;
+  padding: 14px 16px 14px 12px; display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.03);
 }
-.bph-secure-ic { width: 30px; height: 30px; object-fit: contain; flex-shrink: 0; margin-top: 1px; }
-.bph-secure-h { font-size: 12.5px; font-weight: 800; color: #007e78; line-height: 1.4; }
-.bph-secure-v { font-size: 12px; color: #4b8c87; line-height: 1.4; margin-top: 2px; }
+.bph-secure-ic { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
+.bph-secure-h { font-size: 13.5px; font-weight: 800; color: #231d45; line-height: 1.4; }
+.bph-secure-v { font-size: 12px; color: #6b6783; line-height: 1.45; margin-top: 2px; }
 
-/* ── Checklist ── */
-.bph-checklist { display: flex; flex-direction: column; gap: 12px; }
+/* ── Checklist: step cards ── */
+.bph-checklist { display: flex; flex-direction: column; gap: 14px; }
 .bph-check-row {
-  display: flex; align-items: center; gap: 14px;
-  background: #fff; border: 1px solid #eef0f6; border-radius: 16px;
-  padding: 18px; cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 3px rgba(35, 29, 69, 0.05);
+  display: flex; align-items: center; gap: 18px;
+  width: 100%;
+  padding: 16px 18px 16px 16px;
+  text-align: left; font-family: inherit; color: inherit; cursor: pointer;
+  background: #fff; border: 1px solid #e7ecf2; border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.04), 0 8px 22px rgba(15, 44, 76, 0.05);
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), border-color 0.2s, box-shadow 0.2s;
 }
-.bph-check-row:hover { border-color: #d7ece9; box-shadow: 0 6px 18px -8px rgba(15, 44, 76, 0.16); }
-.bph-check-icon {
-  width: 54px; height: 54px; border-radius: 14px;
-  background: #f2faf8; border: 1px solid #e5f4f2;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.bph-check-row:hover {
+  transform: translateY(-2px);
+  border-color: #cfe7e4;
+  box-shadow: 0 16px 34px rgba(15, 44, 76, 0.1);
 }
-.bph-check-icon img { width: 32px; height: 32px; object-fit: contain; }
-.bph-check-icon.is-done { background: #e8f9ee; border-color: #cdeedb; }
-.bph-check-body { flex: 1; min-width: 0; }
-.bph-check-title { font-size: 14.5px; font-weight: 800; color: #231d45; letter-spacing: -0.1px; margin-bottom: 2px; }
-.bph-check-sub { font-size: 12px; color: #6b6783; line-height: 1.4; }
-.bph-check-done {
-  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
-  font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
-  background: #e8f5ee; color: #2eab55; border: 1px solid #b8e8c8;
-  border-radius: 100px; padding: 4px 9px; text-transform: uppercase;
+.bph-check-row:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
+/* The step to do next: a teal edge so it reads as the place to start. */
+.bph-check-row.is-next { border-color: #8fd3cf; box-shadow: 0 0 0 3px rgba(0, 161, 154, 0.08), 0 10px 26px rgba(15, 44, 76, 0.07); }
+.bph-check-img {
+  width: 72px; height: 72px; object-fit: contain; flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
-.bph-check-done-ic { width: 12px; height: 12px; }
-.bph-check-chev { color: #c3c5cf; flex-shrink: 0; display: flex; }
+.bph-check-row:hover .bph-check-img { transform: scale(1.06) rotate(-2deg); }
+.bph-check-row.is-done .bph-check-img { opacity: 0.85; }
+.bph-check-body {
+  display: flex; flex: 1; flex-direction: column; align-items: flex-start; gap: 3px;
+  min-width: 0;
+}
+.bph-check-step {
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #00857f;
+}
+.bph-check-title { font-size: 15px; font-weight: 800; color: #231d45; letter-spacing: -0.01em; }
+.bph-check-sub { font-size: 12.5px; color: #6b6783; line-height: 1.45; }
+.bph-check-pill {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  font-size: 11.5px; font-weight: 800;
+  border-radius: 100px; padding: 5px 12px; border: 1px solid transparent;
+  white-space: nowrap;
+}
+.bph-check-pill-ic { width: 13px; height: 13px; }
+.bph-check-pill--done { background: #edf8f1; color: #1f8a46; border-color: #c6e9d3; }
+.bph-check-pill--next { background: #00a19a; color: #fff; }
+.bph-check-pill--todo { background: #f4f5f8; color: #7b8197; border-color: #e7e9ef; }
+.bph-check-chev {
+  width: 18px; height: 18px; flex-shrink: 0; color: #c3c8d4;
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+.bph-check-row:hover .bph-check-chev { color: #00a19a; transform: translateX(3px); }
 
 /* ── Info dialog ── */
 .bph-sheet-overlay { position: fixed; inset: 0; background: rgba(15, 12, 30, 0.45); z-index: 60; }
@@ -388,11 +435,25 @@ onMounted(async () => {
   .bph-layout { grid-template-columns: 1fr; gap: 20px; }
   .bph-hero-head { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
+/* Phones: the status pill moves under the copy, lined up with it, so the
+   step text keeps the full card width. */
+@media (max-width: 560px) {
+  .bph-check-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 10px;
+    align-items: center;
+  }
+  .bph-check-img { grid-row: span 2; }
+  .bph-check-pill { grid-column: 2; justify-self: start; }
+}
 @media (max-width: 720px) {
   .hsw-links { display: none; }
   .hsw-shell { width: calc(100% - 32px); }
-  .bph-check-row { padding: 14px; }
-  .bph-check-done { display: none; }
+  .bph-check-row { padding: 14px; gap: 14px; }
+  .bph-check-img { width: 60px; height: 60px; }
+  .bph-check-chev { display: none; }
 }
 /* Small phones / narrow windows: Back keeps its chevron only (still
    labelled), the passport card stacks its cover above the text, and the
@@ -401,12 +462,11 @@ onMounted(async () => {
   .hsw-back { font-size: 0; gap: 0; padding: 8px 9px; }
   .hsw-back svg { width: 17px; height: 17px; }
   .hsw-nav-inner { gap: 12px; }
-  .bph-hero-card { flex-direction: column; align-items: flex-start; gap: 12px; padding: 18px 16px; }
-  .bph-hero-icon { width: 64px; }
+  .bph-hero-card { gap: 14px; padding: 16px 14px; }
+  .bph-hero-icon { width: 72px; }
   .bph-progress-block { padding: 16px; }
-  .bph-check-row { gap: 12px; padding: 12px; }
-  .bph-check-icon { width: 44px; height: 44px; border-radius: 12px; }
-  .bph-check-icon img { width: 26px; height: 26px; }
+  .bph-check-row { padding: 12px; column-gap: 12px; }
+  .bph-check-img { width: 54px; height: 54px; }
 }
 @media (max-width: 360px) {
   .hsw-shell { width: calc(100% - 24px); }

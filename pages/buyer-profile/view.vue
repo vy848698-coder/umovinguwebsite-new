@@ -105,8 +105,12 @@
             </div>
           </div>
           <div class="bp-hero-actions">
-            <button class="bp-hero-btn bp-hero-btn--solid" @click="goShare">Share Passport</button>
-            <button class="bp-hero-btn bp-hero-btn--ghost" @click="goEdit">Edit</button>
+            <button class="bp-hero-btn bp-hero-btn--solid" @click="goShare">
+              <Icon name="i-lucide-share-2" class="bp-hero-btn-ic" />Share Passport
+            </button>
+            <button class="bp-hero-btn bp-hero-btn--ghost" @click="goEdit">
+              <Icon name="i-lucide-pencil" class="bp-hero-btn-ic" />Edit
+            </button>
           </div>
         </div>
 
@@ -121,36 +125,42 @@
             <div class="pb-track">
               <div class="pb-fill" :style="{ width: Math.round(animatedStrength) + '%' }" />
             </div>
-            <div v-if="completionTip" class="bp-pb-tip">{{ completionTip }}</div>
+            <button v-if="completionTip" type="button" class="bp-pb-tip" @click="onCompletionTip">
+              <Icon name="i-lucide-circle-plus" class="bp-pb-tip-ic" />
+              {{ completionTip }}
+            </button>
           </div>
 
-          <!-- UK DVS strip — the Trust Framework badge the app carries -->
-          <div class="dvs-strip">
-            <div class="dvs-badge">UK DVS</div>
-            <div class="dvs-text">
-              Identity verified under the UK Digital Verification Services Trust
-              Framework
+          <!-- UK DVS strip: the Trust Framework badge the app carries.
+               These info cards share one style: a big 3D icon on plain
+               white, a bold title and a short line. -->
+          <div class="aside-card dvs-strip">
+            <img class="aside-card-ic" src="/homescore-icon/shield.png" alt="" loading="lazy" />
+            <div class="aside-card-body">
+              <span class="dvs-badge">UK DVS</span>
+              <div class="dvs-text">
+                Identity verified under the UK Digital Verification Services
+                Trust Framework
+              </div>
             </div>
           </div>
 
           <!-- Permanence banner — the app's "carries forward" promise -->
-          <div class="persist-banner">
-            <div class="persist-icon">
-              <Icon name="i-lucide-infinity" class="persist-icon-svg" />
-            </div>
-            <div>
+          <div class="aside-card persist-banner">
+            <img class="aside-card-ic" src="/op-icons/investment/refreshArrows.png" alt="" loading="lazy" />
+            <div class="aside-card-body">
               <div class="persist-title">Your passport carries forward</div>
               <div class="persist-sub">
                 When you buy your next home, your verified identity and
-                documents come with you — no need to reverify.
+                documents come with you, so there's no need to reverify.
               </div>
             </div>
           </div>
 
           <!-- Reward banner -->
-          <div class="reward-banner">
-            <img class="reward-icon" src="/homescore-icon/gift.png" alt="" loading="lazy" />
-            <div>
+          <div class="aside-card reward-banner">
+            <img class="aside-card-ic" src="/homescore-icon/gift.png" alt="" loading="lazy" />
+            <div class="aside-card-body">
               <div class="reward-title">Your passport creation reward</div>
               <div class="reward-sub">
                 You're almost there! Complete your passport identity and documents to
@@ -162,10 +172,10 @@
           <!-- Tier upgrade nudge -->
           <button
             v-if="tier !== 'PREMIUM'"
-            class="upgrade-nudge"
+            class="aside-card upgrade-nudge"
             @click="tierDrawerOpen = true"
           >
-            <div class="upgrade-star">★</div>
+            <img class="aside-card-ic" src="/op-icons/rewards/pointsStar.png" alt="" loading="lazy" />
             <div class="upgrade-body">
               <div class="upgrade-title">
                 {{ tier === 'BASIC' ? 'Upgrade to Verified' : 'Upgrade to Platinum' }}
@@ -173,10 +183,10 @@
               <div class="upgrade-sub">
                 {{ tier === 'BASIC'
                   ? 'Add powerful bonds, affordability + CFO'
-                  : 'Add Equifax + lender API access — takes 2 minutes' }}
+                  : 'Add Equifax + lender API access, takes 2 minutes' }}
               </div>
             </div>
-            <span class="upgrade-arrow">›</span>
+            <Icon name="i-lucide-chevron-right" class="upgrade-arrow" />
           </button>
         </div>
       </aside><!-- /bpvw-aside -->
@@ -210,51 +220,84 @@
           <div class="sec-sub">Your verified information</div>
         </div>
       </div>
+      <!-- Horizontal credential tiles: a big icon on plain white, then the
+           label, the value and its status. Every tile opens the place to
+           change it; amber marks what still needs doing. -->
       <div class="tile-grid">
-        <div class="tile">
-          <div class="tile-head">
-            <div class="tile-icon"><img class="tile-icon-img" src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" /></div>
-            <div class="tile-title">Identity</div>
-          </div>
-          <div class="tile-value">Verified</div>
-          <div class="tile-prov">via Onfido / DVS</div>
-        </div>
-        <div class="tile" :class="{ amber: !passport.fundsType }" @click="goEdit">
-          <div class="tile-head">
-            <div class="tile-icon" :class="{ 'amber-bg': !passport.fundsType }">
-              <img class="tile-icon-img" src="/buyer-profile-icon/moneyBag.png" alt="" loading="lazy" />
-            </div>
-            <div class="tile-title">Funds</div>
-          </div>
-          <div class="tile-value" :class="{ amber: !passport.fundsType }">
-            {{ fundsLabelLong || 'Add proof' }}
-          </div>
-          <div class="tile-prov" :class="{ amber: !passport.fundsType }">
-            {{ fundsTypeLong }}
-          </div>
-        </div>
-        <div class="tile">
-          <div class="tile-head">
-            <div class="tile-icon"><img class="tile-icon-img" src="/buyer-profile-icon/chainLink.png" alt="" loading="lazy" /></div>
-            <div class="tile-title">Chain</div>
-          </div>
-          <div class="tile-value">{{ chainShortLabel }}</div>
-          <div class="tile-prov">Self-declared</div>
-        </div>
-        <div class="tile" :class="{ amber: !hasMortgageAip }" @click="triggerUpload('mortgage')">
-          <div class="tile-head">
-            <div class="tile-icon" :class="{ 'amber-bg': !hasMortgageAip }">
-              <img class="tile-icon-img" src="/buyer-profile-icon/mortgageHouse.png" alt="" loading="lazy" />
-            </div>
-            <div class="tile-title">Mortgage</div>
-          </div>
-          <div class="tile-value" :class="{ amber: !hasMortgageAip }">
-            {{ hasMortgageAip ? 'AIP held' : 'Add AIP' }}
-          </div>
-          <div class="tile-prov" :class="{ amber: !hasMortgageAip }">
-            {{ hasMortgageAip ? 'Lender verified' : 'Not yet verified' }}
-          </div>
-        </div>
+        <button
+          type="button"
+          class="tile"
+          :class="{ amber: !idVerified }"
+          @click="goEdit"
+        >
+          <img class="tile-icon-img" src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" />
+          <span class="tile-body">
+            <span class="tile-title">Identity</span>
+            <span class="tile-value" :class="{ amber: !idVerified }">
+              {{ idVerified ? 'Verified' : 'Verify ID' }}
+            </span>
+            <span class="tile-prov" :class="{ amber: !idVerified }">
+              <Icon :name="idVerified ? 'i-lucide-badge-check' : 'i-lucide-clock'" class="tile-prov-ic" />
+              {{ idVerified ? 'via Onfido / DVS' : 'Not yet verified' }}
+            </span>
+          </span>
+          <Icon name="i-lucide-chevron-right" class="tile-chev" />
+        </button>
+        <button
+          type="button"
+          class="tile"
+          :class="{ amber: !passport.fundsType }"
+          @click="goEdit"
+        >
+          <img class="tile-icon-img" src="/buyer-profile-icon/moneyBag.png" alt="" loading="lazy" />
+          <span class="tile-body">
+            <span class="tile-title">Funds</span>
+            <span class="tile-value" :class="{ amber: !passport.fundsType }">
+              {{ fundsLabelLong || 'Add proof' }}
+            </span>
+            <span class="tile-prov" :class="{ amber: !passport.fundsType }">
+              <Icon :name="passport.fundsVerified ? 'i-lucide-badge-check' : 'i-lucide-wallet'" class="tile-prov-ic" />
+              {{ fundsTypeLong }}
+            </span>
+          </span>
+          <Icon name="i-lucide-chevron-right" class="tile-chev" />
+        </button>
+        <button
+          type="button"
+          class="tile"
+          :class="{ amber: !passport.chainPosition }"
+          @click="goEdit"
+        >
+          <img class="tile-icon-img" src="/buyer-profile-icon/chainLink.png" alt="" loading="lazy" />
+          <span class="tile-body">
+            <span class="tile-title">Chain</span>
+            <span class="tile-value" :class="{ amber: !passport.chainPosition }">{{ chainShortLabel }}</span>
+            <span class="tile-prov" :class="{ amber: !passport.chainPosition }">
+              <Icon :name="passport.chainPosition ? 'i-lucide-user-round-check' : 'i-lucide-clock'" class="tile-prov-ic" />
+              {{ passport.chainPosition ? 'Self-declared' : 'Not set yet' }}
+            </span>
+          </span>
+          <Icon name="i-lucide-chevron-right" class="tile-chev" />
+        </button>
+        <button
+          type="button"
+          class="tile"
+          :class="{ amber: !hasMortgageAip }"
+          @click="triggerUpload('mortgage')"
+        >
+          <img class="tile-icon-img" src="/buyer-profile-icon/mortgageHouse.png" alt="" loading="lazy" />
+          <span class="tile-body">
+            <span class="tile-title">Mortgage</span>
+            <span class="tile-value" :class="{ amber: !hasMortgageAip }">
+              {{ hasMortgageAip ? 'AIP held' : 'Add AIP' }}
+            </span>
+            <span class="tile-prov" :class="{ amber: !hasMortgageAip }">
+              <Icon :name="hasMortgageAip ? 'i-lucide-badge-check' : 'i-lucide-clock'" class="tile-prov-ic" />
+              {{ hasMortgageAip ? 'Lender verified' : 'Not yet verified' }}
+            </span>
+          </span>
+          <Icon name="i-lucide-chevron-right" class="tile-chev" />
+        </button>
       </div>
 
       <!-- ── Documents section ── -->
@@ -266,15 +309,18 @@
         </div>
       </div>
       <div class="teal-card bp-docs-card">
-        <div class="doc-row">
+        <div class="doc-row doc-row--action" @click="goEdit()">
           <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/idCard.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Identity Verification</div>
-            <div class="doc-meta">{{ idTypeLabel }} · verified by Onfido (DVS)</div>
+            <div class="doc-meta">
+              {{ idVerified ? `${idTypeLabel} · verified by Onfido (DVS)` : 'Verify your photo ID to show sellers and agents who you are' }}
+            </div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
-            <Icon name="heroicons:chevron-right" class="doc-chev" />
+            <span v-if="idVerified" class="risk-pill clear"><Icon name="i-lucide-check" class="pill-ic" />Verified</span>
+            <span v-else class="risk-pill add"><Icon name="i-lucide-plus" class="pill-ic" />Verify ID</span>
+            <Icon name="i-lucide-chevron-right" class="doc-chev" />
           </div>
         </div>
         <div class="doc-row doc-row--action" @click="triggerUpload('funds')">
@@ -284,16 +330,18 @@
             <div class="doc-meta">{{ fundsMetaText }}</div>
           </div>
           <div class="doc-right">
-            <span v-if="uploading === 'funds'" class="risk-pill add">Uploading…</span>
-            <span v-else-if="passport.fundsVerified" class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
-            <span v-else-if="passport.fundsReviewStatus === 'pending'" class="risk-pill add">
-              <Icon name="i-lucide-clock" class="pill-ic" />IN REVIEW
+            <span v-if="uploading === 'funds'" class="risk-pill add">
+              <Icon name="i-lucide-loader-circle" class="pill-ic pill-ic--spin" />Uploading
+            </span>
+            <span v-else-if="passport.fundsVerified" class="risk-pill clear"><Icon name="i-lucide-check" class="pill-ic" />Verified</span>
+            <span v-else-if="passport.fundsReviewStatus === 'pending'" class="risk-pill review">
+              <Icon name="i-lucide-clock" class="pill-ic" />In review
             </span>
             <span v-else-if="passport.fundsReviewStatus === 'rejected'" class="risk-pill reject">
-              <Icon name="i-lucide-x" class="pill-ic" />RESUBMIT
+              <Icon name="i-lucide-x" class="pill-ic" />Resubmit
             </span>
-            <span v-else class="risk-pill add">+ ADD DOC</span>
-            <Icon name="heroicons:chevron-right" class="doc-chev" />
+            <span v-else class="risk-pill add"><Icon name="i-lucide-plus" class="pill-ic" />Add doc</span>
+            <Icon name="i-lucide-chevron-right" class="doc-chev" />
           </div>
         </div>
         <div class="doc-row doc-row--action" @click="triggerUpload('mortgage')">
@@ -303,16 +351,18 @@
             <div class="doc-meta">{{ mortgageMetaText }}</div>
           </div>
           <div class="doc-right">
-            <span v-if="uploading === 'mortgage'" class="risk-pill add">Uploading…</span>
-            <span v-else-if="passport.mortgageAipVerified" class="risk-pill clear"><Icon name="heroicons:check-16-solid" class="pill-ic" />VERIFIED</span>
-            <span v-else-if="passport.mortgageAipReviewStatus === 'pending'" class="risk-pill add">
-              <Icon name="i-lucide-clock" class="pill-ic" />IN REVIEW
+            <span v-if="uploading === 'mortgage'" class="risk-pill add">
+              <Icon name="i-lucide-loader-circle" class="pill-ic pill-ic--spin" />Uploading
+            </span>
+            <span v-else-if="passport.mortgageAipVerified" class="risk-pill clear"><Icon name="i-lucide-check" class="pill-ic" />Verified</span>
+            <span v-else-if="passport.mortgageAipReviewStatus === 'pending'" class="risk-pill review">
+              <Icon name="i-lucide-clock" class="pill-ic" />In review
             </span>
             <span v-else-if="passport.mortgageAipReviewStatus === 'rejected'" class="risk-pill reject">
-              <Icon name="i-lucide-x" class="pill-ic" />RESUBMIT
+              <Icon name="i-lucide-x" class="pill-ic" />Resubmit
             </span>
-            <span v-else class="risk-pill add">+ ADD DOC</span>
-            <Icon name="heroicons:chevron-right" class="doc-chev" />
+            <span v-else class="risk-pill add"><Icon name="i-lucide-plus" class="pill-ic" />Add doc</span>
+            <Icon name="i-lucide-chevron-right" class="doc-chev" />
           </div>
         </div>
         <input
@@ -326,26 +376,29 @@
           <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/clipboardLink.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Chain Position</div>
-            <div class="doc-meta">{{ chainShortLabel }} · self-declared · ready to move</div>
+            <div class="doc-meta">
+              {{ passport.chainPosition ? `${chainShortLabel} · self-declared · ready to move` : 'Tell agents and sellers where you are in the chain' }}
+            </div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill flag">Self-declared</span>
-            <Icon name="heroicons:chevron-right" class="doc-chev" />
+            <span v-if="passport.chainPosition" class="risk-pill flag"><Icon name="i-lucide-user-round-check" class="pill-ic" />Self-declared</span>
+            <span v-else class="risk-pill add"><Icon name="i-lucide-plus" class="pill-ic" />Add</span>
+            <Icon name="i-lucide-chevron-right" class="doc-chev" />
           </div>
         </div>
         <div v-if="passport.solicitorStatus === 'yes'" class="doc-row">
-          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/bank.png" alt="" loading="lazy" /></div>
+          <div class="doc-icon"><img class="doc-icon-img" src="/buyer-profile-icon/scales.png" alt="" loading="lazy" /></div>
           <div class="doc-body">
             <div class="doc-title">Solicitor</div>
             <div class="doc-meta">Solicitor instructed</div>
             <div class="sol-verified">
-              <Icon name="heroicons:check-16-solid" class="sol-check" />
+              <Icon name="i-lucide-badge-check" class="sol-check" />
               Confirmed on Law Society register
             </div>
           </div>
           <div class="doc-right">
-            <span class="risk-pill ok"><Icon name="heroicons:check-16-solid" class="pill-ic" />INSTRUCTED</span>
-            <Icon name="heroicons:chevron-right" class="doc-chev" />
+            <span class="risk-pill ok"><Icon name="i-lucide-check" class="pill-ic" />Instructed</span>
+            <Icon name="i-lucide-chevron-right" class="doc-chev" />
           </div>
         </div>
       </div>
@@ -364,23 +417,23 @@
         </div>
         <div class="bp-share-grid">
           <button class="share-card" @click="goShare">
-            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/upload.png" alt="" loading="lazy" /></div>
+            <img class="share-icon-img" src="/buyer-profile-icon/upload.png" alt="" loading="lazy" />
             <div class="share-card-body">
               <div class="share-card-title">Share</div>
               <div class="share-card-sub">Send to agents or generate link</div>
+              <span class="share-card-cta">Share now <Icon name="i-lucide-arrow-right" /></span>
             </div>
-            <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
           <button class="share-card" @click="goPdf">
-            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/pdf.png" alt="" loading="lazy" /></div>
+            <img class="share-icon-img" src="/buyer-profile-icon/pdf.png" alt="" loading="lazy" />
             <div class="share-card-body">
               <div class="share-card-title">Download PDF</div>
               <div class="share-card-sub">Certified passport document</div>
+              <span class="share-card-cta">Download <Icon name="i-lucide-arrow-right" /></span>
             </div>
-            <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
           <button class="share-card" @click="goSign">
-            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/signature.png" alt="" loading="lazy" /></div>
+            <img class="share-icon-img" src="/buyer-profile-icon/signature.png" alt="" loading="lazy" />
             <div class="share-card-body">
               <div class="share-card-title">
                 {{ passport.signedAt ? 'Re-sign passport' : 'Add digital signature' }}
@@ -392,16 +445,16 @@
                     : 'Embed your signature in the PDF'
                 }}
               </div>
+              <span class="share-card-cta">{{ passport.signedAt ? 'Re-sign' : 'Sign now' }} <Icon name="i-lucide-arrow-right" /></span>
             </div>
-            <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
           <button class="share-card" @click="goEdit">
-            <div class="share-card-icon"><img class="share-icon-img" src="/buyer-profile-icon/editBox.png" alt="" loading="lazy" /></div>
+            <img class="share-icon-img" src="/buyer-profile-icon/editBox.png" alt="" loading="lazy" />
             <div class="share-card-body">
               <div class="share-card-title">Edit Passport</div>
               <div class="share-card-sub">Update your information</div>
+              <span class="share-card-cta">Edit <Icon name="i-lucide-arrow-right" /></span>
             </div>
-            <Icon name="heroicons:chevron-right" class="share-card-chev" />
           </button>
         </div>
 
@@ -445,7 +498,7 @@ import { useAppToast } from '~/composables/useCustomToast'
 import TierUpgradeDrawer from '~/components/buyer-profile/TierUpgradeDrawer.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
-definePageMeta({ title: 'Buyer Passport — UmovingU', middleware: 'auth' })
+definePageMeta({ title: 'Buyer Passport | UmovingU', middleware: 'auth' })
 
 const router = useRouter()
 const { getBuyerProfile } = useBuyerProfile()
@@ -579,8 +632,8 @@ const mortgageMetaText = computed(() => {
   if (passport.value?.mortgageAipReviewStatus === 'pending')
     return 'AIP uploaded · awaiting review'
   if (passport.value?.mortgageAipReviewStatus === 'rejected')
-    return "Couldn't verify that AIP — please re-upload"
-  return 'Upload your AIP — lender will be verified'
+    return "Couldn't verify that AIP, please re-upload"
+  return 'Upload your AIP so the lender can be verified'
 })
 
 const chainShortLabel = computed(() => {
@@ -601,13 +654,21 @@ const idTypeLabel = computed(() => {
 })
 
 const hasMortgageAip = computed(() => !!passport.value?.mortgageAipVerified)
+// Identity is only "Verified" once the ID check has actually passed.
+const idVerified = computed(() => passport.value?.idVerified === true)
 
 const completionTip = computed(() => {
   if (animatedStrength.value >= 95) return ''
-  if (!hasMortgageAip.value) return '+ Add Mortgage AIP to strengthen your passport'
-  if (!passport.value?.statement) return '+ Add your story to strengthen your passport'
+  if (!hasMortgageAip.value) return 'Add Mortgage AIP to strengthen your passport'
+  if (!passport.value?.statement) return 'Add your story to strengthen your passport'
   return ''
 })
+
+// The tip names the next thing to add; tapping it goes straight there.
+function onCompletionTip() {
+  if (!hasMortgageAip.value) triggerUpload('mortgage')
+  else goEdit()
+}
 
 function formatSignedAt(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -651,10 +712,10 @@ async function onDocFileChosen(e: Event) {
       body: form,
     })
     passport.value = await getBuyerProfile()
-    showToast({ message: 'Uploaded — awaiting review', iconEmoji: '📄' })
+    showToast({ message: 'Uploaded, awaiting review', iconEmoji: '📄' })
   } catch (e: any) {
     showToast({
-      message: e?.data?.message ?? 'Upload failed — try again',
+      message: e?.data?.message ?? 'Upload failed, please try again',
       iconEmoji: '⚠️',
     })
   } finally {
@@ -821,8 +882,8 @@ function goEdit() { router.push('/buyer-profile/build') }
   margin-bottom: 18px;
 }
 .bp-hero-eyebrow {
-  font-size: 10px; font-weight: 800; letter-spacing: 1.4px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 10.5px; font-weight: 800; letter-spacing: 1.4px;
+  color: rgba(255, 255, 255, 0.78);
 }
 .bp-hero-strength {
   font-size: 10px; font-weight: 800;
@@ -836,35 +897,38 @@ function goEdit() { router.push('/buyer-profile/build') }
 }
 .bph-hero-icon {
   flex-shrink: 0;
-  width: 88px; height: auto;
+  width: 100px; height: auto;
   object-fit: contain;
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22));
 }
 .bp-hero-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
 .hero-pill {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 800;
+  font-size: 11px; font-weight: 800;
   border: 1px solid rgba(255, 255, 255, 0.34);
   background: rgba(255, 255, 255, 0.16);
-  border-radius: 100px; padding: 4px 9px;
+  border-radius: 100px; padding: 4px 10px;
   color: #fff; white-space: nowrap;
 }
-.hero-pill-ic { width: 11px; height: 11px; }
+.hero-pill-ic { width: 12px; height: 12px; }
 .bp-hero-info { flex: 1; min-width: 0; }
 .bp-hero-name {
   font-size: 22px; font-weight: 800; color: white;
   margin-bottom: 4px; letter-spacing: -0.4px;
 }
 .bp-hero-ref {
-  font-size: 13px; color: rgba(255, 255, 255, 0.72);
+  font-size: 13px; color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
 }
 .bp-hero-actions { display: flex; gap: 10px; }
 .bp-hero-btn {
-  flex: 1; font-size: 13.5px; font-weight: 800; font-family: inherit;
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 13.5px; font-weight: 800; font-family: inherit;
   border-radius: 12px; padding: 12px; cursor: pointer;
   transition: all 0.18s;
 }
+.bp-hero-btn-ic { width: 16px; height: 16px; flex-shrink: 0; }
 .bp-hero-btn--solid {
   background: #fff; color: #007e78; border: none;
 }
@@ -883,8 +947,8 @@ function goEdit() { router.push('/buyer-profile/build') }
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 8px;
 }
-.bp-pb-label { font-size: 12px; font-weight: 700; color: #231d45; }
-.bp-pb-pct { font-size: 12px; font-weight: 800; color: #00a19a; }
+.bp-pb-label { font-size: 13px; font-weight: 800; color: #231d45; }
+.bp-pb-pct { font-size: 13px; font-weight: 800; color: #00a19a; }
 .pb-track {
   height: 10px; background: #ececef; border-radius: 100px; overflow: hidden;
 }
@@ -895,74 +959,76 @@ function goEdit() { router.push('/buyer-profile/build') }
   transition: width 1s 0.4s cubic-bezier(.22, 1, .36, 1);
 }
 .bp-pb-tip {
-  font-size: 11px; font-weight: 700; color: #007e78;
-  margin-top: 7px;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; padding: 0;
+  border: none; background: none; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 700; color: #007e78;
+  text-align: left;
 }
+.bp-pb-tip:hover { text-decoration: underline; }
+.bp-pb-tip-ic { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* ── Identity verified strip ── */
-.dvs-strip {
-  background: linear-gradient(90deg, #f6f5fb, #f2faf8);
-  border: 1px solid #e5f4f2;
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex; align-items: center; gap: 12px;
+/* ── Aside info cards: one family, big icon on plain white ── */
+.aside-card {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%;
+  padding: 14px 16px 14px 12px;
+  background: #fff;
+  border: 1px solid #e7ecf2;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.03);
+  text-align: left;
   animation: bp-fadeUp 0.4s 0.18s both;
 }
+.aside-card-ic {
+  width: 58px; height: 58px; object-fit: contain; flex-shrink: 0;
+}
+.aside-card-body { flex: 1; min-width: 0; }
+
 .dvs-badge {
+  display: inline-block;
+  margin-bottom: 6px;
   background: #231d45; color: #fff;
-  font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
-  padding: 4px 8px; border-radius: 5px; flex-shrink: 0;
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px;
+  padding: 3px 8px; border-radius: 6px;
 }
 .dvs-text {
-  min-width: 0;
-  font-size: 11.5px; font-weight: 700; color: #4a4566; line-height: 1.35;
+  font-size: 12px; font-weight: 700; color: #4a4566; line-height: 1.45;
 }
 
-/* ── Reward banner ── */
-.reward-banner {
-  background: #f7f6fc;
-  border: 1px solid #ebe8f6;
-  border-radius: 14px;
-  padding: 16px;
-  display: flex; align-items: flex-start; gap: 12px;
+.persist-title,
+.reward-title,
+.upgrade-title {
+  font-size: 13.5px; font-weight: 800; color: #231d45;
+  margin-bottom: 3px; letter-spacing: -0.01em;
 }
-.reward-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
-
-/* ── Permanence banner ── */
-.persist-banner {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f6f5fb, #f2faf8);
-  border: 1px solid #e5f4f2;
+.persist-sub,
+.reward-sub {
+  font-size: 12px; color: #6b6783; line-height: 1.5;
 }
-.persist-icon {
-  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
-  background: #efedfb; border: 1px solid #e0dcf6;
-  display: flex; align-items: center; justify-content: center;
-}
-.persist-icon-svg { width: 17px; height: 17px; color: #5a4cf0; }
-.persist-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
-.persist-sub { font-size: 11.5px; color: #6b6783; line-height: 1.5; }
-.reward-title { font-size: 13px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
-.reward-sub { font-size: 11.5px; color: #6b6783; line-height: 1.5; }
 
 /* ── Tier upgrade nudge ── */
 .upgrade-nudge {
-  background: linear-gradient(135deg, #fffaf0, #fff6e8);
-  border: 1px solid #f5e4c4;
-  border-radius: 14px;
-  padding: 16px;
-  display: flex; align-items: center; gap: 14px;
-  font-family: inherit; cursor: pointer; text-align: left; width: 100%;
-  transition: all 0.2s cubic-bezier(.22,1,.36,1);
+  border-color: #f1d9a6;
+  background: linear-gradient(135deg, #fffcf6, #fff8ec);
+  font-family: inherit; cursor: pointer;
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.upgrade-nudge:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(196,130,26,0.14); }
-.upgrade-star { font-size: 20px; flex-shrink: 0; color: #231d45; }
+.upgrade-nudge:hover {
+  transform: translateY(-2px);
+  border-color: #e9c27a;
+  box-shadow: 0 12px 26px rgba(196, 130, 26, 0.14);
+}
+.upgrade-nudge .aside-card-ic { transition: transform 0.2s ease; }
+.upgrade-nudge:hover .aside-card-ic { transform: scale(1.06) rotate(-6deg); }
 .upgrade-body { flex: 1; min-width: 0; }
-.upgrade-title { font-size: 14px; font-weight: 800; color: #231d45; }
-.upgrade-sub { font-size: 12px; color: #8a7a5a; margin-top: 2px; }
-.upgrade-arrow { font-size: 20px; font-weight: 800; color: #c4821a; }
+.upgrade-sub { font-size: 12px; color: #8a7a5a; line-height: 1.45; }
+.upgrade-arrow {
+  width: 20px; height: 20px; flex-shrink: 0; color: #c4821a;
+  transition: transform 0.16s ease;
+}
+.upgrade-nudge:hover .upgrade-arrow { transform: translateX(3px); }
 
 /* ── Section header ── */
 .section-header {
@@ -980,128 +1046,146 @@ function goEdit() { router.push('/buyer-profile/build') }
 .sec-title { font-size: 15px; font-weight: 800; color: #231d45; letter-spacing: 0.6px; }
 .sec-sub { font-size: 12px; color: #6b6783; margin-top: 1px; }
 
-/* ── Tile grid ── */
+/* ── Tile grid: horizontal credential tiles ── */
 .tile-grid {
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 16px;
   padding: 0;
 }
 .tile {
-  background: white; border-radius: 18px;
-  padding: 20px 20px 18px;
-  border: 1.5px solid #eef2f7;
-  box-shadow: 0 2px 10px rgba(15, 44, 76, 0.04);
-  transition: all 0.22s cubic-bezier(.22, 1, .36, 1);
-  display: flex; flex-direction: column;
+  position: relative;
+  display: flex; align-items: center; gap: 18px;
+  width: 100%;
+  padding: 18px 40px 18px 18px;
+  text-align: left; font-family: inherit; color: inherit; cursor: pointer;
+  background: #fff; border-radius: 18px;
+  border: 1px solid #e7ecf2;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.04), 0 8px 22px rgba(15, 44, 76, 0.05);
+  transition: transform 0.2s cubic-bezier(.22, 1, .36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .tile:hover {
   transform: translateY(-3px);
-  border-color: #b5d8f0;
-  box-shadow: 0 10px 28px rgba(15, 44, 76, 0.1);
+  border-color: #cfe7e4;
+  box-shadow: 0 16px 34px rgba(15, 44, 76, 0.1);
 }
-.tile.amber { border-color: #f3d489; background: linear-gradient(180deg, #fffdf8, #fffaf0); }
-.tile-head {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 16px;
+.tile:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
+.tile.amber { border-color: #f1d9a6; }
+.tile.amber:hover { border-color: #e9c27a; }
+.tile-icon-img {
+  width: 76px; height: 76px; object-fit: contain; flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
-.tile-icon {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: #eef6f4;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+.tile:hover .tile-icon-img { transform: scale(1.06) rotate(-2deg); }
+.tile-body {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  min-width: 0;
 }
-/* Illustrated icons sit inside the tinted chips at a fixed size. */
-.tile-icon-img { width: 26px; height: 26px; object-fit: contain; }
-.doc-icon-img { width: 24px; height: 24px; object-fit: contain; }
-.share-icon-img { width: 28px; height: 28px; object-fit: contain; }
-.tile-icon.amber-bg { background: #fbeed4; }
-.tile-icon-svg { width: 22px; height: 22px; color: #00a19a; }
-.tile-icon-svg.icon-amber { color: #d99a2b; }
 .tile-title {
-  font-size: 12px; font-weight: 700; color: #8a97a8;
-  text-transform: uppercase; letter-spacing: 0.8px;
+  font-size: 11px; font-weight: 800; color: #8a97a8;
+  text-transform: uppercase; letter-spacing: 0.08em;
 }
-.tile-value { font-size: 20px; font-weight: 800; color: #009a93; margin-bottom: 12px; letter-spacing: -0.3px; }
+.tile-value {
+  font-size: 19px; font-weight: 800; color: #009a93;
+  letter-spacing: -0.3px; line-height: 1.2;
+}
 .tile-value.amber { color: #c4821a; }
 .tile-prov {
-  font-size: 10.5px; font-weight: 700; color: #007e78;
-  background: #edf9f7; border: 1px solid #c8ece9;
-  border-radius: 100px; padding: 5px 12px;
-  align-self: flex-start;
-  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 4px;
+  font-size: 11px; font-weight: 700; color: #007e78;
+  background: #f2faf8; border: 1px solid #d3eeeb;
+  border-radius: 100px; padding: 4px 10px;
 }
-.tile-prov.amber {
-  color: #c4821a; background: #fbefd9; border-color: #f0c96a; cursor: pointer;
+.tile-prov.amber { color: #b0711a; background: #fdf4e3; border-color: #f1d9a6; }
+.tile-prov-ic { width: 12px; height: 12px; flex-shrink: 0; }
+.tile-chev {
+  position: absolute; top: 50%; right: 14px;
+  width: 18px; height: 18px; margin-top: -9px;
+  color: #c3c8d4;
+  transition: color 0.16s ease, transform 0.16s ease;
 }
+.tile:hover .tile-chev { color: #00a19a; transform: translateX(3px); }
 
 /* ── Documents card ── */
 .teal-card {
   background: white;
-  border: 2px solid #00a19a;
+  border: 1px solid #e7ecf2;
   border-radius: 18px;
-  box-shadow: 0 6px 22px rgba(0, 161, 154, 0.1);
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.04), 0 8px 22px rgba(15, 44, 76, 0.05);
 }
 .bp-docs-card {
   overflow: hidden;
   animation: bp-fadeUp 0.4s 0.3s both;
 }
 .doc-row {
-  display: flex; align-items: center; gap: 14px;
-  padding: 18px 20px;
+  position: relative;
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid #f1f3f6;
   cursor: pointer;
   transition: background 0.15s;
   text-align: left;
 }
 .doc-row:last-child { border-bottom: none; }
-.doc-row:hover { background: #fafafa; }
+.doc-row:hover { background: #fbfcfc; }
+/* Teal rail that grows in on hover. */
+.doc-row::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: #00a19a;
+  transform: scaleY(0);
+  transition: transform 0.18s ease;
+}
+.doc-row:hover::before { transform: scaleY(1); }
 .doc-icon {
-  width: 38px; height: 38px; border-radius: 11px;
-  background: #f2faf8;
+  width: 56px; height: 56px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+.doc-icon-img {
+  width: 56px; height: 56px; object-fit: contain;
+  transition: transform 0.2s ease;
+}
+.doc-row:hover .doc-icon-img { transform: scale(1.06); }
 .doc-icon-svg { width: 20px; height: 20px; color: #3a4a5e; }
 .doc-body { flex: 1; min-width: 0; }
 .doc-title {
-  font-size: 14.5px; font-weight: 800; color: #231d45;
+  font-size: 14.5px; font-weight: 800; color: #231d45; letter-spacing: -0.01em;
 }
 .doc-meta {
-  font-size: 12px; color: #6b6783; margin-top: 2px;
+  font-size: 12px; color: #6b6783; margin-top: 3px; line-height: 1.45;
 }
-.doc-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.doc-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .doc-right--col { flex-direction: column; align-items: flex-end; gap: 4px; }
-.doc-chev { width: 18px; height: 18px; color: #9c98ad; flex-shrink: 0; }
+.doc-chev {
+  width: 18px; height: 18px; color: #c3c8d4; flex-shrink: 0;
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+.doc-row:hover .doc-chev { color: #00a19a; transform: translateX(3px); }
 
 .risk-pill {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 10px; font-weight: 800;
-  padding: 4px 9px; border-radius: 100px;
-  white-space: nowrap; letter-spacing: 0.3px;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 800;
+  padding: 5px 11px; border-radius: 100px;
+  white-space: nowrap; letter-spacing: 0.01em;
+  border: 1px solid transparent;
 }
-.pill-ic { width: 12px; height: 12px; }
-.risk-pill.clear {
-  background: #f2faf8; color: #007e78; border: 1px solid #e5f4f2;
-}
-.risk-pill.flag {
-  background: #fbefd9; color: #e6a23c;
-}
-.risk-pill.ok {
-  background: #e8f5ee; color: #2eab55; border: 1px solid #b8e8c8;
-}
-.risk-pill.add {
-  background: #fbefd9; color: #c4821a; border: 1px solid #e6a23c;
-}
-.risk-pill.reject {
-  background: #fdecea; color: #c0392b; border: 1px solid #f5b7b1;
-}
+.pill-ic { width: 13px; height: 13px; flex-shrink: 0; }
+.pill-ic--spin { animation: bp-spin 0.9s linear infinite; }
+@keyframes bp-spin { to { transform: rotate(360deg); } }
+.risk-pill.clear { background: #f2faf8; color: #007e78; border-color: #d3eeeb; }
+.risk-pill.ok { background: #edf8f1; color: #1f8a46; border-color: #c6e9d3; }
+.risk-pill.flag { background: #f5f3fb; color: #5b4f8f; border-color: #e3dff2; }
+.risk-pill.add { background: #fdf4e3; color: #b0711a; border-color: #f1d9a6; }
+.risk-pill.review { background: #eef4fb; color: #2c5f9e; border-color: #d4e3f4; }
+.risk-pill.reject { background: #fdecea; color: #c0392b; border-color: #f5c6c1; }
 
 .sol-verified {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 700; color: #007e78;
-  margin-top: 3px;
+  font-size: 11px; font-weight: 700; color: #007e78;
+  margin-top: 4px;
 }
-.sol-check { width: 12px; height: 12px; color: #007e78; }
+.sol-check { width: 13px; height: 13px; color: #007e78; }
 
 /* ── Share section (full-width below grid) ── */
 .bpvw-share-section {
@@ -1111,46 +1195,47 @@ function goEdit() { router.push('/buyer-profile/build') }
 .bp-share-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 18px;
   align-items: stretch;          /* equal height across the row */
   animation: bp-fadeUp 0.4s 0.4s both;
 }
 .share-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+  padding: 22px 22px 20px;
   background: white;
-  border: 1.5px solid #e8eef5;
+  border: 1px solid #e7ecf2;
   border-radius: 18px;
-  padding: 20px;
-  display: flex; flex-direction: column; align-items: flex-start;
-  cursor: pointer; font-family: inherit; text-align: left;
-  transition: all 0.2s cubic-bezier(.22,1,.36,1);
-  box-shadow: 0 2px 10px rgba(15,44,76,0.05);
+  cursor: pointer; font-family: inherit; text-align: left; color: inherit;
+  box-shadow: 0 1px 2px rgba(15, 44, 76, 0.04), 0 8px 22px rgba(15, 44, 76, 0.05);
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .share-card:hover {
   transform: translateY(-3px);
-  border-color: #a8d5c8;
-  box-shadow: 0 10px 28px rgba(0,161,154,0.12);
+  border-color: #cfe7e4;
+  box-shadow: 0 16px 34px rgba(15, 44, 76, 0.1);
 }
-.share-card-icon {
-  width: 42px; height: 42px; border-radius: 12px;
-  background: #eef6f4;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 12px; flex-shrink: 0;
+.share-card:focus-visible { outline: 2px solid #00a19a; outline-offset: 2px; }
+.share-icon-img {
+  width: 76px; height: 76px; object-fit: contain; flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
+.share-card:hover .share-icon-img { transform: scale(1.06) rotate(-2deg); }
 .share-icon-svg { width: 21px; height: 21px; color: #007e78; display: block; }
-.share-card-body { width: 100%; }
-.share-card-title { font-size: 15px; font-weight: 800; color: #231d45; margin-bottom: 4px; }
+.share-card-body {
+  display: flex; flex: 1; flex-direction: column; align-items: flex-start;
+  width: 100%;
+}
+.share-card-title { font-size: 14.5px; font-weight: 800; color: #231d45; margin-bottom: 4px; letter-spacing: -0.01em; }
 .share-card-sub {
-  font-size: 12.5px; color: #6b6783; line-height: 1.5;
+  font-size: 12px; color: #6b6783; line-height: 1.5;
 }
-/* chevron sits just under the text, pushed to the right; margin-top:auto keeps
-   it at the bottom only when grid-stretch makes a card taller than its content */
-.share-card-chev {
-  align-self: flex-end;
-  margin-top: auto;
-  padding-top: 12px;
-  width: 18px; height: 18px; color: #b5bdc9;
-  display: block;
+.share-card-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: auto; padding-top: 12px;
+  font-size: 13px; font-weight: 800; color: #00857f;
 }
+.share-card-cta svg { width: 15px; height: 15px; transition: transform 0.16s ease; }
+.share-card:hover .share-card-cta svg { transform: translateX(3px); }
 
 /* ── Privacy footer banner ── */
 .bp-privacy-banner {
@@ -1215,15 +1300,18 @@ function goEdit() { router.push('/buyer-profile/build') }
   .bpvw-hero { padding: 24px 0 4px; }
   .bp-share-grid { gap: 14px; }
   .share-card { padding: 18px 16px; }
-  .share-card-icon { width: 40px; height: 40px; margin-bottom: 12px; }
   .doc-row { padding: 14px 14px; gap: 12px; }
-  .doc-icon { width: 34px; height: 34px; }
+  .doc-icon, .doc-icon-img { width: 48px; height: 48px; }
   .bp-hero-name { font-size: 19px; }
 }
 @media (max-width: 560px) {
-  /* Stack credential tiles + share cards to a single column on phones */
+  /* Stack credential tiles + share cards to a single column on phones;
+     share cards turn horizontal like the tiles. */
   .tile-grid { grid-template-columns: 1fr; }
   .bp-share-grid { grid-template-columns: 1fr; }
+  .share-card { flex-direction: row; align-items: center; gap: 16px; }
+  .share-icon-img { width: 64px; height: 64px; }
+  .share-card-cta { padding-top: 8px; }
   .bpvw-aside-body { padding: 18px; gap: 14px; }
   .hero-card { padding: 22px 20px 20px; }
   .bp-hero-body { gap: 14px; }
@@ -1232,6 +1320,10 @@ function goEdit() { router.push('/buyer-profile/build') }
   .bp-privacy-btn { width: 100%; }
   .doc-title { font-size: 13.5px; }
   .doc-meta { font-size: 11px; }
+  /* The status pill drops under the text (aligned with it) so the meta
+     line keeps the full width instead of a narrow column. */
+  .doc-row { flex-wrap: wrap; row-gap: 8px; }
+  .doc-right { width: 100%; padding-left: 60px; justify-content: space-between; }
   .bpvw-help span, .bpvw-help { font-size: 12px; }
   /* Narrower side gutters so the cards keep a usable width */
   .hsw-shell { width: calc(100% - 32px); }
@@ -1254,7 +1346,11 @@ function goEdit() { router.push('/buyer-profile/build') }
   .bph-hero-icon { width: 72px; }
   .bp-privacy-banner { padding: 14px; gap: 12px; }
   .doc-row { padding: 12px; gap: 10px; }
+  .doc-icon, .doc-icon-img { width: 42px; height: 42px; }
+  .doc-right { padding-left: 52px; }
   .doc-right--col { align-items: flex-end; }
+  .tile { padding: 14px 36px 14px 14px; gap: 14px; }
+  .tile-icon-img { width: 64px; height: 64px; }
 }
 @media (max-width: 360px) {
   .hsw-shell { width: calc(100% - 24px); }
