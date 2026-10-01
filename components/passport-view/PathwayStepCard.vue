@@ -1,10 +1,7 @@
 <template>
-  <div class="pw-card">
+  <div class="pw-card" :class="{ 'pw-card--answered': !!selectedLabel }">
     <div class="pw-header">
-      <span class="pw-step-count">Step {{ stepIndex + 1 }} of {{ totalSteps }}</span>
-      <span v-if="pathway.status !== 'conveyancer_reviewed' && pathway.status !== 'live'" class="pw-draft-badge">
-        Draft guidance
-      </span>
+      <span class="pw-step-count">Step {{ stepPosition + 1 }} of {{ totalSteps }}</span>
     </div>
 
     <h3 class="pw-title">{{ step.title }}</h3>
@@ -26,27 +23,32 @@
       <p v-if="uploadError" class="pw-upload-error">{{ uploadError }}</p>
     </div>
 
+    <!-- Every option stays visible and clickable even after this step has
+         been answered, like the source prototype's history - picking a
+         different one here re-answers this step and supersedes whatever
+         was answered after it (handled server-side by advanceJourney). -->
     <div class="pw-options">
       <button
         v-for="option in step.options"
         :key="option.label"
         type="button"
         class="pw-option-btn"
-        :disabled="busy || (option.requiresUpload && evidenceFiles.length === 0)"
+        :class="{ selected: option.label === selectedLabel }"
+        :disabled="busy || (option.requiresUpload && evidenceFiles.length === 0 && option.label !== selectedLabel)"
         @click="choose(option)"
       >
         {{ option.label }}
       </button>
     </div>
 
-    <button type="button" class="pw-defer-btn" :disabled="busy" @click="$emit('defer')">
+    <button v-if="!selectedLabel" type="button" class="pw-defer-btn" :disabled="busy" @click="$emit('defer')">
       I'll do this later
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { PathwayStep, PathwayStepOption, ResolutionPathway } from '~/composables/usePathways'
 import { usePathways } from '~/composables/usePathways'
 
@@ -54,7 +56,10 @@ const props = defineProps<{
   passportId: string
   pathway: ResolutionPathway
   currentStepId: string
-  stepAnswersCount: number
+  stepPosition: number
+  totalSteps: number
+  selectedLabel?: string | null
+  answeredEvidenceFileUrls?: string[]
 }>()
 
 const emit = defineEmits<{
@@ -69,14 +74,27 @@ const step = computed<PathwayStep>(() => {
   if (!found) throw new Error(`Pathway ${props.pathway.id} has no step "${props.currentStepId}"`)
   return found
 })
-const totalSteps = computed(() => props.pathway.steps.length)
-const stepIndex = computed(() => props.stepAnswersCount)
 const stepNeedsUpload = computed(() => step.value.options.some((o) => o.requiresUpload))
 
-const evidenceFiles = ref<string[]>([])
+const evidenceFiles = ref<string[]>(props.answeredEvidenceFileUrls ?? [])
 const uploading = ref(false)
 const uploadError = ref('')
 const busy = ref(false)
+
+// One PathwayStepCard instance now renders one specific step in the flow
+// (answered or live), keyed by step id in the parent so each gets its own
+// instance - but the SAME instance is reused across re-answers of that one
+// step (e.g. editing an earlier choice), so `busy`/evidence still need to
+// reset whenever this step's recorded answer actually changes, or a second
+// edit of the same step would find every button permanently disabled.
+watch(
+  () => props.selectedLabel,
+  () => {
+    busy.value = false
+    evidenceFiles.value = props.answeredEvidenceFileUrls ?? []
+    uploadError.value = ''
+  },
+)
 
 async function onFilesSelected(e: Event) {
   const input = e.target as HTMLInputElement
@@ -89,7 +107,7 @@ async function onFilesSelected(e: Event) {
       evidenceFiles.value.push(result.fileUrl)
     }
   } catch (err: any) {
-    uploadError.value = err?.data?.message || 'Failed to upload. Please try again.'
+    uploadError.value = err?.data?.message || 'Failed to upload — please try again.'
   } finally {
     uploading.value = false
   }
@@ -97,6 +115,7 @@ async function onFilesSelected(e: Event) {
 
 function choose(option: PathwayStepOption) {
   if (busy.value) return
+  if (option.label === props.selectedLabel) return // no-op, nothing changed
   if (option.requiresUpload && evidenceFiles.value.length === 0) return
   busy.value = true
   emit('answer', { stepId: step.value.id, answerLabel: option.label, evidenceFileUrls: evidenceFiles.value })
@@ -111,6 +130,9 @@ function choose(option: PathwayStepOption) {
   border: 1px solid #e6e4de;
   border-radius: 16px;
 }
+.pw-card--answered {
+  background: #fafaf8;
+}
 .pw-header {
   display: flex;
   align-items: center;
@@ -123,14 +145,6 @@ function choose(option: PathwayStepOption) {
   color: #6b7089;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-.pw-draft-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: #a15c00;
-  background: #fff4e0;
-  padding: 3px 8px;
-  border-radius: 20px;
 }
 .pw-title {
   font-size: 17px;
@@ -210,9 +224,16 @@ function choose(option: PathwayStepOption) {
   background: #00a19a;
   color: #fff;
 }
+.pw-option-btn.selected {
+  background: #00a19a;
+  color: #fff;
+}
 .pw-option-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+.pw-option-btn.selected:disabled {
+  opacity: 1;
 }
 .pw-defer-btn {
   display: block;

@@ -411,10 +411,10 @@ const handleSubmit = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   max-width: 440px;
-  text-align: center;
+  text-align: left;
 }
 .signup-eyebrow {
   margin: 0 0 18px;
@@ -434,7 +434,7 @@ const handleSubmit = async () => {
 }
 .signup-q { color: #00a19a; }
 .signup-welcome-sub {
-  margin: 20px auto 0;
+  margin: 20px 0 0;
   font-size: 16px;
   line-height: 1.6;
   color: #6b6783;
@@ -446,14 +446,14 @@ const handleSubmit = async () => {
   max-width: 260px;
   height: auto;
   display: block;
-  margin: 28px auto 0;
+  margin: 28px 0 0;
   object-fit: contain;
 }
 
 /* Numbered steps */
 .signup-steps {
   list-style: none;
-  margin: 32px auto 0;
+  margin: 32px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;

@@ -80,13 +80,26 @@ const loadSectionQuestions = async (stepId, startAtTaskId = null) => {
   // Load all questions from all tasks in a section
   if (!currentStep.value) return
 
+  // currentQuestions/currentTask are global singletons (see top of file), so
+  // without this the PREVIOUS section's question stays on screen for the
+  // entire fetch below - on a section with many tasks (e.g. Fixtures and
+  // Fittings) that was a multi-second stale flash, not just a loading
+  // delay. Clearing first means the page's own `v-if="currentQuestion"`
+  // hides the question card immediately instead of showing the wrong one.
+  currentQuestions.value = []
+  allSectionQuestions.value = []
+  currentTask.value = null
+
+  const taskQuestionLists = await Promise.all(
+    currentStep.value.tasks.map((task) => getApi().getQuestions(task.id)),
+  )
+
   const flattened = []
   const taskMap = {}
   let questionIndex = 0
 
-  for (const task of currentStep.value.tasks) {
-    const taskQuestions = await getApi().getQuestions(task.id)
-    const normalizedQuestions = taskQuestions.map((q) => ({
+  currentStep.value.tasks.forEach((task, taskPos) => {
+    const normalizedQuestions = taskQuestionLists[taskPos].map((q) => ({
       ...q,
       type: q.type?.toLowerCase(),
       _taskId: task.id,
@@ -102,7 +115,7 @@ const loadSectionQuestions = async (stepId, startAtTaskId = null) => {
       flattened.push(q)
       questionIndex++
     })
-  }
+  })
 
   allSectionQuestions.value = flattened
   questionTaskMap.value = taskMap

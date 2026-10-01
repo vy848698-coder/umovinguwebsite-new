@@ -152,7 +152,7 @@
         </div>
       </div>
 
-      <div class="cl-card cl-mb-sm">
+      <div class="cl-card-pale cl-mb-sm">
         <div class="cl-eyebrow cl-mb-sm">What this fee covers</div>
         <!-- eslint-disable-next-line vue/no-v-html -->
         <p class="cl-body" style="margin: 0" v-html="claimPriceExplainer" />
@@ -1793,11 +1793,10 @@ async function issuePassport() {
 }
 .claim-aside-ic {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
   background: #f2faf8;
-  border: 1px solid #e5f4f2;
   display: grid;
   place-items: center;
   font-size: 17px;
@@ -1950,7 +1949,13 @@ async function issuePassport() {
 .cl-center-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* stretch, not center: a centered flex column shrink-wraps every child
+     (cards, button) to its own content width instead of filling the
+     panel - on a narrow viewport that happens to look full-width by
+     coincidence, but on a wider one the gap becomes visible either side
+     of "What's involved" and the button. text-align still centers the
+     actual text/icons within that full width. */
+  align-items: stretch;
   text-align: center;
 }
 .cl-center-full {
@@ -2250,7 +2255,7 @@ async function issuePassport() {
 .cl-row-list {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 10px;
 }
 .cl-gap-sm { gap: 11px; }
 
@@ -2258,12 +2263,15 @@ async function issuePassport() {
   display: flex;
   align-items: center;
   gap: 13px;
+  padding: 11px 14px;
+  border: 1px solid rgba(35, 29, 69, 0.08);
+  border-radius: 14px;
 }
 .cl-step-ic {
-  width: 40px;
-  height: 40px;
-  background: #f1f9f4;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  background: #f2faf8;
+  border-radius: 50%;
   display: grid;
   place-items: center;
   font-size: 19px;
@@ -2285,7 +2293,15 @@ async function issuePassport() {
   align-items: center;
   gap: 12px;
 }
-.cl-pale-ic { font-size: 28px; flex-shrink: 0; }
+.cl-pale-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
 .cl-pale-ic-sm { font-size: 18px; flex-shrink: 0; }
 .cl-pale-t {
   font-size: 13.5px;
@@ -2751,12 +2767,12 @@ async function issuePassport() {
 /* ── Build-folder illustrated icons (replace emoji placeholders) ──── */
 .cl-icon-square img { width: 40px; height: 40px; object-fit: contain; }
 .cl-icon-square.cl-icon-lg img { width: 46px; height: 46px; }
-.cl-step-ic img { width: 24px; height: 24px; object-fit: contain; }
+.cl-step-ic img { width: 36px; height: 36px; object-fit: contain; }
 .cl-slot-ic img { width: 44px; height: 44px; object-fit: contain; }
 .cl-slot-ic-muted img { opacity: 0.5; }
 .cl-pill img { width: 15px; height: 15px; object-fit: contain; }
 .cl-pale-ic img { width: 36px; height: 36px; object-fit: contain; }
-.claim-aside-ic img { width: 20px; height: 20px; object-fit: contain; }
+.claim-aside-ic img { width: 34px; height: 34px; object-fit: contain; }
 
 /* Identity-verified hero illustration (standalone, with its own sparkles) */
 .cl-hero-img {
