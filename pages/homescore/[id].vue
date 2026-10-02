@@ -7686,6 +7686,23 @@ watch(screen, (s) => {
   }
 }
 
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-shell {
+    width: calc(100% - 24px);
+  }
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-tour {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* ── Header ───────────────────────────────────────────── */
 .hs-header {
   background: #f0f4f4;
@@ -17126,6 +17143,99 @@ button.bv-rc-head:hover {
   .qw-modal {
     zoom: var(--wide-zoom, 1);
     max-height: calc(88vh / var(--wide-zoom, 1));
+  }
+}
+
+/* ── Narrow phones ──────────────────────────────────────────────────────
+   Wherever an icon, gauge or tag sat beside a block of copy the copy got a
+   word-per-line column. These pieces stack or wrap so the text keeps the
+   card width. */
+@media (max-width: 560px) {
+  /* Buyer report: the sections keep 22px gutters of their own; on phones
+     that doubled the screen margin, so let the column absorb them and the
+     cards line up with the snapshot cards above. */
+  .bvw-content {
+    margin: 0 -22px;
+  }
+  /* Buyer report: six tabs as an even 3 x 2 grid, nothing hidden. */
+  .bv-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+  .bv-tab {
+    min-width: 0;
+    justify-content: center;
+    padding: 9px 6px;
+    font-size: 12.5px;
+  }
+  /* Section headings: a source tag drops under the title instead of
+     squeezing it. */
+  .bv-section-h {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .bv-section-h-text {
+    flex: 1 1 calc(100% - 46px);
+  }
+  .bv-section-h-tag {
+    margin-left: 46px;
+  }
+
+  /* Passport screen: no doubled side margins inside the narrow column. */
+  .ppw-main {
+    width: calc(100% - 24px);
+    padding-top: 22px;
+  }
+  .hs-tab-content {
+    padding: 14px 0 0;
+  }
+  .hs-pp-card {
+    padding: 20px 18px;
+  }
+  .hs-vault-tab {
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 2px 9px;
+    font-size: 12px;
+    min-width: 0;
+  }
+  .hs-pp-doc-row {
+    flex-wrap: wrap;
+  }
+  .hs-pp-doc-name {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .hs-pp-unlock-sub {
+    font-size: 13.5px;
+  }
+}
+@media (max-width: 420px) {
+  /* Results: gauge above its explanation. */
+  .pq-score-gauge-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  /* Quick wins documents, buyer questions: icon and badge on top, copy
+     full width underneath. */
+  .boost-doc-card {
+    flex-wrap: wrap;
+  }
+  .boost-doc-body {
+    flex: 1 1 100%;
+    order: 3;
+  }
+  .boost-doc-card > :last-child:not(.boost-doc-body) {
+    margin-left: auto;
+  }
+  .bv-q-row,
+  .bv-watch-row {
+    gap: 10px;
+  }
+  .pq-interest-opt {
+    align-items: flex-start;
   }
 }
 </style>

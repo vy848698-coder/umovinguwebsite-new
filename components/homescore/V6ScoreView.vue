@@ -5004,4 +5004,35 @@ const watchersDisplay = computed(() => {
     max-height: min(calc(90dvh / var(--wide-zoom, 1)), calc(100dvh / var(--wide-zoom, 1) - 32px));
   }
 }
+
+/* ── Narrow phones ──────────────────────────────────────────────────────
+   Wherever an icon or gauge sat beside a block of copy, the copy got a
+   word-per-line column. Below 420px those pieces stack so the text keeps
+   the full card width. */
+@media (max-width: 420px) {
+  .score-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .hsh-foot {
+    grid-template-columns: 1fr;
+  }
+  .fork-tile {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon . arrow'
+      'body body body';
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+  }
+  .fork-tile-icon { grid-area: icon; width: 60px; height: 60px; }
+  .fork-tile-arrow { grid-area: arrow; }
+  .fork-tile-body { grid-area: body; }
+  .section-h-row { gap: 12px; }
+  .section-h-sub { white-space: nowrap; flex-shrink: 0; }
+}
+
 </style>
