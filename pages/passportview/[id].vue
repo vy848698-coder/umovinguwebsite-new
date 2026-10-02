@@ -4490,6 +4490,90 @@ const groupedHistory = computed(() => {
     gap: 10px;
   }
 }
+/* Publish-readiness band on phones: rocket + label on one row, the bar and
+   the note get the full width under it instead of a narrow column between
+   the icon and the chevron. */
+@media (max-width: 520px) {
+  .pp-ready {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'ic head chev'
+      'body body body';
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px 16px;
+  }
+  .pp-ready-ic { grid-area: ic; }
+  .pp-ready-chev { grid-area: chev; }
+  .pp-ready-body { display: contents; }
+  .pp-ready-head { grid-area: head; margin-bottom: 0; flex-wrap: wrap; gap: 4px 10px; }
+  .pp-ready-bar { grid-column: 1 / -1; }
+  .pp-ready-note { grid-column: 1 / -1; margin-top: -2px; }
+}
+
+/* "Pick up where you left off": icon + copy on top, Continue as a full
+   width button underneath, instead of the title stacking a word per line
+   beside the button. The icon sits on the banner itself, bigger, with no
+   tinted tile behind it. */
+@media (max-width: 520px) {
+  .pp-resume-cta {
+    flex-wrap: wrap;
+    gap: 12px 14px;
+    padding: 16px;
+  }
+  .pp-resume-ic {
+    width: 44px;
+    height: 44px;
+    background: none;
+  }
+  .pp-resume-ic-img {
+    width: 40px;
+    height: 40px;
+  }
+  .pp-resume-text {
+    flex: 1 1 calc(100% - 58px);
+  }
+  .pp-resume-title {
+    font-size: 15px;
+  }
+  .pp-resume-sub {
+    white-space: normal;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+  .pp-resume-continue {
+    flex: 1 1 100%;
+    justify-content: center;
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+  .pp-subtab {
+    font-size: 11px;
+  }
+  .pp-subtab-ic {
+    width: 22px;
+    height: 22px;
+  }
+}
+/* Very small phones: five tabs leave ~50px each, so the labels scale with
+   the screen and the tabs lose their side padding; the longest label
+   ("Sections") always stays inside its pill. */
+@media (max-width: 380px) {
+  .pp-subtabs {
+    gap: 1px;
+    padding: 3px;
+  }
+  .pp-subtab {
+    padding: 7px 0 6px;
+    font-size: clamp(9px, 3.05vw, 11px);
+    letter-spacing: -0.01em;
+  }
+  .pp-subtab-ic {
+    width: 20px;
+    height: 20px;
+  }
+}
 @media (max-width: 380px) {
   .pp-hero-actions {
     grid-template-columns: 1fr;
@@ -4511,6 +4595,19 @@ const groupedHistory = computed(() => {
     gap: 0;
     justify-content: center;
     font-size: 0;
+  }
+}
+
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-nav-inner {
+    gap: 10px;
   }
 }
 </style>

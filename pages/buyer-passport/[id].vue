@@ -158,7 +158,7 @@
           class="bp-resume"
           @click="goToResumeSection"
         >
-          <div class="bp-resume-ic">↩</div>
+          <OPIcon name="resumeLeftOff" class="bp-resume-ic" />
           <div class="bp-resume-body">
             <div class="bp-resume-title">Pick up where you left off</div>
             <div class="bp-resume-sub">{{ resumeSection.title }}</div>
@@ -1561,22 +1561,37 @@ async function deleteNote(noteId: string) {
   transition: transform 0.15s ease;
 }
 .bp-resume:hover { transform: translateY(-1px); }
+/* Same 3D "continue" art as the seller passport's banner, sitting on the
+   banner itself rather than on a tinted tile. */
 .bp-resume-ic {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(0, 161, 154, 0.2);
-  color: var(--teal-bright);
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  font-weight: 800;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .bp-resume-body { flex: 1; min-width: 0; }
 .bp-resume-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
 .bp-resume-sub { font-size: 12.5px; color: rgba(255, 255, 255, 0.55); margin-top: 2px; }
 .bp-resume-cta { color: var(--teal-bright); font-size: 13.5px; font-weight: 700; flex-shrink: 0; }
+/* Phones: icon + copy on top, Continue as a full-width button underneath,
+   instead of the title stacking a word per line beside the link. */
+@media (max-width: 520px) {
+  .bp-resume {
+    flex-wrap: wrap;
+    gap: 12px 14px;
+    padding: 16px;
+  }
+  .bp-resume-body { flex: 1 1 calc(100% - 58px); }
+  .bp-resume-cta {
+    flex: 1 1 100%;
+    padding: 11px 16px;
+    border-radius: 10px;
+    background: #fff;
+    color: #231d45;
+    font-weight: 800;
+    text-align: center;
+  }
+}
 
 /* ── Two-column grid ──────────────────────────────────────────────── */
 .bp-grid {
@@ -2229,6 +2244,19 @@ async function deleteNote(noteId: string) {
     gap: 0;
     justify-content: center;
     font-size: 0;
+  }
+}
+
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-nav-inner {
+    gap: 10px;
   }
 }
 </style>
