@@ -492,6 +492,9 @@ watch(
     if (!q?.id || !q?.answer) return
     try {
       const { journey, pathway } = await getGuidanceAndPathway(q.id, '')
+      // Skip/Previous can move on before this resolves; don't show one
+      // question's pathway under another.
+      if (currentQuestion.value?.id !== q.id) return
       if (journey && pathway) activePathway.value = { pathway, journey }
     } catch (err) {
       console.error('Pathway restore failed (non-blocking):', err)
