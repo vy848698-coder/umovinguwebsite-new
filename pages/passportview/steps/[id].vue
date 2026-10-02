@@ -1551,6 +1551,15 @@ const handleViewProfile = () => {
     flex-wrap: wrap;
   }
 }
+@media (max-width: 520px) {
+  /* Breadcrumb wraps as a line of text instead of squeezing the section
+     name into a narrow column beside the first two crumbs. */
+  .stw-crumbs {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    line-height: 1.4;
+  }
+}
 @media (max-width: 380px) {
   /* The count joins the bar's row so the text keeps the top row. */
   .prog-text {
@@ -1594,6 +1603,19 @@ const handleViewProfile = () => {
     gap: 0;
     justify-content: center;
     font-size: 0;
+  }
+}
+
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-nav-inner {
+    gap: 10px;
   }
 }
 </style>
