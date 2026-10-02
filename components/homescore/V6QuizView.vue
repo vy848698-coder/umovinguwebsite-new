@@ -1748,4 +1748,18 @@ watch(
     overflow-y: auto;
   }
 }
+
+/* Narrow phones: the "things could have changed" icon sits above its copy. */
+@media (max-width: 380px) {
+  .nq-changed-ico {
+    width: 40px;
+    height: 40px;
+  }
+  .nq-changed {
+    flex-wrap: wrap;
+  }
+  .nq-changed-body {
+    flex: 1 1 100%;
+  }
+}
 </style>
