@@ -306,7 +306,7 @@
         <div class="lp-shell lp-split lp-split--passport">
           <div class="lp-copy">
             <p class="lp-eyebrow lp-eyebrow--teal">The product · solicitor-grade</p>
-            <h2 class="lp-h2 lp-h2--sans lp-passport-title">Everything your buyer<br />will ask for.<br /><span class="lp-passport-accent">Before they ask</span><span class="lp-q">.</span></h2>
+            <h2 class="lp-h2 lp-h2--sans lp-passport-title">Everything your buyer <br class="lp-br-wide" />will ask for.<br /><span class="lp-passport-accent">Before they ask</span><span class="lp-q">.</span></h2>
             <p class="lp-lede">
               This is where a sharpened HomeScore becomes move-ready. Everything a buyer's
               solicitor needs and will ask for (title deeds, searches, fixtures, boundaries
@@ -803,7 +803,14 @@ function goToStickyCtaDestination() {
 
 function onWindowScroll() {
   if (typeof window === 'undefined') return
-  const threshold = window.innerWidth <= 760 ? 320 : 520
+  // Phones: the stacked hero is much taller, so a fixed threshold dropped
+  // the sticky button onto the hero's HomeScore card. Show it once the hero
+  // (and its own CTA) has scrolled away instead.
+  let threshold = 520
+  if (window.innerWidth <= 760) {
+    const hero = document.querySelector('.lp-hero') as HTMLElement | null
+    threshold = hero ? hero.offsetTop + hero.offsetHeight - 120 : 320
+  }
   showStickyCta.value = window.scrollY > threshold
   isCalmMode.value = window.scrollY > 760
 }
@@ -2721,6 +2728,12 @@ main section[id] {
 }
 
 @media (max-width: 400px) {
+  /* Score ring above its rows so the labels and values keep the card width. */
+  .lp-hs-top {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .lp-hs-ring-wrap { justify-self: start; }
   .lp-shell { width: calc(100% - 24px); }
   .lp-hero-title { font-size: clamp(34px, 11vw, 42px); letter-spacing: -1.2px; }
   .lp-h2 { font-size: clamp(26px, 8vw, 30px); }
@@ -2755,6 +2768,33 @@ main section[id] {
      only the card's top padding (badge 133px tall, label 37px down). */
   .lp-hero-visual { padding-top: 104px; }
   .lp-badge--solicitor { top: 0; }
+
+  /* Phones: the two floating badges sit in the flow above and below the
+     card instead of being pinned over its edges, so nothing overlaps. */
+  .lp-hero-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-height: 0;
+    padding: 4px 0 0;
+    margin-bottom: 0;
+  }
+  .lp-badge--solicitor,
+  .lp-badge--score {
+    position: static;
+    animation: none;
+    transform: none;
+    width: 100%;
+    max-width: 320px;
+  }
+  .lp-badge--solicitor { order: -1; }
+  .lp-badge--score { order: 1; }
+  .lp-passport-card { width: 100%; }
+
+  /* Passport heading: drop the desktop break inside the first sentence so
+     it flows; "Before they ask." keeps its own line. */
+  .lp-passport-title .lp-br-wide { display: none; }
   /* The timeline wraps onto rows here and its track is hidden; hide the
      animated fill too, which otherwise drew across the first row only. */
   .lp-timeline::after { display: none; }
@@ -2787,7 +2827,7 @@ main section[id] {
   /* Hero HomeScore card: a smaller ring and padding so the card fits. */
   .lp-hero-visual { min-width: 0; }
   .lp-passport-card { padding: 22px 16px; }
-  .lp-hs-top { grid-template-columns: 70px minmax(0, 1fr); gap: 10px; }
+  .lp-hs-top { grid-template-columns: 1fr; gap: 12px; }
   .lp-hs-ring-wrap { width: 70px; height: 70px; }
   .lp-hs-center strong { font-size: 24px; }
 }

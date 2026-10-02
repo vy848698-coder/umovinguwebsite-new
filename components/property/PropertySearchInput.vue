@@ -718,6 +718,46 @@ defineExpose({ clearQuery, closeDropdown, focus, getQuery })
   font-feature-settings: 'tnum';
 }
 
+/* Narrow dropdown (phones): the address shows in full on up to two lines
+   beside the HomeScore ring, city/postcode under it, and the Passport
+   status gets the whole row underneath instead of a word-per-line column.
+   Sized off the dropdown itself, so it works in every search box. */
+.psi-drop {
+  container-type: inline-size;
+}
+@container (max-width: 420px) {
+  .psi-drop-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'ic l1 hs'
+      'ic l2 hs'
+      'pp pp pp';
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 2px;
+    padding: 12px 14px;
+  }
+  .psi-drop-ic { grid-area: ic; align-self: start; width: 32px; height: 32px; }
+  .psi-drop-body { display: contents; }
+  .psi-drop-line1 {
+    grid-area: l1;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+  }
+  .psi-drop-line2 { grid-area: l2; }
+  .psi-drop-passport {
+    grid-area: pp;
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .psi-drop-hs { grid-area: hs; }
+  .psi-drop-hs-cap { display: none; }
+}
+
 .psi-drop-loading {
   display: flex;
   justify-content: center;
