@@ -1420,9 +1420,17 @@ const handleViewProfile = () => {
   .prog-card {
     flex-wrap: wrap;
   }
+  /* Text takes the room beside the icon and wraps, instead of keeping its
+     one-line width and running past the card. */
+  .prog-text {
+    flex: 1 1 0;
+  }
   .prog-track {
     order: 3;
     flex-basis: 100%;
+  }
+  .hero-body {
+    align-self: stretch;
   }
 }
 
@@ -1438,6 +1446,141 @@ const handleViewProfile = () => {
   }
   .task-pct {
     display: none;
+  }
+
+  /* Hero: everything stays inside the card. */
+  .hero {
+    padding: 22px 18px;
+    border-radius: 22px;
+    gap: 20px;
+  }
+  .hero-badge {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 5px 11px;
+    line-height: 1.35;
+  }
+  .hero-title {
+    font-size: 28px;
+    margin: 14px 0 6px;
+  }
+  .hero-sub {
+    font-size: 14px;
+  }
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 14px 16px;
+    margin: 20px 0 22px;
+  }
+  .hero-stat strong {
+    font-size: 22px;
+  }
+  .hero-stat strong em {
+    font-size: 15px;
+  }
+  .hero-ring-wrap {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .hero-ring {
+    width: 128px;
+    height: 128px;
+  }
+  .hero-ring-inner {
+    width: 100px;
+    height: 100px;
+  }
+  .hero-ring-pct {
+    font-size: 28px;
+  }
+  .hero-ring-lbl {
+    margin-top: 5px;
+    font-size: 8.5px;
+  }
+
+  .prog-card {
+    padding: 16px 18px;
+    gap: 14px;
+  }
+
+  /* Task cards: icon and arrow share the top row, the copy gets the full
+     card width underneath rather than a narrow column between them. */
+  .task-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon . arrow'
+      'info info info';
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 16px 20px;
+  }
+  .task-index {
+    display: none;
+  }
+  .task-icon {
+    grid-area: icon;
+    width: 52px;
+    height: 52px;
+  }
+  .task-icon :deep(img) {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .task-arrow {
+    grid-area: arrow;
+    width: 38px;
+    height: 38px;
+  }
+  .task-info {
+    grid-area: info;
+  }
+  .task-title {
+    font-size: 16px;
+  }
+  .task-description {
+    font-size: 13px;
+  }
+  .task-required-badge {
+    display: block;
+    width: fit-content;
+    margin: 6px 0 2px;
+  }
+  .task-progress-row {
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 520px) {
+  /* Breadcrumb wraps as a line of text instead of squeezing the section
+     name into a narrow column beside the first two crumbs. */
+  .stw-crumbs {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    line-height: 1.4;
+  }
+}
+@media (max-width: 380px) {
+  /* The count joins the bar's row so the text keeps the top row. */
+  .prog-text {
+    flex: 1 1 calc(100% - 64px);
+  }
+  .prog-track {
+    flex: 1 1 0;
+  }
+  .prog-count {
+    order: 4;
+    font-size: 15px;
+  }
+  .hero-title {
+    font-size: 24px;
+  }
+  .hero-stat strong {
+    font-size: 20px;
+  }
+  .hero-actions > * {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 }
 
@@ -1460,6 +1603,19 @@ const handleViewProfile = () => {
     gap: 0;
     justify-content: center;
     font-size: 0;
+  }
+}
+
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-nav-inner {
+    gap: 10px;
   }
 }
 </style>

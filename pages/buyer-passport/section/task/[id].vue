@@ -1130,4 +1130,17 @@ function downloadFile(url: string, name: string) {
     font-size: 0;
   }
 }
+
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-nav-inner {
+    gap: 10px;
+  }
+}
 </style>

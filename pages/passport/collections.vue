@@ -270,8 +270,15 @@
                     v-model="query"
                     class="ppw-search-input"
                     data-tour="search-btn"
-                    placeholder="Search passports by address or postcode…"
+                    aria-label="Search passports by address or postcode"
                   />
+                  <!-- Placeholder drawn in CSS so phones get a shorter prompt
+                       (a media query, no JS timing) and long text ends in an
+                       ellipsis instead of being cut mid-word. -->
+                  <span v-if="!query" class="ppw-search-ph" aria-hidden="true">
+                    <span class="ppw-search-ph-long">Search passports by address or postcode…</span>
+                    <span class="ppw-search-ph-short">Search address or postcode</span>
+                  </span>
                   <button
                     v-if="query"
                     class="ppw-search-clear"
@@ -1575,6 +1582,31 @@ const executeDelete = async () => {
   color: var(--ink);
 }
 
+.ppw-search {
+  position: relative;
+}
+.ppw-search-ph {
+  position: absolute;
+  left: 42px;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  color: #a8a395;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ppw-search-ph-short {
+  display: none;
+}
+@media (max-width: 480px) {
+  .ppw-search-ph-long { display: none; }
+  .ppw-search-ph-short { display: inline; }
+  .ppw-search-ph { font-size: 13.5px; }
+}
 .ppw-search-input::placeholder {
   color: #a8a395;
   font-weight: 500;
@@ -2347,6 +2379,15 @@ const executeDelete = async () => {
   .ppw-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+  /* In the stacked column, flex: 1 collapsed the search box to its text
+     height; keep it a full 50px field like the sort control below it. */
+  .ppw-search {
+    flex: none;
+  }
+  .ppw-search-input {
+    font-size: 13.5px;
   }
   .ppw-sort {
     justify-content: space-between;

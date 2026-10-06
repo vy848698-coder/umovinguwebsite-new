@@ -2763,6 +2763,36 @@ onMounted(async () => {
   .dsh-add { padding: 10px 16px 10px 10px; font-size: 13px; }
 }
 
+/* Narrow screens: cards that put an icon, copy and a picture side by side
+   stack instead, so the copy keeps the full card width rather than a
+   word-per-line column between them. */
+@media (max-width: 520px) {
+  /* Empty passport CTA: plus tile on top, chevron in the corner. */
+  .dsh-empty-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 22px 20px;
+  }
+  .dsh-empty-plus { width: 50px; height: 50px; border-radius: 15px; font-size: 24px; }
+  .dsh-empty-body strong { font-size: 17px; padding-right: 28px; }
+  .dsh-empty-chev { position: absolute; top: 22px; right: 18px; }
+
+  /* "Check any home's HomeScore": gauge and house share the top row. */
+  .hec {
+    flex-wrap: wrap;
+    gap: 12px 11px;
+    padding: 16px;
+  }
+  .hec-gauge { order: 0; }
+  .hec-house { order: 1; margin-left: auto; width: 56px; height: 56px; }
+  .hec-body { order: 2; flex: 1 1 100%; }
+}
+@media (max-width: 380px) {
+  .hsc-house-img { width: 54px; height: 54px; }
+  .hsc-head { gap: 10px; }
+}
+
 /* ── Big screens ──────────────────────────────────────────────
    Scale with the window width (--wide-zoom = width / 1366, set in
    nuxt.config.ts) so a desktop monitor shows the dashboard exactly as a

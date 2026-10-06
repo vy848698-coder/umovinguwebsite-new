@@ -1122,6 +1122,67 @@ const deleteAccount = async () => {
 .pf-row-list :deep(.prow:nth-child(5)) { animation-delay: 160ms; }
 .pf-row-list :deep(.prow:nth-child(6)) { animation-delay: 200ms; }
 
+/* ── Module cards: refined ───────────────────────────────────────────
+   Plain white card so the illustrations (white-backed JPEGs) sit on it
+   seamlessly, a bigger illustration with no tile border or shadow, and a
+   clearer title / description hierarchy. */
+.pf-row-list :deep(.prow) {
+  background: #fff;
+  border-color: #e7edf5;
+  padding: 18px 18px 18px 16px;
+  gap: 16px;
+}
+.pf-row-list :deep(.prow-icon--photo),
+.pf-row-list :deep(.prow:hover .prow-icon--photo) {
+  width: 64px;
+  height: 64px;
+  border: 0 !important;
+  border-radius: 14px;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.pf-row-list :deep(.prow-title) {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #1a1535;
+  letter-spacing: -0.01em;
+}
+.pf-row-list :deep(.prow-meta) {
+  margin-top: 5px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #6b7089;
+}
+
+/* Two cards side by side only where each still has room for its copy. */
+@media (max-width: 1100px) and (min-width: 721px) {
+  .pf-row-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small phones: illustration and chevron share the top row, the title and
+   description get the full card width underneath. */
+@media (max-width: 420px) {
+  .pf-row-list :deep(.prow) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon . right'
+      'body body body';
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  .pf-row-list :deep(.prow-icon) { grid-area: icon; }
+  .pf-row-list :deep(.prow-right) { grid-area: right; }
+  .pf-row-list :deep(.prow-body) { grid-area: body; }
+  .pf-row-list :deep(.prow-icon--photo) {
+    width: 56px;
+    height: 56px;
+  }
+}
+
 /* ── Danger / logout ──────────────────────────────────────── */
 .pf-actions {
   margin-top: 20px;

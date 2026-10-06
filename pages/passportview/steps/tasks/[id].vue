@@ -500,6 +500,9 @@ watch(
     if (!q?.id || !q?.answer) return
     try {
       const { journey, pathway } = await getGuidanceAndPathway(q.id, '')
+      // Skip/Previous can move on before this resolves; don't show one
+      // question's pathway under another.
+      if (currentQuestion.value?.id !== q.id) return
       if (journey && pathway) activePathway.value = { pathway, journey }
     } catch (err) {
       console.error('Pathway restore failed (non-blocking):', err)
@@ -2217,6 +2220,19 @@ const handleContinue = () => {
     gap: 0;
     justify-content: center;
     font-size: 0;
+  }
+}
+
+/* Small phones: logo, "?" and Back must all fit the bar. */
+@media (max-width: 380px) {
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-actions {
+    gap: 6px;
+  }
+  .hsw-nav-inner {
+    gap: 10px;
   }
 }
 </style>
