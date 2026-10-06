@@ -69,9 +69,9 @@ const iconMap: Record<string, string> = {
   // Passport view chrome — illustrated set from the seller/buyer folder.
   tabSections: '/passport-seller-and-buyer-icon/sections.png',
   tabStreet: '/passport-seller-and-buyer-icon/street.png',
-  tabBuyers: '/passport-seller-and-buyer-icon/buyer.png',
-  tabVault: '/passport-seller-and-buyer-icon/vault.png',
-  tabTimeline: '/passport-seller-and-buyer-icon/timeline.png',
+  tabBuyers: '/passport-seller-and-buyer-icon/tabBuyers.png',
+  tabVault: '/passport-seller-and-buyer-icon/tabVault.png',
+  tabTimeline: '/passport-seller-and-buyer-icon/tabTimeline.png',
   publishPassport: '/passport-seller-and-buyer-icon/published.png',
   resumeLeftOff: '/passport-seller-and-buyer-icon/continueWhereYouLeft.png',
   pin: '/op-icons/passportview/pin.svg',

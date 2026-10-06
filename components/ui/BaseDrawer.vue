@@ -546,7 +546,9 @@ const onDragEnd = () => {
     padding: 12px;
   }
 
-  .drawer {
+  /* Full-screen drawers (Notes...) keep the whole screen; only the
+     centred sheet gets the phone height cap. */
+  .drawer:not(.drawer--fullscreen) {
     max-width: 100%;
     margin: 0;
     max-height: min(85vh, calc(100dvh - 24px)); /* Adjust for mobile */

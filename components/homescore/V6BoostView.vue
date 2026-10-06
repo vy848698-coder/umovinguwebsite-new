@@ -2057,4 +2057,47 @@ function formatFileSize(bytes: number): string {
     zoom: var(--wide-zoom, 1);
   }
 }
+
+/* Narrow phones: three rings fit the card, and document rows give their
+   copy the full width under the icon and action. */
+@media (max-width: 420px) {
+  .boost-gauge-ring {
+    width: 72px;
+    height: 72px;
+  }
+  .boost-gauge-num {
+    font-size: 20px;
+  }
+  .boost-gauge-num.pct {
+    font-size: 17px;
+  }
+  .boost-gauge-col {
+    min-width: 0;
+  }
+  .boost-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon . action'
+      'info info info';
+    align-items: center;
+    gap: 10px 12px;
+    margin: 8px 12px;
+  }
+  .boost-row-icon { grid-area: icon; }
+  .boost-row-info { grid-area: info; }
+  .boost-row > :last-child:not(.boost-row-info):not(.boost-row-icon) { grid-area: action; }
+}
+@media (max-width: 330px) {
+  .boost-gauge-ring {
+    width: 62px;
+    height: 62px;
+  }
+  .boost-gauge-num {
+    font-size: 17px;
+  }
+  .boost-gauge-num.pct {
+    font-size: 15px;
+  }
+}
 </style>

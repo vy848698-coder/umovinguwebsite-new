@@ -1236,4 +1236,45 @@ const refinedStats = computed(() => {
   color: var(--text-secondary);
 }
 .lu-trust-note :deep(svg) { width: 13px; height: 13px; }
+
+/* Narrow phones: stat rows wrap the gain pill under the bar, tiles and
+   pathway steps give their copy the full width. */
+@media (max-width: 420px) {
+  .stat-row {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .stat-label {
+    flex: 1 1 0;
+    width: auto;
+  }
+  .stat-bar-wrap {
+    flex: 1 1 100%;
+    order: 5;
+  }
+  .lu-tile {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon . arrow'
+      'body body body';
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+  }
+  .lu-tile-icon { grid-area: icon; }
+  .lu-tile-arrow { grid-area: arrow; }
+  .lu-tile-body { grid-area: body; }
+  .keep-going-banner {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 10px 12px;
+  }
+  .kg-body {
+    flex: 1 1 100%;
+  }
+  .boost-explain-step {
+    gap: 10px;
+  }
+}
 </style>

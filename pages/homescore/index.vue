@@ -1470,6 +1470,19 @@ const howSteps = [
   .hs-house {
     zoom: 0.86;
   }
+
+  /* Live activity: the tag stays on one line and "Updated" drops below it
+     when there isn't room for both. */
+  .hs-card-top {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .hs-card-tag {
+    white-space: nowrap;
+  }
+  .hs-activity-card {
+    padding: 22px 20px;
+  }
 }
 
 @media (max-width: 360px) {
