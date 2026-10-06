@@ -18,28 +18,45 @@
       </div>
 
       <div class="signup-aside-body">
-        <p class="signup-eyebrow">Create your account</p>
-        <h1 class="signup-welcome">Start with<br />your home<span class="signup-q">.</span></h1>
-        <p class="signup-welcome-sub">A few details and you're in. Your details stay with you.</p>
-
+        <!-- The house leads, centred above the copy. -->
         <img
           src="/dashboard-art/searchHouse.png"
           alt=""
           class="signup-house-illus"
         />
 
-        <ol class="signup-steps">
-          <li><span class="signup-step-n">1</span><p>Create your account</p></li>
-          <li><span class="signup-step-n">2</span><p>Add your home's postcode</p></li>
-          <li><span class="signup-step-n">3</span><p>See your HomeScore and start your Passport</p></li>
-        </ol>
+        <p class="signup-eyebrow">Create your account</p>
+        <!-- The space before the break is trimmed at end of line on desktop and
+             survives when the phone rules hide the <br>, so the line reflows to
+             "Start with your home." rather than running the words together. -->
+        <h1 class="signup-welcome">Start with <br />your home<span class="signup-q">.</span></h1>
+        <p class="signup-welcome-sub">
+          A few details and you're in, then claim the property that's already yours.
+        </p>
+
+        <!-- What the account actually gets them. The old numbered steps only
+             described the form they are already looking at. -->
+        <ul class="signup-points">
+          <li>
+            <span class="signup-point-k" aria-hidden="true"></span>
+            <p><b>Ownership verified</b> against HM Land Registry, not self-declared.</p>
+          </li>
+          <li>
+            <span class="signup-point-k" aria-hidden="true"></span>
+            <p><b>Free to create.</b> You only pay when you claim a property.</p>
+          </li>
+          <li>
+            <span class="signup-point-k" aria-hidden="true"></span>
+            <p><b>Yours to control.</b> Nothing is shared without your say-so.</p>
+          </li>
+        </ul>
       </div>
 
       <p class="signup-aside-foot">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
-        Your details stay with you — end-to-end encrypted, never shared with third parties.
+        End-to-end encrypted. Your data stays yours.
       </p>
     </aside>
 
@@ -48,7 +65,7 @@
       <div class="signup-main-inner">
         <div class="signup-form-head">
           <h2 class="signup-form-title">Create your account</h2>
-          <p class="signup-form-sub">Start with your home — it takes about a minute.</p>
+          <p class="signup-form-sub">Start with your home. It takes about a minute.</p>
         </div>
 
         <form class="auth-form signup-panel" @submit.prevent="handleSubmit">
@@ -121,7 +138,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              <span>We only text you about <strong>your Passport</strong> — never marketing.</span>
+              <span>We only text you about <strong>your Passport</strong>, never marketing.</span>
             </div>
           </div>
 
@@ -442,50 +459,49 @@ const handleSubmit = async () => {
 }
 
 .signup-house-illus {
-  width: 100%;
-  max-width: 260px;
+  width: 288px;
   height: auto;
   display: block;
-  margin: 28px 0 0;
+  margin: -18px 0 16px;
   object-fit: contain;
+  filter: drop-shadow(0 22px 30px rgba(35, 29, 69, 0.16));
 }
 
-/* Numbered steps */
-.signup-steps {
+/* What the account gets them, on hairlines so the list reads as one block
+   with no gaps between the rows to fall through. */
+.signup-points {
   list-style: none;
-  margin: 32px 0 0;
+  margin: 28px 0 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  display: grid;
   max-width: 320px;
   text-align: left;
 }
-.signup-steps li {
+.signup-points li {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(35, 29, 69, 0.09);
 }
-.signup-step-n {
+.signup-points li:last-child { border-bottom: 1px solid rgba(35, 29, 69, 0.09); }
+/* A small rotated square - a marker, not a bullet. */
+.signup-point-k {
+  width: 5px;
+  height: 5px;
+  margin-top: 8px;
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(0, 161, 154, 0.1);
-  border: 1px solid rgba(0, 161, 154, 0.4);
-  color: #00a19a;
-  font-size: 13px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
+  background: #00a19a;
+  transform: rotate(45deg);
 }
-.signup-steps p {
+.signup-points p {
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: #231d45;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #4a4560;
 }
+.signup-points b { color: #231d45; font-weight: 800; }
 
 .signup-aside-foot {
   display: inline-flex;

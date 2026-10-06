@@ -333,12 +333,12 @@ const emitUpdate = () => {
 
 .help-section {
   display: flex;
-  gap: 11px;
-  padding: 13px 15px;
-  background: rgba(0, 161, 154, 0.06);
-  border-radius: 14px;
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  margin-bottom: 20px;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(0, 161, 154, 0.07);
+  border-radius: 16px;
+  border-left: 4px solid #00a19a;
+  margin-bottom: 22px;
 }
 
 .help-icon {
@@ -358,7 +358,7 @@ const emitUpdate = () => {
   margin: 0 0 4px;
   color: #00857f;
   font-weight: 800;
-  font-size: 12.5px;
+  font-size: 14px;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -367,8 +367,8 @@ const emitUpdate = () => {
   color: #5a5570;
   margin: 0;
   font-weight: 500;
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .typing-cursor {

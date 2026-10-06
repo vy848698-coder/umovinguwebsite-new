@@ -351,8 +351,17 @@ const showTaskQuestion = computed(
 const showTaskDescription = computed(
   () => !!props.displayedDescription && !hasPartDescription.value,
 )
+// Also requires showTaskQuestion: a task-level helpText can be set on a
+// QuestionTemplate whose own title is empty (the real question text lives
+// on its single part instead - the usual pattern for a MULTIPART question
+// that's really just one radio question). Showing the tip box alone up
+// here, with no task-level title to sit under, put "What is this?" above
+// the actual question instead of below it (client bug report, 2026-10-06
+// - "Question 3" vs "Question 4" in the same Insurance section looked
+// structurally different). The part's own helpText/tip still renders in
+// its normal place either way.
 const showTaskHelp = computed(
-  () => !!props.displayedHelp && !hasPartHelp.value,
+  () => !!props.displayedHelp && !hasPartHelp.value && showTaskQuestion.value,
 )
 
 // Link cards from prewritten.links (rendered after all parts)
@@ -648,12 +657,12 @@ const getVisibleParts = () => {
 
 .help-section {
   display: flex;
-  gap: 11px;
-  padding: 13px 15px;
-  background: rgba(0, 161, 154, 0.06);
-  border-radius: 14px;
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  margin-bottom: 20px;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(0, 161, 154, 0.07);
+  border-radius: 16px;
+  border-left: 4px solid #00a19a;
+  margin-bottom: 22px;
 }
 
 .help-icon {
@@ -673,7 +682,7 @@ const getVisibleParts = () => {
   margin: 0 0 4px;
   color: #00857f;
   font-weight: 800;
-  font-size: 12.5px;
+  font-size: 14px;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -682,8 +691,8 @@ const getVisibleParts = () => {
   color: #5a5570;
   margin: 0;
   font-weight: 500;
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .typing-cursor {
@@ -745,13 +754,19 @@ const getVisibleParts = () => {
   padding-right: 8px;
 }
 
+/* Matches .question-text (RadioQuestion.vue and every other standalone
+   question component) - a MULTIPART question's first part is usually
+   standing in as the question's own main prompt, not a minor field
+   label, so it read noticeably smaller/lighter than every other
+   question in the passport until this matched them up (client feedback,
+   2026-10-06). */
 .part-text {
-  font-size: 16px;
-  font-weight: 700;
   color: #231d45;
   margin: 0 0 10px 0;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .part-description {

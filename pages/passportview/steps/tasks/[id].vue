@@ -58,79 +58,85 @@
           </div>
         </div>
 
-        <div class="side-actions" data-tour="q-help-video">
-          <button class="side-btn ghost" @click="openHelp">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            Help
-          </button>
-          <button class="side-btn teal" @click="openVideo">
-            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
-            Play Video
-          </button>
-        </div>
-
-        <!-- Property photos upload — only for "What we love about our home?" task -->
-        <div
-          v-if="currentTask?.key === 'give_your_home_a_story'"
-          class="property-photos-section"
-        >
-          <h3 class="property-photos-title">Property Photos</h3>
-          <p class="property-photos-sub">
-            Upload photos of your property. These will appear in your listing and
-            buyer passport.
-          </p>
-
-          <div v-if="propertyImages.length > 0" class="property-photos-grid">
-            <div
-              v-for="(img, index) in propertyImages"
-              :key="index"
-              class="property-photo-item"
-            >
-              <img
-                :src="img"
-                :alt="`Photo ${index + 1}`"
-                class="property-photo-thumb"
-                @error="onPropertyPhotoError($event, index)"
-              />
-              <button
-                class="property-photo-delete"
-                @click="removePropertyImage(index)"
-                title="Remove photo"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <line x1="18" y1="6" x2="6" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round" />
-                  <line x1="6" y1="6" x2="18" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="property-photos-actions">
-            <label class="add-photos-btn" :class="{ disabled: uploadingImages }">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-              {{ uploadingImages ? 'Uploading...' : 'Add Photos' }}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                class="hidden-file-input"
-                :disabled="uploadingImages"
-                @change="handlePropertyImageUpload"
-              />
-            </label>
-          </div>
-        </div>
       </aside>
 
       <!-- ── Right content ─────────────────────────────────────────── -->
       <main class="tk-main">
         <div class="tk-content">
+          <!-- Help / Play Video + Property Photos moved here from the left
+               rail (client feedback, 2026-10-06: on a narrower window the
+               rail could crowd the question itself down past the fold -
+               matches mobile-webapp, where these sit at the top of the
+               question column, not in a separate side panel). -->
+          <div class="side-actions" data-tour="q-help-video">
+            <button class="side-btn ghost" @click="openHelp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              Help
+            </button>
+            <button class="side-btn teal" @click="openVideo">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
+              Play Video
+            </button>
+          </div>
+
+          <!-- Property photos upload — only for "What we love about our home?" task -->
+          <div
+            v-if="currentTask?.key === 'give_your_home_a_story'"
+            class="property-photos-section"
+          >
+            <h3 class="property-photos-title">Property Photos</h3>
+            <p class="property-photos-sub">
+              Upload photos of your property. These will appear in your listing and
+              buyer passport.
+            </p>
+
+            <div v-if="propertyImages.length > 0" class="property-photos-grid">
+              <div
+                v-for="(img, index) in propertyImages"
+                :key="index"
+                class="property-photo-item"
+              >
+                <img
+                  :src="img"
+                  :alt="`Photo ${index + 1}`"
+                  class="property-photo-thumb"
+                  @error="onPropertyPhotoError($event, index)"
+                />
+                <button
+                  class="property-photo-delete"
+                  @click="removePropertyImage(index)"
+                  title="Remove photo"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <line x1="18" y1="6" x2="6" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                    <line x1="6" y1="6" x2="18" y2="18" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="property-photos-actions">
+              <label class="add-photos-btn" :class="{ disabled: uploadingImages }">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+                {{ uploadingImages ? 'Uploading...' : 'Add Photos' }}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  class="hidden-file-input"
+                  :disabled="uploadingImages"
+                  @change="handlePropertyImageUpload"
+                />
+              </label>
+            </div>
+          </div>
+
           <span class="eyebrow">This section</span>
 
           <div class="q-head" data-tour="q-nav">
@@ -305,18 +311,20 @@
           </div>
 
           <button
-            v-if="!isAutoSaveType && !activePathway"
-            data-tour="q-save"
+            v-if="!activePathway"
             class="submit-btn"
+            data-tour="q-save"
             @click="saveAnswer"
-            :disabled="!isAnswerValid"
+            :disabled="!isAnswerValid || isSaving"
+            :class="{ 'submit-btn--saving': isSaving }"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <span v-if="isSaving" class="submit-btn-spinner" />
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
             </svg>
-            Save and go to next question
+            {{ isSaving ? 'Saving…' : 'Save and go to next question' }}
           </button>
-          <p v-if="!isAutoSaveType && !isAnswerValid && submitHint" class="submit-hint">
+          <p v-if="!isAnswerValid && submitHint" class="submit-hint">
             {{ submitHint }}
           </p>
         </div>
@@ -1024,12 +1032,6 @@ const showOuterTip = computed(() => {
   const desc = (currentQuestion.value?.description || '').trim()
   return tipBody.value.trim() !== desc
 })
-
-// Plain radio questions save the moment an option is picked (see
-// updateAnswer), so they have no Save button.
-const isAutoSaveType = computed(
-  () => currentQuestion.value?.type?.toLowerCase() === 'radio',
-)
 
 // Why Save is still disabled. A Notes question isn't answered by picking
 // anything - it completes when its notes are opened and closed.
@@ -1779,13 +1781,17 @@ const handleContinue = () => {
   width: 16px;
   height: 16px;
 }
+/* Light-background colours (moved here from the dark left rail,
+   2026-10-06 - the old rgba(255,255,255,..) treatment was designed for
+   that dark panel and was barely visible against this light content
+   column). */
 .side-btn.ghost {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: #f4f7fb;
+  border-color: #dde4ee;
+  color: #231d45;
 }
 .side-btn.ghost:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #eaeff6;
 }
 .side-btn.teal {
   background: #00a19a;
@@ -2038,6 +2044,26 @@ const handleContinue = () => {
   box-shadow: none;
   cursor: not-allowed;
 }
+.submit-btn.submit-btn--saving:disabled {
+  color: #fff;
+  background: linear-gradient(135deg, #00a19a, #00857f);
+  box-shadow: 0 16px 30px -10px rgba(0, 161, 154, 0.55);
+  cursor: default;
+  opacity: 0.85;
+}
+.submit-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: submit-btn-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes submit-btn-spin {
+  to { transform: rotate(360deg); }
+}
 .submit-hint {
   text-align: center;
   margin: 14px 0 0;
@@ -2048,22 +2074,22 @@ const handleContinue = () => {
 
 /* ── Property Photos Upload ────────────────────────────────────────── */
 .property-photos-section {
-  margin-top: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+  background: #f9fafb;
+  border: 1px solid #ececf2;
   border-radius: 18px;
   padding: 18px;
 }
 .property-photos-title {
   font-size: 15px;
   font-weight: 800;
-  color: #fff;
+  color: #231d45;
   letter-spacing: -0.01em;
   margin: 0 0 5px;
 }
 .property-photos-sub {
   font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.55);
+  color: #6b6783;
   margin: 0 0 16px;
   line-height: 1.5;
 }

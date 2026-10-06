@@ -76,10 +76,12 @@
       </div>
 
       <div class="cl-lock-note">
-        <div class="cl-lock-ic">🔒</div>
+        <div class="cl-lock-ic">
+          <img src="/build/padlock.png" alt="" />
+        </div>
         <div class="cl-lock-body">
-          We verify ownership via
-          <strong>HM Land Registry</strong> — encrypted and never sold.
+          <strong>Private by design.</strong> Your personal details are
+          encrypted and never sold.
         </div>
       </div>
     </div>
@@ -153,18 +155,46 @@
       </div>
 
       <div class="cl-card-pale cl-mb-sm">
-        <div class="cl-eyebrow cl-mb-sm">What this fee covers</div>
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <p class="cl-body" style="margin: 0" v-html="claimPriceExplainer" />
+        <div class="cl-fee-info-row">
+          <div class="cl-fee-info-ic" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          </div>
+          <div>
+            <div class="cl-eyebrow" style="margin-bottom: 4px">
+              What the {{ claimPriceDisplay }} covers
+            </div>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <p
+              class="cl-body"
+              style="margin: 0"
+              v-html="claimPriceExplainer"
+            />
+          </div>
+        </div>
       </div>
 
       <div class="cl-card cl-mb-sm">
         <div class="cl-lrf-rows">
-          <div class="cl-lrf-row">
+          <div class="cl-lrf-row cl-lrf-row-last">
             <span class="cl-lrf-l">Verification fee</span>
             <span class="cl-lrf-v">{{ claimPriceDisplay }}</span>
           </div>
         </div>
+        <p class="cl-fee-reassurance">
+          One-off. There are no ongoing UMU fees for your Property
+          Passport.
+        </p>
       </div>
 
       <div class="cl-card cl-mb-sm">
@@ -184,6 +214,17 @@
         <span v-if="paymentLoading" class="cl-btn-spinner" />
         <template v-else>Pay {{ claimPriceDisplay }} securely →</template>
       </button>
+
+      <div class="cl-lock-note cl-mt-sm">
+        <div class="cl-lock-ic">
+          <img src="/build/padlock.png" alt="" />
+        </div>
+        <div class="cl-lock-body">
+          We verify ownership via
+          <strong>HM Land Registry</strong>. Your details are encrypted
+          and never sold.
+        </div>
+      </div>
     </div>
 
     <!-- ════════════════════════════ KYC EXPLAINER ════════════════════════════ -->
@@ -222,15 +263,26 @@
         </div>
       </div>
 
-      <div class="cl-card-pale cl-text-l">
+      <div class="cl-card-pale cl-text-l cl-mb-sm">
         <div class="cl-pale-row">
-          <div class="cl-pale-ic">⏱️</div>
+          <div class="cl-pale-ic"><img src="/buyer-profile-icon/stopwatch.png" alt="" /></div>
           <div>
             <div class="cl-pale-t">Usually under 2 minutes</div>
             <div class="cl-pale-s">
               Powered by Persona — used by major UK fintechs.
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="cl-lock-note">
+        <div class="cl-lock-ic">
+          <img src="/build/padlock.png" alt="" />
+        </div>
+        <div class="cl-lock-body">
+          We verify ownership via
+          <strong>HM Land Registry</strong>. Your details are encrypted
+          and never sold.
         </div>
       </div>
 
@@ -551,45 +603,35 @@
         <div class="cl-lrf-rows">
           <div class="cl-lrf-row">
             <span class="cl-lrf-rowhead">
-              <span class="cl-lrf-row-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9" /><line x1="4" y1="15" x2="20" y2="15" /><line x1="10" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="14" y2="21" /></svg>
-              </span>
+              <span class="cl-lrf-row-ic"><img src="/buyer-profile-icon/verifiedDoc.png" alt="" /></span>
               <span class="cl-lrf-l">Title number</span>
             </span>
             <span class="cl-lrf-v">{{ titleDisplay }}</span>
           </div>
           <div class="cl-lrf-row">
             <span class="cl-lrf-rowhead">
-              <span class="cl-lrf-row-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-              </span>
+              <span class="cl-lrf-row-ic"><img src="/buyer-profile-icon/clipboard.png" alt="" /></span>
               <span class="cl-lrf-l">Tenure</span>
             </span>
             <span class="cl-lrf-v">{{ tenureDisplay }}</span>
           </div>
           <div class="cl-lrf-row">
             <span class="cl-lrf-rowhead">
-              <span class="cl-lrf-row-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-              </span>
+              <span class="cl-lrf-row-ic"><img src="/build/idCard.png" alt="" /></span>
               <span class="cl-lrf-l">Proprietor</span>
             </span>
             <span class="cl-lrf-v cl-lrf-v-good">✓ {{ proprietorDisplay }}</span>
           </div>
           <div class="cl-lrf-row">
             <span class="cl-lrf-rowhead">
-              <span class="cl-lrf-row-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-              </span>
+              <span class="cl-lrf-row-ic"><img src="/buyer-profile-icon/calendar.png" alt="" /></span>
               <span class="cl-lrf-l">Registered</span>
             </span>
             <span class="cl-lrf-v">{{ registeredDisplay }}</span>
           </div>
           <div class="cl-lrf-row cl-lrf-row-last">
             <span class="cl-lrf-rowhead">
-              <span class="cl-lrf-row-ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-              </span>
+              <span class="cl-lrf-row-ic"><img src="/homescore-icon/lock-big.png" alt="" /></span>
               <span class="cl-lrf-l">Charges</span>
             </span>
             <span class="cl-lrf-v">Not available</span>
@@ -637,9 +679,13 @@
 
         </section>
 
-        <!-- Reassurance rail (hidden on the immersive full-screen steps) -->
+        <!-- Reassurance rail (hidden on the immersive full-screen steps).
+             "Why this is safe" only shows where a payment is actually being
+             asked for (client feedback, 2026-10-05/06: it repeated on every
+             single step) - the final step gets its own "what happens next"
+             card instead of repeating it again. -->
         <aside v-if="!isFullscreenStep" class="claim-aside">
-          <div class="claim-aside-card">
+          <div v-if="step === 'payment'" class="claim-aside-card">
             <div class="claim-aside-eyebrow">Why this is safe</div>
             <ul class="claim-aside-list">
               <li>
@@ -665,9 +711,47 @@
               </li>
             </ul>
             <div class="claim-aside-trust">
-              <span>🔒 Encrypted</span>
-              <span>🚫 Never sold</span>
+              <span><img src="/build/padlock.png" alt="" />Encrypted</span>
+              <span><img src="/build/lrTitleBank.png" alt="" />HM Land Registry</span>
+              <span><img src="/build/shield.png" alt="" />Never sold</span>
             </div>
+          </div>
+
+          <div v-else-if="step === 'lr-found'" class="claim-aside-card">
+            <div class="claim-aside-eyebrow">What happens next</div>
+            <div class="claim-aside-next-t">Your Property Passport is ready</div>
+            <ul class="claim-aside-list">
+              <li>
+                <span class="claim-aside-ic"><img src="/dashboard-art/passportBadge.png" alt="" /></span>
+                <div>
+                  <div class="claim-aside-t">Issue your Property Passport</div>
+                </div>
+              </li>
+              <li>
+                <span class="claim-aside-ic"><img src="/build/houseWithPin.png" alt="" /></span>
+                <div>
+                  <div class="claim-aside-t">
+                    Start adding information about your home
+                  </div>
+                </div>
+              </li>
+              <li>
+                <span class="claim-aside-ic"><img src="/build/padlock.png" alt="" /></span>
+                <div>
+                  <div class="claim-aside-t">
+                    Choose what stays private and what you share
+                  </div>
+                </div>
+              </li>
+              <li>
+                <span class="claim-aside-ic"><img src="/build/ownershipCheck.png" alt="" /></span>
+                <div>
+                  <div class="claim-aside-t">
+                    Build your verified property record over time
+                  </div>
+                </div>
+              </li>
+            </ul>
           </div>
         </aside>
       </div>
@@ -1189,6 +1273,21 @@ async function payClaimFee() {
     // comes back VERIFIED) also sees KYC approved. Skip straight to the
     // HMLR check if this user already had approved KYC before this claim,
     // otherwise walk them through the Persona explainer.
+    //
+    // claimPriceTier already told us this (it's priced off the same
+    // kycAlreadyVerifiedAtStart snapshot) with no network round-trip to
+    // fail. A live getKycStatus() call used to be the only check here; if
+    // it threw (a 401 right after the Stripe redirect, a dropped request,
+    // anything), the catch below silently swallowed it and sent an
+    // already-verified owner back through the Persona explainer for no
+    // reason (client bug report, 2026-10-05). Trust the tier first; only
+    // fall back to a live check for the 'both' tier, where KYC genuinely
+    // wasn't done as of pricing but could have completed in the few
+    // moments since (e.g. another tab).
+    if (claimPriceTier.value === 'hmlr') {
+      step.value = 'kyc-verified'
+      return
+    }
     try {
       const { getKycStatus } = useKyc()
       const r = await getKycStatus()
@@ -1196,8 +1295,8 @@ async function payClaimFee() {
         step.value = 'kyc-verified'
         return
       }
-    } catch {
-      // If status lookup fails, fall through to the explainer screen.
+    } catch (err) {
+      console.error('[claim] getKycStatus check failed after payment', err)
     }
     step.value = 'kyc-explainer'
   } catch (e: any) {
@@ -1828,6 +1927,22 @@ async function issuePassport() {
   border: 1px solid #e7ecf2;
   padding: 6px 10px;
   border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.claim-aside-trust span img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* ── "What happens next" (lr-found step) ─────────────── */
+.claim-aside-next-t {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #231d45;
+  margin-bottom: 14px;
 }
 
 /* Inline CTA sits at the foot of the panel (no more mobile fixed bar) */
@@ -2082,7 +2197,8 @@ async function issuePassport() {
   border: 1px solid #e5f4f2;
   border-radius: 14px;
 }
-.cl-lock-ic { font-size: 18px; }
+.cl-lock-ic { width: 22px; height: 22px; flex-shrink: 0; }
+.cl-lock-ic img { width: 100%; height: 100%; object-fit: contain; }
 .cl-lock-body {
   font-size: 12px;
   color: #475569;
@@ -2809,14 +2925,15 @@ async function issuePassport() {
 .cl-lrf-row-ic {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
   flex-shrink: 0;
-  background: #f4f7fb;
-  color: #64748b;
   display: grid;
   place-items: center;
 }
-.cl-lrf-row-ic svg { width: 15px; height: 15px; }
+.cl-lrf-row-ic img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
 .cl-fee-term {
   font-weight: 800;
   color: #00857f;
@@ -2843,6 +2960,31 @@ async function issuePassport() {
   font-weight: 800;
   color: #231d45;
   letter-spacing: -0.3px;
+}
+.cl-mt-sm {
+  margin-top: 14px;
+}
+.cl-fee-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cl-fee-info-ic {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: #00857f;
+  display: grid;
+  place-items: center;
+}
+.cl-fee-info-ic svg {
+  width: 17px;
+  height: 17px;
+}
+.cl-fee-reassurance {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
 }
 .cl-owned-s {
   font-size: 0.875rem;

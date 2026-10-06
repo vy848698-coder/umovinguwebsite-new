@@ -44,7 +44,9 @@
       <div class="clw-layout">
         <!-- Search card -->
         <section class="clw-card">
-          <div class="cl-icon-square">🏠</div>
+          <div class="cl-icon-square">
+            <img src="/dashboard-art/searchHouse.png" alt="" />
+          </div>
           <h2 class="cl-h2">Which property are you claiming?</h2>
           <p class="cl-body">
             Enter your postcode and select your address. We'll verify ownership
@@ -61,10 +63,12 @@
           </div>
 
           <div class="cl-lock-note">
-            <div class="cl-lock-ic">🔒</div>
+            <div class="cl-lock-ic">
+              <img src="/build/padlock.png" alt="" />
+            </div>
             <div class="cl-lock-body">
-              We verify ownership via
-              <strong>HM Land Registry</strong> — encrypted and never sold.
+              <strong>Private by design.</strong> Your personal details are
+              encrypted and never sold.
             </div>
           </div>
 
@@ -416,16 +420,23 @@ const onBack = useGoBack('/dashboard')
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
+/* The house render carries its own transparent background, so it sits straight
+   on the card. The white plate only boxed it in against an already-white card,
+   and its overflow:hidden clipped the art's corners. The lift moves onto the
+   artwork itself so the house still reads as raised off the page. */
 .cl-icon-square {
-  width: 70px;
-  height: 70px;
-  background: var(--brand-pale);
-  border: 2px solid var(--brand-soft);
-  border-radius: 22px;
+  width: 92px;
+  height: 92px;
   display: grid;
   place-items: center;
-  margin: 0 0 20px;
-  font-size: 32px;
+  margin: 0 0 16px;
+}
+
+.cl-icon-square img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px rgba(0, 110, 104, 0.2));
 }
 
 .cl-h2 {
@@ -467,8 +478,15 @@ const onBack = useGoBack('/dashboard')
 }
 
 .cl-lock-ic {
-  font-size: 18px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
+}
+
+.cl-lock-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .cl-lock-body {

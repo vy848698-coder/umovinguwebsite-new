@@ -15,11 +15,15 @@
 
       <!-- Help Display Section -->
       <div v-if="displayedHelp" class="help-section">
-        <span class="help-icon">ℹ</span>
-        <span class="help-text">
-          {{ displayedHelp }}
-          <span v-if="showHelpCursor" class="typing-cursor">|</span>
-        </span>
+        <div class="help-content">
+          <h4 class="help-title">
+            <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
+          </h4>
+          <p class="help-text">
+            {{ displayedHelp }}
+            <span v-if="showHelpCursor" class="typing-cursor">|</span>
+          </p>
+        </div>
       </div>
     </template>
 
@@ -181,26 +185,46 @@ const cancelEdit = () => {
 
 .help-section {
   display: flex;
-  gap: 11px;
-  padding: 13px 15px;
-  background: rgba(0, 161, 154, 0.06);
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  border-radius: 14px;
-  margin: 0 0 18px 0;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #5a5570;
-  line-height: 1.5;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(0, 161, 154, 0.07);
+  border-radius: 16px;
+  border-left: 4px solid #00a19a;
+  margin: 0 0 22px 0;
 }
 
-.help-icon {
-  flex-shrink: 0;
-  font-size: 15px;
+.help-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.help-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
   color: #00857f;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 
 .help-text {
-  line-height: 1.5;
+  color: #5a5570;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .typing-cursor {
