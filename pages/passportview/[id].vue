@@ -779,6 +779,7 @@
     <AddCollaboratorModal
       v-model:show="showCollaboratorModal"
       :passport-id="route.params.id"
+      :is-owner="isOwner"
       @added="handleCollaboratorAdded"
       @removed="handleCollaboratorRemoved"
     />
@@ -894,6 +895,7 @@ const passportTourSteps = [
   },
 ]
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
+import { usePassportClaim } from '~/composables/usePassportClaim'
 import { usePassportCollaborators } from '~/composables/usePassportCollaborators'
 import { usePathways } from '~/composables/usePathways'
 import { onMounted, ref, computed, watch } from 'vue'
@@ -902,11 +904,54 @@ definePageMeta({
   middleware: 'auth',
 })
 
-const { steps, loadPassport } = usePassportRuntime()
+const { steps, loadPassport, loadAccess, isOwner } = usePassportRuntime()
+const { activatePassport } = usePassportClaim()
 const { getCollaborators } = usePassportCollaborators()
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
+
+// Sections are seeded by /activate, which the claim flow calls on a
+// best-effort basis. A passport whose activate never landed opens with an
+// (all-but-)empty section list - a blank map and list. Activation is
+// idempotent, so retry it once and reload.
+async function loadSections() {
+  const id = route.params.id
+  loadAccess(id)
+  try {
+    await loadPassport(id)
+    if (steps.value.length > 1) return
+    await activatePassport(id)
+    await loadPassport(id)
+    if (steps.value.length > 1) return
+  } catch (err) {
+    console.error('[passport] could not load or seed sections for', id, err)
+  }
+
+  // Still no sections after that retry - this isn't a transient failure,
+  // it means the claim itself was never actually finished (no type chosen
+  // yet, or HM Land Registry hasn't verified ownership), so re-activating
+  // will keep 400ing forever. The old behaviour just logged the error and
+  // left the page sitting on a permanently blank section list with no
+  // explanation (client bug report, 2026-10-06) - send them back to the
+  // claim flow to resume instead, which knows how to show the right next
+  // step (payment / KYC / Land Registry).
+  if (steps.value.length <= 1) {
+    try {
+      const passportToken =
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const passport = await $fetch(
+        `${config.public.apiBase}/passport/${id}`,
+        { headers: { Authorization: `Bearer ${passportToken}` } },
+      )
+      if (passport?.propertyId) {
+        await navigateTo(`/claim/${passport.propertyId}`, { replace: true })
+      }
+    } catch {
+      // Nothing more we can do here - leave the empty state on screen.
+    }
+  }
+}
 
 // Navbar Back: this is the main passport screen, so it always goes to the
 // passport collection (stepping back through history when the user came
@@ -1014,7 +1059,7 @@ onMounted(async () => {
     /* fall through to normal seller load */
   }
 
-  loadPassport(route.params.id)
+  await loadSections()
   await loadCollaborators()
   // Load readiness up front — the "Ready to publish" bar and the Publish
   // button's label both key off it, so waiting for a click would mean the

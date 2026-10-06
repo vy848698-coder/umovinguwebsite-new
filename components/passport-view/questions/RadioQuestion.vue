@@ -19,14 +19,10 @@
 
       <!-- Help Display -->
       <div v-if="displayedHelp" class="help-section">
-        <span class="help-ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18h6" /><path d="M10 22h4" />
-            <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v1.3h6v-1.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z" />
-          </svg>
-        </span>
         <div class="help-content">
-          <h4 class="help-title">What is this?</h4>
+          <h4 class="help-title">
+            <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
+          </h4>
           <p class="help-text">
             {{ displayedHelp }}
             <span
@@ -151,34 +147,31 @@ const selectOption = (value) => {
   margin-bottom: 22px;
 }
 
-.help-ic {
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background: #fff;
-  color: #f5b544;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 10px rgba(35, 29, 69, 0.08);
-}
-.help-ic svg {
-  width: 17px;
-  height: 17px;
-}
-
 .help-content {
   flex: 1;
   min-width: 0;
 }
 
 .help-title {
-  margin: 3px 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
   color: #00857f;
   font-weight: 800;
   font-size: 14px;
   line-height: 1.2;
   letter-spacing: -0.01em;
+}
+
+/* "What is this?" lightbulb - the same illustrated icon the app uses. */
+.help-icon-img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 5px;
 }
 
 .help-text {

@@ -1,8 +1,17 @@
 <template>
-  <BaseDrawer v-model="isOpen" title="Add Collaborator">
+  <BaseDrawer v-model="isOpen" :title="props.isOwner ? 'Add Collaborator' : 'Collaborators'">
     <div class="add-collaborator-modal">
+      <!-- Only the owner can add/remove collaborators (backend-enforced); a
+           collaborator with view access to this passport sees the same
+           page and used to get a confusing rejection if they tried. Client
+           bug report, 2026-10-06. -->
+      <p v-if="!props.isOwner" class="owner-only-note">
+        Only the passport owner can add or remove collaborators. You can see
+        who already has access below.
+      </p>
+
       <!-- Step 1: email lookup -->
-      <template v-if="step === 'search'">
+      <template v-if="props.isOwner && step === 'search'">
         <div class="modal-info">
           <p class="info-text">
             Enter the email address of the person you'd like to give access to
@@ -38,7 +47,7 @@
       </template>
 
       <!-- Step 2a: found an existing account - collect role/access, then add -->
-      <template v-else-if="step === 'add'">
+      <template v-else-if="props.isOwner && step === 'add'">
         <div class="modal-info">
           <p class="info-text">
             <strong>{{ foundFirstName || 'This person' }}</strong> already has an
@@ -74,11 +83,11 @@
       </template>
 
       <!-- Step 2b: no account yet - offer to invite -->
-      <template v-else-if="step === 'invite'">
+      <template v-else-if="props.isOwner && step === 'invite'">
         <div class="modal-info modal-info--invite">
           <p class="info-text">
             We couldn't find an Umovingu account for <strong>{{ email }}</strong>.
-            You can invite them to join Umovingu. They'll be added as a
+            You can invite them to join Umovingu - they'll be added as a
             collaborator on this passport automatically as soon as they sign up.
           </p>
         </div>
@@ -129,21 +138,21 @@
                 <input
                   type="checkbox"
                   :checked="collaborator.historyAccess"
-                  :disabled="isLoading"
+                  :disabled="isLoading || !props.isOwner"
                   @change="handleToggleHistoryAccess(collaborator)"
                 />
                 Passport history
               </label>
             </div>
           </div>
-          <button class="remove-btn" :disabled="isLoading" @click="handleRemove(collaborator.id)">
+          <button v-if="props.isOwner" class="remove-btn" :disabled="isLoading" @click="handleRemove(collaborator.id)">
             Remove
           </button>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="modal-actions">
+      <div v-if="props.isOwner" class="modal-actions">
         <button
           v-if="step !== 'search'"
           class="btn btn-secondary"
@@ -171,6 +180,9 @@
           {{ isLoading ? 'Sending...' : 'Invite to Umovingu' }}
         </button>
       </div>
+      <div v-else class="modal-actions">
+        <button class="btn btn-secondary" @click="handleClose">Close</button>
+      </div>
     </div>
   </BaseDrawer>
 </template>
@@ -183,6 +195,9 @@ import { usePassportCollaborators } from '~/composables/usePassportCollaborators
 const props = defineProps({
   show: { type: Boolean, default: false },
   passportId: { type: String, required: true },
+  // Defaults to true (today's prior behaviour) for any caller that hasn't
+  // been updated to pass the real value yet.
+  isOwner: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['update:show', 'added', 'removed', 'invited'])
@@ -210,8 +225,8 @@ const collaborators = ref([])
 
 const CHECK_MESSAGES = {
   'already-collaborator': 'This person is already a collaborator on this passport.',
-  'already-invited': "An invite is already pending for this email. They haven't signed up yet.",
-  'is-owner': "That's your own email address. You already own this passport.",
+  'already-invited': "An invite is already pending for this email - they haven't signed up yet.",
+  'is-owner': "That's your own email address - you already own this passport.",
 }
 
 const checkMessage = ref('')
@@ -292,10 +307,8 @@ const handleAdd = async () => {
       role: role.value || undefined,
       historyAccess: grantHistoryAccess.value,
     })
-    // Reset first: resetForm() clears `success`, so setting it before the
-    // reset wiped the confirmation before it was ever shown.
-    resetForm()
     success.value = response.message || 'Collaborator added successfully!'
+    resetForm()
     await loadCollaborators()
     emit('added', response.collaborator)
     setTimeout(() => {
@@ -319,11 +332,9 @@ const handleInvite = async () => {
       role: role.value || undefined,
       historyAccess: grantHistoryAccess.value,
     })
-    const invitedEmail = email.value
-    emit('invited', { email: invitedEmail })
-    // Reset first: resetForm() clears `success` (and the email it names).
+    success.value = `Invitation sent to ${email.value}.`
+    emit('invited', { email: email.value })
     resetForm()
-    success.value = `Invitation sent to ${invitedEmail}.`
     setTimeout(() => {
       success.value = ''
     }, 3000)
@@ -389,6 +400,17 @@ const getInitials = (firstName, lastName) => {
 
 .modal-info {
   margin-bottom: 24px;
+}
+
+.owner-only-note {
+  padding: 14px 16px;
+  background: #f8f7fc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
 }
 
 .modal-info--invite {

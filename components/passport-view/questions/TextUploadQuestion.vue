@@ -1,6 +1,10 @@
 <template>
   <div class="combined-input-wrapper">
-    <!-- For 'both' mode: show instruction text at top, then textarea, then upload options below with Or divider -->
+    <!-- For 'both' mode: compact two-column layout - type on the left,
+         upload/scan on the right, "OR" between them (client feedback,
+         2026-10-06: the old stacked full-width textarea + full-width
+         upload row took up a lot of space for what's usually a short
+         answer). -->
     <template v-if="displayMode === 'both'">
       <div v-if="!textValue || textValue.length === 0" class="pending-badge">
         <span class="pending-icon"
@@ -13,35 +17,37 @@
         {{ question.uploadInstruction }}
       </p>
 
-      <textarea
-        :value="textValue"
-        @input="onTextInput"
-        :placeholder="
-          question.placeholder ||
-          'E.g., The irregular boundary near the stream at the rear of the property is owned by...'
-        "
-        class="text-input"
-        rows="6"
-       :aria-label="
-          question.placeholder ||
-          'E.g., The irregular boundary near the stream at the rear of the property is owned by...'
-        "></textarea>
+      <div class="ciw-row">
+        <div class="ciw-col">
+          <textarea
+            :value="textValue"
+            @input="onTextInput"
+            :placeholder="
+              question.placeholder ||
+              'E.g., The irregular boundary near the stream at the rear of the property is owned by...'
+            "
+            class="text-input ciw-textarea"
+            rows="3"
+           aria-label="
+              question.placeholder ||
+              'E.g., The irregular boundary near the stream at the rear of the property is owned by...'
+            "></textarea>
+        </div>
 
-      <div class="or-divider"></div>
+        <div class="ciw-or">
+          <span>Or</span>
+        </div>
 
-      <div class="upload-options">
-        <button class="upload-btn" @click="triggerFileUpload">
-          <span class="upload-icon"
-            ><OPIcon name="upload" class="w-[20px] h-[20px]"
-          /></span>
-          <span>Upload from Files</span>
-        </button>
-        <button class="upload-btn camera" type="button" :disabled="uploading" @click="showScanner = true">
-          <span class="upload-icon"
-            ><OPIcon name="scan" class="w-[20px] h-[20px]"
-          /></span>
-          <span>Scan Using Camera</span>
-        </button>
+        <div class="ciw-col ciw-col-upload">
+          <button class="ciw-upload-btn" @click="triggerFileUpload">
+            <OPIcon name="upload" class="w-[16px] h-[16px]" />
+            <span>Upload from Files</span>
+          </button>
+          <button class="ciw-upload-btn" type="button" :disabled="uploading" @click="showScanner = true">
+            <OPIcon name="scan" class="w-[16px] h-[16px]" />
+            <span>Scan Using Camera</span>
+          </button>
+        </div>
       </div>
 
       <input
@@ -460,12 +466,12 @@ onMounted(() => {
 
 .help-section {
   display: flex;
-  gap: 11px;
-  padding: 13px 15px;
-  background: rgba(0, 161, 154, 0.06);
-  border-radius: 14px;
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  margin-bottom: 18px;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(0, 161, 154, 0.07);
+  border-radius: 16px;
+  border-left: 4px solid #00a19a;
+  margin-bottom: 22px;
 }
 
 .help-icon {
@@ -485,7 +491,7 @@ onMounted(() => {
   margin: 0 0 4px;
   color: #00857f;
   font-weight: 800;
-  font-size: 12.5px;
+  font-size: 14px;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -494,8 +500,8 @@ onMounted(() => {
   color: #5a5570;
   margin: 0;
   font-weight: 500;
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .typing-cursor {
@@ -567,6 +573,113 @@ onMounted(() => {
   padding: 0 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+/* ── Compact two-column "both" layout (text | Or | upload/scan) ──────── */
+.ciw-row {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+.ciw-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ciw-col-upload {
+  flex: 0 0 auto;
+  width: 180px;
+  justify-content: center;
+  gap: 8px;
+}
+.ciw-textarea {
+  flex: 1;
+  min-height: 0;
+}
+.ciw-or {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  position: relative;
+}
+.ciw-or::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: #ececf2;
+}
+.ciw-or span {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: #a5a1b4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ciw-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid #d8d5e2;
+  border-radius: 10px;
+  background: #fbfbfa;
+  cursor: pointer;
+  transition: border-color 0.16s, background 0.16s, transform 0.12s;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #5a5570;
+  white-space: nowrap;
+}
+.ciw-upload-btn:hover {
+  border-color: #00a19a;
+  background: rgba(0, 161, 154, 0.05);
+  color: #00857f;
+}
+.ciw-upload-btn:active {
+  transform: scale(0.98);
+}
+.ciw-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Stack on narrow screens - a side-by-side "Or" split doesn't work under
+   ~480px, so it falls back to the original stacked layout with a
+   horizontal divider. */
+@media (max-width: 560px) {
+  .ciw-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .ciw-col-upload {
+    width: 100%;
+    flex-direction: row;
+  }
+  .ciw-or {
+    width: 100%;
+    height: 20px;
+    margin: 4px 0;
+  }
+  .ciw-or::before {
+    top: 50%;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 1px;
+  }
 }
 
 .pending-badge {

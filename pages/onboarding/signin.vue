@@ -18,7 +18,10 @@
       </div>
 
       <div class="signin-aside-body">
-        <h1 class="signin-welcome">{{ heroTitle }}</h1>
+        <h1
+          class="signin-welcome"
+          :class="{ 'signin-welcome--long': heroTitle.length > 14 }"
+        >{{ heroTitle }}</h1>
         <p class="signin-welcome-sub">Good to see you again. Your Property Passport is right where you left it.</p>
 
         <img src="/op-icons/passport-covers/seller_tilted_right_on_tile.png" alt="Property Passport" class="signin-passport-illus" />
@@ -647,6 +650,15 @@ const onPrimary = () => {
   line-height: 1.02;
   letter-spacing: -2px;
   color: #231d45;
+}
+/* The reset steps' headings ("Check your email.", "Choose a strong one.") are
+   half as long again as "Welcome back."; at the same size they wrapped to two
+   lines and pushed the column past the bottom of the window. They take a
+   smaller size so they stay on one line. */
+@media (min-width: 881px) {
+  .signin-welcome.signin-welcome--long {
+    font-size: clamp(36px, 3.4vw, 48px);
+  }
 }
 .signin-welcome-sub {
   margin: 20px auto 0;

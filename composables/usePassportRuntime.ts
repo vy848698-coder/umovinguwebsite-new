@@ -1,9 +1,17 @@
 import { ref, computed } from 'vue'
 import { usePassportApi } from './usePassportApi'
+import { hiddenQuestionIds } from '~/utils/questionBranching'
 
 // ---------- GLOBAL SINGLETON STATE ----------
 const steps = ref([])
 const loading = ref(false)
+
+// Whether the currently-loaded passport (per loadAccess below) is owned by
+// the signed-in user, vs. a collaborator with view access to it. Owner-only
+// actions (add/remove collaborator, publish) are gated on this so a
+// collaborator never sees a control that's guaranteed to reject them.
+const isOwner = ref(true)
+const isCollaborator = ref(false)
 
 const currentStep = ref(null)
 const currentTask = ref(null)
@@ -53,6 +61,19 @@ const loadPassport = async (passportId) => {
     })
   } finally {
     loading.value = false
+  }
+}
+
+const loadAccess = async (passportId) => {
+  try {
+    const res = await getApi().getAccess(passportId)
+    isOwner.value = res.isOwner
+    isCollaborator.value = res.isCollaborator
+  } catch {
+    // Non-critical - default to isOwner:true (today's prior behaviour)
+    // rather than hiding owner-only actions on a transient failure.
+    isOwner.value = true
+    isCollaborator.value = false
   }
 }
 
@@ -119,19 +140,22 @@ const loadSectionQuestions = async (stepId, startAtTaskId = null) => {
 
   allSectionQuestions.value = flattened
   questionTaskMap.value = taskMap
-  currentQuestions.value = flattened
+  // Questions that don't apply (see utils/questionBranching) are left out;
+  // everything below works on the visible list.
+  applyQuestionVisibility()
+  const visible = currentQuestions.value
 
   // If startAtTaskId is provided, start at the first question of that task
   if (startAtTaskId) {
-    const taskQuestionIndex = flattened.findIndex(
+    const taskQuestionIndex = visible.findIndex(
       (q) => q._taskId === startAtTaskId,
     )
     if (taskQuestionIndex >= 0) {
       // Find first unanswered in this task, or start at task's first question
-      const taskQuestions = flattened.filter((q) => q._taskId === startAtTaskId)
+      const taskQuestions = visible.filter((q) => q._taskId === startAtTaskId)
       const firstUnansweredInTask = taskQuestions.findIndex((q) => !q.completed)
       if (firstUnansweredInTask >= 0) {
-        currentQuestionIndex.value = flattened.indexOf(
+        currentQuestionIndex.value = visible.indexOf(
           taskQuestions[firstUnansweredInTask],
         )
       } else {
@@ -139,20 +163,37 @@ const loadSectionQuestions = async (stepId, startAtTaskId = null) => {
       }
     } else {
       // Fallback: first unanswered in entire section
-      const firstUnanswered = flattened.findIndex((q) => !q.completed)
+      const firstUnanswered = visible.findIndex((q) => !q.completed)
       currentQuestionIndex.value = firstUnanswered >= 0 ? firstUnanswered : 0
     }
   } else {
     // Start at first unanswered question in entire section
-    const firstUnanswered = flattened.findIndex((q) => !q.completed)
+    const firstUnanswered = visible.findIndex((q) => !q.completed)
     currentQuestionIndex.value = firstUnanswered >= 0 ? firstUnanswered : 0
   }
 
   // Set currentTask to the task of the current question
-  if (flattened.length > 0 && currentQuestionIndex.value < flattened.length) {
-    const currentQ = flattened[currentQuestionIndex.value]
+  if (visible.length > 0 && currentQuestionIndex.value < visible.length) {
+    const currentQ = visible[currentQuestionIndex.value]
     currentTask.value =
       currentStep.value.tasks.find((t) => t.id === currentQ._taskId) || null
+  }
+}
+
+// Rebuild currentQuestions as the section minus the questions that don't
+// apply to the answers given so far, keeping the user on the question they
+// are on. Called after loading and after every save, since an answer (the
+// ownership type) can change which questions apply.
+const applyQuestionVisibility = () => {
+  const all = allSectionQuestions.value
+  const onId = currentQuestions.value[currentQuestionIndex.value]?.id
+  const hidden = hiddenQuestionIds(all)
+  const visible = all.filter((q) => !hidden.has(q.id))
+  currentQuestions.value = visible
+  if (onId) {
+    const i = visible.findIndex((q) => q.id === onId)
+    if (i >= 0) currentQuestionIndex.value = i
+    else currentQuestionIndex.value = Math.min(currentQuestionIndex.value, Math.max(0, visible.length - 1))
   }
 }
 
@@ -164,10 +205,18 @@ const loadSectionQuestions = async (stepId, startAtTaskId = null) => {
 const goToQuestion = (questionId) => {
   const info = questionTaskMap.value[questionId]
   if (!info) return false
-  currentQuestionIndex.value = info.questionIndex
+  // Positions are in the visible list. A question that doesn't apply lands
+  // on the next one that does.
+  const all = allSectionQuestions.value
+  const from = all.findIndex((q) => q.id === questionId)
+  const target = all
+    .slice(from)
+    .find((q) => currentQuestions.value.includes(q))
+  if (!target) return false
+  currentQuestionIndex.value = currentQuestions.value.indexOf(target)
   if (currentStep.value) {
     currentTask.value =
-      currentStep.value.tasks.find((t) => t.id === info.taskId) || currentTask.value
+      currentStep.value.tasks.find((t) => t.id === target._taskId) || currentTask.value
   }
   return true
 }
@@ -180,6 +229,7 @@ const saveAnswer = async (questionId, value) => {
     q.completed = true
     q.answer = value
   }
+  applyQuestionVisibility()
 
   // Real points just earned for this specific answer — 0 when the question
   // was already answered before (the backend's idempotency guard), so
@@ -244,6 +294,8 @@ export const usePassportRuntime = () => {
   return {
     steps,
     loading,
+    isOwner,
+    isCollaborator,
 
     currentStep,
     currentTask,
@@ -254,6 +306,7 @@ export const usePassportRuntime = () => {
     questionTaskMap,
 
     loadPassport,
+    loadAccess,
     setCurrentStep,
     setCurrentTask,
     loadQuestions,
