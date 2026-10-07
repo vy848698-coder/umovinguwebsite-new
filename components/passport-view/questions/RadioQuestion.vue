@@ -60,7 +60,6 @@
           <span v-if="answer === option.value" class="check-icon">✓</span>
         </div>
         <span class="option-label">{{ option.label }}</span>
-        <span class="option-key">{{ (option.label || '').charAt(0).toUpperCase() }}</span>
       </div>
     </div>
   </div>
@@ -226,28 +225,6 @@ const selectOption = (value) => {
     transform 0.12s;
   border-radius: 14px;
   gap: 13px;
-}
-
-.option-key {
-  margin-left: auto;
-  flex-shrink: 0;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 7px;
-  border-radius: 8px;
-  background: #fff;
-  border: 1px solid #ececf2;
-  color: #a5a1b4;
-  font-size: 12px;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.radio-option.selected .option-key {
-  background: rgba(0, 161, 154, 0.12);
-  border-color: rgba(0, 161, 154, 0.28);
-  color: #00857f;
 }
 
 .radio-option:hover {
