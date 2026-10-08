@@ -85,13 +85,24 @@
                   <span class="ua-caption-status">
                     <span class="ua-status-dot" :class="`is-${statusTone}`" />
                     {{ statusText }}
+                    <button
+                      v-if="ready && voice.canSpeak && voice.voices.value.length"
+                      type="button"
+                      class="ua-voice-btn"
+                      aria-label="UMU's voice settings"
+                      title="Voice settings"
+                      :aria-expanded="showVoicePanel"
+                      @click="showVoicePanel = !showVoicePanel"
+                    >
+                      <Icon name="i-lucide-sliders-horizontal" />
+                    </button>
                   </span>
                 </div>
                 <p v-if="voice.listening.value" class="ua-caption-text">
                   <span v-if="heardText">{{ heardText }}</span>
                   <span v-else class="ua-caption-wait">Listening, go ahead</span>
-                  <span class="ua-bars" aria-hidden="true">
-                    <i v-for="n in 5" :key="n" :style="{ '--i': n }" />
+                  <span class="ua-bars" :class="{ 'is-live': voice.level.value > 0.02 }" aria-hidden="true">
+                    <i v-for="n in 5" :key="n" :style="{ '--i': n, height: barHeight(n) }" />
                   </span>
                 </p>
                 <p v-else class="ua-caption-text">
@@ -116,6 +127,51 @@
                 <UmuBotMascot :state="botState" :wave="waveHello" />
               </div>
             </div>
+
+            <!-- UMU's voice: pick the clearest one on this device, and the speed -->
+            <Transition name="ua-pop">
+              <div v-if="showVoicePanel" class="ua-voice-panel" role="dialog" aria-label="UMU's voice">
+                <div class="ua-vp-head">
+                  <p class="ua-vp-title">UMU's voice</p>
+                  <button type="button" class="ua-vp-close" aria-label="Close voice settings" @click="showVoicePanel = false">
+                    <Icon name="i-lucide-x" />
+                  </button>
+                </div>
+                <div class="ua-vp-list" role="radiogroup" aria-label="Voice">
+                  <button
+                    v-for="v in voiceChoices"
+                    :key="v.name"
+                    type="button"
+                    role="radio"
+                    class="ua-vp-voice"
+                    :class="{ 'is-on': v.name === activeVoiceName }"
+                    :aria-checked="v.name === activeVoiceName"
+                    @click="chooseVoice(v.name)"
+                  >
+                    <span class="ua-vp-name">{{ prettyVoice(v.name) }}</span>
+                    <span v-if="v.recommended" class="ua-vp-tag">Clearest</span>
+                    <span v-else class="ua-vp-lang">{{ v.lang }}</span>
+                  </button>
+                </div>
+                <label class="ua-vp-rate">
+                  <span>Speed</span>
+                  <input
+                    type="range"
+                    min="0.85"
+                    max="1.15"
+                    step="0.05"
+                    :value="voice.rate.value"
+                    aria-label="Speaking speed"
+                    @input="(e) => voice.setRate(Number((e.target as HTMLInputElement).value))"
+                    @change="voice.preview()"
+                  />
+                </label>
+                <button type="button" class="ua-vp-play" @click="voice.preview()">
+                  <Icon name="i-lucide-play" />
+                  Play a sample
+                </button>
+              </div>
+            </Transition>
 
             <div v-if="ready" class="ua-console">
               <button
@@ -372,6 +428,10 @@ import {
   spokenDate,
   spokenEmail,
   spokenLetter,
+  spokenPhone,
+  spokenPostcode,
+  spokenAddress,
+  spokenCode,
 } from '~/utils/umuGuide'
 import { toSmartTitleCase } from '~/utils/titleCase'
 
@@ -640,6 +700,25 @@ const sheetKicker = computed(() => {
   return sayKicker.value
 })
 
+// Voice settings
+const showVoicePanel = ref(false)
+const voiceChoices = computed(() => voice.voices.value.slice(0, 6))
+const activeVoiceName = computed(() => voice.voiceName.value || voice.voices.value[0]?.name || '')
+const prettyVoice = (name: string) =>
+  name.replace(/^Microsoft\s+/i, '').replace(/\s*-\s*English.*$/i, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/Online/i, '').trim()
+function chooseVoice(name: string) {
+  voice.setVoice(name)
+  voice.preview()
+}
+// A tap anywhere else closes the voice panel
+function closeVoicePanelOutside(e: MouseEvent) {
+  if (!showVoicePanel.value) return
+  if ((e.target as HTMLElement)?.closest?.('.ua-voice-panel, .ua-voice-btn')) return
+  showVoicePanel.value = false
+}
+onMounted(() => document.addEventListener('click', closeVoicePanelOutside))
+onBeforeUnmount(() => document.removeEventListener('click', closeVoicePanelOutside))
+
 const footHint = computed(() =>
   voice.canListen ? 'Type, or tap the mic and tell UMU' : 'Type or tap your answer',
 )
@@ -669,6 +748,11 @@ function jumpTo(i: number) {
   else rt.currentQuestionIndex.value = i
   talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+// Sound bars follow the seller's real voice level when the mic allows it
+const BAR_SHAPE = [0.55, 0.85, 1, 0.8, 0.5]
+const barHeight = (n: number) =>
+  voice.level.value > 0.02 ? `${5 + Math.round(voice.level.value * BAR_SHAPE[n - 1] * 13)}px` : undefined
 
 // What the caption bubble shows: the sentence UMU is saying, word by word,
 // or, before UMU has spoken, the greeting.
@@ -709,8 +793,29 @@ const statusTone = computed(() => {
   return voiceMode.value ? 'on' : 'idle'
 })
 
+// Microphone problems, in plain words
+const MIC_STATUS: Record<string, string> = {
+  denied: 'Microphone blocked',
+  'no-mic': 'No microphone found',
+  network: 'Needs internet to listen',
+  unsupported: 'Voice needs Chrome, Edge or Safari',
+}
+const MIC_HELP: Record<string, string> = {
+  denied: 'Your microphone is blocked. Allow it from the icon in the address bar, then tap the mic again.',
+  'no-mic': "I can't find a microphone. Plug one in, or type your answers instead.",
+  network: 'Listening needs an internet connection. You can keep typing your answers.',
+  unsupported: 'Answering by voice works in Chrome, Edge and Safari. You can type your answers here.',
+}
+watch(
+  () => voice.micError.value,
+  (err) => {
+    if (err) voiceNote.value = MIC_HELP[err] || ''
+  },
+)
+
 const statusText = computed(() => {
-  if (voice.listening.value) return 'Listening, go ahead'
+  if (voice.listening.value) return 'Listening, take your time'
+  if (voice.micError.value) return MIC_STATUS[voice.micError.value] || 'Microphone unavailable'
   if (voice.speaking.value) return 'UMU is speaking'
   if (saving.value) return 'Saving your answer'
   if (phase.value === 'loading') return 'Getting ready'
@@ -727,6 +832,7 @@ const alive = (id: number) => id === flow
 
 function cancelFlow() {
   flow++
+  ack = ''
   voice.stopAll()
   askingLabel.value = ''
   heardText.value = ''
@@ -833,11 +939,17 @@ function stopVoiceMode() {
   cancelFlow()
 }
 
-function toggleVoice() {
+async function toggleVoice() {
   if (voiceMode.value) return stopVoiceMode()
   voiceMode.value = true
   cancelFlow()
   const id = flow
+  // Ask for the microphone now, while this tap allows the prompt
+  if (!(await voice.prepareMic())) {
+    voiceMode.value = false
+    return
+  }
+  if (!alive(id)) return
   // Pressing the mic takes focus, so use the box tapped just before it
   const focused =
     lastFocused && answerEl.value?.contains(lastFocused) && Date.now() - lastFocusAt < 20000
@@ -1017,6 +1129,13 @@ function shapeFor(t: InputTarget, said: string): string | null {
     return String(Math.min(Math.max(n, Number(el.min || 0)), Number(el.max || 10)))
   }
   if ((el instanceof HTMLInputElement && el.type === 'email') || /email/.test(hint)) return spokenEmail(said)
+  if (/phone|mobile|telephone/.test(hint)) return spokenPhone(said)
+  if (/postcode|post code/.test(hint)) return spokenPostcode(said)
+  if (/address/.test(hint)) return spokenAddress(said.charAt(0).toUpperCase() + said.slice(1))
+  if (/reference|ref\b|number|code|registration/.test(hint)) {
+    const code = spokenCode(said)
+    if (code !== said) return code
+  }
   if (/numeric|decimal|£|%|amount|price|percentage|rent|years|number of|units/.test(hint)) {
     const n = spokenNumber(said)
     return n !== null ? String(n) : said
@@ -1038,6 +1157,7 @@ async function dictate(t: Target, id: number, append = false): Promise<string> {
     setNativeValue(t.el, append && base ? `${base} ${shaped}` : shaped)
   }
   const said = await voice.listen({
+    endSilenceMs: t.kind === 'choice' ? 1200 : 1700,
     onInterim: (text) => {
       if (!alive(id)) return
       heardText.value = text
@@ -1067,7 +1187,19 @@ async function dictate(t: Target, id: number, append = false): Promise<string> {
 const orList = (items: string[]) =>
   items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} or ${items[items.length - 1]}`
 
-type Outcome = 'next' | 'skip' | 'stop' | 'save'
+type Outcome = 'next' | 'skip' | 'back' | 'stop' | 'save'
+
+// A short acknowledgement UMU says before its next prompt, so each answer
+// feels heard: "Got it, Freehold." or "Thanks."
+let ack = ''
+const ACKS = ['Got it.', 'Thanks.', 'Lovely.', 'Great.']
+let ackIndex = 0
+const nextAck = () => ACKS[ackIndex++ % ACKS.length]
+function takeAck() {
+  const a = ack
+  ack = ''
+  return a
+}
 
 async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome> {
   setTarget(t)
@@ -1088,13 +1220,14 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
         : first && sameAsQuestion
           ? 'Go ahead, I am listening.'
           : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
-  await say(prompt, id)
+  await say(joinSay(takeAck(), prompt), id)
 
   for (let attempt = 0; attempt < 3; attempt++) {
     if (!alive(id)) return 'stop'
     const said = await dictate(t, id)
     if (!alive(id)) return 'stop'
     const cmd = voiceCommand(said)
+    if (cmd === 'back') return 'back'
     if (cmd === 'skipQuestion') return 'skip'
     if (cmd === 'skip') return 'next'
     if (cmd === 'stop') return 'stop'
@@ -1105,15 +1238,16 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
     }
     if (!said) {
       if (attempt === 0) {
-        await say("Sorry, I didn't hear anything. Please say it again, or type it.", id)
+        await say("Take your time. Just tell me when you're ready, or type it in.", id)
         continue
       }
       return 'next'
     }
     if (t.kind === 'choice') {
-      const opt = matchOption(said, t.options)
+      const opt = matchOption([said, ...voice.alternatives.value], t.options)
       if (opt) {
         opt.el.click()
+        ack = `Got it, ${opt.label.trim()}.`
         return 'next'
       }
       // Chips that take your own words: add what was said as a new chip
@@ -1121,6 +1255,7 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       if (own) {
         setNativeValue(own, said.charAt(0).toUpperCase() + said.slice(1))
         own.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+        ack = 'Added.'
         return 'next'
       }
       await say(`Sorry, I didn't catch that. You can say ${orList(optionLabels)}.`, id)
@@ -1130,6 +1265,7 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       await say('Sorry, I need a date, like the thirty first of March twenty twenty five.', id)
       continue
     }
+    ack = nextAck()
     return 'next'
   }
   return 'next'
@@ -1175,10 +1311,14 @@ async function runVoiceAnswer(id: number) {
       const cmd = voiceCommand(said)
       if (cmd === 'skip' || cmd === 'skipQuestion') return skipQuestion()
       if (cmd === 'stop') return stopVoiceMode()
-      const letter = spokenLetter(said)
+      if (cmd === 'back') return goBack()
+      if (cmd === 'repeat') return presentQuestion()
+      if (cmd === 'save' && q.answer) return saveCurrent()
+      const letter = [said, ...voice.alternatives.value].map(spokenLetter).find(Boolean) || null
       if (letter) {
         q.answer = letter
         componentRev.value++
+        ack = `Got it, band ${letter}.`
         break
       }
       await say("Sorry, I didn't catch the letter. Please say it again, like band C.", id)
@@ -1188,6 +1328,48 @@ async function runVoiceAnswer(id: number) {
 
   await nextTick()
   const targets = collectTargets().filter((t) => !isFilled(t))
+  // Everything here is answered already: say what's set and let the seller
+  // change a choice, or keep it
+  if (!targets.length) {
+    const choices = collectTargets().filter((t) => t.kind === 'choice') as ChoiceTarget[]
+    for (const t of choices) {
+      if (!alive(id) || current.value?.id !== q.id) return
+      const picked = t.options.filter((o) => o.el.classList.contains('selected')).map((o) => o.label)
+      setTarget(t)
+      askingLabel.value = 'Say a different answer to change it, or say save'
+      await say(
+        joinSay(
+          t.label && t.label.toLowerCase() !== cleanLabel(sayText.value).toLowerCase() ? `${t.label}?` : '',
+          `This is set to ${orList(picked)}`,
+          'Say a different answer to change it, or say save to keep it',
+        ),
+        id,
+      )
+      const said = await dictate(t, id)
+      if (!alive(id) || current.value?.id !== q.id) return
+      const cmd = voiceCommand(said)
+      if (cmd === 'save') return saveCurrent()
+      if (cmd === 'back') return goBack()
+      if (cmd === 'skip' || cmd === 'skipQuestion') return skipQuestion()
+      if (cmd === 'stop') return stopVoiceMode()
+      const opt = matchOption([said, ...voice.alternatives.value], t.options)
+      if (opt && !opt.el.classList.contains('selected')) {
+        // A chips list keeps several, so swap the old choice for the new one
+        // (one tap at a time, so each sees the answer the last one left)
+        if (t.el.classList.contains('chips-wrap')) {
+          for (const o of t.options.filter((x) => x.el.classList.contains('selected'))) {
+            o.el.click()
+            await nextTick()
+            await new Promise((r) => setTimeout(r, 60))
+          }
+        }
+        opt.el.click()
+        ack = `Changed to ${opt.label.trim()}.`
+      }
+      if (current.value?.id !== q.id) return
+    }
+    return finishByVoice(q.id, id)
+  }
   let first = true
   for (const t of targets) {
     if (!alive(id) || current.value?.id !== q.id) return
@@ -1196,6 +1378,7 @@ async function runVoiceAnswer(id: number) {
     first = false
     if (!alive(id)) return
     if (outcome === 'stop') return stopVoiceMode()
+    if (outcome === 'back') return goBack()
     if (outcome === 'skip') return skipQuestion()
     if (outcome === 'save') break
     // A radio answer saves straight away and moves on
@@ -1209,6 +1392,7 @@ async function runVoiceAnswer(id: number) {
       const outcome = await askTarget(t, id, false)
       if (!alive(id) || current.value?.id !== q.id) return
       if (outcome === 'stop') return stopVoiceMode()
+      if (outcome === 'back') return goBack()
       if (outcome === 'skip') return skipQuestion()
       if (outcome === 'save') break
     }
@@ -1224,10 +1408,10 @@ async function finishByVoice(qid: string, id: number) {
   if (!needsSaveButton.value) return
   if (answerValid.value) {
     askingLabel.value = 'Say save, or tap Save and continue'
-    await say('Great. Check your answer, then say save, or tap Save and continue.', id)
+    await say(joinSay(takeAck(), 'Check your answer, then say save, or tap Save and continue.'), id)
   } else {
     askingLabel.value = 'Some boxes still need an answer'
-    await say('Some boxes still need an answer. Tap them to fill them in, or say skip question.', id)
+    await say(joinSay(takeAck(), 'Some boxes still need an answer. Tap them to fill them in, or say skip question.'), id)
   }
   for (let attempt = 0; attempt < 2 && alive(id); attempt++) {
     const said = await dictate({ kind: 'choice', el: answerEl.value!, label: '', options: [] }, id)
@@ -1238,6 +1422,8 @@ async function finishByVoice(qid: string, id: number) {
       await say('Not quite yet. A box still needs an answer.', id)
     } else if (cmd === 'skip' || cmd === 'skipQuestion') {
       return skipQuestion()
+    } else if (cmd === 'back') {
+      return goBack()
     } else if (cmd === 'repeat') {
       return presentQuestion()
     } else if (cmd === 'stop') {
@@ -1414,6 +1600,16 @@ async function completeTaskIfDone(taskId: string): Promise<any> {
   } catch {
     return null
   }
+}
+
+// "Go back": the question before this one
+function goBack() {
+  const i = rt.currentQuestionIndex.value
+  if (i <= 0) return presentQuestion()
+  activePathway.value = null
+  phase.value = 'question'
+  rt.currentQuestionIndex.value = i - 1
+  talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function skipQuestion() {
@@ -1686,6 +1882,107 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 .ua-caption-status .ua-status-dot { background: #cbd5e1; }
+.ua-voice-btn {
+  width: 26px;
+  height: 26px;
+  margin-left: 2px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+}
+.ua-voice-btn:hover { border-color: #94a3b8; color: var(--ua-navy); }
+.ua-voice-btn :deep(svg),
+.ua-voice-btn > span { width: 14px; height: 14px; }
+
+/* Voice settings panel */
+.ua-left { position: relative; }
+.ua-voice-panel {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 10;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ua-navy);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+.ua-vp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ua-vp-title { margin: 0; font-size: 14px; font-weight: 800; }
+.ua-vp-close {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+.ua-vp-close:hover { background: #f1f5f9; }
+.ua-vp-list { display: flex; flex-direction: column; gap: 6px; max-height: 210px; overflow-y: auto; }
+.ua-vp-voice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: left;
+  cursor: pointer;
+}
+.ua-vp-voice:hover { border-color: #94a3b8; }
+.ua-vp-voice.is-on { border-color: var(--ua-teal); background: #f0fdfa; }
+.ua-vp-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ua-vp-tag {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ua-teal);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.ua-vp-lang { flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: #94a3b8; }
+.ua-vp-rate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+.ua-vp-rate input { flex: 1; accent-color: var(--ua-teal); }
+.ua-vp-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ua-navy);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
 .ua-caption-status .ua-status-dot.is-speak,
 .ua-caption-status .ua-status-dot.is-on { background: var(--ua-teal); }
 .ua-caption-who {
@@ -1716,6 +2013,10 @@ onBeforeUnmount(() => {
   height: 16px;
   margin-left: 8px;
   vertical-align: middle;
+}
+.ua-bars.is-live i {
+  animation: none;
+  transition: height 0.08s linear;
 }
 .ua-bars i {
   display: block;
