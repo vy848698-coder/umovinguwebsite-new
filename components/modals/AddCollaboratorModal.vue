@@ -487,6 +487,7 @@ let sectionsLoaded = false
 async function ensureSectionsLoaded() {
   if (sectionsLoaded) return
   sectionsLoading.value = true
+  error.value = ''
   try {
     const data = await getSections(props.passportId)
     const list = Array.isArray(data) ? data : (data?.sections ?? [])
@@ -497,6 +498,7 @@ async function ensureSectionsLoaded() {
     }))
     sectionsLoaded = true
   } catch (err) {
+    error.value = err?.data?.message || 'Could not load sections. Please try again.'
     if (import.meta.dev) console.warn('load sections failed', err)
   } finally {
     sectionsLoading.value = false
