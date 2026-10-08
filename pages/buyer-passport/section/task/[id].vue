@@ -65,10 +65,6 @@
               <button class="qpanel-btn qpanel-btn--help" @click="openSectionHelp">
                 <OPIcon name="helpIcon" class="w-[15px] h-[15px]" />Help
               </button>
-              <button class="qpanel-btn qpanel-btn--video" @click="openSectionVideo">
-                <span class="qpanel-play"><OPIcon name="playIcon" class="w-[13px] h-[13px]" /></span>
-                Play Video
-              </button>
             </div>
           </section>
         </aside>
@@ -382,14 +378,12 @@
     </template>
 
     <HelpDrawer :show="showHelp" :content="activeHelpContent" mode="buyer" @close="showHelp = false" />
-    <VideoModal :show="showVideo" :videoUrl="activeVideoUrl" @close="showVideo = false" />
   </div>
 </template>
 
 <script setup lang="ts">
 import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
-import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { usePassportBack, usePassportTrail } from '~/composables/usePassportTrail'
 
@@ -406,9 +400,7 @@ const allData = ref<any>(null)
 const loading = ref(true)
 const activeIndex = ref(0)
 const showHelp = ref(false)
-const showVideo = ref(false)
 const activeHelpContent = ref<any>(null)
-const activeVideoUrl = ref<string | null>(null)
 
 // Navbar Back: the passport page the user came from (on the screen they
 // left), else this answer's section when they landed here directly.
@@ -821,10 +813,6 @@ function formatDate(val: any): string {
 function openSectionHelp() {
   activeHelpContent.value = section.value?.helpContent ?? null
   showHelp.value = true
-}
-function openSectionVideo() {
-  activeVideoUrl.value = section.value?.helpVideoUrl ?? null
-  showVideo.value = true
 }
 
 function extractFilename(url: string): string {

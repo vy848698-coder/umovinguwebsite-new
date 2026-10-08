@@ -66,10 +66,6 @@
           </div>
 
           <div class="hero-actions">
-            <button class="hbtn teal" @click="showVideo = true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
-              Watch video
-            </button>
             <button class="hbtn ghost" @click="showHelp = true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10" />
@@ -258,12 +254,6 @@
       :content="currentStep?.helpContent ?? null"
       @close="showHelp = false"
     />
-    <VideoModal
-      :show="showVideo"
-      :video-url="currentStep?.helpVideoUrl ?? null"
-      @close="showVideo = false"
-    />
-
     <SiteFooter wide />
 
   </div>
@@ -274,7 +264,6 @@ import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import OPIcon from '~/components/ui/OPIcon.vue'
 import SectionProgressCard from '@/components/passport-view/SectionProgressCard.vue'
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
-import VideoModal from '@/components/passport-view/VideoModal.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
 import {
@@ -287,7 +276,6 @@ const route = useRoute()
 const router = useRouter()
 
 const showHelp = ref(false)
-const showVideo = ref(false)
 
 const { currentStep, steps, setCurrentStep, loadPassport } =
   usePassportRuntime()
