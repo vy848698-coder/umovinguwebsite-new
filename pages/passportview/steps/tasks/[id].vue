@@ -141,9 +141,9 @@
 
           <div class="q-head" data-tour="q-nav">
             <div class="q-head-left">
-              <h2 class="q-head-title">Question {{ currentQuestionIndex + 1 }}</h2>
+              <h2 class="q-head-title">Question {{ questionNumber }}</h2>
               <div class="q-head-sub">
-                {{ currentQuestionIndex + 1 }} of {{ totalQuestions }} in this section
+                {{ questionNumber }} of {{ numberedTotal }} in this section
               </div>
             </div>
             <div class="q-nav">
@@ -166,17 +166,17 @@
 
           <div v-if="totalQuestions > 0" class="q-segments" aria-hidden="true">
             <span
-              v-for="i in totalQuestions"
+              v-for="i in numberedTotal"
               :key="i"
               class="q-seg"
               :class="{
-                done: i - 1 < currentQuestionIndex,
-                current: i - 1 === currentQuestionIndex,
+                done: i < questionNumber,
+                current: i === questionNumber,
               }"
             />
           </div>
           <div v-if="totalQuestions > 0" class="q-seg-labels">
-            <span>Question {{ currentQuestionIndex + 1 }} of {{ totalQuestions }}</span>
+            <span>Question {{ questionNumber }} of {{ numberedTotal }}</span>
             <span>{{ remainingQuestions }} remaining</span>
           </div>
 
@@ -946,6 +946,21 @@ async function finishAfterSave(questionId) {
 }
 
 const totalQuestions = computed(() => currentQuestions.value.length || 0)
+
+// The section's own Notes task isn't a real question for the seller to
+// answer - it's instructional text shown once before the actual questions
+// start - so it shouldn't occupy "Question 1" and push every real question
+// one number later (client feedback, 2026-10-06).
+const numberedQuestions = computed(() =>
+  currentQuestions.value.filter((q) => q.type?.toLowerCase() !== 'note'),
+)
+const numberedTotal = computed(
+  () => numberedQuestions.value.length || totalQuestions.value,
+)
+const questionNumber = computed(() => {
+  const i = numberedQuestions.value.indexOf(currentQuestion.value)
+  return i >= 0 ? i + 1 : currentQuestionIndex.value + 1
+})
 
 const taskProgress = computed(() => {
   if (!currentTask.value || totalQuestions.value === 0) return 0
