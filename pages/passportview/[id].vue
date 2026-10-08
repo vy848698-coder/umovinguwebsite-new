@@ -842,16 +842,6 @@
       @close="publishDrawerOpen = false"
       @publish="onPublishConfirm"
       @go-to-question="onGoToChecklistItem"
-      @manage-visibility="publishDrawerOpen = false; manageVisibilityOpen = true"
-    />
-
-    <!-- Manage Visibility (client definitive handoff, 2 Oct 2026) -
-         Private/Shared/Public per section/task, separate from the whole-
-         Passport publish toggle above. -->
-    <ManageVisibilityDrawer
-      :show="manageVisibilityOpen"
-      :passport-id="String(route.params.id)"
-      @update:show="manageVisibilityOpen = $event"
     />
 
     <!-- Guided tour — auto-runs once, replays from the "?" in the nav -->
@@ -877,7 +867,6 @@ import DocumentAccessDrawer from '~/components/passport/DocumentAccessDrawer.vue
 import { useVaultDocuments } from '~/composables/useVaultDocuments'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 import PublishPassportDrawer from '~/components/passport/PublishPassportDrawer.vue'
-import ManageVisibilityDrawer from '~/components/passport/ManageVisibilityDrawer.vue'
 import BuyerDetailDrawer from '~/components/passport/BuyerDetailDrawer.vue'
 import BuyerActionDrawer from '~/components/passport/BuyerActionDrawer.vue'
 import Toast from '~/components/ui/Toast.vue'
@@ -1271,7 +1260,6 @@ function epcColor(rating) {
 
 // ── Publish confirmation drawer + readiness gate ───────────────────────
 const publishDrawerOpen = ref(false)
-const manageVisibilityOpen = ref(false)
 
 async function fetchReadiness() {
   const token =
