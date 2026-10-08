@@ -266,9 +266,16 @@
 
               <div v-else-if="phase === 'done'" class="ua-done">
                 <Icon name="i-lucide-circle-check-big" class="ua-done-ic" />
-                <p class="ua-done-title">{{ sectionTitle }} complete</p>
+                <p class="ua-done-title">
+                  {{ answeredCount === questions.length ? `${sectionTitle} complete` : `End of ${sectionTitle}` }}
+                </p>
                 <p class="ua-done-text">
-                  All {{ questions.length }} questions are answered and saved in your passport.
+                  <template v-if="answeredCount === questions.length">
+                    All {{ questions.length }} questions are answered and saved in your passport.
+                  </template>
+                  <template v-else>
+                    {{ answeredCount }} of {{ questions.length }} answered. Tap a segment in the bar above to go back to any question.
+                  </template>
                 </p>
                 <button type="button" class="ua-save" @click="closeAssistant">
                   Back to your passport
@@ -411,6 +418,12 @@ const askingLabel = ref('')
 const additionalInfoAnswer = ref<any>(null)
 const componentRev = ref(0)
 
+// Review mode (temporary, user request 2026-10-08): start at question 1
+// and step through every question in order, answered or not, so the whole
+// section can be checked. Set to false to go back to skipping answered
+// questions and resuming at the first unanswered one.
+const REVIEW_ALL = true
+
 const isOwnershipSection = (s: any) =>
   s?.key === 'ownershipProfile' || /ownership/i.test(s?.title || '')
 
@@ -424,7 +437,11 @@ async function start() {
     rt.setCurrentStep(section.id)
     await rt.loadSectionQuestions(section.id)
     resumed.value = questions.value.some((q: any) => q.completed)
-    if (questions.value.every((q: any) => q.completed)) {
+    if (REVIEW_ALL && questions.value.length) {
+      rt.currentQuestionIndex.value = 0
+      greetFor.value = current.value?.id ?? null
+      phase.value = 'question'
+    } else if (questions.value.every((q: any) => q.completed)) {
       phase.value = 'done'
     } else {
       greetFor.value = current.value?.id ?? null
@@ -577,7 +594,12 @@ const greeting = computed(() => {
 const sayText = computed(() => {
   if (phase.value === 'loading') return 'Getting your questions ready.'
   if (phase.value === 'error') return "Sorry, I couldn't load your questions just now. Please try again."
-  if (phase.value === 'done') return `Your ${sectionTitle.value || 'section'} is complete. Brilliant work.`
+  if (phase.value === 'done') {
+    const left = questions.value.length - answeredCount.value
+    return left > 0
+      ? `That's every question in your ${sectionTitle.value || 'section'}. ${left} still ${left === 1 ? 'needs' : 'need'} an answer.`
+      : `Your ${sectionTitle.value || 'section'} is complete. Brilliant work.`
+  }
   if (phase.value === 'pathway') return 'Thanks. This answer has a few quick follow-up steps.'
   const q: any = current.value
   if (!q) return ''
@@ -1407,6 +1429,17 @@ function skipQuestion() {
 function goToNextQuestion(fromId: string) {
   const list = questions.value as any[]
   const from = list.findIndex((x) => x.id === fromId)
+  // Review mode: simply the next question in order; done after the last
+  if (REVIEW_ALL) {
+    if (from < 0 || from >= list.length - 1) {
+      phase.value = 'done'
+      return
+    }
+    phase.value = 'question'
+    rt.currentQuestionIndex.value = from + 1
+    talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
   const order = [...list.slice(from + 1), ...list.slice(0, from + 1)]
   const open = order.filter((x) => !x.completed)
   if (!open.length) {
