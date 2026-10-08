@@ -56,8 +56,6 @@
 
         <!-- ── Passport hero ─────────────────────────────────────────── -->
         <section class="bp-hero" data-tour="hero">
-          <div class="bp-hero-glow" />
-
           <div class="bp-hero-book">
             <!-- This page shows a property passport the buyer has unlocked,
                  so the book is the SELLER's (or landlord's) cover, not the
@@ -1291,13 +1289,13 @@ async function deleteNote(noteId: string) {
 .hsw-back svg { width: 15px; height: 15px; }
 .hsw-ask {
   height: 42px; padding: 0 18px; border-radius: 10px; border: none;
-  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  /* Flat teal, no glow (user request 2026-10-07). */
+  background: var(--teal);
   color: #fff; font-family: inherit; font-size: 14px; font-weight: 800;
   letter-spacing: -0.01em; cursor: pointer; flex-shrink: 0;
-  box-shadow: 0 10px 22px rgba(0, 161, 154, 0.26);
-  transition: transform 0.14s, box-shadow 0.16s;
+  transition: transform 0.14s, background 0.16s;
 }
-.hsw-ask:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 161, 154, 0.34); }
+.hsw-ask:hover { transform: translateY(-1px); background: var(--teal-dark); }
 
 /* ── Centered content shell ───────────────────────────────────────── */
 .bpw-main { position: relative; z-index: 1; padding: 28px 0 72px; }
@@ -1336,22 +1334,11 @@ async function deleteNote(noteId: string) {
   gap: 30px;
   padding: 34px 38px;
   border-radius: 26px;
-  background:
-    radial-gradient(120% 140% at 85% 10%, #2c2456 0%, transparent 55%),
-    linear-gradient(135deg, #1c1740 0%, #241d47 55%, #1a1638 100%);
+  /* One flat colour, no glows (user request 2026-10-07). */
+  background: #231d45;
   border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
   box-shadow: 0 30px 70px rgba(28, 23, 64, 0.35);
-}
-.bp-hero-glow {
-  position: absolute;
-  right: 8%;
-  top: -60px;
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(47, 208, 198, 0.18), transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
 }
 .bp-hero-book {
   /* Matches the seller hero's book. Below ~200px PassportCard's address
@@ -1466,17 +1453,17 @@ async function deleteNote(noteId: string) {
   padding: 12px 26px;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  /* Flat teal, no glow (user request 2026-10-07). */
+  background: var(--teal);
   color: #fff;
   font-family: inherit;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.01em;
   cursor: pointer;
-  box-shadow: 0 12px 26px rgba(0, 161, 154, 0.3);
-  transition: transform 0.14s, box-shadow 0.16s;
+  transition: transform 0.14s, background 0.16s;
 }
-.bp-hero-ask:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(0, 161, 154, 0.4); }
+.bp-hero-ask:hover { transform: translateY(-1px); background: var(--teal-dark); }
 .bp-hero-save {
   display: inline-flex;
   align-items: center;
@@ -1549,9 +1536,7 @@ async function deleteNote(noteId: string) {
   width: 100%;
   margin: 16px 0 0;
   padding: 16px 22px;
-  background:
-    radial-gradient(120% 200% at 100% 0%, #2c2456 0%, transparent 60%),
-    linear-gradient(135deg, #201a3f, #191533);
+  background: #231d45;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 18px;

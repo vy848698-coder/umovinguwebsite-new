@@ -84,6 +84,7 @@ function labelFor(entry: PassportTrailEntry): string {
   if (p.startsWith('/passportview/steps/')) return 'Back to section'
   if (p === '/passportview/expert') return 'Back to expert'
   if (p === '/passportview/done') return 'Back to summary'
+  if (p.startsWith('/passportview/assistant/')) return 'Back to UMU AI'
   if (p.startsWith('/buyer-passport/section/task/')) return 'Back to answers'
   if (p.startsWith('/buyer-passport/section/')) return 'Back to section'
   if (p.startsWith('/buyer-passport/')) return 'Back to buyer view'
