@@ -202,6 +202,15 @@
         </span>
       </button>
 
+      <!-- ── UMU AI assistant entry. Answers given there land in these
+           same sections, so the seller can use either route. ── -->
+      <AgentEntryCard
+        v-if="passportType === 'SELLER'"
+        @talk="openAssistant"
+        @upload="openVaultFromCard"
+        @manual="answerManually"
+      />
+
       <!-- ── Tabs row: sections/street/buyers + list/map ── -->
       <div class="pp-tabs-row">
       <div class="pp-subtabs">
@@ -861,6 +870,7 @@ import PublishPassportDrawer from '~/components/passport/PublishPassportDrawer.v
 import BuyerDetailDrawer from '~/components/passport/BuyerDetailDrawer.vue'
 import BuyerActionDrawer from '~/components/passport/BuyerActionDrawer.vue'
 import Toast from '~/components/ui/Toast.vue'
+import AgentEntryCard from '~/components/agent/AgentEntryCard.vue'
 import { useAppToast } from '~/composables/useCustomToast'
 import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
 import { usePassportHomeBack, usePassportTrail } from '~/composables/usePassportTrail'
@@ -1517,6 +1527,31 @@ const getStepPoints = (step) => {
 
 const navigateToStep = (stepId) => {
   router.push(`/passportview/steps/${stepId}?propertyId=${route.params.id}`)
+}
+
+// "How would you like to create your Seller Passport?" card.
+// Talk to UMU opens the assistant; the other two bring the matching tab
+// below into view.
+const openAssistant = () => {
+  router.push(`/passportview/assistant/${route.params.id}`)
+}
+
+const scrollToTabs = async () => {
+  await nextTick()
+  document
+    .querySelector('.pp-tabs-row')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const openVaultFromCard = () => {
+  setTab('vault')
+  scrollToTabs()
+}
+
+const answerManually = () => {
+  setTab('sections')
+  viewMode.value = 'list'
+  scrollToTabs()
 }
 
 const switchPassport = (passportId) => {
@@ -3209,6 +3244,11 @@ const groupedHistory = computed(() => {
   flex-shrink: 0;
 }
 
+/* The UMU AI card scrolls here; keep it clear of the sticky nav. */
+.pp-tabs-row {
+  scroll-margin-top: 84px;
+}
+
 /* ── Pick up where you left off — resume CTA ──────────────────────── */
 .pp-resume-cta {
   display: flex;
@@ -3981,10 +4021,8 @@ const groupedHistory = computed(() => {
 
 /* ── Dark hero ─────────────────────────────────────────────────────── */
 .pp-hero {
-  background:
-    radial-gradient(circle at 88% 12%, rgba(0, 212, 195, 0.16), transparent 42%),
-    radial-gradient(circle at 6% 92%, rgba(90, 76, 240, 0.16), transparent 46%),
-    linear-gradient(135deg, #241e4c 0%, #14102f 60%, #0d0924 100%);
+  /* One flat colour, no glows (user request 2026-10-07). */
+  background: #231d45;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 24px;
   padding: 30px 34px;
@@ -4002,7 +4040,7 @@ const groupedHistory = computed(() => {
      edges. Height stays auto so each cover keeps its own proportions. */
   width: 220px;
   flex-shrink: 0;
-  filter: drop-shadow(0 22px 40px rgba(0, 140, 134, 0.45));
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.32));
 }
 /* Let the book render at its natural 965×1362 aspect ratio so the baked-in
    layout and the overlaid address stay aligned (a forced fixed height was
@@ -4115,7 +4153,8 @@ const groupedHistory = computed(() => {
 .pp-hero-btn--primary {
   background: #00a19a;
   color: #fff;
-  box-shadow: 0 10px 24px rgba(0, 161, 154, 0.4);
+  /* Flat, no teal glow (user request 2026-10-07). */
+  box-shadow: none;
 }
 .pp-hero-btn--primary:hover {
   background: #00b3ab;

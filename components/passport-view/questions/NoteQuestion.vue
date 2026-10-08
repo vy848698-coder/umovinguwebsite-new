@@ -225,6 +225,8 @@ const props = defineProps({
   displayedHelp: { type: String, default: '' },
   showHelpCursor: { type: Boolean, default: false },
   hideQuestionDisplay: { type: Boolean, default: false },
+  // The UMU AI assistant shows the summary first and lets the seller open it.
+  autoOpen: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['update'])
@@ -264,9 +266,12 @@ const shortSellersNote = computed(() => {
 
 const shortGenericContent = computed(() => {
   const value = genericContent.value
-  const text = Array.isArray(value)
-    ? value[0] || 'Click to view details'
-    : value || 'Click to view details'
+  // Block content is an array of {type, text} objects: use the first
+  // block's text, not the object itself (which printed as raw JSON).
+  const first = Array.isArray(value) ? value[0] : value
+  const text =
+    (first && typeof first === 'object' ? first.text : first) ||
+    'Click to view details'
   return text.length > 50 ? text.slice(0, 50) + '...' : text
 })
 
@@ -341,7 +346,7 @@ watch(
 watch(
   () => props.question,
   () => {
-    if (!hasAutoOpened && props.question?.type?.toLowerCase() === 'note') {
+    if (props.autoOpen && !hasAutoOpened && props.question?.type?.toLowerCase() === 'note') {
       hasAutoOpened = true
       open.value = true
     }
