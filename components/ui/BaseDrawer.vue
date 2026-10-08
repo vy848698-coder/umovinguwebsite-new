@@ -74,7 +74,7 @@
 
 <script setup>
 import OPIcon from './OPIcon.vue'
-import { computed, ref, watch, onUnmounted, useId, nextTick, useAttrs } from 'vue'
+import { computed, ref, watch, onUnmounted, useId, nextTick, getCurrentInstance } from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -104,7 +104,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'close', 'back'])
-const attrs = useAttrs()
+// NOT useAttrs(): 'back' is declared above in defineEmits, and Vue
+// excludes any listener for a declared emit from $attrs/useAttrs() -
+// attrs.onBack would always be undefined here. vnode.props still has it
+// regardless of the emits declaration, so that's what we check instead.
+const instance = getCurrentInstance()
 
 const handleClose = () => {
   emit('update:modelValue', false)
@@ -117,7 +121,7 @@ const handleClose = () => {
 // behaviour when the parent actually listens via @back; otherwise keep
 // closing, so every existing showBackButton usage behaves as before.
 const handleBackClick = () => {
-  if (attrs.onBack) {
+  if (instance?.vnode?.props?.onBack) {
     emit('back')
   } else {
     handleClose()
