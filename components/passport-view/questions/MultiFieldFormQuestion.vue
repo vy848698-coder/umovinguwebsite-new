@@ -52,16 +52,28 @@
         </button>
 
         <!-- Form fields -->
-        <div class="form-fields">
+        <div class="form-fields" :class="{ 'form-fields--assistant': assistant }">
           <div
-            v-for="field in question.fields"
+            v-for="(field, fieldIndex) in question.fields"
             :key="field.key"
             class="form-field"
           >
-            <label class="field-label" :for="`mff-${formIndex}-${field.key}`">{{ field.label }}</label>
+            <label class="field-label" :for="`mff-${formIndex}-${field.key}`">
+              <!-- UMU AI assistant: numbered steps that tick off as they fill -->
+              <span
+                v-if="assistant"
+                class="field-step"
+                :class="{ 'field-step--done': !!getFieldValue(formIndex, field.key) }"
+                aria-hidden="true"
+              >
+                <svg v-if="getFieldValue(formIndex, field.key)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <template v-else>{{ fieldIndex + 1 }}</template>
+              </span>
+              {{ fieldLabel(field) }}
+            </label>
             <input
               :value="getFieldValue(formIndex, field.key)"
-              type="text"
+              :type="assistant && isEmailField(field) ? 'email' : 'text'"
               class="field-input"
               :placeholder="field.placeholder || ''"
               @input="
@@ -85,8 +97,25 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, inject } from 'vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
+
+// Set by the UMU AI assistant page. Many forms only have placeholders, so
+// there the placeholder also becomes the field's label. The manual pages
+// don't provide it and look exactly as before.
+const assistant = inject('umuAssistant', false)
+
+const fieldLabel = (field) => {
+  if (field.label || !assistant) return field.label
+  const text = String(field.placeholder || '')
+    .replace(/^(please\s+)?(enter|select|provide|type|add)\s+/i, '')
+    .replace(/\bemail id\b/i, 'email address')
+    .replace(/[.:…]+$/, '')
+    .trim()
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+const isEmailField = (field) => /email/i.test(`${field.label} ${field.placeholder}`)
 const props = defineProps({
   question: {
     type: Object,
@@ -385,6 +414,50 @@ const emitUpdate = () => {
 
 .field-input::placeholder {
   color: #a5a1b4;
+}
+
+/* UMU AI assistant look: labelled, numbered steps */
+.form-fields--assistant {
+  gap: 16px;
+}
+.form-fields--assistant .field-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  color: #1e293b;
+}
+.field-step {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.field-step svg {
+  width: 12px;
+  height: 12px;
+}
+.field-step--done {
+  border-color: #00a19a;
+  background: #00a19a;
+  color: #fff;
+}
+.form-fields--assistant .field-input {
+  min-height: 52px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  font-size: 15.5px;
+}
+.form-fields--assistant .field-input:focus {
+  background: #fff;
 }
 
 .add-form-btn {
