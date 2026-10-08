@@ -309,7 +309,9 @@ const onDragEnd = () => {
    `.mobile-container` max-width (28rem ≈ Tailwind's max-w-md) and to the
    window height (the overlay's 16px padding keeps it off every edge). */
 .drawer {
-  background-color: #f3f4f6;
+  /* White, not grey — the handle strip above the header used to show a
+     visible grey seam against the white header/content below it. */
+  background-color: #fff;
   position: relative;
   width: 100%;
   max-width: 28rem;
