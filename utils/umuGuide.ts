@@ -145,42 +145,93 @@ const words = (s: unknown) =>
   ` ${String(s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()} `
 
 // skip moves past one box; skipQuestion leaves the whole question for later.
-export type VoiceCommand = 'skip' | 'skipQuestion' | 'repeat' | 'stop' | 'save' | null
+export type VoiceCommand = 'skip' | 'skipQuestion' | 'back' | 'repeat' | 'stop' | 'save' | null
 
 // Only a short utterance counts as a command, so an answer that happens to
 // contain "save" or "next" is still typed in.
 export function voiceCommand(said: string): VoiceCommand {
-  const w = words(said).trim()
-  if (!w || w.split(' ').length > 4) return null
-  if (/^(skip (the |this )?question|next question|not now|come back to (this|it)( later)?|later)$/.test(w)) return 'skipQuestion'
-  if (/^(skip|skip (this|it|that)( one)?|next|pass|i don t know|don t know|not sure|i m not sure)$/.test(w)) return 'skip'
-  if (/^(repeat|again|say (that|it) again|repeat (that|the question)|pardon|what)$/.test(w)) return 'repeat'
-  if (/^(stop|stop listening|pause|cancel|that s all)$/.test(w)) return 'stop'
-  if (/^(save|save it|save (that|this)|done|i m done|that s it|continue|yes save|ok save|okay save|i ve read (it|this|them)|read it)$/.test(w)) return 'save'
+  const w = words(said).trim().replace(/^(umu |please |ok |okay |um |er )+/, '')
+  if (!w || w.split(' ').length > 5) return null
+  if (/^(go back|back|previous( question)?|last question|go to the last question)$/.test(w)) return 'back'
+  if (/^(skip (the |this )?question|next question|move on|not now|come back to (this|it)( later)?|later|skip this one for now)$/.test(w)) return 'skipQuestion'
+  if (/^(skip|skip (this|it|that)( one)?|next|pass|i don t know|don t know|no idea|not sure|i m not sure|i m not certain)$/.test(w)) return 'skip'
+  if (/^(repeat|again|say (that|it) again|repeat (that|the question|please)|pardon|sorry|what|what was that|come again)$/.test(w)) return 'repeat'
+  if (/^(stop|stop listening|pause|cancel|that s all|be quiet|quiet)$/.test(w)) return 'stop'
+  if (/^(save|save it|save (that|this)|done|i m done|all done|that s it|that s all done|continue|yes save|ok save|okay save|save and continue|i ve read (it|this|them)|read it|finished)$/.test(w)) return 'save'
   return null
 }
 
-const YES = [' yes ', ' yeah ', ' yep ', ' correct ', ' i am ', ' i do ', ' that s right ']
-const NO = [' no ', ' nope ', ' not ', ' i m not ', ' i don t ']
+const NUM_WORDS: Record<string, string> = {
+  zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8',
+  nine: '9', ten: '10', eleven: '11', twelve: '12', single: '1', double: '2', twin: '2',
+}
+const ORDINALS: Record<string, number> = {
+  first: 0, second: 1, third: 2, fourth: 3, fifth: 4, sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9,
+}
+const STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'in', 'on', 'to', 'it', 'is', 'my', 'our', 'we', 'its', 'with', 'for', 'per'])
 
-// The option whose label was said; the longest match wins. Yes and No also
-// accept everyday ways of saying them.
-export function matchOption<T extends { label: string }>(said: string, options: T[]): T | null {
-  const heard = words(said)
-  let best: T | null = null
-  let bestLen = 0
-  for (const o of options) {
-    const label = words(o.label).trim()
-    if (label && heard.includes(` ${label} `) && label.length > bestLen) {
-      best = o
-      bestLen = label.length
+// Number words to digits, so "three bedrooms" matches a "3 bedrooms" label.
+const withDigits = (s: string) =>
+  s.replace(/ (zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|single|double|twin)(?= )/g, (_, n) => ` ${NUM_WORDS[n]}`)
+
+const YES = [' yes ', ' yeah ', ' yep ', ' yup ', ' correct ', ' i am ', ' i do ', ' that s right ', ' that is right ', ' sure ', ' absolutely ', ' of course ', ' definitely ', ' affirmative ', ' it is ', ' we are ', ' we do ']
+const NO = [' no ', ' nope ', ' nah ', ' not ', ' i m not ', ' i don t ', ' we don t ', ' we re not ', ' never ', ' negative ', ' it isn t ']
+
+function scoreOption(heard: string, label: string): number {
+  const l = words(label).trim()
+  if (!l) return 0
+  // Said word for word
+  if (heard.includes(` ${l} `)) return 100 + l.length
+  const hd = withDigits(heard)
+  const ld = ` ${withDigits(` ${l} `).trim()} `
+  if (hd.includes(ld)) return 95 + l.length
+  // Same letters, different spacing: "free hold" for "Freehold"
+  const compact = (x: string) => x.replace(/\s+/g, '')
+  if (l.length > 3 && compact(hd).includes(compact(ld))) return 80 + l.length
+  // Most of the label's words were said
+  const tokens = ld.trim().split(' ').filter((t) => t.length > 1 && !STOP.has(t))
+  if (!tokens.length) return 0
+  const hits = tokens.filter((t) => hd.includes(` ${t} `) || (t.length > 4 && hd.includes(` ${t.slice(0, -1)}`)))
+  const share = hits.length / tokens.length
+  // Every word of a longer label said, in any order: as good as word for
+  // word, so "a share of the freehold" beats plain "Freehold"
+  if (share === 1 && tokens.length >= 2) return 100 + l.length
+  return share >= 0.6 ? Math.round(share * 60) + hits.length : 0
+}
+
+// The option the seller meant, or null. Takes the answer and any other
+// readings of it (best first). Matches whole labels, spacing slips, most
+// of a label's words, its position ("the second one", "option 3", "the
+// last one") and everyday ways of saying yes and no.
+export function matchOption<T extends { label: string }>(said: string | string[], options: T[]): T | null {
+  const readings = (Array.isArray(said) ? said : [said]).filter(Boolean)
+  for (const reading of readings) {
+    const heard = words(reading)
+    let best: T | null = null
+    let bestScore = 0
+    for (const o of options) {
+      const sc = scoreOption(heard, o.label)
+      if (sc > bestScore) {
+        best = o
+        bestScore = sc
+      }
     }
+    if (best) return best
   }
-  if (best) return best
-  const yes = options.find((o) => words(o.label).trim().startsWith('yes'))
-  const no = options.find((o) => words(o.label).trim().startsWith('no'))
-  if (no && NO.some((w) => heard.includes(w))) return no
-  if (yes && YES.some((w) => heard.includes(w))) return yes
+  for (const reading of readings) {
+    const heard = words(reading)
+    // By position
+    const ord = heard.match(/ (first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) /)
+    if (ord && options[ORDINALS[ord[1]]]) return options[ORDINALS[ord[1]]]
+    if (/ (last|final) (one|option) /.test(heard)) return options[options.length - 1] || null
+    const num = withDigits(heard).match(/ (?:option|number|choice) (\d+) /)
+    if (num && options[+num[1] - 1]) return options[+num[1] - 1]
+    // Yes and No in other words
+    const yes = options.find((o) => words(o.label).trim().startsWith('yes'))
+    const no = options.find((o) => words(o.label).trim().startsWith('no'))
+    if (no && NO.some((w) => heard.includes(w))) return no
+    if (yes && YES.some((w) => heard.includes(w))) return yes
+  }
   return null
 }
 
@@ -256,13 +307,69 @@ export function spokenDate(said: string): string | null {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
-// "john at example dot com" -> "john@example.com"
+// "john at example dot com" -> "john@example.com". Spelled letters
+// ("s a r a h") are joined, and "underscore", "dash" and "hyphen" become
+// the symbols.
 export function spokenEmail(said: string): string {
   return said
     .toLowerCase()
-    .replace(/\s+at\s+/g, '@')
-    .replace(/\s+dot\s+/g, '.')
+    .replace(/\s+(at|at sign)\s+/g, '@')
+    .replace(/\s+(dot|full stop|point)\s+/g, '.')
+    .replace(/\s*underscore\s*/g, '_')
+    .replace(/\s*(dash|hyphen)\s*/g, '-')
     .replace(/\s+/g, '')
+}
+
+// "oh seven seven double one..." -> "07711..."
+export function spokenPhone(said: string): string {
+  const t = ` ${said.toLowerCase().replace(/[^a-z0-9+ ]/g, ' ')} `
+    .replace(/ (oh|o|zero|nought)(?= )/g, ' 0')
+    .replace(/ (one|two|three|four|five|six|seven|eight|nine)(?= )/g, (_, n) => ` ${NUM_WORDS[n]}`)
+    .replace(/ (double|triple) (\d)(?= )/g, (_, k, d) => ` ${d.repeat(k === 'double' ? 2 : 3)}`)
+  const digits = t.replace(/[^\d+]/g, '')
+  return digits.length >= 6 ? digits : said
+}
+
+// "c v six six e x" -> "CV6 6EX"; leaves anything else as said.
+export function spokenPostcode(said: string): string {
+  const joined = ` ${said.toLowerCase()} `
+    .replace(/ (one|two|three|four|five|six|seven|eight|nine|zero|oh)(?= )/g, (_, n) => ` ${n === 'oh' ? '0' : NUM_WORDS[n]}`)
+    .replace(/\s+/g, '')
+    .toUpperCase()
+  const m = joined.match(/([A-Z]{1,2}\d[A-Z\d]?)(\d[A-Z]{2})$/)
+  return m ? `${m[1]} ${m[2]}` : said
+}
+
+// An address that ends in a spoken postcode: "12 High Street Coventry c v
+// six six e x" -> "12 High Street Coventry CV6 6EX".
+export function spokenAddress(said: string): string {
+  const parts = said.trim().split(/\s+/)
+  // Longest tail first, and only a tail that is wholly a postcode, so no
+  // street or town words are swallowed
+  for (let take = Math.min(8, parts.length); take >= 1; take--) {
+    const compact = parts
+      .slice(-take)
+      .map((t) => t.toLowerCase())
+      .map((t) => (t === 'oh' ? '0' : NUM_WORDS[t] ?? t))
+      .join('')
+      .toUpperCase()
+    const m = compact.match(/^([A-Z]{1,2}\d[A-Z\d]?)(\d[A-Z]{2})$/)
+    if (m) return [...parts.slice(0, -take), `${m[1]} ${m[2]}`].join(' ')
+  }
+  return said
+}
+
+// Spelled codes such as references: "a b one two three" -> "AB123".
+// Ordinary words are left alone.
+export function spokenCode(said: string): string {
+  const tokens = said
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((t) => (t === 'oh' ? '0' : NUM_WORDS[t] ?? t))
+  const spelled = tokens.length > 1 && tokens.every((t) => t.length === 1 || /^\d+$/.test(t))
+  return spelled ? tokens.join('').toUpperCase() : said
 }
 
 // "band C", "C", "it's band see" -> "C"
@@ -273,5 +380,5 @@ export function spokenLetter(said: string): string | null {
   const token = band ? band[1] : t.trim().split(/\s+/).find((w) => w.length === 1 || w in sounds)
   if (!token) return null
   const letter = token.length === 1 ? token : sounds[token]
-  return letter && /^[a-h]$/.test(letter) ? letter.toUpperCase() : null
+  return letter && /^[a-i]$/.test(letter) ? letter.toUpperCase() : null
 }
