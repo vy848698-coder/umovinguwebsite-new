@@ -348,8 +348,13 @@ const hasPartHelp = computed(() =>
 const showTaskQuestion = computed(
   () => !!props.displayedQuestion && !hasPartTitle.value,
 )
+// Also hidden once a part has its own title (not just its own description):
+// the task-level description was written to sit under the task-level
+// title, so when that title gets suppressed by hasPartTitle, the
+// description has no heading above it and renders as orphaned text at the
+// very top of the question.
 const showTaskDescription = computed(
-  () => !!props.displayedDescription && !hasPartDescription.value,
+  () => !!props.displayedDescription && !hasPartTitle.value && !hasPartDescription.value,
 )
 // Also requires showTaskQuestion: a task-level helpText can be set on a
 // QuestionTemplate whose own title is empty (the real question text lives

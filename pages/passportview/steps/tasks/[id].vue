@@ -63,11 +63,11 @@
       <!-- ── Right content ─────────────────────────────────────────── -->
       <main class="tk-main">
         <div class="tk-content">
-          <!-- Help / Play Video + Property Photos moved here from the left
-               rail (client feedback, 2026-10-06: on a narrower window the
-               rail could crowd the question itself down past the fold -
-               matches mobile-webapp, where these sit at the top of the
-               question column, not in a separate side panel). -->
+          <!-- Help + Property Photos moved here from the left rail (client
+               feedback, 2026-10-06: on a narrower window the rail could
+               crowd the question itself down past the fold - matches
+               mobile-webapp, where this sits at the top of the question
+               column, not in a separate side panel). -->
           <div class="side-actions" data-tour="q-help-video">
             <button class="side-btn ghost" @click="openHelp">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -76,10 +76,6 @@
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
               Help
-            </button>
-            <button class="side-btn teal" @click="openVideo">
-              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
-              Play Video
             </button>
           </div>
 
@@ -367,11 +363,6 @@
     @close="showHelp = false"
   />
 
-  <VideoModal
-    :show="showVideo"
-    :video-url="activeVideoUrl"
-    @close="showVideo = false"
-  />
 </template>
 
 <script setup>
@@ -393,7 +384,6 @@ import MultiFieldFormQuestion from '@/components/passport-view/questions/MultiFi
 import BoundaryResponsibilityQuestion from '~/components/passport-view/questions/BoundaryResponsibilityQuestion.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 import HelpDrawer from '~/components/passport-view/HelpDrawer.vue'
-import VideoModal from '~/components/passport-view/VideoModal.vue'
 import OnboardingTour from '~/components/ui/OnboardingTour.vue'
 import { toSentenceCase } from '~/utils/titleCase'
 import { normalizeUploadUrl, normalizeUploadUrls } from '~/utils/normalizeUploadUrl'
@@ -604,7 +594,6 @@ onBeforeUnmount(() => {
 const additionalInfoAnswer = ref(null)
 
 const showHelp = ref(false)
-const showVideo = ref(false)
 
 // Use question-level content if available, fall back to step (section) level
 const activeHelpContent = computed(
@@ -613,20 +602,10 @@ const activeHelpContent = computed(
     currentStep.value?.helpContent ??
     null,
 )
-const activeVideoUrl = computed(
-  () =>
-    currentQuestion.value?.helpVideoUrl ??
-    currentStep.value?.helpVideoUrl ??
-    null,
-)
 const hasHelp = computed(() => !!activeHelpContent.value)
-const hasVideo = computed(() => !!activeVideoUrl.value)
 
 function openHelp() {
   showHelp.value = true
-}
-function openVideo() {
-  showVideo.value = true
 }
 
 const stepId = route.query.stepId
@@ -1080,7 +1059,7 @@ const questionTourSteps = [
   {
     selector: '[data-tour="q-help-video"]',
     title: 'Stuck on a question?',
-    body: 'Help opens plain-English guidance for the question you are on. Play Video is a short explainer for the whole section.',
+    body: 'Help opens plain-English guidance for the question you are on.',
   },
   {
     selector: '[data-tour="q-points"]',
