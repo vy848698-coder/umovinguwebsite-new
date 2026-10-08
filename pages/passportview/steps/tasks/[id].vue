@@ -1539,16 +1539,17 @@ const handleContinue = () => {
 
 .side-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 12px;
   margin: 26px 0;
 }
 .side-btn {
-  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   height: 48px;
+  padding: 0 22px;
   border-radius: 999px;
   border: 1px solid transparent;
   font-family: inherit;
