@@ -76,12 +76,16 @@ watch(
 .qpc {
   margin-bottom: 24px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #0a0f2c, #131a3a);
-  color: #fff;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  color: #231d45;
   padding: 20px;
   position: relative;
   overflow: hidden;
-  transition: background 0.3s ease;
+  transition: border-color 0.3s ease;
+}
+.qpc--saved {
+  border-color: #b8e0dc;
 }
 .qpc::after {
   content: '';
@@ -90,7 +94,7 @@ watch(
   top: -30px;
   width: 160px;
   height: 160px;
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.35), transparent 60%);
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.12), transparent 60%);
   pointer-events: none;
 }
 
@@ -135,19 +139,20 @@ watch(
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
+  color: #231d45;
 }
 .qpc-balance em {
   font-style: normal;
-  color: #99f6e4;
+  color: #00817c;
   font-weight: 600;
   font-size: 16px;
   margin-left: 4px;
 }
 .qpc-pill {
   margin-left: auto;
-  background: rgba(20, 184, 166, 0.18);
-  color: #5eead4;
-  border: 1px solid rgba(94, 234, 212, 0.35);
+  background: #e5f4f2;
+  color: #00817c;
+  border: 1px solid #b8e0dc;
   padding: 5px 12px;
   border-radius: 999px;
   font-size: 13px;
@@ -164,11 +169,12 @@ watch(
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.1;
+  color: #231d45;
 }
 .qpc-saved-pts {
   font-size: 24px;
   font-weight: 800;
-  color: #5eead4;
+  color: #00817c;
   line-height: 1.1;
 }
 
@@ -177,7 +183,7 @@ watch(
   font-size: 14px;
   font-weight: 700;
   line-height: 1.3;
-  color: #fff;
+  color: #231d45;
   position: relative;
   z-index: 1;
 }
@@ -186,14 +192,14 @@ watch(
   font-size: 12px;
   font-weight: 400;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7089;
   position: relative;
   z-index: 1;
 }
 
 .qpc-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.12);
+  background: #f0f2f5;
   margin: 10px 0;
   position: relative;
   z-index: 1;
@@ -204,7 +210,7 @@ watch(
   gap: 8px;
   position: relative;
   z-index: 1;
-  color: rgba(255, 255, 255, 0.5);
+  color: #94a3b8;
 }
 .qpc-before {
   font-size: 16px;
@@ -213,14 +219,14 @@ watch(
 .qpc-after {
   font-size: 18px;
   font-weight: 800;
-  color: #5eead4;
+  color: #00817c;
 }
 
 .qpc-footer {
   margin: 6px 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: #5eead4;
+  color: #00817c;
   position: relative;
   z-index: 1;
 }
