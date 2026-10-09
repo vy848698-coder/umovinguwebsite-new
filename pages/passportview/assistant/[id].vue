@@ -148,18 +148,18 @@
                     :aria-checked="v.name === activeVoiceName"
                     @click="chooseVoice(v.name)"
                   >
-                    <span class="ua-vp-name">{{ prettyVoice(v.name) }}</span>
-                    <span v-if="v.recommended" class="ua-vp-tag">Clearest</span>
-                    <span v-else class="ua-vp-lang">{{ v.lang }}</span>
+                    <span class="ua-vp-name">{{ v.label }}</span>
+                    <span v-if="v.recommended" class="ua-vp-tag">Recommended</span>
+                    <span v-else class="ua-vp-lang">{{ v.note }}</span>
                   </button>
                 </div>
                 <label class="ua-vp-rate">
                   <span>Speed</span>
                   <input
                     type="range"
-                    min="0.85"
-                    max="1.15"
-                    step="0.05"
+                    min="0.8"
+                    max="1.12"
+                    step="0.04"
                     :value="voice.rate.value"
                     aria-label="Speaking speed"
                     @input="(e) => voice.setRate(Number((e.target as HTMLInputElement).value))"
@@ -703,9 +703,7 @@ const sheetKicker = computed(() => {
 // Voice settings
 const showVoicePanel = ref(false)
 const voiceChoices = computed(() => voice.voices.value.slice(0, 6))
-const activeVoiceName = computed(() => voice.voiceName.value || voice.voices.value[0]?.name || '')
-const prettyVoice = (name: string) =>
-  name.replace(/^Microsoft\s+/i, '').replace(/\s*-\s*English.*$/i, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/Online/i, '').trim()
+const activeVoiceName = computed(() => voice.activeVoice.value || voice.voices.value[0]?.name || '')
 function chooseVoice(name: string) {
   voice.setVoice(name)
   voice.preview()
@@ -782,7 +780,7 @@ const botState = computed(() => {
   if (pose.value === 'celebrate') return 'celebrate'
   if (voice.listening.value) return 'listening'
   if (voice.speaking.value) return 'speaking'
-  if (phase.value === 'loading' || saving.value) return 'thinking'
+  if (phase.value === 'loading' || saving.value || voice.preparing.value) return 'thinking'
   if (pose.value === 'pointing') return 'pointing'
   return 'idle'
 })
@@ -817,6 +815,7 @@ const statusText = computed(() => {
   if (voice.listening.value) return 'Listening, take your time'
   if (voice.micError.value) return MIC_STATUS[voice.micError.value] || 'Microphone unavailable'
   if (voice.speaking.value) return 'UMU is speaking'
+  if (voice.preparing.value) return 'UMU is about to speak'
   if (saving.value) return 'Saving your answer'
   if (phase.value === 'loading') return 'Getting ready'
   if (phase.value !== 'question') return 'UMU is here to help'
@@ -862,15 +861,61 @@ async function presentQuestion() {
   if (!alive(id) || phase.value !== 'question' || !current.value) return
   const prefix = savedPrefix
   savedPrefix = ''
-  await say(joinSay(prefix, greeting.value, sayText.value, guide.value.say), id)
+  const speaking = say(joinSay(prefix, greeting.value, sayText.value, guide.value.say), id)
+  prefetchNextQuestion()
+  // The first thing UMU asks for once the mic is on
+  const firstTarget = collectTargets().find((t) => !isFilled(t))
+  if (firstTarget) voice.prefetch(targetPrompt(firstTarget, true))
+  await speaking
   if (!alive(id)) return
   setPose('pointing', 2400)
   if (voiceMode.value) runVoiceAnswer(id)
 }
 
 function repeatQuestion() {
+  voice.unlockAudio()
   presentQuestion()
 }
+
+// Loads the next question's voice while this one is answered, so UMU
+// starts speaking it the moment this answer is saved.
+function prefetchNextQuestion() {
+  const next: any = questions.value[rt.currentQuestionIndex.value + 1]
+  if (!next) return
+  const firstPartTitle = Array.isArray(next.parts) ? next.parts.find((p: any) => p?.title)?.title : ''
+  const text = next.question || next.title || firstPartTitle
+  if (text) voice.prefetch(joinSay(text, guideFor(next, normalizeQuestionType(next)).say))
+}
+
+// UMU's short replies, loaded once so they never keep the seller waiting
+const SHORT_LINES = [
+  'Saved.',
+  'Saved, plus 100 points.',
+  'Got it.',
+  'Thanks.',
+  'Lovely.',
+  'Great.',
+  'Added.',
+  "Go ahead, I'm listening.",
+  "Take your time. Just tell me when you're ready, or type it in.",
+  'Check your answer, then say save, or tap Save and continue.',
+  "Sorry, I didn't catch that.",
+]
+onMounted(() => setTimeout(() => SHORT_LINES.forEach((l) => voice.prefetch(l)), 4000))
+
+// Browsers only allow sound after a tap, so the first tap anywhere on the
+// page lets UMU's voice play.
+function unlockOnTap() {
+  voice.unlockAudio()
+}
+onMounted(() => {
+  document.addEventListener('pointerdown', unlockOnTap, { once: true, capture: true })
+  document.addEventListener('keydown', unlockOnTap, { once: true, capture: true })
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', unlockOnTap, { capture: true })
+  document.removeEventListener('keydown', unlockOnTap, { capture: true })
+})
 
 watch(sayKey, async () => {
   voiceNote.value = ''
@@ -931,6 +976,7 @@ let lastFocused: HTMLInputElement | HTMLTextAreaElement | null = null
 let lastFocusAt = 0
 
 function toggleMute() {
+  voice.unlockAudio()
   voice.setMuted(!voice.muted.value)
 }
 
@@ -1015,7 +1061,9 @@ function partTitle(el: Element) {
 }
 
 function inputLabel(el: HTMLInputElement | HTMLTextAreaElement) {
-  const junk = /^(start typing|\W*\d|£|\$|0+%?$|search)/i
+  // Placeholders that are an example answer ("e.g. Back fence...") say
+  // nothing about what the box is for
+  const junk = /^(start typing|\W*\d|£|\$|0+%?$|search|e\.?g\b|for example|example)/i
   const nearby = el
     .closest('.date-badge, .currency-box, .form-field, .input-section, .date-option')
     ?.querySelector('.currency-box__label, .date-placeholder, .field-label, .mi-label')?.textContent
@@ -1112,6 +1160,8 @@ function setNativeValue(el: HTMLInputElement | HTMLTextAreaElement, value: strin
   const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
   Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, value)
   el.dispatchEvent(new Event('input', { bubbles: true }))
+  // Some boxes only take a value on change (the number box next to chips)
+  el.dispatchEvent(new Event('change', { bubbles: true }))
 }
 
 function pressEnter(el: HTMLElement) {
@@ -1157,7 +1207,8 @@ async function dictate(t: Target, id: number, append = false): Promise<string> {
     setNativeValue(t.el, append && base ? `${base} ${shaped}` : shaped)
   }
   const said = await voice.listen({
-    endSilenceMs: t.kind === 'choice' ? 1200 : 1700,
+    // Room to pause and think mid answer; a choice is usually a word or two
+    endSilenceMs: t.kind === 'choice' ? 1300 : 2000,
     onInterim: (text) => {
       if (!alive(id)) return
       heardText.value = text
@@ -1201,25 +1252,30 @@ function takeAck() {
   return a
 }
 
+// What UMU says to ask for one box or choice.
+function targetPrompt(t: Target, first: boolean) {
+  const optionLabels = t.kind === 'choice' ? t.options.slice(0, 7).map((o) => o.label) : []
+  // UMU has just asked the question, so a box that is the question itself
+  // (or has no name of its own) only needs a nudge, not the same words again
+  const sameAsQuestion = t.label === 'answer' || t.label.toLowerCase() === cleanLabel(sayText.value).toLowerCase()
+  const spokenLabel = t.label.charAt(0).toLowerCase() + t.label.slice(1)
+  return t.kind === 'choice'
+    ? joinSay(t.label && !sameAsQuestion ? `${t.label}?` : '', `You can say ${orList(optionLabels)}`)
+    : t.el instanceof HTMLInputElement && t.el.type === 'range'
+      ? `${t.label}? Say a number from ${t.el.min || 0} to ${t.el.max || 10}.`
+      : first && sameAsQuestion
+        ? "Go ahead, I'm listening."
+        : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+}
+
 async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome> {
   setTarget(t)
   const optionLabels = t.kind === 'choice' ? t.options.slice(0, 7).map((o) => o.label) : []
   askingLabel.value =
     t.kind === 'choice'
       ? t.label ? `${t.label}?` : `You can say ${orList(optionLabels)}`
-      : `Tell me the ${t.label}`
-  // UMU has just asked the question, so a box that is the question itself
-  // only needs a nudge rather than the same words again
-  const sameAsQuestion = t.label.toLowerCase() === cleanLabel(sayText.value).toLowerCase()
-  const spokenLabel = t.label.charAt(0).toLowerCase() + t.label.slice(1)
-  const prompt =
-    t.kind === 'choice'
-      ? joinSay(t.label && !sameAsQuestion ? `${t.label}?` : '', `You can say ${orList(optionLabels)}`)
-      : t.el instanceof HTMLInputElement && t.el.type === 'range'
-        ? `${t.label}? Say a number from ${t.el.min || 0} to ${t.el.max || 10}.`
-        : first && sameAsQuestion
-          ? 'Go ahead, I am listening.'
-          : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+      : t.label === 'answer' ? 'Say your answer' : `Tell me the ${t.label}`
+  const prompt = targetPrompt(t, first)
   await say(joinSay(takeAck(), prompt), id)
 
   for (let attempt = 0; attempt < 3; attempt++) {
