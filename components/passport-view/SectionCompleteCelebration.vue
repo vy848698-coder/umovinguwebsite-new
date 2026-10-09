@@ -13,7 +13,7 @@
           <span v-for="(c, i) in confetti" :key="i" class="scc-confetti-piece" :class="c.shape" :style="c.style" />
         </div>
 
-        <img src="/op-icons/rewards/pointsStar.png" alt="" class="scc-icon" />
+        <img src="/op-icons/misc/trophy.png" alt="" class="scc-icon" />
 
         <h1 class="scc-title">Congratulations!</h1>
         <p class="scc-sub">You've completed this <span class="scc-sub-accent">section</span>.</p>
@@ -90,7 +90,7 @@ const confetti = [
   { shape: 'rect', style: 'left:6%; top:48%; background:#38bdf8; transform:rotate(10deg);' },
   { shape: 'spark', style: 'left:30%; top:50%; color:#fbbf24;' },
   { shape: 'rect', style: 'right:8%; top:20%; background:#38bdf8; transform:rotate(16deg);' },
-  { shape: 'rect', style: 'right:20%; top:6%; background:#f8fafc; transform:rotate(-20deg);' },
+  { shape: 'rect', style: 'right:20%; top:6%; background:#fbbf24; transform:rotate(-20deg);' },
   { shape: 'spark', style: 'right:12%; top:36%; color:#5eead4;' },
   { shape: 'rect', style: 'right:6%; top:50%; background:#a78bfa; transform:rotate(-12deg);' },
   { shape: 'spark', style: 'right:28%; top:52%; color:#fbbf24;' },
@@ -158,11 +158,22 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
   max-width: 28rem;
-  background: linear-gradient(160deg, #0a0f2c, #131a3a);
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
   border-radius: 28px;
   padding: 36px 26px 28px;
   overflow: hidden;
   text-align: center;
+}
+.scc-card::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.12), transparent 60%);
+  pointer-events: none;
 }
 
 .scc-confetti {
@@ -193,12 +204,11 @@ onBeforeUnmount(() => {
      don't center themselves via text-align) — margin-inline:auto is what
      actually centers it. */
   display: block;
-  width: 132px;
+  width: 110px;
   height: auto;
   object-fit: contain;
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
   margin: 4px auto 18px;
 }
 
@@ -207,7 +217,7 @@ onBeforeUnmount(() => {
   z-index: 1;
   font-size: 34px;
   font-weight: 800;
-  color: #fff;
+  color: #231d45;
   letter-spacing: -0.5px;
   margin: 0 0 8px;
   line-height: 1.1;
@@ -217,11 +227,11 @@ onBeforeUnmount(() => {
   z-index: 1;
   font-size: 16px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
+  color: #6b7089;
   margin: 0 0 20px;
 }
 .scc-sub-accent {
-  color: #5eead4;
+  color: #00817c;
   font-weight: 700;
 }
 
@@ -229,7 +239,7 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.14);
+  background: #f0f2f5;
   margin: 4px 0;
 }
 
@@ -250,7 +260,7 @@ onBeforeUnmount(() => {
 }
 .scc-stat-sep {
   width: 1px;
-  background: rgba(255, 255, 255, 0.14);
+  background: #f0f2f5;
   margin: 0 8px;
 }
 .scc-stat-badge {
@@ -262,22 +272,22 @@ onBeforeUnmount(() => {
   margin-bottom: 4px;
 }
 .scc-stat-badge--bonus {
-  background: rgba(251, 191, 36, 0.14);
-  color: #fbbf24;
+  background: #fef3c7;
+  color: #d97706;
 }
 .scc-stat-badge--total {
-  background: rgba(20, 184, 166, 0.16);
-  color: #5eead4;
+  background: #e5f4f2;
+  color: #00817c;
 }
 .scc-stat-label {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: #231d45;
 }
 .scc-stat-value {
   font-size: 20px;
   font-weight: 800;
-  color: #5eead4;
+  color: #00817c;
 }
 .scc-stat-value--total {
   font-size: 24px;
@@ -285,7 +295,7 @@ onBeforeUnmount(() => {
 .scc-stat-was {
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.4);
+  color: #94a3b8;
 }
 
 .scc-tip {
@@ -297,11 +307,11 @@ onBeforeUnmount(() => {
   gap: 8px;
   font-size: 13.5px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
+  color: #6b7089;
   margin: 4px 0 0;
 }
 .scc-tip-icon {
-  color: #5eead4;
+  color: #00817c;
 }
 
 .scc-redirect {

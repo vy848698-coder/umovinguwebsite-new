@@ -2,7 +2,7 @@
   <div>
     <div class="spc">
       <div class="spc-row">
-        <img src="/op-icons/rewards/pointsStar.png" alt="" class="spc-icon" />
+        <img src="/op-icons/profile/passportPoints.png" alt="" class="spc-icon" />
         <div class="spc-balance">{{ balance }} <em>pts</em></div>
       </div>
       <h3 class="spc-h3">{{ sectionTitle }}</h3>
@@ -12,9 +12,7 @@
         <div class="spc-divider" />
         <button class="spc-bonus-row" @click="$emit('finish-section')">
           <span class="spc-bonus-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l2.9 6.3 6.9.8-5.1 4.8 1.4 6.8L12 17.3 5.9 20.7l1.4-6.8L2.2 9.1l6.9-.8L12 2z" />
-            </svg>
+            <img src="/op-icons/misc/trophy.png" alt="" class="spc-bonus-icon-img" />
           </span>
           <span class="spc-bonus-text">
             <strong>Finish this section</strong>
@@ -85,8 +83,9 @@ defineEmits(['finish-section'])
 .spc {
   margin-bottom: 12px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #0a0f2c, #131a3a);
-  color: #fff;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  color: #231d45;
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -98,7 +97,7 @@ defineEmits(['finish-section'])
   top: -30px;
   width: 160px;
   height: 160px;
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.35), transparent 60%);
+  background: radial-gradient(circle, rgba(0, 161, 154, 0.12), transparent 60%);
   pointer-events: none;
 }
 
@@ -115,17 +114,17 @@ defineEmits(['finish-section'])
   height: 60px;
   object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
 }
 .spc-balance {
   font-size: 30px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
+  color: #231d45;
 }
 .spc-balance em {
   font-style: normal;
-  color: #99f6e4;
+  color: #00817c;
   font-weight: 600;
   font-size: 16px;
   margin-left: 4px;
@@ -136,7 +135,7 @@ defineEmits(['finish-section'])
   font-size: 16px;
   font-weight: 700;
   line-height: 1.3;
-  color: #fff;
+  color: #231d45;
   position: relative;
   z-index: 1;
 }
@@ -144,14 +143,14 @@ defineEmits(['finish-section'])
   margin: 0;
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6b7089;
   position: relative;
   z-index: 1;
 }
 
 .spc-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.12);
+  background: #f0f2f5;
   margin: 14px 0;
   position: relative;
   z-index: 1;
@@ -171,15 +170,19 @@ defineEmits(['finish-section'])
   position: relative;
   z-index: 1;
 }
+/* Sized up from the old 28px flat glyph - glossy 3D renders lose their
+   shine/detail below ~32-36px. */
 .spc-bonus-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(251, 191, 36, 0.18);
-  color: #fbbf24;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+.spc-bonus-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .spc-bonus-text {
   flex: 1;
@@ -190,16 +193,16 @@ defineEmits(['finish-section'])
 .spc-bonus-text strong {
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: #231d45;
 }
 .spc-bonus-text em {
   font-style: normal;
   font-size: 12px;
   font-weight: 600;
-  color: #5eead4;
+  color: #00817c;
 }
 .spc-chevron {
-  color: rgba(255, 255, 255, 0.4);
+  color: #c4c1d4;
   flex-shrink: 0;
 }
 
@@ -214,7 +217,7 @@ defineEmits(['finish-section'])
 .spc-level-bar {
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: #f0f2f5;
   overflow: hidden;
 }
 .spc-level-fill {
@@ -228,8 +231,9 @@ defineEmits(['finish-section'])
   top: 50%;
   font-size: 13px;
   line-height: 1;
-  color: #fff;
-  text-shadow: 0 0 4px rgba(94, 234, 212, 0.9);
+  color: #fbbf24;
+  text-shadow: none;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.7));
   transform: translate(-50%, -50%);
   transition: left 0.4s ease;
   pointer-events: none;
@@ -238,7 +242,7 @@ defineEmits(['finish-section'])
   margin: 8px 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: #5eead4;
+  color: #00817c;
 }
 
 .spc-streak {
