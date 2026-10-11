@@ -1,4 +1,5 @@
-// UMU's voice. POST { text, voice, rate } → audio/mpeg.
+// UMU's voice. POST { text, voice, rate } → audio/mpeg. Needs the seller's
+// sign-in token (Authorization: Bearer), and is rate limited per seller.
 //
 // Uses Microsoft Edge's read-aloud service: the same neural voices as Azure,
 // free and without a key. It is unofficial and can change without notice,
@@ -11,11 +12,23 @@ import { UMU_VOICES, MIN_UMU_RATE, MAX_UMU_RATE } from '../../utils/umuVoices'
 const MAX_CHARS = 600
 const TIMEOUT_MS = 15000
 
+// Only signed-in sellers can use it, and each one only so often. UMU loads
+// every line it might say next (the answer options, the follow-up prompts),
+// so a busy minute is a few dozen requests; these limits sit well above
+// that. Lines already in the cache cost nothing, so only new speech counts
+// towards the tighter limit.
+const REQUESTS_PER_MINUTE = 300
+const NEW_SPEECH_PER_MINUTE = 120
+const NEW_SPEECH_PER_HOUR = 1500
+
 // The same questions are asked to every seller, so keep recent audio.
 const cache = new Map<string, Buffer>()
 const CACHE_LIMIT = 500
 
 export default defineEventHandler(async (event) => {
+  const userId = await requireUmuUser(event)
+  throttleUmuUser(event, userId, 'tts', REQUESTS_PER_MINUTE, 60_000)
+
   const body = await readBody<{ text?: unknown; voice?: unknown; rate?: unknown }>(event).catch(() => null)
   const text = typeof body?.text === 'string' ? body.text.replace(/\s+/g, ' ').trim() : ''
   const voice = UMU_VOICES.find((v) => v.id === body?.voice)?.id
@@ -27,6 +40,8 @@ export default defineEventHandler(async (event) => {
   const key = `${voice}|${rate}|${text}`
   let bytes = cache.get(key)
   if (!bytes) {
+    throttleUmuUser(event, userId, 'tts-new', NEW_SPEECH_PER_MINUTE, 60_000)
+    throttleUmuUser(event, userId, 'tts-new-hour', NEW_SPEECH_PER_HOUR, 3_600_000)
     try {
       // Edge drops a connection now and then, so one retry before giving up
       bytes = await edgeSlot(() => edge(voice, text, rate).catch(() => edge(voice, text, rate)))
@@ -47,7 +62,7 @@ export default defineEventHandler(async (event) => {
 
 // The page loads several sentences at once; Edge refuses too many parallel
 // connections, so at most EDGE_MAX run together and the rest wait their turn.
-const EDGE_MAX = 3
+const EDGE_MAX = 4
 let edgeActive = 0
 const edgeQueue: (() => void)[] = []
 

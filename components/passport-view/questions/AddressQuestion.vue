@@ -7,8 +7,30 @@
     <!-- The property was claimed, so the address / UPRN / title number are
          already known and won't change - shown read-only for confirmation
          rather than as an editable field. -->
-    <div v-if="knownAddress || answer?.trim()" class="addr-confirm">
+    <div
+      v-if="(knownAddress || answer?.trim()) && !editing"
+      class="addr-confirm"
+      :class="{ 'is-confirmed': confirmed }"
+    >
       <div class="addr-confirm-line">{{ displayAddress || 'Address on file' }}</div>
+      <!-- The seller says whether this is their property, so nobody is left
+           wondering if the address we found is right -->
+      <div class="addr-actions">
+        <button
+          type="button"
+          class="addr-yes"
+          :class="{ 'is-on': confirmed }"
+          :aria-pressed="confirmed"
+          @click="confirmAddress"
+        >
+          <Icon name="i-lucide-check" class="addr-btn-ic" />
+          {{ confirmed ? 'Address confirmed' : 'Yes, this is my address' }}
+        </button>
+        <button type="button" class="addr-change" @click="changeAddress">
+          <Icon name="i-lucide-pencil" class="addr-btn-ic" />
+          No, change it
+        </button>
+      </div>
       <div class="uprn-panel">
         <div class="uprn-panel-h">From HM Land Registry &amp; Ordnance Survey</div>
         <template v-if="hasKnownRefs">
@@ -38,14 +60,20 @@
 
     <!-- No address on file for this passport yet (property-facts lookup
          failed or came back empty) - let the owner type it. -->
-    <div v-else class="address-input">
-      <input
-        :placeholder="question.placeholder || 'Start typing address...'"
-        v-model="text"
-        @input="emit('update', text)"
-        class="text-field"
-      />
-      <button class="btn" @click="emit('update', text)">Find URN</button>
+    <div v-else class="address-input-wrap">
+      <div class="address-input">
+        <input
+          :placeholder="question.placeholder || 'Start typing address...'"
+          v-model="text"
+          aria-label="Property address, including the postcode"
+          @input="emit('update', text)"
+          class="text-field"
+        />
+        <button class="btn" @click="emit('update', text)">Find URN</button>
+      </div>
+      <button v-if="editing && knownAddress" type="button" class="addr-back" @click="useKnownAddress">
+        Use the address we found: {{ knownAddress }}
+      </button>
     </div>
   </div>
 </template>
@@ -83,7 +111,30 @@ const hasKnownRefs = computed(
 // Record the confirmed address as the answer so the question counts as
 // answered (there's nothing for the user to type). Never clobber an
 // existing answer.
+// "Yes, this is my address" / "No, change it"
+const confirmed = ref(false)
+const editing = ref(false)
+
+function confirmAddress() {
+  confirmed.value = true
+  emit('update', displayAddress.value)
+}
+
+function changeAddress() {
+  confirmed.value = false
+  editing.value = true
+  text.value = ''
+  emit('update', '')
+}
+
+function useKnownAddress() {
+  editing.value = false
+  confirmed.value = true
+  emit('update', knownAddress.value)
+}
+
 function syncAnswer() {
+  if (editing.value) return
   if (!props.answer?.trim() && knownAddress.value) {
     emit('update', knownAddress.value)
   }
@@ -145,6 +196,64 @@ watch(knownAddress, syncAnswer)
   color: #9c98ad;
   line-height: 1.5;
   margin: 10px 0 0;
+}
+.addr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.addr-yes,
+.addr-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.addr-yes {
+  border: 1.5px solid #00a19a;
+  background: #fff;
+  color: #00796f;
+}
+.addr-yes:hover,
+.addr-yes.is-on {
+  background: #00a19a;
+  color: #fff;
+}
+.addr-change {
+  border: 1.5px solid #e2e5ec;
+  background: #fff;
+  color: #4a5568;
+}
+.addr-change:hover {
+  border-color: #c7ccd8;
+  color: #0e2840;
+}
+.addr-btn-ic {
+  width: 16px;
+  height: 16px;
+}
+.addr-back {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00796f;
+  text-align: left;
+  cursor: pointer;
+}
+.addr-back:hover {
+  text-decoration: underline;
 }
 .address-input {
   display: flex;

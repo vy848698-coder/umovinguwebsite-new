@@ -191,11 +191,11 @@
                   class="ua-mic"
                   :class="{ 'is-on': voiceMode, 'is-hearing': voice.listening.value }"
                   :aria-pressed="voiceMode"
-                  :aria-label="voiceMode ? 'Stop answering by voice' : 'Answer by voice'"
+                  :aria-label="canCutIn ? 'Answer now' : voiceMode ? 'Stop answering by voice' : 'Answer by voice'"
                   :disabled="phase !== 'question'"
                   @click="toggleVoice"
                 >
-                  <Icon :name="voiceMode ? 'i-lucide-square' : 'i-lucide-mic'" />
+                  <Icon :name="voiceMode && !canCutIn ? 'i-lucide-square' : 'i-lucide-mic'" />
                 </button>
               </div>
               <button
@@ -239,6 +239,10 @@
                 class="ua-answer"
                 @focusin="onFieldFocus"
                 @pointerdown="onAnswerPointer"
+                @input="onAnswerInput"
+                @change="scheduleGuide"
+                @click="scheduleGuide"
+                @keyup.enter="scheduleGuide"
               >
                 <!-- Notes are shown right here to read, rather than in a
                      pop-up; "I've read this" saves them -->
@@ -351,7 +355,7 @@
             </div>
 
             <footer v-if="phase === 'question' && current" class="ua-sheet-foot">
-              <p class="ua-foot-status" :class="{ 'is-asking': askingLabel }">
+              <p class="ua-foot-status" :class="{ 'is-asking': askingLabel }" role="status" aria-live="polite">
                 <Icon
                   :name="askingLabel ? 'i-lucide-message-circle-question' : 'i-lucide-keyboard'"
                   class="ua-foot-ic"
@@ -419,6 +423,7 @@ import { usePathways } from '~/composables/usePathways'
 import { usePassportAchievement } from '~/composables/usePassportAchievement'
 import { useCountUp } from '~/composables/useCountUp'
 import { useUmuVoice } from '~/composables/useUmuVoice'
+import { understandAnswer, type Understanding } from '~/composables/useUmuUnderstand'
 import { normalizeQuestionType, isQuestionAnswerValid } from '~/utils/questionAnswer'
 import {
   guideFor,
@@ -780,7 +785,7 @@ const botState = computed(() => {
   if (pose.value === 'celebrate') return 'celebrate'
   if (voice.listening.value) return 'listening'
   if (voice.speaking.value) return 'speaking'
-  if (phase.value === 'loading' || saving.value || voice.preparing.value) return 'thinking'
+  if (phase.value === 'loading' || saving.value || understanding.value || voice.preparing.value) return 'thinking'
   if (pose.value === 'pointing') return 'pointing'
   return 'idle'
 })
@@ -814,9 +819,10 @@ watch(
 const statusText = computed(() => {
   if (voice.listening.value) return 'Listening, take your time'
   if (voice.micError.value) return MIC_STATUS[voice.micError.value] || 'Microphone unavailable'
-  if (voice.speaking.value) return 'UMU is speaking'
+  if (voice.speaking.value) return voiceMode.value ? 'Tap the mic to answer now' : 'UMU is speaking'
   if (voice.preparing.value) return 'UMU is about to speak'
   if (saving.value) return 'Saving your answer'
+  if (understanding.value) return 'Working out your answer'
   if (phase.value === 'loading') return 'Getting ready'
   if (phase.value !== 'question') return 'UMU is here to help'
   if (voiceMode.value) return 'Tap to stop'
@@ -861,10 +867,19 @@ async function presentQuestion() {
   if (!alive(id) || phase.value !== 'question' || !current.value) return
   const prefix = savedPrefix
   savedPrefix = ''
-  const speaking = say(joinSay(prefix, greeting.value, sayText.value, guide.value.say), id)
+  // Tapping and typing: UMU points at the first box and says what it needs
+  const firstTarget = resetGuide()
+  const firstAsk =
+    !voiceMode.value &&
+    firstTarget &&
+    (firstTarget.kind === 'confirm' ||
+      !isQuestionItself(firstTarget) ||
+      (isRange(firstTarget.el) && !sliderInfo(firstTarget.el).letters))
+      ? targetPrompt(firstTarget, true, 'tap')
+      : ''
+  const speaking = say(joinSay(prefix, greeting.value, sayText.value, guide.value.say, firstAsk), id)
   prefetchNextQuestion()
   // The first thing UMU asks for once the mic is on
-  const firstTarget = collectTargets().find((t) => !isFilled(t))
   if (firstTarget) voice.prefetch(targetPrompt(firstTarget, true))
   await speaking
   if (!alive(id)) return
@@ -901,7 +916,7 @@ const SHORT_LINES = [
   'Check your answer, then say save, or tap Save and continue.',
   "Sorry, I didn't catch that.",
 ]
-onMounted(() => setTimeout(() => SHORT_LINES.forEach((l) => voice.prefetch(l)), 4000))
+onMounted(() => setTimeout(() => [...SHORT_LINES, NOT_SURE_LINE].forEach((l) => voice.prefetch(l)), 4000))
 
 // Browsers only allow sound after a tap, so the first tap anywhere on the
 // page lets UMU's voice play.
@@ -983,9 +998,17 @@ function toggleMute() {
 function stopVoiceMode() {
   voiceMode.value = false
   cancelFlow()
+  resetGuide()
 }
 
+// While UMU talks in voice mode, the mic cuts it short: the seller already
+// knows the answer, so listening starts straight away
+const canCutIn = computed(
+  () => voiceMode.value && (voice.speaking.value || voice.preparing.value) && !voice.listening.value,
+)
+
 async function toggleVoice() {
+  if (canCutIn.value) return voice.stopSpeaking()
   if (voiceMode.value) return stopVoiceMode()
   voiceMode.value = true
   cancelFlow()
@@ -1036,9 +1059,54 @@ interface ChoiceTarget {
   label: string
   options: { el: HTMLElement; label: string }[]
 }
-type Target = InputTarget | ChoiceTarget
+// The address we found, for the seller to confirm or change
+interface ConfirmTarget {
+  kind: 'confirm'
+  el: HTMLElement
+  label: string
+  address: string
+}
+type Target = InputTarget | ChoiceTarget | ConfirmTarget
 
 const SKIP_TYPES = new Set(['hidden', 'file', 'checkbox', 'radio', 'button', 'submit', 'reset'])
+
+const isRange = (el: Element): el is HTMLInputElement => el instanceof HTMLInputElement && el.type === 'range'
+
+// A slider always holds a value, so it only counts as answered once the
+// seller has moved it (or the question was answered before).
+let movedSliders = new WeakSet<Element>()
+watch(
+  () => current.value?.id,
+  () => (movedSliders = new WeakSet()),
+)
+// Only the seller's own drag counts; UMU's voice marks its own writes
+function onAnswerInput(e: Event) {
+  if (e.isTrusted && e.target instanceof Element && isRange(e.target)) movedSliders.add(e.target)
+}
+
+// What a slider shows: its value pill ("6", "B", "£250K") and the words at
+// each end ("Quiet" and "Loud")
+function sliderInfo(el: HTMLInputElement) {
+  const box = el.closest('.budget-slider')
+  const ends = Array.from(box?.querySelectorAll('.label-item') || []).map((e) => (e.textContent || '').trim())
+  const shown = (box?.querySelector('.value-pill-text')?.textContent || el.value).trim()
+  return {
+    shown,
+    low: ends[0] || el.min || '0',
+    high: ends[ends.length - 1] || el.max || '10',
+    letters: /^[A-Z]$/.test(shown),
+  }
+}
+
+// The slider's answer as UMU says it: "6 out of 10", "band B", "£250,000"
+function sliderAnswer(el: HTMLInputElement) {
+  const { shown, letters } = sliderInfo(el)
+  if (letters) return /council tax/i.test(`${sayText.value} ${partTitle(el)}`) ? `band ${shown}` : shown
+  const k = shown.match(/^£([\d.]+)K$/i)
+  if (k) return `£${Math.round(parseFloat(k[1]) * 1000).toLocaleString('en-GB')}`
+  if (/^\d+$/.test(shown) && /^[01]$/.test(el.min || '0') && el.max) return `${shown} out of ${el.max}`
+  return shown
+}
 
 function visible(el: Element) {
   return (el as HTMLElement).getClientRects().length > 0
@@ -1051,6 +1119,7 @@ function cleanLabel(s: string) {
     .replace(/^(please\s+)?(enter|select|provide|type|add)\s+/i, '')
     .replace(/\(s\)/gi, 's')
     .replace(/\bemail id\b/i, 'email address')
+    .replace(/^are completing\b/i, 'Are you completing')
     .replace(/[.:…]+$/, '')
     .replace(/\?$/, '')
     .trim()
@@ -1088,13 +1157,20 @@ function inputLabel(el: HTMLInputElement | HTMLTextAreaElement) {
 }
 
 function toTarget(el: Element): Target | null {
+  if (el.classList.contains('addr-confirm')) {
+    if (!visible(el)) return null
+    const address = (el.querySelector('.addr-confirm-line')?.textContent || '').trim()
+    return { kind: 'confirm', el: el as HTMLElement, label: 'address', address }
+  }
   if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
     if (el instanceof HTMLInputElement && SKIP_TYPES.has(el.type)) return null
     if (el.disabled || el.readOnly || !visible(el)) return null
     if (el.closest('.radio-options, .chips-wrap, .modal')) return null
     // A chips part's own "type your own" box is used by its chips target
     if (el.classList.contains('voice-input-field')) return null
-    if (el instanceof HTMLInputElement && el.type === 'range') {
+    if (isRange(el)) {
+      // The asking price box above the slider is asked for instead
+      if (el.closest('.budget-slider')?.querySelector('.currency-box__value')) return null
       return { kind: 'input', el, label: partTitle(el) || 'answer', addOnEnter: false }
     }
     return {
@@ -1115,16 +1191,16 @@ function toTarget(el: Element): Target | null {
 function collectTargets(): Target[] {
   const root = answerEl.value
   if (!root) return []
-  return Array.from(root.querySelectorAll('input, textarea, .radio-options, .chips-wrap'))
+  return Array.from(root.querySelectorAll('.addr-confirm, input, textarea, .radio-options, .chips-wrap'))
     .map(toTarget)
     .filter(Boolean) as Target[]
 }
 
 function isFilled(t: Target) {
+  if (t.kind === 'confirm') return t.el.classList.contains('is-confirmed')
   if (t.kind === 'choice') return t.options.some((o) => o.el.classList.contains('selected'))
   if (t.addOnEnter) return !!t.el.closest('.multi-text-input, .input-section')?.parentElement?.querySelector('.edit-btn')
-  // A slider always holds a value, so UMU always asks for it
-  if (t.el instanceof HTMLInputElement && t.el.type === 'range') return false
+  if (isRange(t.el)) return movedSliders.has(t.el) || !!current.value?.completed
   return t.el.value.trim().length > 0
 }
 
@@ -1173,7 +1249,11 @@ function shapeFor(t: InputTarget, said: string): string | null {
   const el = t.el
   const hint = `${t.label} ${el.getAttribute('placeholder') || ''} ${el.getAttribute('inputmode') || ''}`.toLowerCase()
   if (el instanceof HTMLInputElement && el.type === 'date') return spokenDate(said)
-  if (el instanceof HTMLInputElement && el.type === 'range') {
+  if (isRange(el)) {
+    if (sliderInfo(el).letters) {
+      const letter = spokenLetter(said)
+      return letter ? String(letter.charCodeAt(0) - 65) : null
+    }
     const n = spokenNumber(said)
     if (n === null) return null
     return String(Math.min(Math.max(n, Number(el.min || 0)), Number(el.max || 10)))
@@ -1205,10 +1285,18 @@ async function dictate(t: Target, id: number, append = false): Promise<string> {
     const shaped = shapeFor(t, said)
     if (shaped === null) return final ? setNativeValue(t.el, base) : undefined
     setNativeValue(t.el, append && base ? `${base} ${shaped}` : shaped)
+    if (isRange(t.el)) movedSliders.add(t.el)
   }
   const said = await voice.listen({
     // Room to pause and think mid answer; a choice is usually a word or two
-    endSilenceMs: t.kind === 'choice' ? 1300 : 2000,
+    endSilenceMs: t.kind === 'input' ? 1600 : 1100,
+    // A clear choice or command ends the answer straight away
+    isComplete: (text) => {
+      if (voiceCommand(text)) return true
+      if (t.kind === 'choice') return t.options.length > 0 && !!matchOption(text, t.options)
+      if (t.kind === 'confirm') return !!matchOption(text, [{ label: 'Yes' }, { label: 'No' }])
+      return false
+    },
     onInterim: (text) => {
       if (!alive(id)) return
       heardText.value = text
@@ -1237,8 +1325,43 @@ async function dictate(t: Target, id: number, append = false): Promise<string> {
 
 const orList = (items: string[]) =>
   items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} or ${items[items.length - 1]}`
+const andList = (items: string[]) =>
+  items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 
 type Outcome = 'next' | 'skip' | 'back' | 'stop' | 'save'
+
+// "I'm not sure" is a fair answer: UMU says so kindly and moves on
+const NOT_SURE_LINE = 'No problem. You can come back to this one later.'
+const isNotSure = (said: string) =>
+  /\b(not sure|don'?t know|do not know|no idea|not certain|can'?t remember)\b/i.test(said)
+
+// Waiting on a second opinion about what the seller said
+const understanding = ref(false)
+
+// When UMU's own matching can't place a spoken answer, Claude gets a look
+// (see server/api/umu-understand.post.ts). Null when it can't help.
+async function askUmu(t: Target, said: string): Promise<Understanding | null> {
+  const readings = [...new Set([said, ...voice.alternatives.value])]
+  const base = { question: cleanLabel(sayText.value), label: t.label === 'answer' ? '' : t.label }
+  let field: Parameters<typeof understandAnswer>[0]
+  if (t.kind === 'choice') {
+    if (!t.options.length) return null
+    field = { ...base, kind: 'choice', options: t.options.map((o) => o.label.trim()) }
+  } else if (t.kind === 'input' && isRange(t.el)) {
+    const info = sliderInfo(t.el)
+    field = info.letters
+      ? { ...base, kind: 'letter' }
+      : { ...base, kind: 'number', min: Number(t.el.min || 0), max: Number(t.el.max || 10), lowLabel: info.low, highLabel: info.high }
+  } else {
+    return null
+  }
+  understanding.value = true
+  try {
+    return await understandAnswer(field, readings)
+  } finally {
+    understanding.value = false
+  }
+}
 
 // A short acknowledgement UMU says before its next prompt, so each answer
 // feels heard: "Got it, Freehold." or "Thanks."
@@ -1252,31 +1375,98 @@ function takeAck() {
   return a
 }
 
-// What UMU says to ask for one box or choice.
-function targetPrompt(t: Target, first: boolean) {
-  const optionLabels = t.kind === 'choice' ? t.options.slice(0, 7).map((o) => o.label) : []
-  // UMU has just asked the question, so a box that is the question itself
-  // (or has no name of its own) only needs a nudge, not the same words again
-  const sameAsQuestion = t.label === 'answer' || t.label.toLowerCase() === cleanLabel(sayText.value).toLowerCase()
+// A box that is the question itself (or has no name of its own): UMU has
+// just asked it, so it only needs a nudge, not the same words again
+const isQuestionItself = (t: Target) =>
+  t.label === 'answer' || t.label.toLowerCase() === cleanLabel(sayText.value).toLowerCase()
+
+// What UMU says to ask for one box or choice. "voice" when the seller
+// answers by speaking, "tap" when they tap and type.
+function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice') {
+  const sameAsQuestion = isQuestionItself(t)
   const spokenLabel = t.label.charAt(0).toLowerCase() + t.label.slice(1)
-  return t.kind === 'choice'
-    ? joinSay(t.label && !sameAsQuestion ? `${t.label}?` : '', `You can say ${orList(optionLabels)}`)
-    : t.el instanceof HTMLInputElement && t.el.type === 'range'
-      ? `${t.label}? Say a number from ${t.el.min || 0} to ${t.el.max || 10}.`
-      : first && sameAsQuestion
-        ? "Go ahead, I'm listening."
-        : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+  if (t.kind === 'confirm') {
+    return mode === 'voice'
+      ? `I found this address for your property: ${t.address}. Is that right? Say yes, or say no to change it.`
+      : `I found this address for your property: ${t.address}. If it's right, tap Yes, this is my address. If not, tap No, change it.`
+  }
+  if (t.kind === 'choice') {
+    const optionLabels = t.options.slice(0, 7).map((o) => o.label)
+    const choose =
+      mode === 'voice'
+        ? `You can say ${orList(optionLabels)}`
+        : optionLabels.length > 4 ? 'Tap the one that fits' : `Tap ${orList(optionLabels)}`
+    return joinSay(t.label && !sameAsQuestion ? `${t.label}?` : '', choose)
+  }
+  if (isRange(t.el)) {
+    const { low, high, letters } = sliderInfo(t.el)
+    const min = t.el.min || '0'
+    const max = t.el.max || '10'
+    const ask = sameAsQuestion ? '' : `${t.label}?`
+    if (mode === 'tap') return joinSay(ask, `Move the slider between ${low} and ${high}`)
+    if (letters) return joinSay(ask, `Say the letter, from ${low} to ${high}`)
+    // Word ends ("Quiet", "Loud") tell the seller which way round it goes
+    const ends = low !== min || high !== max ? `, where ${min} is ${low} and ${max} is ${high}` : ''
+    return joinSay(ask, `Say a number from ${min} to ${max}${ends}`)
+  }
+  if (mode === 'tap') {
+    if (sameAsQuestion) return 'Type your answer in the box.'
+    return t.addOnEnter
+      ? `${first ? 'Please add' : 'Next, please add'} the ${spokenLabel}. Press enter after each one.`
+      : `${first ? 'Please fill in' : 'Next, please fill in'} the ${spokenLabel}.`
+  }
+  return first && sameAsQuestion ? "Go ahead, I'm listening." : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+}
+
+// The words on the footer while UMU waits on a box
+function targetLabel(t: Target, mode: 'voice' | 'tap') {
+  if (t.kind === 'confirm') return mode === 'voice' ? 'Is this your address? Say yes or no' : 'Is this your address?'
+  if (t.kind === 'choice') return t.label ? `${t.label}?` : 'Choose an answer'
+  if (isRange(t.el) && mode === 'tap') return t.label === 'answer' ? 'Move the slider' : `${t.label}? Move the slider`
+  if (t.label === 'answer') return mode === 'voice' ? 'Say your answer' : 'Type your answer'
+  const label = /^[A-Z][a-z]/.test(t.label) ? t.label.charAt(0).toLowerCase() + t.label.slice(1) : t.label
+  return mode === 'voice' ? `Tell me the ${label}` : `Fill in the ${label}`
 }
 
 async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome> {
   setTarget(t)
   const optionLabels = t.kind === 'choice' ? t.options.slice(0, 7).map((o) => o.label) : []
-  askingLabel.value =
-    t.kind === 'choice'
-      ? t.label ? `${t.label}?` : `You can say ${orList(optionLabels)}`
-      : t.label === 'answer' ? 'Say your answer' : `Tell me the ${t.label}`
+  askingLabel.value = targetLabel(t, 'voice')
   const prompt = targetPrompt(t, first)
+  prefetchGuide('voice')
   await say(joinSay(takeAck(), prompt), id)
+
+  // The address we found: yes keeps it, no opens the box to type a new one
+  if (t.kind === 'confirm') {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (!alive(id)) return 'stop'
+      const said = await dictate(t, id)
+      if (!alive(id)) return 'stop'
+      const cmd = voiceCommand(said)
+      if (cmd === 'back' || cmd === 'stop') return cmd
+      if (cmd === 'skipQuestion') return 'skip'
+      if (cmd === 'repeat') {
+        await say(prompt, id)
+        continue
+      }
+      const heard = ` ${[said, ...voice.alternatives.value].join(' ').toLowerCase()} `
+      const change = /\b(change|wrong|different|edit|not (right|correct|mine|it|my address))\b/.test(heard)
+      const answer = change ? null : matchOption([said, ...voice.alternatives.value], [{ label: 'Yes' }, { label: 'No' }])
+      if (change || answer?.label === 'No') {
+        t.el.querySelector<HTMLElement>('.addr-change')?.click()
+        ack = "No problem. Let's put in the right address."
+        return 'next'
+      }
+      if (answer?.label === 'Yes' || cmd === 'save') {
+        t.el.querySelector<HTMLElement>('.addr-yes')?.click()
+        ack = 'Great, address confirmed.'
+        return 'next'
+      }
+      if (!said && attempt > 0) return 'next'
+      await say(said ? "Sorry, I didn't catch that. Is this your address? Say yes or no." : prompt, id)
+    }
+    return 'next'
+  }
 
   for (let attempt = 0; attempt < 3; attempt++) {
     if (!alive(id)) return 'stop'
@@ -1285,7 +1475,10 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
     const cmd = voiceCommand(said)
     if (cmd === 'back') return 'back'
     if (cmd === 'skipQuestion') return 'skip'
-    if (cmd === 'skip') return 'next'
+    if (cmd === 'skip') {
+      if (isNotSure(said)) ack = NOT_SURE_LINE
+      return 'next'
+    }
     if (cmd === 'stop') return 'stop'
     if (cmd === 'save') return 'save'
     if (cmd === 'repeat') {
@@ -1303,7 +1496,19 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       const opt = matchOption([said, ...voice.alternatives.value], t.options)
       if (opt) {
         opt.el.click()
-        ack = `Got it, ${opt.label.trim()}.`
+        ack = `You selected ${opt.label.trim()}.`
+        return 'next'
+      }
+      const meant = await askUmu(t, said)
+      if (!alive(id)) return 'stop'
+      const picked = meant?.option ? t.options.find((o) => o.label.trim() === meant.option) : null
+      if (picked) {
+        picked.el.click()
+        ack = `You selected ${picked.label.trim()}.`
+        return 'next'
+      }
+      if (meant?.intent === 'not_sure' || meant?.intent === 'skip') {
+        ack = NOT_SURE_LINE
         return 'next'
       }
       // Chips that take your own words: add what was said as a new chip
@@ -1321,9 +1526,38 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       await say('Sorry, I need a date, like the thirty first of March twenty twenty five.', id)
       continue
     }
+    // Doesn't look right (an email without an at sign, a short phone
+    // number): say why and ask again
+    const problem = t.addOnEnter ? '' : problemWith(t)
+    if (problem && attempt < 2) {
+      await say(joinSay(problem, 'Please say it again.'), id)
+      continue
+    }
+    if (isRange(t.el)) {
+      if (!movedSliders.has(t.el)) {
+        const meant = await askUmu(t, said)
+        if (!alive(id)) return 'stop'
+        if (meant?.intent === 'answer' && meant.value) {
+          const letter = sliderInfo(t.el).letters
+          setNativeValue(t.el, letter ? String(meant.value.charCodeAt(0) - 65) : meant.value)
+          movedSliders.add(t.el)
+        } else if (meant?.intent === 'not_sure' || meant?.intent === 'skip') {
+          ack = NOT_SURE_LINE
+          return 'next'
+        } else {
+          await say(`Sorry, I didn't catch that. ${targetPrompt(t, false)}`, id)
+          continue
+        }
+      }
+      // Let the slider's value pill catch up before reading it out
+      await nextTick()
+      ack = `You selected ${sliderAnswer(t.el)}.`
+      return 'next'
+    }
     ack = nextAck()
     return 'next'
   }
+  ack = "Let's leave that one for now. You can tap it in any time."
   return 'next'
 }
 
@@ -1370,11 +1604,28 @@ async function runVoiceAnswer(id: number) {
       if (cmd === 'back') return goBack()
       if (cmd === 'repeat') return presentQuestion()
       if (cmd === 'save' && q.answer) return saveCurrent()
-      const letter = [said, ...voice.alternatives.value].map(spokenLetter).find(Boolean) || null
+      let letter = [said, ...voice.alternatives.value].map(spokenLetter).find(Boolean) || null
+      if (!letter && said) {
+        if (isNotSure(said)) {
+          ack = NOT_SURE_LINE
+          break
+        }
+        understanding.value = true
+        const meant = await understandAnswer(
+          { kind: 'letter', question: cleanLabel(sayText.value), label: 'Council tax band' },
+          [...new Set([said, ...voice.alternatives.value])],
+        ).finally(() => (understanding.value = false))
+        if (!alive(id)) return
+        if (meant?.intent === 'answer' && meant.value) letter = spokenLetter(meant.value)
+        else if (meant?.intent === 'not_sure' || meant?.intent === 'skip') {
+          ack = NOT_SURE_LINE
+          break
+        }
+      }
       if (letter) {
         q.answer = letter
         componentRev.value++
-        ack = `Got it, band ${letter}.`
+        ack = `You selected band ${letter}.`
         break
       }
       await say("Sorry, I didn't catch the letter. Please say it again, like band C.", id)
@@ -1392,12 +1643,12 @@ async function runVoiceAnswer(id: number) {
       if (!alive(id) || current.value?.id !== q.id) return
       const picked = t.options.filter((o) => o.el.classList.contains('selected')).map((o) => o.label)
       setTarget(t)
-      askingLabel.value = 'Say a different answer to change it, or say save'
+      askingLabel.value = 'Say another answer, or say save'
       await say(
         joinSay(
           t.label && t.label.toLowerCase() !== cleanLabel(sayText.value).toLowerCase() ? `${t.label}?` : '',
-          `This is set to ${orList(picked)}`,
-          'Say a different answer to change it, or say save to keep it',
+          `Your answer is ${andList(picked)}`,
+          'Say another answer, or say save to keep it',
         ),
         id,
       )
@@ -1420,16 +1671,31 @@ async function runVoiceAnswer(id: number) {
           }
         }
         opt.el.click()
-        ack = `Changed to ${opt.label.trim()}.`
+        ack = `You selected ${opt.label.trim()}.`
       }
       if (current.value?.id !== q.id) return
     }
     return finishByVoice(q.id, id)
   }
+  // Box by box until every one is answered. Answers can open more boxes
+  // (a "No" to "Are you the owner?" asks how you are acting for the
+  // seller), so the form is looked at again after every answer and any
+  // new box is asked for too, after saying it has opened.
+  const asked = new Set<Element>()
+  const seen = new Set<Element>(collectTargets().map((t) => t.el))
   let first = true
-  for (const t of targets) {
+  while (alive(id) && current.value?.id === q.id) {
+    await nextTick()
+    // Let the form open any follow-up the last answer revealed
+    await new Promise((r) => setTimeout(r, 120))
     if (!alive(id) || current.value?.id !== q.id) return
-    if (isFilled(t) || !document.contains(t.el)) continue
+    const all = collectTargets()
+    const opened = all.filter((t) => !seen.has(t.el) && !isFilled(t))
+    all.forEach((t) => seen.add(t.el))
+    if (opened.length && !first) ack = joinSay(takeAck(), openedNote(opened.length))
+    const t = all.find((x) => !isFilled(x) && !asked.has(x.el))
+    if (!t) break
+    asked.add(t.el)
     const outcome = await askTarget(t, id, first)
     first = false
     if (!alive(id)) return
@@ -1439,23 +1705,234 @@ async function runVoiceAnswer(id: number) {
     if (outcome === 'save') break
     // A radio answer saves straight away and moves on
     if (current.value?.id !== q.id) return
-    await nextTick()
-  }
-  // Answers can reveal more boxes (a "Yes" opens a follow-up); ask those too
-  const more = collectTargets().filter((t) => !isFilled(t) && !targets.some((x) => x.el === t.el))
-  if (more.length && alive(id) && current.value?.id === q.id) {
-    for (const t of more) {
-      const outcome = await askTarget(t, id, false)
-      if (!alive(id) || current.value?.id !== q.id) return
-      if (outcome === 'stop') return stopVoiceMode()
-      if (outcome === 'back') return goBack()
-      if (outcome === 'skip') return skipQuestion()
-      if (outcome === 'save') break
-    }
   }
   if (!alive(id) || current.value?.id !== q.id) return
   finishByVoice(q.id, id)
 }
+
+// ── Tap guide ──
+// When the seller taps and types rather than talking, UMU still walks
+// them through the question. After each answer it says it's done (or that
+// it was changed, or cleared), checks the answer makes sense (an email that
+// looks like one, a postcode, a full name), says when the answer opened or
+// closed more questions, then points at the next box and says what it
+// needs, until the question is ready to save. Everything UMU might say next
+// is loaded while the seller answers, so it replies straight away.
+let guideValues = new Map<Element, string>()
+let guideTimer: ReturnType<typeof setTimeout> | null = null
+let guideAckIndex = 0
+
+// What a box holds right now, as text, so a change can be spotted
+function valueOf(t: Target): string {
+  if (t.kind === 'confirm') return t.el.classList.contains('is-confirmed') ? 'confirmed' : ''
+  if (t.kind === 'choice') {
+    return t.options.filter((o) => o.el.classList.contains('selected')).map((o) => o.label.trim()).join(' | ')
+  }
+  if (t.addOnEnter) return listItems(t).join(' | ')
+  return t.el.value.trim()
+}
+
+// The names already added to a list box ("Full names of the sellers")
+function listItems(t: InputTarget) {
+  const wrap = t.el.closest('.multi-text-input-wrapper, .multi-text-input')
+  return Array.from(wrap?.querySelectorAll('.item-text') || []).map((e) => (e.textContent || '').trim()).filter(Boolean)
+}
+
+const UK_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i
+
+// What UMU says when something typed doesn't look right
+const PROBLEMS = {
+  email: "That email address doesn't look quite right. It should look like name@example.com.",
+  phone: 'That phone number looks too short. Please check it, including the area code.',
+  postcode: "That postcode doesn't look right. It should look like C V 5, 7 L Y.",
+  addressPostcode: 'Please add the postcode at the end of the address.',
+  registration: 'A company registration number is usually 8 characters, like 12345678. Please check it.',
+  percentage: 'Please enter a percentage between 0 and 100.',
+  amount: 'Please enter the amount in numbers, like 1500.',
+  number: 'Please enter a number.',
+  fullName: 'Please use the full name, first name and surname, exactly as on the title deeds. Tap Edit to change it.',
+}
+
+// A plain-words problem with what was typed, or '' when it looks right
+function problemWith(t: Target): string {
+  if (t.kind !== 'input') return ''
+  const el = t.el
+  const value = valueOf(t)
+  if (!value) return ''
+  const hint = `${t.label} ${el.getAttribute('placeholder') || ''} ${el.getAttribute('aria-label') || ''}`.toLowerCase()
+  if (t.addOnEnter) {
+    const last = listItems(t).pop() || ''
+    if (/name/.test(hint) && last && last.split(/\s+/).length < 2) {
+      return PROBLEMS.fullName
+    }
+    return ''
+  }
+  if ((el instanceof HTMLInputElement && el.type === 'email') || /email/.test(hint)) {
+    return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(value) ? '' : PROBLEMS.email
+  }
+  if (/phone|mobile|telephone/.test(hint)) {
+    const digits = value.replace(/\D/g, '')
+    return digits.length >= 10 && digits.length <= 13 ? '' : PROBLEMS.phone
+  }
+  if (el.closest('.address-input') || /property address/.test(hint)) {
+    return /[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\s*$/i.test(value) ? '' : PROBLEMS.addressPostcode
+  }
+  if (/postcode|post code/.test(hint)) return UK_POSTCODE.test(value) ? '' : PROBLEMS.postcode
+  if (/registration number/.test(hint)) {
+    return /^[A-Z0-9]{8}$/i.test(value.replace(/\s/g, ''))
+      ? ''
+      : PROBLEMS.registration
+  }
+  if (/percent|%/.test(hint)) {
+    const n = parseFloat(value.replace(/[^\d.]/g, ''))
+    return Number.isNaN(n) || n > 100 ? PROBLEMS.percentage : ''
+  }
+  if (/amount|price|£|rent|charge|fee/.test(hint) || el.getAttribute('inputmode') === 'decimal') {
+    return /\d/.test(value) ? '' : PROBLEMS.amount
+  }
+  if (/years|units|number of/.test(hint)) return /\d/.test(value) ? '' : PROBLEMS.number
+  return ''
+}
+
+// The short reply after an answer: just the answer the seller gave
+// ("You selected Flat."), whether it is their first or a new one
+function guideAck(t: Target, before: string | undefined) {
+  const now = valueOf(t)
+  if (t.kind === 'confirm') return 'Great, address confirmed.'
+  if (t.kind === 'choice') {
+    const was = before ? before.split(' | ') : []
+    const picked = now ? now.split(' | ') : []
+    const added = picked.filter((x) => !was.includes(x))
+    const removed = was.filter((x) => !picked.includes(x))
+    if (added.length) return `You selected ${andList(added)}.`
+    if (removed.length) return `You removed ${andList(removed)}.`
+    return ''
+  }
+  if (isRange(t.el)) return `You selected ${sliderAnswer(t.el)}.`
+  if (t.el.classList.contains('currency-box__value')) return `You selected ${now}.`
+  if (t.addOnEnter) return "Added. If there's anyone else, add them the same way."
+  return ['Done.', 'Thanks.', 'Lovely.'][guideAckIndex++ % 3]
+}
+
+// Loads everything UMU might say next, so it replies without a pause
+function prefetchGuide(mode: 'voice' | 'tap') {
+  const all = collectTargets()
+  const lines = new Set<string>()
+  // The replies to the open boxes first: those are needed soonest
+  for (const t of all) {
+    if (t.kind === 'choice') for (const o of t.options) lines.add(`You selected ${o.label.trim()}.`)
+    if (!isFilled(t)) lines.add(targetPrompt(t, false, mode))
+  }
+  GUIDE_LINES.forEach((l) => lines.add(l))
+  if (all.some((t) => t.kind === 'input')) Object.values(PROBLEMS).forEach((l) => lines.add(l))
+  lines.forEach((l) => voice.prefetch(l))
+}
+const GUIDE_LINES = [
+  'Done.',
+  'Thanks.',
+  'Lovely.',
+  "Added. If there's anyone else, add them the same way.",
+  'Great, address confirmed.',
+  'No problem.',
+  'That opens one more question.',
+  'That opens a few more details to fill in.',
+  "Those extra questions aren't needed now.",
+  "That's everything for this question.",
+  'Check your answers, then tap Save and continue.',
+  'Some boxes still need an answer.',
+]
+
+// Starts from the form as it is now, highlights the first open box and
+// returns it.
+function resetGuide(): Target | null {
+  if (guideTimer) clearTimeout(guideTimer)
+  const all = collectTargets()
+  guideValues = new Map(all.map((t) => [t.el, valueOf(t)]))
+  const next = all.find((t) => !isFilled(t)) || null
+  if (next && !voiceMode.value) {
+    setTarget(next)
+    askingLabel.value = targetLabel(next, 'tap')
+  }
+  prefetchGuide(voiceMode.value ? 'voice' : 'tap')
+  return next
+}
+
+// Waits a moment for the form to settle (a follow-up opening, a list
+// adding a name), then replies
+function scheduleGuide() {
+  if (voiceMode.value || phase.value !== 'question') return
+  if (guideTimer) clearTimeout(guideTimer)
+  guideTimer = setTimeout(guideCheck, 200)
+}
+
+async function guideCheck() {
+  if (voiceMode.value || saving.value || phase.value !== 'question' || !answerEl.value) return
+  const id = flow
+  const all = collectTargets()
+  const before = guideValues
+  const answered: Target[] = []
+  const cleared: Target[] = []
+  for (const t of all) {
+    if (!before.has(t.el)) continue
+    const was = before.get(t.el) || ''
+    const now = valueOf(t)
+    if (now && now !== was && isFilled(t)) answered.push(t)
+    else if (was && !now) cleared.push(t)
+  }
+  // The address card can arrive a moment late; it isn't a new question
+  const opened = all.filter((t) => !before.has(t.el) && !isFilled(t) && t.kind !== 'confirm')
+  const closed = [...before.keys()].filter((el) => !all.some((t) => t.el === el) && !document.contains(el))
+  guideValues = new Map(all.map((t) => [t.el, valueOf(t)]))
+  if (!answered.length && !cleared.length && !opened.length && !closed.length) return
+
+  const words: string[] = []
+  const last = answered[answered.length - 1]
+  if (last) words.push(guideAck(last, before.get(last.el) || undefined))
+
+  // Something typed doesn't look right: say so and stay on that box
+  const wrong = answered.find((t) => problemWith(t))
+  if (wrong) {
+    const problem = problemWith(wrong)
+    setTarget(wrong)
+    askingLabel.value = problem.replace(/ Tap Edit to change it\.$/, '')
+    await say(problem, id)
+    return
+  }
+
+  if (opened.some((t) => t.el.closest('.address-input'))) words.push('No problem.')
+  else if (opened.length) words.push(openedNote(opened.length))
+  else if (closed.length && last?.kind === 'choice') words.push("Those extra questions aren't needed now.")
+
+  // A box that was emptied comes first, then the next open box after the
+  // one just answered, else the first open one
+  const from = last ? all.findIndex((t) => t.el === last.el) : -1
+  const next =
+    cleared.find((t) => !isFilled(t)) ||
+    all.slice(from + 1).find((t) => !isFilled(t)) ||
+    all.find((t) => !isFilled(t))
+  if (next) {
+    setTarget(next)
+    askingLabel.value = targetLabel(next, 'tap')
+    if (cleared.includes(next)) words.push(`The ${next.label === 'answer' ? 'answer' : next.label.toLowerCase()} is empty now.`)
+    words.push(targetPrompt(next, false, 'tap'))
+  } else {
+    clearTarget()
+    // A radio answer saves by itself, so there is nothing more to say
+    if (!needsSaveButton.value) return
+    if (answerValid.value) {
+      askingLabel.value = 'All done, tap Save and continue'
+      words.push("That's everything for this question. Check your answers, then tap Save and continue.")
+    } else {
+      askingLabel.value = ''
+      words.push('Some boxes still need an answer.')
+    }
+  }
+  prefetchGuide('tap')
+  await say(joinSay(...words), id)
+}
+
+const openedNote = (n: number) =>
+  n === 1 ? 'That opens one more question.' : 'That opens a few more details to fill in.'
 
 async function finishByVoice(qid: string, id: number) {
   clearTarget()
