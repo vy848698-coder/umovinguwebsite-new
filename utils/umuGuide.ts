@@ -32,14 +32,16 @@ const OWNERSHIP: { match: (q: Q) => boolean; guide: Guide }[] = [
   {
     match: (q) => has(q, /address of the property/i),
     guide: {
-      say: 'Check the address we found, or start typing it and pick it from the list.',
-      tip: 'Use the full address, including the postcode.',
+      // UMU then reads out the address we found and asks the seller to
+      // confirm it, or asks them to type it when none was found
+      say: "Let's make sure we have the right property.",
+      tip: 'Confirm the address we found, or change it if it is not right. Use the full address, including the postcode.',
     },
   },
   {
     match: (q) => has(q, /full names? of the seller/i),
     guide: {
-      say: 'Tell me the full name of everyone named as owner on the title deeds, exactly as written. Then tell me if you are the owner.',
+      say: 'I need the full name of everyone named as owner on the title deeds, exactly as written. Then whether you are the owner yourself.',
       tip: 'Use the names exactly as they appear on the HM Land Registry title or deeds. Add each seller separately.',
     },
   },
@@ -120,7 +122,8 @@ function typeGuide(type: string): Guide {
     case 'date':
       return { say: 'Fill in the details, or press the mic and tell me.', tip: 'Tap a box to type, or press the mic and say it.' }
     case 'scale':
-      return { say: 'Move the slider to your answer, or say it.', tip: 'Drag the slider, or press the mic and say it.' }
+      // UMU then says which end is which ("between Quiet and Loud")
+      return { say: '', tip: 'Drag the slider, or press the mic and say it.' }
     case 'upload':
       return { say: 'Tap the upload box to add a file from your device.', tip: 'PDFs and photos both work.' }
     case 'multifieldform':

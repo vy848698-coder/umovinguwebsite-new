@@ -2,7 +2,7 @@
 // voice, and listens to the seller.
 //
 // Speaking uses Microsoft Edge's neural voices (free, no key) through our
-// /api/umu-tts route. Text is spoken sentence by sentence: every sentence
+// /api/umu-tts route, which needs the seller's sign-in token. Text is spoken sentence by sentence: every sentence
 // starts loading at once, the first plays as soon as it arrives, and each
 // clip's own silence is trimmed and replaced by a short, natural pause, a
 // little longer after a question, so the seller can follow along. Audio is
@@ -199,6 +199,10 @@ function listenLocale() {
 }
 
 const CLIP_TIMEOUT_MS = 9000
+const PREFETCH_MAX = 2
+const PREFETCH_QUEUE_LIMIT = 40
+const prefetchQueue: (() => Promise<unknown>)[] = []
+let prefetchActive = 0
 const CLIP_CACHE_LIMIT = 120
 
 // Shared across pages and visits within the session, so a line heard once
@@ -402,9 +406,10 @@ export function useUmuVoice() {
     if (!p) {
       const ac = new AbortController()
       const timer = setTimeout(() => ac.abort(), CLIP_TIMEOUT_MS)
+      // The voice route only serves signed-in sellers
       p = fetch('/api/umu-tts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${store.get('token') ?? ''}` },
         body: JSON.stringify({ text, voice: voiceName.value, rate: rate.value }),
         signal: ac.signal,
       })
@@ -427,10 +432,30 @@ export function useUmuVoice() {
   const cloudPhrases = (text: string) => phrases(text, 220, 0)
 
   // Loads a line ahead of time, so it plays straight away when spoken.
+  // Lines loaded ahead wait their turn, two at a time, so they never hold
+  // up a line UMU needs to say right now.
   function prefetch(text: string) {
     if (muted.value || !useNatural()) return
     const clean = (text || '').replace(/\s+/g, ' ').trim()
-    for (const p of cloudPhrases(clean)) clip(speakable(p)).catch(() => {})
+    for (const p of cloudPhrases(clean)) {
+      const say = speakable(p)
+      if (clipCache.has(`${voiceName.value}|${rate.value}|${say}`)) continue
+      prefetchQueue.push(() => clip(say).catch(() => {}))
+    }
+    // Only the most recent wishes matter
+    if (prefetchQueue.length > PREFETCH_QUEUE_LIMIT) prefetchQueue.splice(0, prefetchQueue.length - PREFETCH_QUEUE_LIMIT)
+    pumpPrefetch()
+  }
+
+  function pumpPrefetch() {
+    while (prefetchActive < PREFETCH_MAX && prefetchQueue.length) {
+      const job = prefetchQueue.shift()!
+      prefetchActive++
+      job().finally(() => {
+        prefetchActive--
+        pumpPrefetch()
+      })
+    }
   }
 
   // ── Speaking ──
@@ -694,6 +719,9 @@ export function useUmuVoice() {
     noSpeechMs?: number
     // Longest single answer
     maxMs?: number
+    // True once what was heard is a whole answer ("yes", an option's
+    // name), so listening ends at once instead of waiting for silence
+    isComplete?: (text: string) => boolean
   }
 
   // Listens for one answer. Resolves with what was said, or '' if nothing
@@ -711,7 +739,7 @@ export function useUmuVoice() {
     // Let the last of UMU's voice fade so it isn't heard as the answer
     await wait(150)
     if (token !== listenRun) return ''
-    const { onInterim, endSilenceMs = 1800, noSpeechMs = 10000, maxMs = 30000 } = options
+    const { onInterim, isComplete, endSilenceMs = 1800, noSpeechMs = 10000, maxMs = 30000 } = options
     const lang = listenLocale()
 
     return new Promise((resolve) => {
@@ -812,6 +840,8 @@ export function useUmuVoice() {
           }
           const sofar = [...finals.map((alts) => alts[0]), interim].join(' ').replace(/\s+/g, ' ').trim()
           onInterim?.(sofar)
+          // A whole answer already: no need to wait for the quiet spell
+          if (!interim && isComplete?.(sofar)) return endAnswer()
           // End of the answer: a short quiet spell after the last words
           if (silenceTimer) clearTimeout(silenceTimer)
           silenceTimer = setTimeout(endAnswer, endSilenceMs)

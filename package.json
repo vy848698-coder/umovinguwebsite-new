@@ -9,11 +9,13 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "test": "vitest run",
     "mobile:assets": "capacitor-assets generate --ios",
     "mobile:sync": "npm run generate && cap sync ios",
     "mobile:open": "cap open ios"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
     "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor/core": "^8.3.0",
     "@capacitor/local-notifications": "^7.0.6",
@@ -36,6 +38,7 @@
     "@nuxt/typescript-build": "^3.0.2",
     "@tailwindcss/typography": "^0.5.15",
     "tailwindcss": "^3.4.16",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.7"
   }
 }
