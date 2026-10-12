@@ -12,57 +12,66 @@
         </div>
 
         <template v-else>
-          <button class="pa-skip" type="button" aria-label="Skip" @click="skip">Skip</button>
+          <!-- Everything below is pinned to the app's own mobile-container
+               width (28rem), same convention as BaseDrawer - the overlay
+               backdrop still covers the full viewport, but Teleport-to-body
+               otherwise escapes .mobile-container entirely, so on a wider
+               browser window Skip and the whole scene used to drift out to
+               the real window edges instead of staying within the simulated
+               phone frame (client report, 9 Oct 2026). -->
+          <div class="pa-frame">
+            <button class="pa-skip" type="button" aria-label="Skip" @click="skip">Skip</button>
 
-          <div class="pa-scene">
-            <div class="pa-book">
-              <!-- Real footage of the passport physically opening. Plays
-                   once; on 'ended' the element naturally holds its last
-                   frame (no need to freeze it manually) for the rest of the
-                   celebration — that held frame is the backdrop the stamp
-                   drops onto, and stays put through points and the fade-out. -->
-              <video
-                v-if="phase !== 'idle'"
-                ref="openingVideoEl"
-                src="/op-icons/rewards/passportOpening.mp4"
-                class="pa-video"
-                muted
-                playsinline
-                autoplay
-              />
-
-              <!-- Stamp tool drops onto the right side of the opened
-                   passport (held on the opening video's last frame),
-                   impacts, holds, then lifts away leaving the ink
-                   impression. -->
-              <div
-                v-if="phase === 'stamp' || phase === 'points' || phase === 'hold'"
-                class="pa-stamp-area"
-              >
+            <div class="pa-scene">
+              <div class="pa-book">
+                <!-- Static artwork of the open passport, with a quick CSS
+                     scale/fade entrance instead of decoding a multi-MB video
+                     on every stamp (client report, 9 Oct 2026: the video
+                     celebration "comes late" and fades to a black backdrop
+                     that didn't look good). This is the same held-open frame
+                     the old clip settled on, just not run through a video
+                     decoder to get there — the stamp lands on it exactly as
+                     before. -->
                 <img
-                  v-if="stampStep !== 'idle' && stampStep !== 'done'"
-                  src="/op-icons/rewards/stampTool.png"
+                  v-if="phase !== 'idle'"
+                  src="/op-icons/rewards/passportOpenBase.png"
+                  class="pa-book-img"
                   alt=""
-                  class="pa-stamp-tool"
-                  :class="stampStep"
                 />
-                <Transition name="pa-fade">
-                  <div v-if="stampStep === 'lifting' || stampStep === 'done'" class="pa-impression">
-                    <StampFrame :title="achievementTitle" :size="120" />
-                  </div>
-                </Transition>
-              </div>
-            </div>
 
-            <!-- Points — plain glowing text, no card/background, so it
-                 reads as part of the same scene as the video + stamp
-                 rather than a separate boxed element. -->
-            <Transition name="pa-fade-up">
-              <div v-if="phase === 'points' || phase === 'hold'" class="pa-points-hero">
-                <div class="pa-points-num">+{{ animatedPoints.toLocaleString('en-GB') }}</div>
-                <div class="pa-points-label">Points Earned</div>
+                <!-- Stamp tool drops onto the opened passport artwork,
+                     impacts, holds, then lifts away leaving the ink
+                     impression. -->
+                <div
+                  v-if="phase === 'stamp' || phase === 'points' || phase === 'hold'"
+                  class="pa-stamp-area"
+                >
+                  <img
+                    v-if="stampStep !== 'idle' && stampStep !== 'done'"
+                    src="/op-icons/rewards/stampTool.png"
+                    alt=""
+                    class="pa-stamp-tool"
+                    :class="stampStep"
+                  />
+                  <Transition name="pa-fade">
+                    <div v-if="stampStep === 'lifting' || stampStep === 'done'" class="pa-impression">
+                      <StampFrame :title="achievementTitle" :size="62" />
+                    </div>
+                  </Transition>
+                </div>
               </div>
-            </Transition>
+
+              <!-- Points — plain glowing text, no card/background, so it
+                   reads as part of the same scene as the book + stamp
+                   rather than a separate boxed element. -->
+              <Transition name="pa-fade-up">
+                <div v-if="phase === 'points' || phase === 'hold'" class="pa-points-hero">
+                  <div class="pa-points-num">+{{ animatedPoints.toLocaleString('en-GB') }}</div>
+                  <div class="pa-points-label">Points Earned</div>
+                  <p v-if="achievementSubtitle" class="pa-points-message">{{ achievementSubtitle }}</p>
+                </div>
+              </Transition>
+            </div>
           </div>
         </template>
       </div>
@@ -72,6 +81,7 @@
 
 <script setup lang="ts">
 import StampFrame from './StampFrame.vue'
+import { useConfetti } from '~/composables/useConfetti'
 
 interface Props {
   visible: boolean
@@ -102,7 +112,10 @@ const phase = ref<Phase>('idle')
 const stampStep = ref<StampStep>('idle')
 const reducedMotion = ref(false)
 
-const openingVideoEl = ref<HTMLVideoElement | null>(null)
+// Same canvas confetti shower used after onboarding and the HomeScore
+// level-up celebration, not a one-off CSS version — keeps the flourish
+// consistent across every "celebration" moment in the app.
+const { runConfetti } = useConfetti()
 
 // Counts up 0 -> pointsAwarded (not a running balance total — the
 // redesigned points display shows just "+N Points Earned", matching the
@@ -113,43 +126,17 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-// Waits for the video's 'ended' event. A fallback timer (well above either
-// clip's real ~5s length) guarantees the celebration can never get stuck
-// even if a WebView silently blocks autoplay or the file fails to decode.
-function waitForVideo(el: HTMLVideoElement | null, fallbackMs = 8000): Promise<void> {
-  return new Promise((resolve) => {
-    if (!el) {
-      resolve()
-      return
-    }
-    let settled = false
-    const finishOnce = () => {
-      if (settled) return
-      settled = true
-      el.removeEventListener('ended', finishOnce)
-      resolve()
-    }
-    el.addEventListener('ended', finishOnce, { once: true })
-    setTimeout(finishOnce, fallbackMs)
-    el.play?.().catch(() => {
-      /* autoplay attribute already asked for this — the fallback timer
-         covers a WebView that silently refuses both */
-    })
-  })
-}
-
 let cancelled = false
 
 async function runSequence() {
   cancelled = false
 
+  // Static artwork + a quick CSS scale/fade (see .pa-book-img-enter below) —
+  // replaces what used to be a multi-second video decode+playback wait.
   phase.value = 'opening'
-  await nextTick()
-  await waitForVideo(openingVideoEl.value)
+  await sleep(450)
   if (cancelled) return
 
-  // The opening video's element naturally holds on its final frame once
-  // 'ended' fires — that's the "stopped open" backdrop the stamp lands on.
   // This whole stamp sub-sequence totals ~2s, matching the requested
   // "hold for 2 seconds and put the stamp" pause before closing.
   phase.value = 'stamp'
@@ -172,6 +159,12 @@ async function runSequence() {
   if (cancelled) return
 
   phase.value = 'points'
+  // Override the default palette - it includes #ffffff/#e2f1ea, which
+  // are nearly invisible against this overlay's light cream backdrop
+  // (client report, 9 Oct 2026: "why it looks like that" - washed-out
+  // grey dots). These are the same vivid tones used elsewhere in the app
+  // for celebration moments.
+  runConfetti({ colors: ['#00a19a', '#231d45', '#14b8a6', '#a78bfa', '#38bdf8', '#fbbf24'] })
   startPointsCountUp(0, props.pointsAwarded, 900)
   await sleep(1400)
   if (cancelled) return
@@ -192,7 +185,6 @@ function finish() {
 
 function skip() {
   cancelled = true
-  openingVideoEl.value?.pause?.()
   finish()
 }
 
@@ -222,7 +214,10 @@ watch(
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: #ffffff;
+  /* Flat light backdrop, consistent with the rest of the app — no video
+     frame to track a fade-to-black against anymore, so this never needs
+     to change at runtime. */
+  background: #faf9f6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -236,6 +231,17 @@ watch(
 .pa-overlay-fade-enter-from,
 .pa-overlay-fade-leave-to {
   opacity: 0;
+}
+
+/* Constrains the whole celebration to the app's mobile-container width
+   (28rem), same convention BaseDrawer uses — .pa-overlay stays a
+   full-viewport backdrop, but everything a viewer actually looks at lives
+   inside this frame instead of spreading across a wide desktop window. */
+.pa-frame {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
 }
 
 .pa-skip {
@@ -252,6 +258,7 @@ watch(
   font-family: inherit;
   cursor: pointer;
   z-index: 2;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ── Reduced-motion static confirmation ── */
@@ -310,42 +317,58 @@ watch(
   align-items: center;
   gap: 18px;
   width: 100%;
-  max-width: min(94vw, 460px);
+  position: relative;
+  z-index: 2;
 }
 .pa-book {
   position: relative;
-  width: 100%;
+  /* Capped well below the frame's own 28rem width - at full width the
+     book read as oversized/dominating against the points text below it
+     (client report, 9 Oct 2026). */
+  width: 72%;
+  max-width: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-/* No fixed aspect-ratio, no card treatment — sized by the video's own
+/* No fixed aspect-ratio, no card treatment - sized by the image's own
    intrinsic dimensions, no border-radius/shadow so it sits directly on
    the overlay's own background rather than reading as a boxed card. */
-.pa-video {
+.pa-book-img {
   width: 100%;
   height: auto;
   display: block;
+  animation: pa-book-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes pa-book-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* Stamp lands on the right-hand page of the opened passport (measured
-   against the opening video's actual last frame: the right page spans
-   roughly x 52-89%, y 16-82% of the frame — this box sits inset within
-   that). Horizontally centered on the whole spread rather than the right
-   page specifically, nudged slightly left of dead-center per feedback. */
+/* Stamp lands on the LEFT-hand page of the opened passport. Bounds
+   measured directly against passportOpenBase.png's actual pixels: the
+   left page spans roughly x 12-41% of the image. Nudged a bit right of
+   that box's literal midpoint (client report, 9 Oct 2026 - still read
+   as too far left/toward the spine at the exact geometric center). */
 .pa-stamp-area {
   position: absolute;
   z-index: 4;
-  top: 20%;
-  bottom: 22%;
-  left: 26%;
-  right: 40%;
+  top: 18%;
+  bottom: 34%;
+  left: 22%;
+  right: 52%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Stamp tool + impression — centered explicitly via top/left/translate(-50%,-50%)
+/* Stamp tool + impression - centered explicitly via top/left/translate(-50%,-50%)
    baked into every transform value, rather than relying on the (spec-correct
    but inconsistently-supported on older WebViews) static-position-of-an-
    absolute-flex-child behavior. Every keyframe below starts from that same
@@ -425,7 +448,7 @@ watch(
   opacity: 0;
 }
 
-/* Points — plain glowing text, no card/background/shadow (per the
+/* Points - plain glowing text, no card/background/shadow (per the
    reference: a big chunky "+N" with a soft glow behind it, floating
    directly on the scene, "POINTS EARNED" underneath). The 3D-bevel look
    is approximated with a gradient fill + stacked text-shadows, since a
@@ -447,7 +470,7 @@ watch(
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.01em;
-  /* Solid, dark app-aqua fill — the previous pale gradient (near-white at
+  /* Solid, dark app-aqua fill - the previous pale gradient (near-white at
      the top) washed out against the white overlay background and was
      hard to read. */
   color: #00817c;
@@ -460,5 +483,13 @@ watch(
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #00817c;
+}
+.pa-points-message {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #6b7089;
+  max-width: 280px;
 }
 </style>
