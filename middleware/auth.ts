@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const token = localStorage.getItem('token')
 
   if (!token) {
-    // The umu_has_session cookie is only a routing hint for SSR (see
+    // The umu_has_session_new cookie is only a routing hint for SSR (see
     // composables/useSessionFlag.ts). Reaching here means it lied: no real
     // token. Clear it, or middleware/guest.ts keeps trusting it and the two
     // middlewares ping-pong forever — /dashboard sends us to sign-in for
