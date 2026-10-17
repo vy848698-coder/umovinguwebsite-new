@@ -127,6 +127,8 @@ export function speakable(text: string): string {
     .replace(/\s*\)\s*/g, ', ')
     .replace(/[•*_#]/g, ' ')
     .replace(/,\s*([.?!])/g, '$1')
+    // "a listed building??", "occurred?." from the form read as one stop
+    .replace(/([?!])[?!.:]+/g, '$1')
     .replace(/(,\s*){2,}/g, ', ')
     .replace(/\s{2,}/g, ' ')
     .trim()

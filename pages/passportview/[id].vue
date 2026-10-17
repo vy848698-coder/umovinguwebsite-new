@@ -206,7 +206,10 @@
            same sections, so the seller can use either route. ── -->
       <AgentEntryCard
         v-if="passportType === 'SELLER'"
+        :sections="umuSections"
+        :current-key="umuPickUpKey"
         @talk="openAssistant"
+        @talk-section="openAssistantOn"
         @upload="openVaultFromCard"
         @manual="answerManually"
       />
@@ -871,6 +874,7 @@ import BuyerDetailDrawer from '~/components/passport/BuyerDetailDrawer.vue'
 import BuyerActionDrawer from '~/components/passport/BuyerActionDrawer.vue'
 import Toast from '~/components/ui/Toast.vue'
 import AgentEntryCard from '~/components/agent/AgentEntryCard.vue'
+import { umuSectionKeyOf, umuAssistantPath, lastUmuSection } from '~/utils/umuSections'
 import { useAppToast } from '~/composables/useCustomToast'
 import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
 import { usePassportHomeBack, usePassportTrail } from '~/composables/usePassportTrail'
@@ -1533,7 +1537,30 @@ const navigateToStep = (stepId) => {
 // Talk to UMU opens the assistant; the other two bring the matching tab
 // below into view.
 const openAssistant = () => {
-  router.push(`/passportview/assistant/${route.params.id}`)
+  router.push(umuAssistantPath(route.params.id))
+}
+
+// The sections UMU covers (utils/umuSections), as buttons on the card that
+// open the assistant straight on that section
+const umuSections = computed(() =>
+  steps.value
+    .filter((s) => umuSectionKeyOf(s))
+    .map((s) => ({ key: umuSectionKeyOf(s), title: toSmartTitleCase(s.title), progress: s.progress || 0 })),
+)
+// Where the seller picks up: the section last open in the assistant if it
+// still has work left, otherwise the first one not finished. Read after
+// mount, since it lives in this browser's storage.
+const umuLastKey = ref(null)
+onMounted(() => {
+  umuLastKey.value = lastUmuSection(String(route.params.id))
+})
+const umuPickUpKey = computed(() => {
+  const list = umuSections.value
+  const last = list.find((s) => s.key === umuLastKey.value && s.progress < 100)
+  return (last || list.find((s) => s.progress < 100) || list[0])?.key || ''
+})
+const openAssistantOn = (key) => {
+  router.push(umuAssistantPath(route.params.id, key))
 }
 
 const scrollToTabs = async () => {
