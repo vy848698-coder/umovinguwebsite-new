@@ -15,8 +15,10 @@ export interface Guide {
   tip: string
 }
 
+// Part descriptions count too: the last three guarantee questions share one
+// title and only their part description ("Roofing", "Underpinning") differs.
 const has = (q: Q, re: RegExp) => {
-  const parts = Array.isArray(q.parts) ? q.parts.map((p: Q) => p?.title || '') : []
+  const parts = Array.isArray(q.parts) ? q.parts.flatMap((p: Q) => [p?.title || '', p?.description || '']) : []
   return re.test([q.question, q.title, q.description, ...parts].join(' '))
 }
 
@@ -95,7 +97,29 @@ const OWNERSHIP: { match: (q: Q) => boolean; guide: Guide }[] = [
     },
   },
   {
-    match: (q) => has(q, /lease/i),
+    match: (q) => has(q, /what we love/i),
+    guide: {
+      say: 'Tell buyers what you love about your home and the area. Pick the ones that fit or add your own, then set each slider.',
+      tip: 'Honest details, like bin days or school run traffic, help buyers trust everything else you say.',
+    },
+  },
+  {
+    match: (q) => has(q, /type of property you are selling/i),
+    guide: {
+      say: 'Tell me what kind of home it is, like detached, terraced or a flat. Then the bedrooms and bathrooms, and any special features.',
+      tip: 'Pick every feature that applies. You can change these later.',
+    },
+  },
+  {
+    match: (q) => has(q, /service charge/i),
+    guide: {
+      say: 'Your lease sets out the service charge. Tell me how often you pay it and how much, then upload a recent statement.',
+      tip: 'The amount and how often you pay are on your latest service charge demand.',
+    },
+  },
+  {
+    // \b, so "please" in any other question's wording is not a lease
+    match: (q) => has(q, /\blease/i),
     guide: {
       say: 'You will find these lease details on your lease or title deeds. Fill in what you know.',
       tip: 'If something does not apply to your lease, leave it empty.',
@@ -106,6 +130,339 @@ const OWNERSHIP: { match: (q: Q) => boolean; guide: Guide }[] = [
     guide: {
       say: 'Add the commonhold details you have. The commonhold community statement has most of them.',
       tip: 'Your solicitor can give you a copy of the commonhold community statement.',
+    },
+  },
+]
+
+// Boundaries, Disputes and Complaints, Notices and Proposals. Most of these
+// are a Yes or No that opens a details box on Yes, so "say" puts the long
+// question in plain words and "tip" says what to write if the answer is Yes.
+// UMU then adds "Tap Yes or No" (or "You can say Yes or No") itself.
+const NEIGHBOURS: { match: (q: Q) => boolean; guide: Guide }[] = [
+  {
+    match: (q) => (q.type || '').toLowerCase() === 'boundary',
+    guide: {
+      say: 'Picture your home from the road. For each side, left, right, rear and front, choose who looks after the fence, wall or hedge.',
+      tip: 'The T marks on your title plan show who owns each boundary. Choose Unknown for any side you are not sure about.',
+    },
+  },
+  {
+    match: (q) => has(q, /boundaries irregular/i),
+    guide: {
+      say: "Put simply, does the boundary follow an unusual line, rather than a straight or obvious one? If yes, I'll ask you to describe it.",
+      tip: 'If yes, describe where the boundary runs, using landmarks or measurements, or upload a plan that shows it.',
+    },
+  },
+  {
+    match: (q) => has(q, /boundary feature having been moved/i),
+    guide: {
+      say: 'Put simply, has any fence, wall or hedge been moved in the last 10 years?',
+      tip: 'If yes, say what was moved, when, and roughly how far. Photos or a sketch help.',
+    },
+  },
+  {
+    match: (q) => has(q, /adjacent land/i),
+    guide: {
+      say: "Put simply, have you bought any land or property next door while you've owned this home?",
+      tip: 'If yes, add the address, the title number or a description of the extra land.',
+    },
+  },
+  {
+    match: (q) => has(q, /overhang|project under/i),
+    guide: {
+      say: 'Put simply, does any part of your home stick out over, or under, the boundary? Like roof eaves, or a cellar under the pavement.',
+      tip: 'If yes, say what it is, where it is and roughly how big. Add any permission you have for it.',
+    },
+  },
+  {
+    match: (q) => has(q, /party wall/i),
+    guide: {
+      say: 'A party wall notice is a formal letter a neighbour sends before building work on a shared wall or boundary. Have you had one?',
+      tip: 'If yes, say what the work was, who sent the notice, when, and whether the work is finished.',
+    },
+  },
+  {
+    match: (q) => has(q, /disputes or complaints regarding/i),
+    guide: {
+      say: 'Put simply, have there been any disagreements or complaints about this home, or one nearby? For example about noise, parking or boundaries.',
+      tip: "If yes, say what it was about, who was involved, when it happened, and whether it's settled or still going on.",
+    },
+  },
+  {
+    match: (q) => has(q, /might lead to a dispute/i),
+    guide: {
+      say: 'Put simply, do you know of anything that could cause a disagreement in future, about this home or one nearby?',
+      tip: 'If yes, say what the issue is, who it involves, and anything already done about it.',
+    },
+  },
+  {
+    match: (q) => has(q, /notices or correspondence/i),
+    guide: {
+      say: 'Put simply, have you sent or received any letters or notices, or had talks with a neighbour, the council or the government, about something that affects this home or one nearby?',
+      tip: 'For example planning or enforcement notices, party wall letters, tree preservation orders or roadworks. If yes, say what it was and when.',
+    },
+  },
+  {
+    match: (q) => has(q, /proposals to develop/i),
+    guide: {
+      say: 'Put simply, do you know of any plans to build on, or change, land or buildings nearby?',
+      tip: "For example new housing or an extension next door. Planning notices on lamp posts, or your council's planning website, show these.",
+    },
+  },
+]
+
+// Alterations and Planning, Guarantees and Warranties, Insurance and
+// Environmental, matched on the live question wording. Where the question
+// is long or legal, "say" puts it in plain words ("Put simply, ..."); where
+// it is already short, "say" explains the term and where to find the
+// answer, so UMU never just reads the same question twice.
+const WARRANTY_TIP =
+  'If yes, add the provider, the policy number, the start and end dates and any claims. Upload the certificate if you have it.'
+
+const HOME_WORKS: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Alterations and Planning ──
+  {
+    match: (q) => has(q, /following changes been made/i),
+    guide: {
+      say: 'There are four kinds of change: building works like an extension, a change of use, new windows or glazed doors since April 2002, and a conservatory. Answer yes or no to each, and add the date for any yes.',
+      tip: "Then add your planning permissions, Building Regulations approvals and completion certificates, or say why they weren't needed.",
+    },
+  },
+  {
+    match: (q) => has(q, /works disclosed in previous questions unfinished/i),
+    guide: {
+      say: 'Put simply, is any of that work still not finished?',
+      tip: 'If yes, say what is unfinished, where it is, and what is left to do.',
+    },
+  },
+  {
+    match: (q) => has(q, /breaches of planning/i),
+    guide: {
+      say: 'Put simply, do you know of any work that broke the conditions of its planning permission or Building Regulations approval, or that never got every approval it needed?',
+      tip: 'If yes, say what the work was, when it was done, and what the problem is.',
+    },
+  },
+  {
+    match: (q) => has(q, /building control issues to resolve/i),
+    guide: {
+      say: "Put simply, is anything still to be sorted out with the council's planning or building control team?",
+      tip: "For example a retrospective planning application. Say what it is, what's been done so far and what's still to do.",
+    },
+  },
+  {
+    match: (q) => has(q, /solar panels been installed/i),
+    guide: {
+      say: 'Do you have solar panels? If yes, add the date they were fitted.',
+      tip: 'The date is on your installation papers, guarantee or energy statements.',
+    },
+  },
+  {
+    match: (q) => has(q, /solar panels owned outright/i),
+    guide: {
+      say: 'Put simply, do the panels belong to you? Say no if a solar company owns them, or rents your roof space for them.',
+      tip: 'Your purchase invoice, or any agreement with the solar company, shows who owns them.',
+    },
+  },
+  {
+    match: (q) => has(q, /long lease of the roof/i),
+    guide: {
+      say: 'Put simply, has a solar company been given a long lease of your roof, or the space above it, for its panels?',
+      tip: "If yes, upload the agreement, recent electricity bills or tariff payments, and the company's contact details.",
+    },
+  },
+  {
+    match: (q) => has(q, /listed building/i),
+    guide: {
+      say: 'A listed building is on the National Heritage List because of its history or architecture.',
+      tip: "Historic England's website can confirm it. If yes, upload the listing confirmation and any consent for works.",
+    },
+  },
+  {
+    match: (q) => has(q, /conservation area/i),
+    guide: {
+      say: 'A conservation area is where the council protects the look of the neighbourhood with extra planning rules.',
+      tip: "Your council's planning website has a map. If yes, upload the confirmation and any consents or conditions.",
+    },
+  },
+  {
+    match: (q) => has(q, /terms of the order been complied/i),
+    guide: {
+      say: "Put simply, have you only done work on the protected trees with the council's permission, and followed its conditions?",
+      tip: 'If yes, upload any applications, consent letters, or proof of replanting.',
+    },
+  },
+  {
+    match: (q) => has(q, /tree preservation order/i),
+    guide: {
+      say: 'A Tree Preservation Order is a council order that protects a tree, so it cannot be cut back or removed without permission.',
+      tip: 'You would usually know from your purchase paperwork, or a letter from the council.',
+    },
+  },
+
+  // ── Guarantees and Warranties ──
+  {
+    match: (q) => has(q, /new home guarantees/i),
+    guide: {
+      say: 'A new home warranty, from NHBC, Premier Guarantee or similar, usually covers the structure for 10 years after the home is built.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /damp proofing guarantees/i),
+    guide: {
+      say: 'This is a certificate from the company that treated damp in your home.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /timber treatment guarantees/i),
+    guide: {
+      say: 'This is a certificate from a company that treated woodworm or rot in the timbers.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /windows, roof lights/i),
+    guide: {
+      say: 'This is the guarantee from the company that fitted new windows, roof lights or glazed doors.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /electrical work guarantees/i),
+    guide: {
+      say: 'This covers electrical work like rewiring, a new fuse box or new circuits. The electrician gives it when the work is finished.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /guarantee|warrant/i) && has(q, /roofing/i),
+    guide: {
+      say: 'This covers a roof that was replaced or repaired, including a flat roof.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /guarantee|warrant/i) && has(q, /central heating/i),
+    guide: {
+      say: 'This covers your boiler or heating system, gas, electric, oil or a heat pump. The installer or the maker gives it.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /guarantee|warrant/i) && has(q, /underpinning/i),
+    guide: {
+      say: 'Underpinning is work to strengthen the foundations, often after subsidence.',
+      tip: WARRANTY_TIP,
+    },
+  },
+
+  // ── Insurance ──
+  {
+    match: (q) => has(q, /does the seller insure the property/i),
+    guide: {
+      say: "This means buildings insurance you pay for yourself, covering things like fire or flood. If not, I'll ask why.",
+      tip: "If you don't insure it, for example because the landlord insures the building, say so.",
+    },
+  },
+  {
+    match: (q) => has(q, /landlord insure the building/i),
+    guide: {
+      say: 'In many flats the landlord or freeholder insures the whole building, and the cost is part of the service charge.',
+      tip: 'Your lease or service charge statement shows who insures the building.',
+    },
+  },
+  {
+    match: (q) => has(q, /abnormal rise in premiums/i),
+    guide: {
+      say: 'Put simply, has the price of your buildings insurance ever gone up by much more than usual?',
+      tip: 'A big jump can follow a claim, or a risk such as flooding.',
+    },
+  },
+  {
+    match: (q) => has(q, /subject to high excesses/i),
+    guide: {
+      say: 'Put simply, has your buildings insurance ever had an unusually high excess? That is the amount you pay yourself towards a claim.',
+      tip: 'Your policy schedule shows the excess.',
+    },
+  },
+  {
+    match: (q) => has(q, /subject to unusual conditions/i),
+    guide: {
+      say: 'Put simply, has your buildings insurance ever come with unusual conditions, like extra rules or things it would not cover?',
+      tip: 'These are listed in your policy schedule as conditions, endorsements or exclusions.',
+    },
+  },
+  {
+    match: (q) => has(q, /insurance .*ever been refused/i),
+    guide: {
+      say: 'Put simply, has an insurer ever refused to give you buildings insurance for this home?',
+      tip: 'This only means buildings insurance taken out by you.',
+    },
+  },
+  {
+    match: (q) => has(q, /made any buildings insurance claims/i),
+    guide: {
+      say: "Have you ever claimed on your buildings insurance for this home? If yes, I'll ask for the details.",
+      tip: 'Say what each claim was for, roughly when, and what the outcome was.',
+    },
+  },
+
+  // ── Environmental ──
+  {
+    match: (q) => has(q, /ever been flooded/i),
+    guide: {
+      say: 'This includes the house, the garden and any land, even if it flooded only once.',
+      tip: 'Flooding can come from a river, the sea, heavy rain, groundwater or drains. If yes, say when it happened and which parts flooded.',
+    },
+  },
+  {
+    match: (q) => has(q, /flood risk report/i),
+    guide: {
+      say: 'That is a report from a specialist on how likely your home is to flood. If you have one, upload a copy.',
+      tip: 'You can check the flood risk for any address on GOV.UK.',
+    },
+  },
+  {
+    match: (q) => has(q, /radon test/i),
+    guide: {
+      say: 'Radon is a natural gas that can rise from the ground. If your home was tested for it, upload the result.',
+      tip: 'The result is a letter or report from the testing company.',
+    },
+  },
+  {
+    match: (q) => has(q, /recommended action level/i),
+    guide: {
+      say: 'Your radon result letter says whether the level was below the recommended action level.',
+      tip: 'Below the action level means no work was recommended.',
+    },
+  },
+  {
+    match: (q) => has(q, /remedial measures/i),
+    guide: {
+      say: 'Put simply, when your home was built, was anything added to keep radon gas out, like a barrier under the floor?',
+      tip: "A new home's paperwork, or your survey, may mention a radon barrier or sump.",
+    },
+  },
+  {
+    match: (q) => has(q, /copy of the EPC/i),
+    guide: {
+      say: 'Upload your Energy Performance Certificate. If you do not have it, you can download it free from GOV.UK.',
+      tip: 'Tap the upload box and choose the file.',
+    },
+  },
+  {
+    match: (q) => has(q, /green deal/i),
+    guide: {
+      say: 'The Green Deal was a scheme where energy improvements, like insulation or solar panels, were paid back through the electricity bill. Was anything in your home paid for that way?',
+      tip: 'If yes, list each installation and upload your latest electricity bill, which shows the Green Deal charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /japanese knotweed/i),
+    guide: {
+      say: 'Japanese knotweed is a fast growing plant with hollow, bamboo like stems that can damage buildings.',
+      tip: "If yes, say whether there's a treatment plan in place, and upload it with any insurance that backs it.",
     },
   },
 ]
@@ -138,8 +495,52 @@ function typeGuide(type: string): Guide {
 }
 
 export function guideFor(question: Q, type: string): Guide {
-  const hit = OWNERSHIP.find((g) => g.match(question))
+  // Notes are matched by the Ownership notes guide, so the more specific
+  // lists go first. HOME_WORKS goes before OWNERSHIP, whose /\blease/ and
+  // /photo/ would otherwise catch the solar roof lease and the EPC upload.
+  const hit =
+    NEIGHBOURS.find((g) => g.match(question)) ||
+    HOME_WORKS.find((g) => g.match(question)) ||
+    OWNERSHIP.find((g) => g.match(question))
   return hit ? hit.guide : typeGuide(type)
+}
+
+// Notes left in some help texts for the content team ("- please remove text
+// answer yes or no") are cut off, so the seller never sees them
+export function cleanHelpText(text: unknown): string {
+  return String(text ?? '')
+    .replace(/\s*-?\s*(also bottom bit is wrong|please remove|remove please)\b[\s\S]*$/i, '')
+    .trim()
+}
+
+// An option as UMU says it: "Yes, select year" is "Yes", "Other, specify
+// below" is "Other"
+export function optionSaid(label: string): string {
+  return String(label || '')
+    .trim()
+    .replace(/,\s*(please\s+)?(select|enter|choose|add|specify|state)\b.*$/i, '')
+}
+
+// "Go to boundaries", "let's do disputes": switching section by voice. A
+// verb is required, so an answer that simply mentions boundaries or a
+// dispute is still typed in as an answer.
+const SECTION_WORDS: [string, RegExp][] = [
+  ['ownershipProfile', /^(the )?(ownership( profile)?)( section)?$/],
+  ['boundaries', /^(the )?(boundaries|boundary)( section)?$/],
+  ['disputesAndComplaints', /^(the )?(disputes?( and complaints)?|complaints)( section)?$/],
+  ['noticesAndProposals', /^(the )?(notices?( and proposals)?|proposals)( section)?$/],
+  ['alterationsAndPlanning', /^(the )?(alterations?( and planning)?|planning)( section)?$/],
+  ['guaranteesAndWarranties', /^(the )?(guarantees?( and warranties)?|warrant(y|ies))( section)?$/],
+  ['insurance', /^(the )?insurance( section)?$/],
+  ['environmental', /^(the )?environment(al)?( matters)?( section)?$/],
+]
+
+export function sectionCommand(said: string): string | null {
+  const w = words(said).trim().replace(/^(umu |please |ok |okay |um |er )+/, '')
+  const m = w.match(/^(go to|go back to|switch to|move to|move on to|take me to|open|start|let s do|let s go to|do|i want to do|can we do)\s+(.+)$/)
+  if (!m) return null
+  const hit = SECTION_WORDS.find(([, re]) => re.test(m[2].trim()))
+  return hit ? hit[0] : null
 }
 
 // ── Speech helpers ──────────────────────────────────────────────────
@@ -236,6 +637,29 @@ export function matchOption<T extends { label: string }>(said: string | string[]
     if (yes && YES.some((w) => heard.includes(w))) return yes
   }
   return null
+}
+
+// Every option the seller named, for tick boxes where several can be
+// chosen ("river and surface water"). A word only one option has counts on
+// its own ("river" for River flooding); words most options share, like
+// "flooding", do not.
+export function matchOptions<T extends { label: string }>(said: string | string[], options: T[]): T[] {
+  const readings = (Array.isArray(said) ? said : [said]).filter(Boolean)
+  const tokensOf = (label: string) =>
+    words(optionSaid(label)).trim().split(' ').filter((t) => t.length > 2 && !STOP.has(t))
+  const counts = new Map<string, number>()
+  options.forEach((o) => new Set(tokensOf(o.label)).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)))
+  for (const reading of readings) {
+    const heard = words(reading)
+    const hits = options.filter(
+      (o) =>
+        scoreOption(heard, optionSaid(o.label)) > 0 ||
+        tokensOf(o.label).some((t) => counts.get(t) === 1 && heard.includes(` ${t} `)),
+    )
+    if (hits.length) return hits
+  }
+  const one = matchOption(readings, options)
+  return one ? [one] : []
 }
 
 const SMALL: Record<string, number> = {

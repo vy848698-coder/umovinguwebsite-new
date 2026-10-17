@@ -106,12 +106,12 @@
           </a>
         </template>
 
-        <div v-if="part.helpText" class="help-section part-help-section">
+        <div v-if="cleanHelpText(part.helpText)" class="help-section part-help-section">
           <div class="help-content">
             <h4 class="help-title">
               <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
             </h4>
-            <p class="help-text">{{ part.helpText }}</p>
+            <p class="help-text">{{ cleanHelpText(part.helpText) }}</p>
           </div>
         </div>
 
@@ -282,6 +282,8 @@ import MultiTextInputQuestion from './MultiTextInputQuestion.vue'
 import MultiFieldFormQuestion from './MultiFieldFormQuestion.vue'
 import VoiceTextInput from './VoiceTextInput.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
+// Cuts content-team notes left at the end of some help texts
+import { cleanHelpText } from '~/utils/umuGuide'
 
 const props = defineProps({
   question: { type: Object, required: true },
