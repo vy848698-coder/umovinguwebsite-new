@@ -467,6 +467,221 @@ const HOME_WORKS: { match: (q: Q) => boolean; guide: Guide }[] = [
   },
 ]
 
+// Rights and Informal Arrangements, Parking, Other Charges and Occupiers,
+// matched on the live wording. Rights has both its first questions and the
+// later TA6 9.1 to 9.9 set, so some ask the same thing in other words;
+// each gets guidance for its own wording. Where a question has a Not known
+// or Not applicable answer, the guidance says when to choose it.
+const DETAILS_TIP = 'If yes, say what it is, who it involves, and whether it is written down anywhere.'
+
+const RIGHTS_AND_OCCUPIERS: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Rights and Informal Arrangements ──
+  {
+    match: (q) => has(q, /contribute towards the cost of any jointly used services/i),
+    guide: {
+      say: 'Put simply, do you have to pay towards the upkeep of anything you share with neighbours, like a private road, a shared driveway, a boundary or a drain?',
+      tip: 'If yes, say what is shared, who you pay, how much and how often.',
+    },
+  },
+  {
+    match: (q) => has(q, /been asked to contribute towards the cost/i),
+    guide: {
+      say: 'Put simply, has anyone asked you to pay towards the upkeep of something you share, like a private road or a shared drive? Choose Not applicable if nothing is shared.',
+      tip: 'If yes, say how much you pay, how often, and who you pay.',
+    },
+  },
+  {
+    match: (q) => has(q, /asked the owners? of any other propert(y|ies) to contribute/i),
+    guide: {
+      say: 'Put simply, have you asked a neighbour to pay towards the upkeep of something they use on your land, like a shared drive? Choose Not applicable if nothing is shared.',
+      tip: 'If yes, say whether they pay you or someone else, how much they pay and how often.',
+    },
+  },
+  {
+    match: (q) => has(q, /benefit from any rights or arrangements over any neighbou?ring property/i),
+    guide: {
+      say: "Put simply, do you have the right to use any part of a neighbour's land? For example a right of way along their path or drive.",
+      tip: 'If yes, say what the right is, where it runs, and whether it is written in your title deeds.',
+    },
+  },
+  {
+    match: (q) => has(q, /do you exercise any rights or arrangements over/i),
+    guide: {
+      say: "Put simply, do you use a neighbour's land in any way? For example crossing their path or drive to reach your home.",
+      tip: DETAILS_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /owners of any other propert(y|ies) exercise any rights/i),
+    guide: {
+      say: 'Put simply, does anyone else use part of your land? For example a neighbour who crosses your drive to reach their home.',
+      tip: 'If yes, say who uses it, what for, and whether it is written down anywhere.',
+    },
+  },
+  {
+    match: (q) => has(q, /prevent access to the property/i),
+    guide: {
+      say: 'Put simply, has anyone ever blocked your way in, complained about you using it, or asked you to pay to use it?',
+      tip: 'If yes, say what happened, who was involved, when, and whether it is sorted out.',
+    },
+  },
+  {
+    match: (q) => has(q, /disagreement or complaint about any such right/i),
+    guide: {
+      say: 'Put simply, has there been any disagreement or complaint about the rights or shared use you have just told me about?',
+      tip: 'If yes, say what it was about, who was involved, and whether it is settled. Choose Not known if you are not sure.',
+    },
+  },
+  {
+    match: (q) => has(q, /rights? (of|to) light/i),
+    guide: {
+      say: 'A right to light protects the daylight coming through your windows, so nobody can build something next door that blocks it. Do you know if your home has one?',
+      tip: 'A right to light is usually written in your title deeds. Your solicitor can check if you are not sure.',
+    },
+  },
+  {
+    match: (q) => has(q, /rights? of support/i),
+    guide: {
+      say: 'A right of support means the building or land next door has to keep holding your home up, as with a shared wall. Do you know if your home has this right?',
+      tip: 'It matters most for homes joined to another, like a semi or a terrace. Your title deeds or your solicitor can confirm it.',
+    },
+  },
+  {
+    match: (q) => has(q, /customary rights/i),
+    guide: {
+      say: 'Customary rights come from long local tradition rather than paperwork, like the right to graze animals on a village green. Do you know of any that benefit your home?',
+      tip: 'If yes, say what the right is and how you know about it.',
+    },
+  },
+  {
+    match: (q) => has(q, /mines and minerals/i),
+    guide: {
+      say: 'Put simply, does someone else own the rights to minerals, like coal or stone, under your land?',
+      tip: 'Your title register shows this. If yes, say who holds the rights, if you know.',
+    },
+  },
+  {
+    match: (q) => has(q, /chancel repair/i),
+    guide: {
+      say: 'Chancel repair liability is an old rule that can make a homeowner help pay for repairs to the local parish church. Do you know if it affects your home?',
+      tip: 'A chancel repair search, or insurance taken out when you bought, would show it. If yes, add the details.',
+    },
+  },
+  {
+    match: (q) => has(q, /take things from the land/i),
+    guide: {
+      say: 'Put simply, does anyone else have the right to take things from your land, like timber, hay or fish?',
+      tip: 'If yes, say who has the right and what they can take.',
+    },
+  },
+  {
+    match: (q) => has(q, /any other rights or arrangements affecting the property/i),
+    guide: {
+      say: "Put simply, is there any other right or arrangement that affects your home that we haven't covered yet, including a right of way?",
+      tip: DETAILS_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /drains, pipes or wires serving the property that cross/i),
+    guide: {
+      say: "Put simply, do any drains, pipes or wires that serve your home run under or over a neighbour's land?",
+      tip: "For example your drain running under next door's garden. Choose Not known if you are not sure.",
+    },
+  },
+  {
+    match: (q) => has(q, /drains, pipes or wires leading to any (neighbou?r.?s|other) property/i),
+    guide: {
+      say: "Put simply, do any drains, pipes or wires that serve a neighbour's home run under or over your land?",
+      tip: 'For example a shared drain under your garden, or a cable fixed to your wall. Your water company can tell you where the drains run.',
+    },
+  },
+  {
+    match: (q) => has(q, /agreement or arrangement about drains/i),
+    guide: {
+      say: 'Put simply, is there an agreement, written or not, about those drains, pipes or wires? For example who can reach them, or who pays for repairs.',
+      tip: 'If yes, say what was agreed and who with. If there is a written copy, you can add it now or send it later.',
+    },
+  },
+
+  // ── Parking ──
+  {
+    match: (q) => has(q, /parking arrangements/i),
+    guide: {
+      say: 'Tell me how parking works at your home. For example a garage, a driveway, an allocated space, or parking on the street.',
+      tip: 'Say where you park, how many cars fit, and whether any space is shared or needs a permit.',
+    },
+  },
+  {
+    match: (q) => has(q, /controlled parking zone/i),
+    guide: {
+      say: 'Put simply, does the council control parking on your street, for example with resident permits or time limits?',
+      tip: "Signs on your street, or your council's website, show whether you are in a permit or controlled zone.",
+    },
+  },
+
+  // ── Other Charges ──
+  {
+    match: (q) => has(q, /charges relating to the property/i),
+    guide: {
+      say: 'Put simply, do you pay any regular charges for the property, other than council tax and utility bills? For example to a management company, or for a private drain.',
+      tip: 'If yes, say what each charge is for, who you pay, how much and how often.',
+    },
+  },
+
+  // ── Occupiers ──
+  {
+    match: (q) => has(q, /does the seller live at the property/i),
+    guide: {
+      say: 'Put simply, do you, the seller, live in the home now?',
+      tip: 'Choose No if the home is rented out, empty, or you live somewhere else.',
+    },
+  },
+  {
+    match: (q) => has(q, /anyone else,? aged 17 or over,? live/i),
+    guide: {
+      say: "Put simply, does any other adult, aged 17 or over, live there? If yes, I'll ask for each person's full name.",
+      tip: "Don't include the sellers. Type each full name, then press Enter to add the next one.",
+    },
+  },
+  {
+    match: (q) => has(q, /tenants or lodgers/i),
+    guide: {
+      say: 'Put simply, do any of those adults rent from you, as a tenant or a lodger?',
+      tip: "A tenant or lodger can have a right to stay, so the buyer's solicitor will ask about it.",
+    },
+  },
+  // These three come before plain "vacant possession": older passports ask
+  // them under that same title, with the real question in the description
+  {
+    match: (q) => has(q, /agreed to sign the sale contract/i),
+    guide: {
+      say: 'Put simply, have all the adults living there agreed to sign the sale contract, and to move out by completion?',
+      tip: 'If not, add other evidence that the home will be empty on completion, such as a letter from each person staying there.',
+    },
+  },
+  {
+    match: (q) => has(q, /agreed to leave prior to completion/i),
+    guide: {
+      say: 'Put simply, have all the adults living there agreed to move out before completion?',
+      tip: "If not, the buyer's solicitor will need to know who is staying and why.",
+    },
+  },
+  {
+    match: (q) => has(q, /tenancy agreements/i),
+    guide: {
+      say: 'This is only for a home sold with tenants still living in it. Are their tenancy agreements attached, or will they follow?',
+      tip: 'Choose Attached if you are adding them now, or To follow if you will send them later.',
+    },
+  },
+  {
+    match: (q) => has(q, /sold with vacant possession/i),
+    guide: {
+      say: 'Vacant possession means the home will be empty when the buyer gets the keys, with nobody living there and your belongings gone.',
+      tip: 'Choose No if a tenant, or anyone else, will still be living there after completion.',
+    },
+  },
+]
+
 function typeGuide(type: string): Guide {
   switch (type) {
     case 'radio':
@@ -496,21 +711,29 @@ function typeGuide(type: string): Guide {
 
 export function guideFor(question: Q, type: string): Guide {
   // Notes are matched by the Ownership notes guide, so the more specific
-  // lists go first. HOME_WORKS goes before OWNERSHIP, whose /\blease/ and
-  // /photo/ would otherwise catch the solar roof lease and the EPC upload.
+  // lists go first. HOME_WORKS and RIGHTS_AND_OCCUPIERS go before
+  // OWNERSHIP, whose /\blease/ and /photo/ would otherwise catch the solar
+  // roof lease and the EPC upload.
   const hit =
     NEIGHBOURS.find((g) => g.match(question)) ||
     HOME_WORKS.find((g) => g.match(question)) ||
+    RIGHTS_AND_OCCUPIERS.find((g) => g.match(question)) ||
     OWNERSHIP.find((g) => g.match(question))
   return hit ? hit.guide : typeGuide(type)
 }
 
 // Notes left in some help texts for the content team ("- please remove text
-// answer yes or no") are cut off, so the seller never sees them
-export function cleanHelpText(text: unknown): string {
-  return String(text ?? '')
+// answer yes or no") are cut off, so the seller never sees them. The
+// "Other warranties" help was copied onto several questions it has nothing
+// to do with (vacant possession, some Services questions), so it only shows
+// on a question that is about guarantees or warranties. `about` is that
+// question's own wording.
+export function cleanHelpText(text: unknown, about = ''): string {
+  const help = String(text ?? '')
     .replace(/\s*-?\s*(also bottom bit is wrong|please remove|remove please)\b[\s\S]*$/i, '')
     .trim()
+  if (/^other warranties might include/i.test(help) && !/guarantee|warrant/i.test(about)) return ''
+  return help
 }
 
 // An option as UMU says it: "Yes, select year" is "Yes", "Other, specify
@@ -533,6 +756,10 @@ const SECTION_WORDS: [string, RegExp][] = [
   ['guaranteesAndWarranties', /^(the )?(guarantees?( and warranties)?|warrant(y|ies))( section)?$/],
   ['insurance', /^(the )?insurance( section)?$/],
   ['environmental', /^(the )?environment(al)?( matters)?( section)?$/],
+  ['rightsAndInformalArrangements', /^(the )?(rights( and informal arrangements)?|informal arrangements?)( section)?$/],
+  ['parking', /^(the )?parking( section)?$/],
+  ['otherCharges', /^(the )?(other )?charges( section)?$/],
+  ['occupiers', /^(the )?occupiers?( section)?$/],
 ]
 
 export function sectionCommand(said: string): string | null {
@@ -580,6 +807,10 @@ const withDigits = (s: string) =>
 
 const YES = [' yes ', ' yeah ', ' yep ', ' yup ', ' correct ', ' i am ', ' i do ', ' that s right ', ' that is right ', ' sure ', ' absolutely ', ' of course ', ' definitely ', ' affirmative ', ' it is ', ' we are ', ' we do ']
 const NO = [' no ', ' nope ', ' nah ', ' not ', ' i m not ', ' i don t ', ' we don t ', ' we re not ', ' never ', ' negative ', ' it isn t ']
+// Heard text is lower case with single spaces and no punctuation
+const NOT_SURE = / (not sure|don t know|do not know|no idea|not certain|can t remember|unsure|not known|unknown) /
+const UNKNOWN_LABEL = /not known|unknown|don.?t know|not sure/i
+const NOT_APPLICABLE = / (not applicable|doesn t apply|does not apply|don t apply|n a|na|not relevant) /
 
 function scoreOption(heard: string, label: string): number {
   const l = words(label).trim()
@@ -630,6 +861,12 @@ export function matchOption<T extends { label: string }>(said: string | string[]
     if (/ (last|final) (one|option) /.test(heard)) return options[options.length - 1] || null
     const num = withDigits(heard).match(/ (?:option|number|choice) (\d+) /)
     if (num && options[+num[1] - 1]) return options[+num[1] - 1]
+    // "I don't know" is the Not known answer where there is one, and never
+    // a No ("don't" is a no word below)
+    if (NOT_SURE.test(heard)) return options.find((o) => UNKNOWN_LABEL.test(o.label)) || null
+    // "It doesn't apply" is the Not applicable answer
+    const na = options.find((o) => /not applicable|n\/a/i.test(o.label))
+    if (na && NOT_APPLICABLE.test(heard)) return na
     // Yes and No in other words
     const yes = options.find((o) => words(o.label).trim().startsWith('yes'))
     const no = options.find((o) => words(o.label).trim().startsWith('no'))

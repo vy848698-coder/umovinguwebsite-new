@@ -234,7 +234,7 @@
                 </span>
               </div>
               <Transition name="ua-say" mode="out-in">
-                <h2 :key="sayKey" class="ua-q">{{ sayText }}</h2>
+                <h2 :key="sayKey" class="ua-q" :class="{ 'is-long': sayText.length > 130 }">{{ sayText }}</h2>
               </Transition>
               <p v-if="sayHint" class="ua-hint">{{ sayHint }}</p>
               <p v-if="tipText" class="ua-tip">
@@ -529,8 +529,7 @@ const ready = ref(false)
 // Same section loader as the manual question page: questions that don't
 // apply are left out, and it starts at the first unanswered one, like
 // "Pick up where you left off". It covers the sections in
-// utils/umuSections (Ownership Profile, Boundaries, Disputes and
-// Complaints, Notices and Proposals), one at a time, in any order.
+// utils/umuSections, one at a time, in any order.
 const rt = usePassportRuntime()
 const questions = rt.currentQuestions
 const current = rt.currentQuestion
@@ -870,7 +869,8 @@ const sayText = computed(() => {
   const q: any = current.value
   if (!q) return ''
   const firstPartTitle = Array.isArray(q.parts) ? q.parts.find((p: any) => p?.title)?.title : ''
-  return q.question || q.title || firstPartTitle || 'Please answer this one.'
+  // "live at the property??" in the form is shown with one question mark
+  return String(q.question || q.title || firstPartTitle || 'Please answer this one.').replace(/\?{2,}/g, '?')
 })
 
 // True when UMU's question is the first part's own title, so the form
@@ -894,17 +894,21 @@ const sayHint = computed(() => {
   const hint = (q.description || q.subtitle || '').trim()
   // "Please answer Yes or No." only repeats the buttons underneath
   if (/^please (answer|select) yes or no[.:]?$/i.test(hint)) return ''
+  // "If Yes, have all the occupiers aged 17 or over:" leads into a later
+  // question and says nothing on its own
+  if (/^if yes\b.*:$/i.test(hint)) return ''
   return hint && hint !== sayText.value && hint.length < 260 ? hint : ''
 })
 
 const guide = computed(() => guideFor(current.value || {}, qType.value))
 
-// The question's own "What is this?" text. Multipart questions show it in
-// each part already, and notes are all explanation.
+// The question's own "What is this?" text (the API sends it as `help`, as
+// the manual page reads it). Multipart questions show it in each part
+// already, and notes are all explanation.
 const helpBlock = computed(() => {
   const q: any = current.value
   if (!q || qType.value === 'multipart' || qType.value === 'note') return ''
-  return cleanHelpText(q.helpText)
+  return cleanHelpText(q.help || q.helpText, `${q.question || q.title || ''} ${q.description || ''}`)
 })
 
 // ── Sheet and tracker ────────────────────────────────────────────────
@@ -1072,6 +1076,14 @@ async function say(text: string, id: number) {
 let savedPrefix = ''
 
 async function presentQuestion() {
+  // "You selected No." finishes before the next question starts. Anything
+  // else the seller does meanwhile (another answer, a jump) takes over.
+  if (heardSpeech) {
+    const waitId = ++flow
+    const run = heardRun
+    await afterHeard()
+    if (!alive(waitId) || run !== heardRun) return
+  }
   cancelFlow()
   const id = flow
   await nextTick()
@@ -1090,6 +1102,10 @@ async function presentQuestion() {
       : boundaryFirstAsk()
   const speaking = say(joinSay(prefix, greeting.value, sayText.value, guide.value.say, firstAsk), id)
   prefetchNextQuestion()
+  // The line that opens the next question once this one saves ("Saved,
+  // plus 50 points."), so UMU replies the moment the save comes back
+  const pts = Number(current.value.points) || 0
+  if (pts && !current.value.completed) voice.prefetch(`Saved, plus ${pts} points.`)
   // The first thing UMU asks for once the mic is on
   if (firstTarget) voice.prefetch(targetPrompt(firstTarget, true))
   await speaking
@@ -1157,6 +1173,13 @@ watch(sayKey, async () => {
   voiceNote.value = ''
   saveError.value = ''
   if (phase.value === 'question') return presentQuestion()
+  // "You selected No." finishes before the section end or a follow-up
+  if (heardSpeech) {
+    const waitId = ++flow
+    const run = heardRun
+    await afterHeard()
+    if (!alive(waitId) || run !== heardRun) return
+  }
   cancelFlow()
   const id = flow
   if (phase.value === 'done') {
@@ -1376,6 +1399,10 @@ function cleanLabel(s: string) {
     // so UMU says "Next, tell me the reason the property is not insured"
     // rather than reading the form's own long label
     .replace(/^(please )?supply copies of the planning permissions.*$/i, 'approvals, or why none were needed')
+    // Rights and Occupiers follow-ups
+    .replace(/^supply a copy of the agreement$/i, 'Is a copy of the agreement attached, or will it follow')
+    .replace(/^if (no|not)\b.*other evidence that the property will be vacant.*$/i, 'evidence that the home will be empty on completion')
+    .replace(/^occupier name$/i, 'full name of each other adult living there')
     .replace(/^(please )?(supply|scan or upload|upload) (a )?cop(y|ies) of\b.*$/i, 'details')
     .replace(/^why does the seller not provide insurance.*$/i, 'reason the property is not insured')
     .replace(/^written details for building insurance claims.*$/i, 'details of the claims')
@@ -1504,16 +1531,21 @@ function setTarget(t: Target) {
 
 // Brings the box UMU is asking about into view. On desktop the sheet
 // scrolls by itself, so only the sheet moves and the page stays put; on
-// phones the page itself scrolls.
+// phones the page itself scrolls. Nothing moves when the box is already in
+// full view, so the page doesn't jump under the seller while they read.
 function reveal(el: HTMLElement) {
   const box = talkEl.value
+  const r = el.getBoundingClientRect()
   if (box && getComputedStyle(box).overflowY !== 'visible' && box.scrollHeight > box.clientHeight + 1) {
-    const zoom = (box as any).currentCSSZoom || 1
-    const r = el.getBoundingClientRect()
     const b = box.getBoundingClientRect()
+    if (r.top >= b.top && r.bottom <= b.bottom) return
+    const zoom = (box as any).currentCSSZoom || 1
     const delta = (r.top - b.top - (b.height - r.height) / 2) / zoom
     box.scrollTo({ top: box.scrollTop + delta, behavior: 'smooth' })
   } else {
+    // Below the sticky site bar, and above the bottom of the screen
+    const navBottom = document.querySelector('.hsw-nav')?.getBoundingClientRect().bottom || 0
+    if (r.top >= navBottom && r.bottom <= window.innerHeight) return
     el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 }
@@ -1730,7 +1762,8 @@ function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice'
 // The words on the footer while UMU waits on a box
 function targetLabel(t: Target, mode: 'voice' | 'tap') {
   if (t.kind === 'confirm') return mode === 'voice' ? 'Is this your address? Say yes or no' : 'Is this your address?'
-  if (t.kind === 'choice') return t.label ? `${t.label}?` : 'Choose an answer'
+  // A choice that is the question itself needs no label of its own
+  if (t.kind === 'choice') return t.label && !isQuestionItself(t) ? `${t.label}?` : 'Choose an answer'
   if (isRange(t.el) && mode === 'tap') return t.label === 'answer' ? 'Move the slider' : `${t.label}? Move the slider`
   if (t.label === 'answer') return mode === 'voice' ? 'Say your answer' : 'Type your answer'
   const label = /^[A-Z][a-z]/.test(t.label) ? t.label.charAt(0).toLowerCase() + t.label.slice(1) : t.label
@@ -1784,6 +1817,13 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
     const cmd = voiceCommand(said)
     if (cmd === 'back') return 'back'
     if (cmd === 'skipQuestion') return 'skip'
+    // "I don't know" picks the Not known answer, where the question has one
+    const unknown = t.kind === 'choice' && isNotSure(said) ? matchOption(said, t.options) : null
+    if (unknown) {
+      ack = `You selected ${optionSaid(unknown.label)}.`
+      unknown.el.click()
+      return 'next'
+    }
     if (cmd === 'skip') {
       if (isNotSure(said)) ack = NOT_SURE_LINE
       return 'next'
@@ -1959,7 +1999,7 @@ async function runVoiceAnswer(id: number) {
   }
 
   await nextTick()
-  const targets = collectTargets().filter((t) => !isFilled(t))
+  const targets = collectTargets().filter(needsAnswer)
   // Everything here is answered already: say what's set and let the seller
   // change a choice, or keep it
   if (!targets.length) {
@@ -2018,7 +2058,7 @@ async function runVoiceAnswer(id: number) {
     const opened = all.filter((t) => !seen.has(t.el) && !isFilled(t))
     all.forEach((t) => seen.add(t.el))
     if (opened.length && !first) ack = joinSay(takeAck(), openedNote(opened.length))
-    const t = all.find((x) => !isFilled(x) && !asked.has(x.el))
+    const t = all.find((x) => needsAnswer(x) && !asked.has(x.el))
     if (!t) break
     asked.add(t.el)
     const outcome = await askTarget(t, id, first)
@@ -2028,10 +2068,11 @@ async function runVoiceAnswer(id: number) {
     if (outcome === 'back') return goBack()
     if (outcome === 'skip') return skipQuestion()
     if (outcome === 'save') break
-    // A radio answer saves straight away and moves on
-    if (current.value?.id !== q.id) return
+    // A radio answer, or a No that leaves nothing else to answer, saves
+    // straight away and moves on
+    if (current.value?.id !== q.id || saving.value) return
   }
-  if (!alive(id) || current.value?.id !== q.id) return
+  if (!alive(id) || current.value?.id !== q.id || saving.value) return
   finishByVoice(q.id, id)
 }
 
@@ -2222,6 +2263,7 @@ const PROBLEMS = {
   amount: 'Please enter the amount in numbers, like 1500.',
   number: 'Please enter a number.',
   fullName: 'Please use the full name, first name and surname, exactly as on the title deeds. Tap Edit to change it.',
+  occupierName: "Please use the person's full name, first name and surname. Tap Edit to change it.",
 }
 
 // A plain-words problem with what was typed, or '' when it looks right
@@ -2234,7 +2276,7 @@ function problemWith(t: Target): string {
   if (t.addOnEnter) {
     const last = listItems(t).pop() || ''
     if (/name/.test(hint) && last && last.split(/\s+/).length < 2) {
-      return PROBLEMS.fullName
+      return /occupier|adult/.test(hint) ? PROBLEMS.occupierName : PROBLEMS.fullName
     }
     return ''
   }
@@ -2319,7 +2361,7 @@ function resetGuide(): Target | null {
   if (guideTimer) clearTimeout(guideTimer)
   const all = collectTargets()
   guideValues = new Map(all.map((t) => [t.el, valueOf(t)]))
-  const next = all.find((t) => !isFilled(t)) || null
+  const next = all.find(needsAnswer) || null
   if (next && !voiceMode.value) {
     setTarget(next)
     askingLabel.value = targetLabel(next, 'tap')
@@ -2379,8 +2421,8 @@ async function guideCheck() {
   const from = last ? all.findIndex((t) => t.el === last.el) : -1
   const next =
     cleared.find((t) => !isFilled(t)) ||
-    all.slice(from + 1).find((t) => !isFilled(t)) ||
-    all.find((t) => !isFilled(t))
+    all.slice(from + 1).find(needsAnswer) ||
+    all.find(needsAnswer)
   if (next) {
     setTarget(next)
     askingLabel.value = targetLabel(next, 'tap')
@@ -2406,6 +2448,8 @@ const openedNote = (n: number) =>
   n === 1 ? 'That opens one more question.' : 'That opens a few more details to fill in.'
 
 async function finishByVoice(qid: string, id: number) {
+  // Already saving by itself: UMU has said the answer and moves on
+  if (saving.value) return
   clearTarget()
   askingLabel.value = ''
   if (!alive(id) || current.value?.id !== qid) return
@@ -2448,6 +2492,8 @@ async function onUpdate(answer: any) {
   const q: any = current.value
   if (!q) return
   const sidesBefore = qType.value === 'boundary' ? boundaryAnswer(q) : null
+  const mainKey = qType.value === 'multipart' ? mainChoicePart(q)?.partKey : null
+  const mainBefore = mainKey && q.answer && typeof q.answer === 'object' ? q.answer[mainKey] : undefined
   q.answer = answer
 
   // A side of the boundary plan was chosen: say it, point at the next
@@ -2470,7 +2516,62 @@ async function onUpdate(answer: any) {
     }
     if (value === '*' || trigger === value) return saveCurrent(answer)
   }
+
+  // The rest save the same way once the main Yes or No leaves nothing else
+  // to answer (a No closing the details box, say), as a plain Yes or No
+  // question does. Some of them, like the newer Rights questions, have no
+  // autoSaveOn of their own.
+  if (qType.value === 'multipart' && !q.repeatable && answer && typeof answer === 'object') {
+    const main = mainChoicePart(q)
+    if (!main || partValue(answer[main.partKey]) === partValue(mainBefore)) return
+    await nextTick()
+    await nextTick()
+    if (current.value?.id !== q.id || saving.value || !answerValid.value) return
+    if (collectTargets().every((t) => !needsAnswer(t))) return saveCurrent(answer)
+  }
 }
+
+// The Yes or No a multipart question opens with, when it opens with one
+function mainChoicePart(q: any) {
+  const first = [...(q?.parts || [])].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))[0]
+  return first && Array.isArray(first.options) && first.options.length ? first : null
+}
+const partValue = (v: any) => (v !== null && typeof v === 'object' && 'value' in v ? v.value : v)
+
+// After a No to the main question, an optional box that shows whatever the
+// answer (the names of other occupiers) isn't asked for
+function waivedByNo(t: Target) {
+  const q: any = current.value
+  if (qType.value !== 'multipart') return false
+  const main = mainChoicePart(q)
+  if (!main || partValue(q.answer?.[main.partKey]) !== 'no') return false
+  const key = t.el.closest<HTMLElement>('[data-part-key]')?.dataset.partKey
+  const part = key ? q.parts.find((p: any) => p.partKey === key) : null
+  return !!part && part !== main && !part.required && !part.conditionalOn
+}
+
+// A box UMU still needs an answer for
+const needsAnswer = (t: Target) => !isFilled(t) && !waivedByNo(t)
+
+// What UMU says the moment an answer is given, before it has saved: the
+// choice itself ("You selected No.") or a short thanks. Every line here is
+// loaded ahead, so it plays straight away and the seller knows UMU heard.
+function heardLine(q: any, value: any) {
+  if (qType.value === 'note') return 'Thanks.'
+  const labelOf = (options: any[], v: any) =>
+    (options || []).find((o: any) => o?.value === v || o?.label === v)?.label
+  let label = typeof value === 'string' ? labelOf(q.options, value) : ''
+  if (!label && qType.value === 'multipart' && value && typeof value === 'object') {
+    const first = (q.parts || []).find((p: any) => Array.isArray(p.options) && p.options.length)
+    const v = first ? value[first.partKey] : undefined
+    label = first ? labelOf(first.options, v && typeof v === 'object' ? v.value : v) : ''
+  }
+  return label ? `You selected ${optionSaid(label)}.` : 'Got it.'
+}
+// Playing while the answer saves; the next question waits for it to finish.
+// heardRun counts answers, so a wait can tell a newer one has come in.
+let heardSpeech: Promise<boolean> | null = null
+let heardRun = 0
 
 async function saveCurrent(value?: any) {
   const q: any = current.value
@@ -2483,6 +2584,12 @@ async function saveCurrent(value?: any) {
   saveError.value = ''
   voice.stopAll()
   clearTarget()
+  askingLabel.value = ''
+  // By voice the reply is already worked out ("You selected Yes."). A tap
+  // on an answer says the answer; Save and continue (no value) says thanks.
+  const heard = takeAck() || (value === undefined ? 'Got it.' : heardLine(q, value))
+  heardRun++
+  heardSpeech = voice.speak(heard)
   try {
     const { pointsAwarded } = await rt.saveAnswer(q.id, answer)
     skipped.delete(q.id)
@@ -2490,10 +2597,20 @@ async function saveCurrent(value?: any) {
     savedPrefix = pointsAwarded ? `Saved, plus ${pointsAwarded} points.` : 'Saved.'
     await checkPathwayThenFinish(q, value !== undefined ? value : q.answer)
   } catch {
+    heardSpeech = null
+    voice.stopSpeaking()
     saveError.value = "That didn't save. Please try again."
   } finally {
     saving.value = false
   }
+}
+
+// Lets UMU finish "You selected No." before it reads the next question,
+// but never holds the next question up for long
+async function afterHeard() {
+  const p = heardSpeech
+  heardSpeech = null
+  if (p) await Promise.race([p, new Promise((r) => setTimeout(r, 2500))])
 }
 
 // After a save, an answer can open a guided follow-up (manual page rule).
@@ -2501,7 +2618,12 @@ let pendingAfterPathway: any = null
 const activePathway = ref<any>(null)
 const pathwayAttempt = ref(0)
 
+// The task-complete call for the answer just saved. It doesn't depend on
+// the guidance lookup, so the two run at the same time.
+let taskDone: { qid: string; result: Promise<any> } | null = null
+
 async function checkPathwayThenFinish(q: any, answerForGuidance: any) {
+  taskDone = { qid: q.id, result: completeTaskIfDone(q._taskId) }
   try {
     const value = typeof answerForGuidance === 'string' ? answerForGuidance : JSON.stringify(answerForGuidance)
     const { journey, pathway } = await getGuidanceAndPathway(q.id, value)
@@ -2573,7 +2695,9 @@ const totalPointsBefore = ref(0)
 const totalPointsAfter = ref(0)
 
 async function finishAfterSave(q: any) {
-  const result = await completeTaskIfDone(q._taskId)
+  const pending = taskDone?.qid === q.id ? taskDone.result : null
+  taskDone = null
+  const result = await (pending || completeTaskIfDone(q._taskId))
   if (result?.sectionCompleted) {
     sectionBonusPoints.value = result.sectionBonusPoints ?? 0
     const after = result.balanceAfterBonus ?? balance.value + sectionBonusPoints.value
@@ -2582,10 +2706,13 @@ async function finishAfterSave(q: any) {
     countUp(balance.value, after, 1200)
     balance.value = after
     setPose('celebrate', 4000)
-    voice.speak(`Brilliant! Your ${sectionTitle.value} is complete.`)
+    const run = heardRun
+    afterHeard().then(() => run === heardRun && voice.speak(`Brilliant! Your ${sectionTitle.value} is complete.`))
     showSectionComplete.value = true
     return
   }
+  // Stamps earned by finishing the task show once any follow-up is done
+  if (result) setTimeout(() => checkForCelebrations(), 800)
   goToNextQuestion(q.id)
 }
 
@@ -2602,9 +2729,7 @@ async function completeTaskIfDone(taskId: string): Promise<any> {
   const taskQs = questions.value.filter((x: any) => x._taskId === taskId)
   if (!taskQs.length || !taskQs.every((x: any) => x.completed)) return null
   try {
-    const result = await rt.completeTask(taskId)
-    if (!result?.sectionCompleted) setTimeout(() => checkForCelebrations(), 800)
-    return result
+    return await rt.completeTask(taskId)
   } catch {
     return null
   }
@@ -3189,6 +3314,9 @@ onBeforeUnmount(() => {
   letter-spacing: -0.02em;
   color: var(--ua-navy);
 }
+/* The longest questions (Rights, Other Charges) a size down, so the
+   answers stay in view */
+.ua-q.is-long { font-size: 20px; }
 .ua-hint {
   margin: 8px 0 0;
   font-size: 14px;
@@ -3253,6 +3381,10 @@ onBeforeUnmount(() => {
   outline-offset: 3px;
 }
 .ua-answer :deep(.ua-dup-title) { display: none; }
+/* A part's "What is this?" sits under its answers, as the question's own
+   does, so a long question never pushes Yes and No out of view */
+.ua-answer :deep(.group-part) { display: flex; flex-direction: column; }
+.ua-answer :deep(.group-part > .part-help-section) { order: 1; margin: 16px 0 0; }
 /* The question's own "What is this?" */
 .ua-help {
   display: flex;
@@ -3561,6 +3693,7 @@ onBeforeUnmount(() => {
   .ua-sheet-foot { border-radius: 0 0 20px 20px; }
   .ua-sheet-head { padding: 18px 16px 14px; }
   .ua-q { font-size: 19px; }
+  .ua-q.is-long { font-size: 17px; }
   .ua-sheet-body { padding: 16px; }
   .ua-sheet-foot { flex-direction: column; align-items: stretch; padding: 12px 16px 16px; }
   .ua-foot-status span { white-space: normal; }

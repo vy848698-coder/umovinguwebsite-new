@@ -13,6 +13,9 @@ import {
   spokenAddress,
   spokenCode,
   spokenLetter,
+  guideFor,
+  sectionCommand,
+  cleanHelpText,
 } from '../utils/umuGuide'
 
 const opts = (...labels: string[]) => labels.map((label) => ({ label }))
@@ -80,6 +83,92 @@ describe('matchOption', () => {
 
   it('returns null when nothing fits', () => {
     expect(matchOption('a houseboat on the canal', tenure)).toBeNull()
+  })
+
+  it("takes \"I don't know\" as Not known, and never as No", () => {
+    const withUnknown = opts('Yes', 'No', 'Not known')
+    expect(matchOption("I don't know", withUnknown)?.label).toBe('Not known')
+    expect(matchOption("I'm not sure", withUnknown)?.label).toBe('Not known')
+    expect(matchOption('not known', withUnknown)?.label).toBe('Not known')
+    expect(matchOption("I don't know", yesNo)).toBeNull()
+  })
+
+  it("takes \"it doesn't apply\" as Not applicable", () => {
+    const withNa = opts('Yes', 'No', 'Not applicable')
+    expect(matchOption("it doesn't apply", withNa)?.label).toBe('Not applicable')
+    expect(matchOption('not applicable', withNa)?.label).toBe('Not applicable')
+    expect(matchOption('no', withNa)?.label).toBe('No')
+  })
+})
+
+// Questions as the API sends them: a plain question, or a multipart one
+// whose first part holds the question
+const plain = (question: string, description = '') => ({ question, description, type: 'radio' })
+const firstPart = (title: string, description = '') => ({ question: '', type: 'multipart', parts: [{ title, description }] })
+
+describe('guideFor, Rights, Parking, Other Charges and Occupiers', () => {
+  it.each([
+    [firstPart('Does ownership of the property carry a responsibility to contribute towards the cost of any jointly used services, such as maintenance of a private road, a shared driveway, a boundary or drain?'), 'pay towards the upkeep of anything you share'],
+    [firstPart('Have you been asked to contribute towards the cost of the jointly used facilities?'), 'has anyone asked you to pay'],
+    [firstPart('Have you asked the owner of any other properties to contribute towards the cost of the jointly used facilities?'), 'have you asked a neighbour to pay'],
+    [firstPart('Do you exercise any rights or arrangements over any other properties?'), "use a neighbour's land"],
+    [firstPart('Do the owners of any other properties exercise any rights or arrangements over the property?'), 'does anyone else use part of your land'],
+    [firstPart('Are you aware of any disagreement or complaint about any such right or arrangement?'), 'disagreement or complaint about the rights'],
+    // Older passports keep the right in the description
+    [plain('Does the seller know if any of the following rights benefit the property:', 'Rights of light'), 'right to light'],
+    [plain('Does the seller know if the property benefits from any rights of light?'), 'right to light'],
+    [plain('Does the seller know if the property benefits from any rights of support from adjoining properties?'), 'right of support'],
+    [plain('Does the seller know if the property benefits from any customary rights (e.g. rights deriving from local traditions)?'), 'Customary rights'],
+    [firstPart('Does the seller know if any of the following arrangements affect the property:', "Other people's rights to mines and minerals under the land."), 'minerals'],
+    [firstPart('Does the seller know if the property is affected by chancel repair liability?'), 'Chancel repair'],
+    [firstPart("Does the seller know if the property is affected by other people's rights to take things from the land (such as timber, hay or fish)?"), 'timber, hay or fish'],
+    [firstPart('Are you aware of any drains, pipes or wires serving the property that cross any other property?'), "serve your home run under or over a neighbour's land"],
+    [firstPart('Are you aware of any drains, pipes or wires leading to any other property that cross the property?'), "serve a neighbour's home"],
+    [plain("Do any drains, pipes or wires leading to any neighbour's property cross the property?"), "serve a neighbour's home"],
+    [firstPart('Is there any agreement or arrangement about drains, pipes or wires?'), 'agreement, written or not'],
+    [plain('What are the parking arrangements at the property?'), 'how parking works'],
+    [plain('Is the property in a controlled parking zone or within a local authority parking scheme?'), 'council control parking'],
+    [firstPart('Does the seller have to pay any charges relating to the property (excluding any payments such as council tax, utility charges, etc.), for example payments to a management company?'), 'regular charges'],
+    [plain('Does the seller live at the property?'), 'live in the home now'],
+    [firstPart('Does anyone else, aged 17 or over, live at the property??'), 'any other adult'],
+    [plain('Are any of the occupiers (other than the sellers), aged 17 or over, tenants or lodgers?'), 'tenant or a lodger'],
+    [plain('Is the property being sold with vacant possession?', 'If Yes, have all the occupiers aged 17 or over:'), 'Vacant possession means'],
+    // Older passports ask TA6 13.6 under the vacant possession title
+    [firstPart('Is the property being sold with vacant possession?', 'Agreed to sign the sale contract? Please answer Yes or No.'), 'agreed to sign the sale contract'],
+    [firstPart('Have all occupiers aged 17 or over agreed to sign the sale contract and to complete?'), 'agreed to sign the sale contract'],
+    [plain('If the property is not being sold with vacant possession, provide details of their tenancy agreements.'), 'tenancy agreements'],
+  ])('%#: guidance that fits the question', (q, words) => {
+    expect(guideFor(q, q.type).say).toContain(words)
+  })
+})
+
+describe('sectionCommand', () => {
+  it.each([
+    ['go to rights', 'rightsAndInformalArrangements'],
+    ["let's do informal arrangements", 'rightsAndInformalArrangements'],
+    ['go to parking', 'parking'],
+    ['open other charges', 'otherCharges'],
+    ['switch to occupiers', 'occupiers'],
+    ['go to boundaries', 'boundaries'],
+  ])('"%s" opens %s', (said, key) => {
+    expect(sectionCommand(said)).toBe(key)
+  })
+
+  it('needs a verb, so an answer that names a section is still an answer', () => {
+    expect(sectionCommand('parking')).toBeNull()
+  })
+})
+
+describe('cleanHelpText', () => {
+  const stray = 'Other warranties might include appliance guarantees, garden landscaping, driveway sealing.'
+  it('drops the warranties help copied onto other questions', () => {
+    expect(cleanHelpText(stray, 'Is the property being sold with vacant possession?')).toBe('')
+  })
+  it('keeps it on a warranties question', () => {
+    expect(cleanHelpText(stray, 'Are there any other guarantees or warranties?')).toBe(stray)
+  })
+  it('cuts content-team notes', () => {
+    expect(cleanHelpText('Tells buyers about parking. - please remove text answer yes or no')).toBe('Tells buyers about parking.')
   })
 })
 
