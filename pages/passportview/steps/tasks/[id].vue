@@ -367,6 +367,7 @@
 
 <script setup>
 import { isQuestionAnswerValid } from '~/utils/questionAnswer'
+import { cleanHelpText } from '~/utils/umuGuide'
 import { usePassportRuntime } from '~/composables/usePassportRuntime'
 import QuestionPointsCard from '~/components/passport-view/QuestionPointsCard.vue'
 import SectionCompleteCelebration from '~/components/passport-view/SectionCompleteCelebration.vue'
@@ -809,7 +810,8 @@ const runQuestionAnimation = (q) => {
   // Display all text immediately without animation
   displayedQuestion.value = q.question
   displayedDescription.value = q.description || ''
-  displayedHelp.value = q.help || ''
+  // Help copied onto a question it doesn't belong to is left out
+  displayedHelp.value = cleanHelpText(q.help, `${q.question || ''} ${q.description || ''}`)
 
   // Show options immediately
   showOptions.value = true

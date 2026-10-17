@@ -18,6 +18,10 @@ export const UMU_SECTION_KEYS = [
   'guaranteesAndWarranties',
   'insurance',
   'environmental',
+  'rightsAndInformalArrangements',
+  'parking',
+  'otherCharges',
+  'occupiers',
 ] as const
 
 export type UmuSectionKey = (typeof UMU_SECTION_KEYS)[number]
@@ -33,6 +37,10 @@ const TITLE_MATCH: Record<UmuSectionKey, RegExp> = {
   guaranteesAndWarranties: /guarantee|warrant/i,
   insurance: /^insurance/i,
   environmental: /^environment/i,
+  rightsAndInformalArrangements: /^rights|informal arrangement/i,
+  parking: /^parking/i,
+  otherCharges: /^other charges/i,
+  occupiers: /^occupier/i,
 }
 
 export function umuSectionKeyOf(section: { key?: string; title?: string } | null | undefined): UmuSectionKey | null {
