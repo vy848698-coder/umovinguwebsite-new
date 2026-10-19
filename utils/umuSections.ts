@@ -6,8 +6,8 @@
 // Keys are the backend section keys (QuestionTemplate seed). Sections can be
 // answered in any order: the seller picks one on the passport card, on the
 // section page or from the section rail inside the assistant. The rail
-// (components/agent/UmuSectionRail) shows a few at a time, so this list can
-// grow to the passport's full 17 without crowding the page.
+// (components/agent/UmuSectionRail) shows a few at a time, so all 18 of the
+// passport's sections fit without crowding the page.
 
 export const UMU_SECTION_KEYS = [
   'ownershipProfile',
@@ -25,6 +25,9 @@ export const UMU_SECTION_KEYS = [
   'services',
   'transactionInformation',
   'fixturesAndFittings',
+  'leasehold',
+  'titleDeedsAndPlan',
+  'searches',
 ] as const
 
 export type UmuSectionKey = (typeof UMU_SECTION_KEYS)[number]
@@ -47,6 +50,10 @@ const TITLE_MATCH: Record<UmuSectionKey, RegExp> = {
   services: /^services/i,
   transactionInformation: /^transaction/i,
   fixturesAndFittings: /^fixtures/i,
+  leasehold: /^leasehold/i,
+  // Renamed "Title Register and Plan" on the live backend
+  titleDeedsAndPlan: /^title (deeds|register)/i,
+  searches: /^searches/i,
 }
 
 export function umuSectionKeyOf(section: { key?: string; title?: string } | null | undefined): UmuSectionKey | null {

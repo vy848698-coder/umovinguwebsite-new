@@ -946,6 +946,466 @@ const SERVICES_AND_MOVING: { match: (q: Q) => boolean; guide: Guide }[] = [
   },
 ]
 
+// Leasehold, Title Register and Plan, and Searches, matched on the live
+// wording (the seed plus fix-misplaced-descriptions-round2, the deed of
+// certificate source correction and update-title-deeds-questions). These
+// are checked first: their wording names landlords, notices, complaints and
+// alterations, which the older lists would otherwise answer with their own
+// sections' guidance.
+const LEASE_DOC_TIP = 'If you have the document, add it now. If not, say skip question and add it later. Your landlord or managing agent can send a copy.'
+const COMPANY_DOC_SAY =
+  "This is only for a building run by a company the flat owners control, such as a tenants' management company or a Right to Manage company. If yours is, add"
+const SEARCH_TIP =
+  "A search is a report about the property from the council or another body. The buyer's solicitor usually orders them, so if you don't have one, say skip question."
+
+const LEASEHOLD_AND_SEARCHES: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Leasehold: the property ──
+  {
+    match: (q) => has(q, /what type of leasehold property/i),
+    guide: {
+      say: 'What kind of leasehold home is it? A flat, which includes a maisonette or an apartment, a shared ownership home, or a house on a long lease.',
+      tip: 'Your lease or your title register says which it is.',
+    },
+  },
+  {
+    match: (q) => has(q, /does the seller pay rent for the property/i),
+    guide: {
+      say: 'Put simply, do you pay ground rent to the landlord? If yes, add how much is due each year and how often you pay it.',
+      tip: "The amount is on your latest ground rent demand, or in your lease. Don't include the service charge.",
+    },
+  },
+  {
+    match: (q) => has(q, /is the rent subject to increase/i),
+    guide: {
+      say: 'Put simply, can your ground rent go up? If yes, say how often it is reviewed and how the new amount is worked out.',
+      tip: 'Your lease sets this out. For example, it doubles every 25 years, or goes up with inflation.',
+    },
+  },
+
+  // ── Leasehold: ownership and management ──
+  {
+    // Older passports ask "Who owns the freehold?" twice, with the choice
+    // in the description
+    match: (q) => has(q, /owns? the freehold|freehold owned/i) && has(q, /not controlled by the tenants/i),
+    guide: {
+      say: 'The freeholder owns the building and the land it stands on. Is that an outside person or company, one the flat owners have no control over?',
+      tip: 'The freeholder is named on your ground rent demands and in your lease.',
+    },
+  },
+  {
+    match: (q) => has(q, /owns? the freehold|freehold owned/i) && has(q, /controlled by the tenants|the tenants control/i),
+    guide: {
+      say: 'Put simply, do the flat owners own the freehold together, usually through a company they run?',
+      tip: 'If you hold a share in the company that owns the freehold, the answer is Yes.',
+    },
+  },
+  {
+    match: (q) => has(q, /is there a headlease/i),
+    guide: {
+      say: 'A headlease is one lease of the whole building, between the freeholder and your own landlord. Is there one? If yes, say whether the flat owners control the company that holds it.',
+      tip: "Most flats don't have one. Your lease, or the title register, shows a headlease if there is one.",
+    },
+  },
+  {
+    match: (q) => has(q, /who is responsible for managing the building/i),
+    guide: {
+      say: 'Who looks after the building? Tick everyone who does. For example, the freeholder, a management company named in your lease, or a Right to Manage company.',
+      tip: 'Your service charge demands say who manages the building. If yours is not listed, tick Other and say who it is.',
+    },
+  },
+  {
+    match: (q) => has(q, /management company been dissolved or struck off/i),
+    guide: {
+      say: "Put simply, has a company the flat owners set up to run the building ever been closed down, or struck off at Companies House?",
+      tip: "You can look the company up for free on the Companies House website. Choose No if there isn't one.",
+    },
+  },
+  {
+    match: (q) => has(q, /employ a managing agent/i),
+    guide: {
+      say: 'Put simply, does a managing agent collect the rent or service charge, or look after the building?',
+      tip: "A managing agent is a firm paid to run the building. Their name is usually on your service charge demands.",
+    },
+  },
+
+  // ── Leasehold: documents ──
+  {
+    match: (q) => has(q, /copy of the lease and any supplemental deeds/i),
+    guide: {
+      say: 'Add a copy of your lease, and any deed that has changed it since, such as a lease extension.',
+      tip: "Your solicitor kept a copy when you bought. You can also download one from HM Land Registry for a small fee.",
+    },
+  },
+  {
+    match: (q) => has(q, /regulations made by the landlord/i),
+    guide: {
+      say: 'These are building rules made on top of your lease, for example about pets, bins or the shared hallways. If there are some, add a copy. If not, choose Not applicable.',
+      tip: 'Your managing agent or landlord usually sends these rules out, or puts them up in the hallway.',
+    },
+  },
+  {
+    match: (q) => has(q, /correspondence from the landlord, any management company/i),
+    guide: {
+      say: 'Add any letters or emails from your landlord, the management company or the managing agent. For example about charges, repairs or the rules of the building.',
+      tip: LEASE_DOC_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /payment of maintenance or service charges for the last three years/i),
+    guide: {
+      say: 'Add your service charge bills and receipts for the last three years. If you pay no service charge, choose Not applicable.',
+      tip: 'Your managing agent can send a statement of what you have paid.',
+    },
+  },
+  {
+    match: (q) => has(q, /payment of ground rent for the last three years/i),
+    guide: {
+      say: 'Add your ground rent bills and receipts for the last three years. If you pay no ground rent, choose Not applicable.',
+      tip: 'Your landlord or managing agent can send a statement of what you have paid.',
+    },
+  },
+  {
+    match: (q) => has(q, /buildings insurance policy arranged by the seller/i),
+    guide: {
+      say: 'This is only if you insure the building yourself. Add the policy, and the receipt for the last payment.',
+      tip: 'If the landlord or management company insures it, say skip question. The next question covers that.',
+    },
+  },
+  {
+    match: (q) => has(q, /buildings insurance policy arranged by the landlord or management company/i),
+    guide: {
+      say: "If the landlord or management company insures the building, add their policy and this year's schedule.",
+      tip: 'Your managing agent can send both. They are often attached to the service charge demand.',
+    },
+  },
+  {
+    match: (q) => has(q, /memorandum and articles of association/i),
+    guide: {
+      say: `${COMPANY_DOC_SAY} the company's rules, called its articles of association.`,
+      tip: 'You can download them for free from the Companies House website.',
+    },
+  },
+  {
+    // Before the share certificate: older passports copied that one's
+    // description onto this question
+    match: (q) => has(q, /company accounts for the past three years/i),
+    guide: {
+      say: `${COMPANY_DOC_SAY} the company's accounts for the last three years.`,
+      tip: 'You can download them for free from the Companies House website.',
+    },
+  },
+  {
+    match: (q) => has(q, /share or membership certificate/i),
+    guide: {
+      say: `${COMPANY_DOC_SAY} your share or membership certificate.`,
+      tip: "If you can't find it, the company secretary can send a copy.",
+    },
+  },
+
+  // ── Leasehold: contact details ──
+  {
+    match: (q) => has(q, /contact details for the landlord/i),
+    guide: {
+      say: "Add your landlord's name, address, phone number and email.",
+      tip: 'They are on your ground rent demand. If you have no landlord, say skip question.',
+    },
+  },
+  {
+    match: (q) => has(q, /contact details for management or right to manage company/i),
+    guide: {
+      say: "Add the management company's name, address, phone number and email.",
+      tip: "They are on your service charge demand. If there isn't one, say skip question.",
+    },
+  },
+  {
+    match: (q) => has(q, /contact details for managing agent/i),
+    guide: {
+      say: "Add the managing agent's name, address, phone number and email.",
+      tip: "They are on your service charge demand. If there isn't one, say skip question.",
+    },
+  },
+
+  // ── Leasehold: maintenance and service charges ──
+  {
+    match: (q) => has(q, /responsible for arranging the buildings insurance/i),
+    guide: {
+      say: 'Who insures the building? You, the management company, or the landlord.',
+      tip: 'In most flats the landlord or management company insures it, and the cost is part of the service charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /outside of the building last decorated/i),
+    guide: {
+      say: 'Choose the year the outside of the building was last painted or done up. If you are not sure, choose Not known.',
+      tip: 'Your managing agent will know. Big decorating jobs usually show on the service charge accounts.',
+    },
+  },
+  {
+    match: (q) => has(q, /internal communal parts last decorated/i),
+    guide: {
+      say: 'Choose the year the shared parts inside, like the hallways and stairs, were last decorated. If you are not sure, choose Not known.',
+      tip: 'Your managing agent will know. Big decorating jobs usually show on the service charge accounts.',
+    },
+  },
+  {
+    match: (q) => has(q, /contribute to the cost of maintaining the building/i),
+    guide: {
+      say: 'Put simply, do you pay towards looking after the building, usually through a service charge?',
+      tip: 'Choose Yes if you pay a service charge or any other share of the upkeep.',
+    },
+  },
+  {
+    match: (q) => has(q, /expense likely to be shown in the service charge accounts/i),
+    guide: {
+      say: 'Put simply, do you know of any big cost coming up in the next three years? For example a new roof, or painting the outside.',
+      tip: 'If yes, say what the work is, and when and how much, if you know.',
+    },
+  },
+  {
+    match: (q) => has(q, /problems in the last three years regarding the level of service charges/i),
+    guide: {
+      say: 'Put simply, in the last three years, have there been any problems with how much the service charge is, or with how the building is run?',
+      tip: 'If yes, say what happened and whether it was sorted out.',
+    },
+  },
+  {
+    match: (q) => has(q, /challenged the service charge/i),
+    guide: {
+      say: 'Put simply, in the last three years, have you disputed the service charge, or any cost in it?',
+      tip: 'If yes, say what you disputed, who with, and how it ended.',
+    },
+  },
+  {
+    match: (q) => has(q, /suspected existence in the building of cladding/i),
+    guide: {
+      say: 'Put simply, do you know of, or suspect, any cladding or other fault that could make the building unsafe? For example a fire safety problem.',
+      tip: 'If yes, say what it is and what you have been told about it. Letters from the landlord or managing agent help here.',
+    },
+  },
+  {
+    match: (q) => has(q, /difficulties encountered in collecting the service charges/i),
+    guide: {
+      say: 'Put simply, do you know of other flat owners not paying their service charge?',
+      tip: 'If yes, say what you know. Your managing agent may be able to tell you more.',
+    },
+  },
+  {
+    match: (q) => has(q, /owe any service charges, rent, insurance premium/i),
+    guide: {
+      say: 'Put simply, do you owe any service charge, ground rent, insurance or other payment for the building right now?',
+      tip: 'If yes, say what you owe and who to. It is usually paid off from the sale money.',
+    },
+  },
+
+  // ── Leasehold: notices ──
+  {
+    match: (q) => has(q, /notice that the landlord wants to sell the building/i),
+    guide: {
+      say: 'Put simply, has your landlord told you they want to sell the building? If yes, add a copy of the notice.',
+      tip: 'Flat owners often get the first chance to buy, so the notice matters to your buyer.',
+    },
+  },
+  {
+    match: (q) => has(q, /any other notice about the building, its use/i),
+    guide: {
+      say: 'Put simply, have you had any other notice about the building? For example about its use, its condition or repairs.',
+      tip: 'If yes, add a copy. A letter about planned major works counts.',
+    },
+  },
+
+  // ── Leasehold: consents ──
+  {
+    match: (q) => has(q, /changes in the terms of the lease/i),
+    guide: {
+      say: 'Put simply, has your lease been changed, or has the landlord given you permission for something under it? For example to keep a pet, rent the flat out or make alterations.',
+      tip: "If yes, add the landlord's letter or the deed. If you never got a copy, say what was agreed.",
+    },
+  },
+
+  // ── Leasehold: complaints ──
+  {
+    match: (q) => has(q, /received any complaint from the landlord, the management company or any neighbour/i),
+    guide: {
+      say: 'Put simply, has the landlord, the management company or a neighbour ever complained about you? For example about noise, or changes you made.',
+      tip: 'If yes, say what the complaint was and how it was sorted out.',
+    },
+  },
+  {
+    match: (q) => has(q, /complained or had cause to complain to or about the landlord/i),
+    guide: {
+      say: 'Put simply, have you complained, or wanted to complain, about the landlord, the management company or a neighbour?',
+      tip: 'If yes, say what it was about and how it ended.',
+    },
+  },
+
+  // ── Leasehold: alterations ──
+  {
+    match: (q) => has(q, /alterations having been made to the property since the lease/i),
+    guide: {
+      say: 'Put simply, has the flat been changed since the lease began? For example a wall taken out, new windows, or a new layout.',
+      tip: "If yes, say what was done and roughly when. Include work done before you owned it, if you know of it.",
+    },
+  },
+  {
+    match: (q) => has(q, /landlords? consent for the alterations/i),
+    guide: {
+      say: "Put simply, did the landlord give permission for those changes? If yes, add their letter of consent.",
+      tip: "Most leases need the landlord's written permission for alterations. Choose No if there were no changes.",
+    },
+  },
+
+  // ── Leasehold: enfranchisement ──
+  {
+    match: (q) => has(q, /owned the property for at least two years/i),
+    guide: {
+      say: 'Put simply, have you owned the flat for two years or more?',
+      tip: "After two years, a flat owner can usually ask for a longer lease. Your purchase date is on your title register.",
+    },
+  },
+  {
+    match: (q) => has(q, /formal notice stating the sellers? wish to buy the freehold/i),
+    guide: {
+      say: 'Put simply, have you formally asked the landlord to sell you the freehold, or to give you a longer lease? If yes, add the notice.',
+      tip: 'This would have been a formal notice, usually sent by your solicitor.',
+    },
+  },
+  {
+    match: (q) => has(q, /collective purchase of the freehold/i),
+    guide: {
+      say: 'Put simply, do you know of the flat owners joining together to buy the freehold of the building? If yes, add the notice.',
+      tip: 'A notice like this is usually sent to every flat owner.',
+    },
+  },
+  {
+    match: (q) => has(q, /response to freehold\s*\/\s*lease extension notices/i),
+    guide: {
+      say: 'If you, or a group of flat owners, sent the landlord a notice to buy the freehold or extend the lease, has the landlord replied? If yes, add the reply.',
+      tip: 'Choose No if no notice was sent, or there has been no reply yet.',
+    },
+  },
+
+  // ── Leasehold: building safety and the deed of certificate ──
+  {
+    match: (q) => has(q, /remediation works on the building/i),
+    guide: {
+      say: 'Put simply, has any safety work been planned or done on the building? For example replacing cladding, or fire safety work.',
+      tip: "If yes, add the details you were sent. Letters from the landlord or managing agent are fine.",
+    },
+  },
+  {
+    match: (q) => has(q, /qualifying lease/i),
+    guide: {
+      say: 'A qualifying lease can protect you from paying for some building safety repairs. Is yours one?',
+      tip: "Your leaseholder deed of certificate says so. If you're not sure, ask your solicitor.",
+    },
+  },
+  {
+    match: (q) => has(q, /is there a leaseholder deed of certificate/i),
+    guide: {
+      say: 'A leaseholder deed of certificate is a form a flat owner signs about building safety, to show whether they are protected from repair costs. Is there one for this flat?',
+      tip: 'Your landlord or managing agent asks for it, so they will know if one was done.',
+    },
+  },
+  {
+    match: (q) => has(q, /complete the deed of certificate or was it completed by a previous/i),
+    guide: {
+      say: 'Did you fill in the deed of certificate yourself, or did someone who owned the flat before you?',
+      tip: "If you're not sure, your landlord or managing agent will have a copy with the date on it.",
+    },
+  },
+  {
+    match: (q) => has(q, /copy of the leaseholder deed of certificate/i),
+    guide: {
+      say: 'Add a copy of the deed of certificate, and the evidence that came with it. Then say whether it is for you, or for an earlier owner.',
+      tip: 'Your landlord or managing agent can send a copy if you need one.',
+    },
+  },
+  {
+    match: (q) => has(q, /been notified of the intention to sell/i),
+    guide: {
+      say: 'Put simply, have you told the freeholder or landlord that you are selling?',
+      tip: 'Some leases say you must tell them. Your solicitor can do this for you.',
+    },
+  },
+  {
+    match: (q) => has(q, /landlords? certificate and the accompanying evidence/i),
+    guide: {
+      say: "Put simply, has your landlord sent you their landlord's certificate, about building safety costs? If yes, add it.",
+      tip: 'Your solicitor can ask the landlord for it if you have not had one.',
+    },
+  },
+
+  // ── Title Register and Plan ──
+  {
+    match: (q) => has(q, /official copy of the register|title register \(official copy\)/i),
+    guide: {
+      say: "Do you have a copy of your title register? It's HM Land Registry's record of who owns the home. If yes, upload it.",
+      tip: 'If not, you can download one from the GOV.UK website for a small fee, then come back and add it. Include any older deeds in the same upload.',
+    },
+  },
+  {
+    match: (q) => has(q, /copy of the title plan|upload your title plan/i),
+    guide: {
+      say: "Do you have a copy of your title plan? It's the map that shows your home's boundaries. If yes, upload it.",
+      tip: 'If not, you can download one from the GOV.UK website for a small fee, then come back and add it.',
+    },
+  },
+  {
+    match: (q) => has(q, /upload the title register and title plan/i),
+    guide: {
+      say: 'Upload your title register and title plan from HM Land Registry.',
+      tip: 'You can download both from the GOV.UK website for a small fee.',
+    },
+  },
+
+  // ── Searches ──
+  {
+    // The planning question left in Searches (and, on older passports, in
+    // the Title Register section). Only these two ask it in exactly these
+    // words.
+    match: (q) => /^have there been any planning notices or proposals\??$/i.test(String(q.question || q.title || '').trim()),
+    guide: {
+      say: 'Put simply, do you know of any planning applications or proposals that could affect the home? For example a new building planned nearby.',
+      tip: "Your council's planning website lists the applications near you. If yes, say what they are.",
+    },
+  },
+  {
+    match: (q) => has(q, /local authority search/i),
+    guide: {
+      say: 'If you have a local authority search, upload it. It is the council report on planning, roads and other council matters for the home.',
+      tip: SEARCH_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /drainage (&|and) water search/i),
+    guide: {
+      say: 'If you have a drainage and water search, upload it. It shows how the home connects to the water supply and the public sewer.',
+      tip: SEARCH_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /upload your environmental search/i),
+    guide: {
+      say: 'If you have an environmental search, upload it. It covers things like flood risk and polluted land near the home.',
+      tip: SEARCH_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /upload your flood search/i),
+    guide: {
+      say: 'If you have a flood search, upload it. It shows how likely the home is to flood.',
+      tip: SEARCH_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /mining \/ local risk search/i),
+    guide: {
+      say: 'If you have a mining search, upload it. It only matters in an old mining area. If yours is not in one, say skip question.',
+      tip: 'The Coal Authority website shows whether your area was mined.',
+    },
+  },
+]
+
 // Fixtures and Fittings: about a hundred items, each answered Included,
 // Excluded or None, so the guidance is built from the item itself rather
 // than written out a hundred times. The room questions (Carpets, Curtain
@@ -1135,6 +1595,7 @@ export function guideFor(question: Q, type: string): Guide {
   // OWNERSHIP, whose /\blease/ and /photo/ would otherwise catch the solar
   // roof lease and the EPC upload.
   const hit =
+    LEASEHOLD_AND_SEARCHES.find((g) => g.match(question)) ||
     NEIGHBOURS.find((g) => g.match(question)) ||
     HOME_WORKS.find((g) => g.match(question)) ||
     RIGHTS_AND_OCCUPIERS.find((g) => g.match(question)) ||
@@ -1157,14 +1618,48 @@ export function cleanHelpText(text: unknown, about = ''): string {
   if (/^other warranties might include/i.test(help) && !/guarantee|warrant/i.test(about)) return ''
   // The kitchen help was copied onto Other Bathroom Items too
   if (/^include any specialty kitchen equipment/i.test(help) && !/kitchen/i.test(about)) return ''
-  return help
+  // Leasehold: the headlease help sits on the struck off company question
+  // and the second "contribute to the cost" question, and the collective
+  // purchase help on the question about replies to those notices
+  if (/^a headlease is\b/i.test(help) && !/headlease/i.test(about)) return ''
+  if (/^checks if the seller knows about tenants in the building joining together/i.test(help) && !/collective purchase/i.test(about)) return ''
+  return noDashes(help)
+}
+
+// Dashes used as punctuation read as a comma ("works, such as cladding,
+// have been planned"). Hyphens inside words ("multi-storey") and number
+// ranges are left alone.
+const noDashes = (s: string) =>
+  s
+    .replace(/\s*[\u2014\u2013]+\s*/g, ', ')
+    .replace(/([A-Za-z)])\s+-+\s+(?=[A-Za-z(])/g, '$1, ')
+    .replace(/,\s*,/g, ',')
+    .replace(/,\s*([.;:!?])/g, '$1')
+
+// The same for a question's or part's description (the line under its
+// title). Leasehold copied three from other questions: a drainage plan
+// onto the building regulations, a warranty's policy details onto lease
+// consents, and the Occupiers sale contract question onto alterations. A
+// description that only repeats the title is left out too.
+export function cleanDescription(text: unknown, about = ''): string {
+  const desc = String(text ?? '').trim()
+  if (!desc) return ''
+  if (/supply a plan showing the location of the system/i.test(desc) && !/septic|sewage|cesspool|drain|system/i.test(about)) return ''
+  if (/policy number/i.test(desc) && /warrant/i.test(desc) && !/guarantee|warrant|insur/i.test(about)) return ''
+  if (/^agreed to sign the sale contract/i.test(desc) && !/vacant|occupier|sale contract/i.test(about)) return ''
+  const bare = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  if (bare(desc).length > 12 && bare(about).includes(bare(desc))) return ''
+  // "Please give details of known:" on the communal decorating question
+  return noDashes(desc.replace(/^please give details of known:?$/i, 'Please give details if known'))
 }
 
 // An option as UMU says it: "Yes, select year" is "Yes", "Other, specify
-// below" is "Other"
+// below" is "Other", and Leasehold's "Select this option, if not
+// applicable" is "Not applicable"
 export function optionSaid(label: string): string {
   return String(label || '')
     .trim()
+    .replace(/^select this option,?\s*if (this information is )?(not \w+)\.?$/i, (_, __, not: string) => not.charAt(0).toUpperCase() + not.slice(1).toLowerCase())
     .replace(/,\s*(please\s+)?(select|enter|choose|add|specify|state)\b.*$/i, '')
 }
 
@@ -1187,6 +1682,9 @@ const SECTION_WORDS: [string, RegExp][] = [
   ['services', /^(the )?(services?|utilities)( section)?$/],
   ['transactionInformation', /^(the )?(transaction( information)?|moving date)( section)?$/],
   ['fixturesAndFittings', /^(the )?(fixtures?( and fittings)?|fittings)( section)?$/],
+  ['leasehold', /^(the )?(leasehold|lease)( section)?$/],
+  ['titleDeedsAndPlan', /^(the )?(title( deeds?| register| plan)?( and (the )?plan)?|deeds)( section)?$/],
+  ['searches', /^(the )?(property )?search(es)?( section)?$/],
 ]
 
 export function sectionCommand(said: string): string | null {

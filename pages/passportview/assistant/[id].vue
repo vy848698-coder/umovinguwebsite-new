@@ -499,6 +499,7 @@ import {
   sectionCommand,
   matchOptions,
   cleanHelpText,
+  cleanDescription,
   optionSaid,
 } from '~/utils/umuGuide'
 import { toSmartTitleCase } from '~/utils/titleCase'
@@ -905,7 +906,7 @@ const sayHint = computed(() => {
   if (phase.value === 'pathway') return 'Tap your answers below. They help us guide you to the right next step.'
   if (phase.value !== 'question' || !current.value) return ''
   const q: any = current.value
-  const hint = (q.description || q.subtitle || '').trim()
+  const hint = cleanDescription(q.description || q.subtitle || '', q.question || q.title || '')
   // "Please answer Yes or No." only repeats the buttons underneath
   if (/^please (answer|select) yes or no[.:]?$/i.test(hint)) return ''
   // "If Yes, have all the occupiers aged 17 or over:" leads into a later
@@ -951,9 +952,18 @@ function closeVoicePanelOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener('click', closeVoicePanelOutside))
 onBeforeUnmount(() => document.removeEventListener('click', closeVoicePanelOutside))
 
-const footHint = computed(() =>
-  voice.canListen ? 'Type, or tap the mic and tell UMU' : 'Type or tap your answer',
-)
+// An upload with no box to type in (the Searches, the Leasehold documents)
+// has nothing to say or type
+const uploadOnly = computed(() => {
+  const q: any = current.value
+  if (qType.value === 'upload') return true
+  const parts = qType.value === 'multipart' && Array.isArray(q?.parts) ? q.parts.filter(Boolean) : []
+  return parts.length > 0 && parts.every((p: any) => String(p.type || '').toLowerCase() === 'upload' && String(p.display || '').toLowerCase() !== 'both')
+})
+const footHint = computed(() => {
+  if (uploadOnly.value) return 'Upload a file, or tap Skip for now'
+  return voice.canListen ? 'Type, or tap the mic and tell UMU' : 'Type or tap your answer'
+})
 
 const isCurrentSeg = (i: number) => phase.value === 'question' && i === rt.currentQuestionIndex.value
 
@@ -1453,6 +1463,17 @@ function cleanLabel(s: string) {
     .replace(/^(please )?specify the following provider details$/i, 'details')
     .replace(/^numbers? of properties sharing the system$/i, 'number of homes that share it')
     .replace(/^(item|room) (name|description)$/i, (_, what, box) => (box.toLowerCase() === 'name' ? `name of the ${what.toLowerCase()}` : `short description of the ${what.toLowerCase()}`))
+    // Leasehold and Title Register follow-ups: a box to type in or upload
+    // to, said as "Next, tell me the details, or upload the formal notice"
+    .replace(/^rent amount due each year$/i, 'ground rent due each year')
+    .replace(/^how often is the rent reviewed$/i, 'times the rent is reviewed')
+    .replace(/^how is the increase calculated$/i, 'way the increase is worked out')
+    .replace(/^frequency of rent payments.*$/i, 'how often you pay the ground rent')
+    .replace(/^upload proof of landlords? consent.*$/i, "details of the landlord's consent, or upload their letter")
+    .replace(/^upload details of the proposed or completed remediation works$/i, 'details of the works, or upload what you were sent')
+    .replace(/^(please )?upload the response documentation$/i, "details of the landlord's reply, or upload it")
+    .replace(/^(please )?upload the (.+?) documentation$/i, 'details, or upload the $2')
+    .replace(/^(please )?upload (your |the )?(.+)$/i, (_, __, the, what) => `details, or upload ${the ? the.toLowerCase() : 'the '}${what.replace(/\s*\(official copy\)/i, '').replace(/\blandlords\b/i, "landlord's")}`)
 }
 const SALE_PRICE = 'price, if you would sell it to the buyer'
 
@@ -2609,11 +2630,29 @@ async function onUpdate(answer: any) {
       ? choicesOf(answer) !== choicesBefore
       : !!main && partValue(answer[main.partKey]) !== partValue(mainBefore)
     if (!main || !changed) return
+    // Tick boxes take several answers, so they wait for Save and continue
+    if (String(main.type || '').toLowerCase() === 'checkbox') return
     await nextTick()
     await nextTick()
     if (current.value?.id !== q.id || saving.value || !answerValid.value) return
+    if (awaitsUpload(q, answer, main)) return
     if (collectTargets().every((t) => !needsAnswer(t))) return saveCurrent(answer)
   }
+}
+
+// A Yes that shows an empty upload box (and no text box) waits for Save and
+// continue, so the seller can add the document first: Leasehold's "notice
+// that the landlord wants to sell". A No or Not applicable still saves.
+function awaitsUpload(q: any, answer: any, main: any) {
+  if (String(main?.type || '').toLowerCase() === 'date') return false
+  const chosen = (main.options || []).find((o: any) => o?.value === partValue(answer[main.partKey]))
+  if (/^no\b|not applicable|not known/i.test(String(chosen?.label || ''))) return false
+  return (q.parts || []).some((p: any) => {
+    if (!p || p === main || String(p.type || '').toLowerCase() !== 'upload' || String(p.display || '').toLowerCase() === 'both') return false
+    const shown = !p.conditionalOn || (p.showOnValues || []).includes(partValue(answer[p.conditionalOn]))
+    const files = answer[p.partKey]
+    return shown && !(Array.isArray(files) ? files.length : files)
+  })
 }
 
 // The Yes or No a multipart question opens with, when it opens with one
@@ -2663,8 +2702,28 @@ function waivedForFixture(t: Target) {
   return !isPrice || !isExcluded(main, q.answer?.[main.partKey])
 }
 
+// Untitled boxes that aren't needed (Leasehold): a comments box under a
+// choice is optional, and the box under a list that ends "Other, specify
+// below" is only for Other
+function waivedOptionalBox(t: Target) {
+  if (t.kind === 'choice' || qType.value !== 'multipart') return false
+  const q: any = current.value
+  const key = t.el.closest<HTMLElement>('[data-part-key]')?.dataset.partKey
+  const parts = [...(q.parts || [])].filter(Boolean).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
+  const i = parts.findIndex((p: any) => p.partKey === key)
+  const part = parts[i]
+  if (!part || part.required || part.conditionalOn || String(part.title || '').trim()) return false
+  if (/\bcomments?\b/i.test(part.placeholder || '')) return true
+  const list = parts[i - 1]
+  const other = (list?.options || []).find((o: any) => /^other\b/i.test(String(o?.label || '').trim()))
+  if (!other) return false
+  const chosen = q.answer?.[list.partKey]
+  const picked = (Array.isArray(chosen) ? chosen : [chosen]).map(partValue)
+  return !picked.includes(other.value) && !picked.includes(other.label)
+}
+
 // A box UMU still needs an answer for
-const needsAnswer = (t: Target) => !isFilled(t) && !waivedByNo(t) && !waivedForFixture(t)
+const needsAnswer = (t: Target) => !isFilled(t) && !waivedByNo(t) && !waivedForFixture(t) && !waivedOptionalBox(t)
 
 // What UMU says the moment an answer is given, before it has saved: the
 // choice itself ("You selected No.") or a short thanks. Every line here is
@@ -2855,7 +2914,7 @@ function goBack() {
   activePathway.value = null
   phase.value = 'question'
   rt.currentQuestionIndex.value = i - 1
-  talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
+  toQuestionTop()
 }
 
 function skipQuestion() {
@@ -2879,7 +2938,7 @@ function goToNextQuestion(fromId: string) {
     }
     phase.value = 'question'
     rt.currentQuestionIndex.value = from + 1
-    talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
+    toQuestionTop()
     return
   }
   const order = [...list.slice(from + 1), ...list.slice(0, from + 1)]
@@ -2897,7 +2956,25 @@ function goToNextQuestion(fromId: string) {
   const index = list.indexOf(next)
   if (rt.currentQuestionIndex.value === index) presentQuestion()
   else rt.currentQuestionIndex.value = index
+  toQuestionTop()
+}
+
+// The next question starts at its top. On phones the page scrolls rather
+// than the sheet, so after Skip or Save at the foot of a long question the
+// next one opened scrolled to its end, title out of sight; the page now
+// brings the title back below the site bar (and never moves when it's in
+// view already).
+function toQuestionTop() {
   talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
+  const box = talkEl.value
+  if (!box || getComputedStyle(box).overflowY !== 'visible') return
+  nextTick(() => {
+    const head = document.querySelector<HTMLElement>('.ua-sheet-head')
+    if (!head) return
+    const navBottom = document.querySelector('.hsw-nav')?.getBoundingClientRect().bottom || 0
+    const top = head.getBoundingClientRect().top
+    if (top < navBottom) window.scrollBy({ top: top - navBottom - 12, behavior: 'smooth' })
+  })
 }
 
 onBeforeUnmount(() => {
