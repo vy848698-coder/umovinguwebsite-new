@@ -59,36 +59,18 @@ export const useAuth = () => {
     })
   }
 
-  const googleLogin = (credential: string) => {
-    return $fetch(`${base}/auth/google`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'X-Umu-App': APP_SLUG },
-      body: { credential },
-    })
-  }
-
-  const appleLogin = (idToken: string, firstName?: string, lastName?: string) => {
-    return $fetch(`${base}/auth/apple`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'X-Umu-App': APP_SLUG },
-      body: { idToken, firstName, lastName },
-    })
-  }
-
-  /** Dev-only: bypasses Apple SDK — use on localhost */
-  const appleLoginMock = (email = 'apple-test@dev.local') => {
-    return $fetch(`${base}/auth/apple/mock`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'X-Umu-App': APP_SLUG },
-      body: { email, firstName: 'Apple', lastName: 'Test' },
-    })
-  }
+  // googleLogin/appleLogin/appleLoginMock removed (security review
+  // 2026-10-19): dead code with no sign-in UI linked to it, calling
+  // /auth/google and /auth/apple backend routes that don't exist (the
+  // backend dropped OAuth support entirely — see umu-website-
+  // integration's useAuth.ts for the same finding). The callback pages
+  // and server routes that used these also round-tripped the app's JWT
+  // through a URL query string on redirect, a token-leak vector via
+  // browser history/server logs — removed rather than left as a
+  // landmine for if OAuth is ever reintroduced.
 
   // Exchanges the httpOnly refresh-token cookie (set at login/verify-otp/
-  // register/google/apple above) for a fresh access token - the cookie
+  // register above) for a fresh access token - the cookie
   // rides along automatically via credentials: 'include', never touched
   // by this JS. Throws if there's no valid cookie; callers should treat
   // that as "signed out" rather than retry.
@@ -127,9 +109,6 @@ export const useAuth = () => {
     verifyOtp,
     register,
     login,
-    googleLogin,
-    appleLogin,
-    appleLoginMock,
     logout,
     refreshAccessToken,
   }
