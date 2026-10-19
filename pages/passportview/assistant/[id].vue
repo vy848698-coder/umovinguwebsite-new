@@ -868,10 +868,24 @@ const sayText = computed(() => {
   if (phase.value === 'pathway') return 'Thanks. This answer has a few quick follow-up steps.'
   const q: any = current.value
   if (!q) return ''
-  const firstPartTitle = Array.isArray(q.parts) ? q.parts.find((p: any) => p?.title)?.title : ''
   // "live at the property??" in the form is shown with one question mark
-  return String(q.question || q.title || firstPartTitle || 'Please answer this one.').replace(/\?{2,}/g, '?')
+  return String(askedText(q) || 'Please answer this one.').replace(/\?{2,}/g, '?')
 })
+
+// The words a question asks. A Fixtures item is named by its first part
+// ("Greenhouse"): the question title there is empty, the same, or copied
+// from another item ("Bedroom 3" on the greenhouse and the rotary line).
+function askedText(q: any): string {
+  const parts: any[] = Array.isArray(q?.parts) ? q.parts.filter(Boolean) : []
+  const first = [...parts].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))[0]
+  const labels = (first?.options || []).map((o: any) => String(o?.label || '').trim().toLowerCase())
+  if (first?.title && labels.includes('included') && labels.includes('excluded')) return String(first.title)
+  return undash(String(q?.question || q?.title || parts.find((p) => p?.title)?.title || ''))
+}
+
+// "Mains electricity - is this service connected?" reads as "Mains
+// electricity: is this service connected?", with no dash on screen
+const undash = (s: string) => s.replace(/\s+[-–—]+\s+/g, ': ')
 
 // True when UMU's question is the first part's own title, so the form
 // doesn't print it a second time.
@@ -951,8 +965,7 @@ function segClass(q: any, i: number) {
 }
 
 function segTitle(q: any, i: number) {
-  const firstPart = Array.isArray(q.parts) ? q.parts.find((p: any) => p?.title)?.title : ''
-  const title = q.question || q.title || firstPart || 'Question'
+  const title = askedText(q) || 'Question'
   const state = q.completed ? 'answered' : skipped.has(q.id) ? 'skipped' : 'not answered yet'
   return `Question ${i + 1}: ${title} (${state})`
 }
@@ -1134,8 +1147,7 @@ function repeatQuestion() {
 function prefetchNextQuestion() {
   const next: any = questions.value[rt.currentQuestionIndex.value + 1]
   if (!next) return
-  const firstPartTitle = Array.isArray(next.parts) ? next.parts.find((p: any) => p?.title)?.title : ''
-  const text = next.question || next.title || firstPartTitle
+  const text = askedText(next).replace(/\?{2,}/g, '?')
   if (text) voice.prefetch(joinSay(text, guideFor(next, normalizeQuestionType(next)).say))
 }
 
@@ -1334,7 +1346,24 @@ interface ConfirmTarget {
   label: string
   address: string
 }
-type Target = InputTarget | ChoiceTarget | ConfirmTarget
+// A number set with plus and minus buttons ("how many homes share it?")
+interface CounterTarget {
+  kind: 'counter'
+  el: HTMLElement
+  label: string
+}
+type Target = InputTarget | ChoiceTarget | ConfirmTarget | CounterTarget
+
+const counterValue = (el: HTMLElement) => Number((el.querySelector('.counter-value')?.textContent || '0').trim()) || 0
+
+// Presses plus or minus until the counter shows n
+async function setCounter(t: CounterTarget, n: number) {
+  for (let i = 0; i < 60 && counterValue(t.el) !== n; i++) {
+    const [minus, plus] = Array.from(t.el.querySelectorAll<HTMLButtonElement>('.counter-btn'))
+    ;(counterValue(t.el) < n ? plus : minus)?.click()
+    await nextTick()
+  }
+}
 
 const SKIP_TYPES = new Set(['hidden', 'file', 'checkbox', 'radio', 'button', 'submit', 'reset'])
 
@@ -1381,7 +1410,7 @@ function visible(el: Element) {
 }
 
 function cleanLabel(s: string) {
-  return s
+  return undash(s)
     .replace(/\s+/g, ' ')
     .trim()
     .replace(/^(please\s+)?(enter|select|provide|type|add)\s+/i, '')
@@ -1409,7 +1438,23 @@ function cleanLabel(s: string) {
     .replace(/^if yes, please state when the flooding occurred.*$/i, 'date of the flooding and the parts that flooded')
     .replace(/^what kind of flooding occurred.*$/i, 'What kind of flooding was it')
     .replace(/^if relevant, specify what .?other.? type of (\w+).*$/i, 'other type of $1')
+    // Fixtures and Fittings: the price box under an Excluded item, and the
+    // boxes of the "Other ..." items
+    .replace(/^selling price$/i, SALE_PRICE)
+    .replace(/^what is this (item|room) called$/i, 'name of the $1')
+    .replace(/^inclusion status$/i, 'Will it stay with the home')
+    // "Tap Fitted or Freestanding" says it all
+    .replace(/^(inclusion|installation) type$/i, '')
+    // Services follow-ups
+    .replace(/^a cop(y|ies) of\b.*$/i, 'details')
+    .replace(/^one of the following documents$/i, 'details, or upload one of the documents listed')
+    .replace(/^if there is a boiler.*when was it installed$/i, 'date the boiler was installed')
+    .replace(/^when was the septic tank last replaced or upgraded$/i, 'date the septic tank was last replaced or upgraded')
+    .replace(/^(please )?specify the following provider details$/i, 'details')
+    .replace(/^numbers? of properties sharing the system$/i, 'number of homes that share it')
+    .replace(/^(item|room) (name|description)$/i, (_, what, box) => (box.toLowerCase() === 'name' ? `name of the ${what.toLowerCase()}` : `short description of the ${what.toLowerCase()}`))
 }
+const SALE_PRICE = 'price, if you would sell it to the buyer'
 
 function partTitle(el: Element) {
   return cleanLabel(el.closest('.part-section')?.querySelector('.part-text')?.textContent || '')
@@ -1449,6 +1494,9 @@ function inputLabel(el: HTMLInputElement | HTMLTextAreaElement) {
 }
 
 function toTarget(el: Element): Target | null {
+  if (el.classList.contains('counter-row')) {
+    return visible(el) ? { kind: 'counter', el: el as HTMLElement, label: partTitle(el) || 'number' } : null
+  }
   if (el.classList.contains('addr-confirm')) {
     if (!visible(el)) return null
     const address = (el.querySelector('.addr-confirm-line')?.textContent || '').trim()
@@ -1507,7 +1555,7 @@ function collectTargets(): Target[] {
   const root = answerEl.value
   if (!root) return []
   return Array.from(
-    root.querySelectorAll('.addr-confirm, input, textarea, .radio-options, .chips-wrap, .date-options, .checkbox-options'),
+    root.querySelectorAll('.addr-confirm, input, textarea, .radio-options, .chips-wrap, .date-options, .checkbox-options, .counter-row'),
   )
     .map(toTarget)
     .filter(Boolean) as Target[]
@@ -1516,6 +1564,7 @@ function collectTargets(): Target[] {
 function isFilled(t: Target) {
   if (t.kind === 'confirm') return t.el.classList.contains('is-confirmed')
   if (t.kind === 'choice') return t.options.some((o) => o.el.classList.contains('selected'))
+  if (t.kind === 'counter') return counterValue(t.el) > 0
   if (t.addOnEnter) return !!t.el.closest('.multi-text-input, .input-section')?.parentElement?.querySelector('.edit-btn')
   if (isRange(t.el)) return movedSliders.has(t.el) || !!current.value?.completed
   return t.el.value.trim().length > 0
@@ -1750,6 +1799,17 @@ function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice'
     const ends = low !== min || high !== max ? `, where ${min} is ${low} and ${max} is ${high}` : ''
     return joinSay(ask, `Say a number from ${min} to ${max}${ends}`)
   }
+  if (t.kind === 'counter') {
+    return mode === 'tap'
+      ? `${first ? 'Tap' : 'Next, tap'} plus to set the ${spokenLabel}.`
+      : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+  }
+  // An excluded Fixtures item: the price is optional
+  if (t.label === SALE_PRICE) {
+    return mode === 'tap'
+      ? 'If you would sell it to the buyer, type your price. If not, tap Save and continue.'
+      : 'If you would sell it to the buyer, tell me your price. If not, say save.'
+  }
   if (mode === 'tap') {
     if (sameAsQuestion) return 'Type your answer in the box.'
     return t.addOnEnter
@@ -1766,6 +1826,8 @@ function targetLabel(t: Target, mode: 'voice' | 'tap') {
   if (t.kind === 'choice') return t.label && !isQuestionItself(t) ? `${t.label}?` : 'Choose an answer'
   if (isRange(t.el) && mode === 'tap') return t.label === 'answer' ? 'Move the slider' : `${t.label}? Move the slider`
   if (t.label === 'answer') return mode === 'voice' ? 'Say your answer' : 'Type your answer'
+  if (t.label === SALE_PRICE) return mode === 'voice' ? 'Your price, or say save' : 'Your price, if you would sell it'
+  if (t.kind === 'counter') return mode === 'voice' ? `Say the ${t.label}` : `Tap plus to set the ${t.label}`
   const label = /^[A-Z][a-z]/.test(t.label) ? t.label.charAt(0).toLowerCase() + t.label.slice(1) : t.label
   return mode === 'voice' ? `Tell me the ${label}` : `Fill in the ${label}`
 }
@@ -1883,6 +1945,16 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       }
       await say(`Sorry, I didn't catch that. You can say ${orList(optionLabels)}.`, id)
       continue
+    }
+    if (t.kind === 'counter') {
+      const n = spokenNumber(said)
+      if (n === null || n < 0 || n > 50) {
+        await say('Sorry, I need a number, like two.', id)
+        continue
+      }
+      await setCounter(t, Math.round(n))
+      ack = `You selected ${counterValue(t.el)}.`
+      return 'next'
     }
     if (t.el instanceof HTMLInputElement && t.el.type === 'date' && !t.el.value) {
       await say('Sorry, I need a date, like the thirty first of March twenty twenty five.', id)
@@ -2067,7 +2139,11 @@ async function runVoiceAnswer(id: number) {
     if (outcome === 'stop') return stopVoiceMode()
     if (outcome === 'back') return goBack()
     if (outcome === 'skip') return skipQuestion()
-    if (outcome === 'save') break
+    // "Save" means save, when the answer is complete enough
+    if (outcome === 'save') {
+      if (answerValid.value && !saving.value) return saveCurrent()
+      break
+    }
     // A radio answer, or a No that leaves nothing else to answer, saves
     // straight away and moves on
     if (current.value?.id !== q.id || saving.value) return
@@ -2240,6 +2316,7 @@ function valueOf(t: Target): string {
   if (t.kind === 'choice') {
     return t.options.filter((o) => o.el.classList.contains('selected')).map((o) => optionSaid(o.label)).join(' | ')
   }
+  if (t.kind === 'counter') return counterValue(t.el) ? String(counterValue(t.el)) : ''
   if (t.addOnEnter) return listItems(t).join(' | ')
   return t.el.value.trim()
 }
@@ -2321,6 +2398,7 @@ function guideAck(t: Target, before: string | undefined) {
     if (removed.length) return `You removed ${andList(removed)}.`
     return ''
   }
+  if (t.kind === 'counter') return `You selected ${now || 0}.`
   if (isRange(t.el)) return `You selected ${sliderAnswer(t.el)}.`
   if (t.el.classList.contains('currency-box__value')) return `You selected ${now}.`
   if (t.addOnEnter) return "Added. If there's anyone else, add them the same way."
@@ -2494,6 +2572,10 @@ async function onUpdate(answer: any) {
   const sidesBefore = qType.value === 'boundary' ? boundaryAnswer(q) : null
   const mainKey = qType.value === 'multipart' ? mainChoicePart(q)?.partKey : null
   const mainBefore = mainKey && q.answer && typeof q.answer === 'object' ? q.answer[mainKey] : undefined
+  // A Fixtures item can end on its second choice (Fitted or Freestanding)
+  const choicesOf = (a: any) =>
+    JSON.stringify((q.parts || []).filter((p: any) => p?.options?.length).map((p: any) => partValue(a?.[p.partKey]) ?? null))
+  const choicesBefore = fixtureChoicePart(q) ? choicesOf(q.answer) : null
   q.answer = answer
 
   // A side of the boundary plan was chosen: say it, point at the next
@@ -2523,7 +2605,10 @@ async function onUpdate(answer: any) {
   // autoSaveOn of their own.
   if (qType.value === 'multipart' && !q.repeatable && answer && typeof answer === 'object') {
     const main = mainChoicePart(q)
-    if (!main || partValue(answer[main.partKey]) === partValue(mainBefore)) return
+    const changed = choicesBefore !== null
+      ? choicesOf(answer) !== choicesBefore
+      : !!main && partValue(answer[main.partKey]) !== partValue(mainBefore)
+    if (!main || !changed) return
     await nextTick()
     await nextTick()
     if (current.value?.id !== q.id || saving.value || !answerValid.value) return
@@ -2550,8 +2635,36 @@ function waivedByNo(t: Target) {
   return !!part && part !== main && !part.required && !part.conditionalOn
 }
 
+// Fixtures and Fittings: the part answered Included, Excluded or None
+function fixtureChoicePart(q: any) {
+  if (qType.value !== 'multipart') return null
+  return (q?.parts || []).find((p: any) => {
+    const labels = (p?.options || []).map((o: any) => String(o?.label || '').trim().toLowerCase())
+    return labels.includes('included') && labels.includes('excluded')
+  }) || null
+}
+const isExcluded = (part: any, value: any) =>
+  (part?.options || []).find((o: any) => o?.value === partValue(value))?.label?.trim().toLowerCase() === 'excluded'
+
+// On a Fixtures item the price box is only asked for after Excluded (the
+// price for selling it to the buyer) and the comments box never is. Both
+// are optional, so Included or None saves straight away.
+function waivedForFixture(t: Target) {
+  if (t.kind === 'choice') return false
+  const q: any = current.value
+  const main = fixtureChoicePart(q)
+  if (!main) return false
+  const key = t.el.closest<HTMLElement>('[data-part-key]')?.dataset.partKey
+  const part = key ? q.parts.find((p: any) => p.partKey === key) : null
+  if (!part || part.required || part.conditionalOn) return false
+  // "Other ..." items: the seller names the item, so those boxes are asked
+  if (/^(item|room) (name|description)$/i.test(String(part.title || '').trim())) return false
+  const isPrice = /asking price|selling price/i.test(`${part.title || ''} ${JSON.stringify(part.options || [])}`)
+  return !isPrice || !isExcluded(main, q.answer?.[main.partKey])
+}
+
 // A box UMU still needs an answer for
-const needsAnswer = (t: Target) => !isFilled(t) && !waivedByNo(t)
+const needsAnswer = (t: Target) => !isFilled(t) && !waivedByNo(t) && !waivedForFixture(t)
 
 // What UMU says the moment an answer is given, before it has saved: the
 // choice itself ("You selected No.") or a short thanks. Every line here is

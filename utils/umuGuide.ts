@@ -682,6 +682,421 @@ const RIGHTS_AND_OCCUPIERS: { match: (q: Q) => boolean; guide: Guide }[] = [
   },
 ]
 
+// Services and Transaction Information, matched on the live wording (the
+// seed plus fix-misplaced-descriptions, restructure-heating-questions and
+// fix-occupiers-transaction-services). Older passports keep a short title
+// ("Is the property connected to mains:") with the real question in the
+// description, and `has` reads both, so each pattern fits either wording.
+const UTILITY_TIP = "The provider's name is on your latest bill for it."
+
+const SERVICES_AND_MOVING: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Services: electricity ──
+  {
+    match: (q) => has(q, /electrical installation been tested/i),
+    guide: {
+      say: 'Put simply, has a qualified electrician tested the wiring, all of it or part of it? If yes, choose the year and add the test certificate.',
+      tip: 'The certificate is usually an Electrical Installation Condition Report, called an EICR. The electrician gives it to you after the test.',
+    },
+  },
+  {
+    match: (q) => has(q, /rewired or had any electrical installation work/i),
+    guide: {
+      say: 'Put simply, has the home been rewired, or had any electrical work done, since January 2005? For example a new fuse box or new circuits.',
+      tip: "If yes, upload the electrician's safety certificate, their Building Regulations compliance certificate, or the council's completion certificate.",
+    },
+  },
+
+  // ── Services: central heating ──
+  {
+    match: (q) => has(q, /how is the property heated|what type of system is it/i),
+    guide: {
+      say: 'Tick every way your home is heated, like mains gas, oil, a heat pump or electric heaters. If yours is not listed, choose Other and say what it is.',
+      tip: 'Your energy bills show the fuel. Tick more than one if your home has more than one kind of heating.',
+    },
+  },
+  {
+    match: (q) => has(q, /have a central heating system/i),
+    guide: {
+      say: 'Put simply, is your home heated by one central system, like a boiler with radiators, or a heat pump?',
+      tip: 'Choose No if you only have separate heaters, such as a storage heater or an electric heater in each room.',
+    },
+  },
+  {
+    match: (q) => has(q, /when was the heating system installed/i),
+    guide: {
+      say: 'Choose the year the heating system was put in, and if there is a boiler, when that was fitted. For heating fitted on or after 1 April 2005, add its completion certificate.',
+      tip: "The Gas Safe completion certificate comes from the installer. If you can't find it, the Gas Safe Register can send a copy for a gas boiler.",
+    },
+  },
+  {
+    match: (q) => has(q, /heating system in good working order/i),
+    guide: {
+      say: 'Put simply, does the heating work properly right now, with no faults you know of?',
+      tip: 'Choose No if there is any fault you know of, even a small one. Your solicitor can add the details.',
+    },
+  },
+  {
+    match: (q) => has(q, /heating system last serviced/i),
+    guide: {
+      say: 'Choose the year the heating was last serviced, and add the service report if you have it.',
+      tip: "The engineer's service record or inspection report shows the date. Most boilers are serviced once a year.",
+    },
+  },
+  {
+    match: (q) => has(q, /replacement to the heating system/i),
+    guide: {
+      say: 'Put simply, apart from a new boiler, has any part of the heating been replaced? For example new radiators or new pipework. Choose Not known if you are not sure.',
+      tip: "Replacing only the boiler doesn't count here.",
+    },
+  },
+  {
+    match: (q) => has(q, /compliance certificates or documentation for the installation/i),
+    guide: {
+      say: 'These are the certificates for fitting or changing the heating, like a Gas Safe certificate or a building regulations completion certificate. Are they attached, to follow, or do you have none?',
+      tip: 'Choose To follow if you will send them later, or None if you do not have any.',
+    },
+  },
+  {
+    match: (q) => has(q, /more than one heating system/i),
+    guide: {
+      say: 'This is only for a home with two or more separate heating systems, which need these answers for each one. Choose Not applicable if you have just one.',
+      tip: 'Choose To follow to send the answers for the other system later, through your solicitor.',
+    },
+  },
+
+  // ── Services: drainage and sewerage ──
+  {
+    match: (q) => has(q, /foul water/i),
+    guide: {
+      say: 'Foul water is the waste water from your toilets, sinks, bath and washing machine. Does it go into the public sewer?',
+      tip: 'Most homes in towns are on mains drainage. Your water bill shows a sewerage charge if you are.',
+    },
+  },
+  {
+    match: (q) => has(q, /surface water/i),
+    guide: {
+      say: 'Surface water is the rain that runs off your roof and driveway. Does it drain into the public sewer?',
+      tip: 'Choose No if it runs into a soakaway in the garden instead. Your water bill may show a surface water charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /septic tank, sewage treatment plant or cesspool shared/i),
+    guide: {
+      say: 'Put simply, does any other home use the same septic tank, treatment plant or cesspool as you? If yes, show how many homes share it.',
+      tip: "Use the plus and minus buttons for the number. Choose No if you don't have one of these systems.",
+    },
+  },
+  {
+    match: (q) => has(q, /outside the boundary of the property/i),
+    guide: {
+      say: "Put simply, is any part of your septic tank, treatment plant or cesspool, including its soakaway or the way in to reach it, on someone else's land? If yes, add a plan that shows where it is.",
+      tip: 'A marked up copy of your title plan is fine. Show the tank, any soakaway or outlet, and the route used to reach it.',
+    },
+  },
+  {
+    match: (q) => has(q, /provided by:?\s*a septic tank/i),
+    guide: {
+      say: 'A septic tank is an underground tank that collects and treats waste water where there is no mains sewer. Do you have one? If yes, add when it was last replaced or upgraded.',
+      tip: "The date is on the installer's invoice or certificate. Choose No if your home is on the mains sewer.",
+    },
+  },
+  {
+    match: (q) => has(q, /provided by:?\s*a sewage treatment plant/i),
+    guide: {
+      say: 'A sewage treatment plant is a small system in the garden that cleans waste water with a pump, so it needs power and regular servicing. Do you have one?',
+      tip: 'Choose No if your home is on the mains sewer.',
+    },
+  },
+  {
+    match: (q) => has(q, /provided by:?\s*a cesspool/i),
+    guide: {
+      say: 'A cesspool is a sealed tank that only stores waste water, so a tanker has to empty it regularly. Do you have one?',
+      tip: 'Choose No if your home is on the mains sewer.',
+    },
+  },
+  {
+    match: (q) => has(q, /system last emptied/i),
+    guide: {
+      say: 'Choose the year your septic tank or cesspool was last emptied.',
+      tip: "The emptying company's invoice shows the date. If your home is on the mains sewer, skip this one.",
+    },
+  },
+  {
+    match: (q) => has(q, /treatment plant last serviced/i),
+    guide: {
+      say: "If you have a sewage treatment plant, choose the year it was last serviced. Choose No if you don't have one.",
+      tip: "The service engineer's report shows the date. Most treatment plants are serviced once a year.",
+    },
+  },
+  {
+    match: (q) => has(q, /when was the system installed/i),
+    guide: {
+      say: "Choose the year your septic tank, treatment plant or cesspool was put in. Choose No if you don't have one.",
+      tip: "The installer's paperwork, or the papers from when you bought the home, usually show the year.",
+    },
+  },
+
+  // ── Services: connection to services and utilities ──
+  {
+    match: (q) => has(q, /mains electricity\s*-/i),
+    guide: {
+      say: "Is your home connected to mains electricity? If yes, add your supplier, your MPAN and where the meter is.",
+      tip: 'The MPAN is the 13 digit supply number on your electricity bill. The meter is often under the stairs, or in a box outside.',
+    },
+  },
+  {
+    match: (q) => has(q, /mains gas\s*-/i),
+    guide: {
+      say: 'Is your home connected to mains gas? If yes, add your supplier, the supply number and where the meter is.',
+      tip: 'Your gas bill shows the supplier and the supply number. Choose No if you only use oil, bottled gas or electricity.',
+    },
+  },
+  {
+    match: (q) => has(q, /mains water\s*-/i),
+    guide: {
+      say: 'Is your home connected to mains water? If yes, add your water company, where the stopcock is, and where the meter is, if you have one.',
+      tip: 'The stopcock turns off the water, and is often under the kitchen sink. Your water company is on your water bill.',
+    },
+  },
+  {
+    match: (q) => has(q, /mains sewage\s*-/i),
+    guide: {
+      say: 'Is your home connected to the mains sewer? If yes, add the company that runs it.',
+      tip: 'This is usually your water company, shown on your water bill.',
+    },
+  },
+  {
+    match: (q) => has(q, /telephone\s*-/i),
+    guide: {
+      say: 'Is there a phone line connected to your home? If yes, add the provider.',
+      tip: UTILITY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /broadband\s*-/i),
+    guide: {
+      say: 'Is broadband connected to your home? If yes, add the provider.',
+      tip: UTILITY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /small sewage treatment plant\s*-/i),
+    guide: {
+      say: 'Is your home served by a small sewage treatment plant? If yes, add the provider, the make and model, and who services it.',
+      tip: "The make and model are usually on a label under the lid, or on the service engineer's report.",
+    },
+  },
+  {
+    match: (q) => has(q, /shared ground \/ air source heat pumps\s*-/i),
+    guide: {
+      say: 'Is your home connected to a ground or air source heat pump that is shared with other homes? If yes, add who provides it, the make and model, and who services it.',
+      tip: "Choose No if your heat pump serves only your home, or you don't have one.",
+    },
+  },
+
+  // ── Transaction Information ──
+  {
+    match: (q) => has(q, /dependent on the seller completing the purchase/i),
+    guide: {
+      say: 'Put simply, are you buying another home at the same time, so this sale has to complete on the same day as your purchase?',
+      tip: 'If yes, say where you are with that purchase, for example offer accepted or searches ordered.',
+    },
+  },
+  {
+    match: (q) => has(q, /special requirements about a moving date/i),
+    guide: {
+      say: 'Put simply, do you need to move on a particular date, or avoid one? For example the school holidays, or the end of a tenancy.',
+      tip: 'If yes, say which dates suit you and why. Your solicitor will pass it on.',
+    },
+  },
+  {
+    match: (q) => has(q, /sufficient to repay all mortgages/i),
+    guide: {
+      say: 'Put simply, will the money from the sale be enough to pay off your mortgage, and any other loan secured on the home? Choose No mortgage if there is nothing to pay off.',
+      tip: 'Your lender can send a redemption statement showing what is left to pay, including any early repayment charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /all rubbish is removed/i),
+    guide: {
+      say: 'Put simply, will you clear everything out, including the loft, garden, garage and sheds, and leave the home clean and tidy?',
+      tip: 'If you mean to leave anything behind, like spare paint or tiles, agree it with the buyer first.',
+    },
+  },
+  {
+    match: (q) => has(q, /light fittings are removed/i),
+    guide: {
+      say: 'Put simply, if you take any light fittings with you, will you leave a ceiling rose, flex, bulb holder and bulb in their place?',
+      tip: 'That way no room is left with bare wires. You list the fittings you are taking in Fixtures and Fittings.',
+    },
+  },
+  {
+    match: (q) => has(q, /reasonable care will be taken when removing/i),
+    guide: {
+      say: "Put simply, will you take care not to damage the home when you take out the things you're keeping, like shelves or a TV bracket?",
+      tip: 'For example, filling the screw holes after taking down a mirror or a bracket.',
+    },
+  },
+  {
+    match: (q) => has(q, /keys to all windows and doors/i),
+    guide: {
+      say: 'Put simply, will you leave the keys to every window and door, and the alarm code, at the home or with the estate agent?',
+      tip: 'Label the keys, and write down the alarm code and how to change it, for the buyer.',
+    },
+  },
+]
+
+// Fixtures and Fittings: about a hundred items, each answered Included,
+// Excluded or None, so the guidance is built from the item itself rather
+// than written out a hundred times. The room questions (Carpets, Curtain
+// Rails, Light Fittings, Fitted Units) all ask "Living Room" or "Bedroom 1",
+// so the part description says which list the room belongs to.
+const FIXTURE_TIP =
+  "Included means it stays with the home. Excluded means you're taking it. None means there isn't one. If you'd sell an excluded item to the buyer, add your price."
+const FITTED_TIP =
+  'Fitted means built into the units. Freestanding means it stands on its own and can be moved. If you take it, you can add a price for selling it to the buyer.'
+
+// [item, what UMU calls it, how None is said: one ("there isn't one"),
+// many ("there aren't any") or some ("there isn't any")]
+type Count = 'one' | 'many' | 'some'
+const FIXTURE_ITEMS: [RegExp, string, Count][] = [
+  [/^boiler/i, 'the boiler or immersion heater', 'one'],
+  [/^radiators/i, 'the radiators and wall heaters', 'many'],
+  [/^night.?storage/i, 'the night storage heaters', 'many'],
+  [/^free.?standing heaters/i, 'any free standing heaters', 'many'],
+  [/^gas ?fires/i, 'the gas fires and their surrounds', 'many'],
+  [/^electric fires/i, 'the electric fires and their surrounds', 'many'],
+  [/^light switches/i, 'the light switches', 'many'],
+  [/^roof insulation/i, 'the roof insulation', 'some'],
+  [/^window fittings/i, 'the window locks and handles', 'many'],
+  [/^window shutters/i, 'the window shutters or security grilles', 'many'],
+  [/^internal door/i, 'the handles, locks and hinges on the inside doors', 'many'],
+  [/^external door/i, 'the locks, handles and security fittings on the outside doors', 'many'],
+  [/^doorbell/i, 'the doorbell or chime', 'one'],
+  [/^electric sockets/i, 'the electric sockets', 'many'],
+  [/^burglar alarm/i, 'the burglar alarm', 'one'],
+  [/^hob$/i, 'the hob', 'one'],
+  [/^extractor/i, 'the extractor hood', 'one'],
+  [/^oven/i, 'the oven or grill', 'one'],
+  [/^cooker$/i, 'the cooker', 'one'],
+  [/^microwave/i, 'the microwave', 'one'],
+  [/^refrigerator/i, 'the fridge or fridge freezer', 'one'],
+  [/^freezer$/i, 'the freezer', 'one'],
+  [/^dishwasher/i, 'the dishwasher', 'one'],
+  [/^tumble dryer/i, 'the tumble dryer', 'one'],
+  [/^washing machine/i, 'the washing machine', 'one'],
+  [/^bath$/i, 'the bath', 'one'],
+  [/^shower fitting for bath/i, 'the shower over the bath', 'one'],
+  [/^shower curtain/i, 'the shower curtain', 'one'],
+  [/^bathroom cabinet/i, 'the bathroom cabinet', 'one'],
+  [/^taps$/i, 'the taps', 'many'],
+  [/^separate shower/i, 'the separate shower and its fittings', 'one'],
+  [/^towel rail/i, 'the towel rail', 'one'],
+  [/^soap/i, 'the soap and toothbrush holders', 'many'],
+  [/^toilet roll/i, 'the toilet roll holders', 'many'],
+  [/^bathroom mirror/i, 'the bathroom mirror', 'one'],
+  [/^garden furniture/i, 'the garden furniture', 'some'],
+  [/^garden ornaments/i, 'the garden ornaments', 'many'],
+  [/^trees/i, 'the trees, plants and shrubs', 'many'],
+  [/^barbecue/i, 'the barbecue', 'one'],
+  [/^dustbins/i, 'the dustbins and recycling bins', 'many'],
+  [/^garden shed/i, 'the garden shed', 'one'],
+  [/^greenhouse/i, 'the greenhouse', 'one'],
+  [/^outdoor heater/i, 'the outdoor heater', 'one'],
+  [/^outside lights/i, 'the outside lights', 'many'],
+  [/^water butt/i, 'the water butt', 'one'],
+  [/^clothes line/i, 'the clothes line', 'one'],
+  [/^rotary line/i, 'the rotary washing line', 'one'],
+  [/^telephone receivers/i, 'the telephone handsets', 'many'],
+  [/^television aerial/i, 'the TV aerial', 'one'],
+  [/^radio aerial/i, 'the radio aerial', 'one'],
+  [/^satellite dish/i, 'the satellite dish', 'one'],
+  [/^oil$/i, 'the heating oil left in the tank', 'some'],
+  [/^wood$/i, 'the firewood and logs', 'many'],
+  [/^liquefied petroleum gas/i, 'the bottled or tank gas', 'some'],
+]
+
+// Room lists, told apart by their part description
+const FIXTURE_ROOMS: [RegExp, string, string][] = [
+  [/^floor coverings/i, 'the carpets and floor coverings in', 'carpets'],
+  [/^hardware ?systems for hanging/i, 'the curtain rails, poles and pelmets in', 'rails'],
+  [/^light fixtures/i, 'the light fittings in', 'lights'],
+  [/^built-in (storage|kitchen cabinets|wardrobes)/i, 'the fitted cupboards, shelves and wardrobes in', 'units'],
+]
+
+// What each "Other ..." question is for, from its title and description
+const FIXTURE_OTHERS: [RegExp, string, string][] = [
+  [/other basic fittings/i, 'fitted around the home', 'a smart thermostat, CCTV or an intercom'],
+  [/other kitchen/i, 'in the kitchen', 'a wine cooler, a coffee machine or bar stools'],
+  [/other bathroom/i, 'in the bathroom', 'a heated mirror or extra shelving'],
+  [/other floor coverings/i, 'for the floors', 'carpets in a conservatory or utility room, or a valuable rug'],
+  [/other rooms/i, 'for the windows in other rooms', 'curtains, blinds or rails in a conservatory or home office'],
+  [/other light fittings/i, 'for lighting', 'a chandelier, under cabinet lights or garden lighting'],
+  [/other fitted storage/i, 'built in', 'under stair cupboards, a fitted desk or loft storage'],
+  [/other outdoor/i, 'outside', 'a hot tub, a pergola or play equipment'],
+  [/other items/i, 'anywhere in the home', 'a piano, a safe or garden tools'],
+]
+
+const roomSaid = (room: string) => {
+  const r = room.trim().toLowerCase()
+  return /^bedroom/.test(r) ? r : `the ${r}`
+}
+
+const isFixture = (q: Q) => {
+  const opts = (o: any[] | undefined) => (o || []).map((x) => String(x?.label || '').toLowerCase())
+  const all = [opts(q.options), ...(Array.isArray(q.parts) ? q.parts.map((p: Q) => opts(p?.options)) : [])].flat()
+  return all.includes('included') && all.includes('excluded')
+}
+
+function fixtureGuide(q: Q): Guide | null {
+  if (!isFixture(q) && !/^window treatments and coverings/i.test(q.description || '')) return null
+  const parts: Q[] = Array.isArray(q.parts) ? q.parts.filter(Boolean) : []
+  // "Other ..." questions: the seller names the item themselves
+  if (parts.some((p) => /^(item|room) name$/i.test(String(p?.title || '').trim()))) {
+    const about = `${q.question || q.title || ''} ${q.description || ''}`
+    const other = FIXTURE_OTHERS.find(([re]) => re.test(about))
+    const where = other ? other[1] : 'in the home'
+    const like = other ? `, like ${other[2]}` : ''
+    return {
+      say: `Is there anything else ${where} you'd like to list${like}? If so, add its name and a short description, then choose Included, Excluded or None. If not, say skip question.`,
+      tip: FIXTURE_TIP,
+    }
+  }
+  // Curtains and blinds ask Yes or No for each room
+  if (/^window treatments and coverings/i.test(q.description || '')) {
+    return {
+      say: `Will the curtains and blinds in ${roomSaid(q.question || q.title || '')} stay with the home?`,
+      tip: 'Choose Yes if they stay, or No if you are taking them. Made to measure curtains are often left, as they fit those windows.',
+    }
+  }
+  const optionText = (p: Q) => JSON.stringify(p?.options || []).toLowerCase()
+  const main = parts.find((p) => optionText(p).includes('"included"')) || parts[0] || q
+  const title = String(main.title || q.question || q.title || '').trim()
+  const room = FIXTURE_ROOMS.find(([re]) => re.test(main.description || ''))
+  const item = FIXTURE_ITEMS.find(([re]) => re.test(title))
+  const noun = room ? `${room[1]} ${roomSaid(title)}` : item ? item[1] : title.toLowerCase()
+  if (!noun) return null
+  const count: Count = room ? 'many' : item ? item[2] : /s$/i.test(title) ? 'many' : 'one'
+  const lead = `Will ${noun} stay with the home?`
+  if (parts.some((p) => optionText(p).includes('"fitted"') && optionText(p).includes('"freestanding"'))) {
+    return { say: `${lead} Then choose fitted or freestanding.`, tip: FITTED_TIP }
+  }
+  if (/heating oil|firewood|bottled or tank gas/.test(noun)) {
+    return {
+      say: `${lead} Choose Included, Excluded or None.`,
+      tip: 'Sellers often leave fuel and ask the buyer to pay for what is left. If so, choose Excluded and add your price.',
+    }
+  }
+  if (room?.[2] === 'lights') {
+    return {
+      say: `${lead} Choose Included, Excluded or None.`,
+      tip: `If you take a light fitting, leave a ceiling rose, flex, bulb holder and bulb in its place. ${FIXTURE_TIP}`,
+    }
+  }
+  const none = { one: "isn't one", many: "aren't any", some: "isn't any" }[count]
+  return { say: `${lead} Choose Included, Excluded, or None if there ${none}.`, tip: FIXTURE_TIP }
+}
+
 function typeGuide(type: string): Guide {
   switch (type) {
     case 'radio':
@@ -710,6 +1125,11 @@ function typeGuide(type: string): Guide {
 }
 
 export function guideFor(question: Q, type: string): Guide {
+  // A Fixtures item is told by its Included / Excluded answers, so it goes
+  // first: its "asking price for this item" box would otherwise get the
+  // house asking price guidance.
+  const fixture = fixtureGuide(question)
+  if (fixture) return fixture
   // Notes are matched by the Ownership notes guide, so the more specific
   // lists go first. HOME_WORKS and RIGHTS_AND_OCCUPIERS go before
   // OWNERSHIP, whose /\blease/ and /photo/ would otherwise catch the solar
@@ -718,6 +1138,7 @@ export function guideFor(question: Q, type: string): Guide {
     NEIGHBOURS.find((g) => g.match(question)) ||
     HOME_WORKS.find((g) => g.match(question)) ||
     RIGHTS_AND_OCCUPIERS.find((g) => g.match(question)) ||
+    SERVICES_AND_MOVING.find((g) => g.match(question)) ||
     OWNERSHIP.find((g) => g.match(question))
   return hit ? hit.guide : typeGuide(type)
 }
@@ -726,13 +1147,16 @@ export function guideFor(question: Q, type: string): Guide {
 // answer yes or no") are cut off, so the seller never sees them. The
 // "Other warranties" help was copied onto several questions it has nothing
 // to do with (vacant possession, some Services questions), so it only shows
-// on a question that is about guarantees or warranties. `about` is that
+// on a question that is about guarantees or warranties, and the same goes
+// for the kitchen help on a non-kitchen question. `about` is that
 // question's own wording.
 export function cleanHelpText(text: unknown, about = ''): string {
   const help = String(text ?? '')
     .replace(/\s*-?\s*(also bottom bit is wrong|please remove|remove please)\b[\s\S]*$/i, '')
     .trim()
   if (/^other warranties might include/i.test(help) && !/guarantee|warrant/i.test(about)) return ''
+  // The kitchen help was copied onto Other Bathroom Items too
+  if (/^include any specialty kitchen equipment/i.test(help) && !/kitchen/i.test(about)) return ''
   return help
 }
 
@@ -760,6 +1184,9 @@ const SECTION_WORDS: [string, RegExp][] = [
   ['parking', /^(the )?parking( section)?$/],
   ['otherCharges', /^(the )?(other )?charges( section)?$/],
   ['occupiers', /^(the )?occupiers?( section)?$/],
+  ['services', /^(the )?(services?|utilities)( section)?$/],
+  ['transactionInformation', /^(the )?(transaction( information)?|moving date)( section)?$/],
+  ['fixturesAndFittings', /^(the )?(fixtures?( and fittings)?|fittings)( section)?$/],
 ]
 
 export function sectionCommand(said: string): string | null {
@@ -812,6 +1239,33 @@ const NOT_SURE = / (not sure|don t know|do not know|no idea|not certain|can t re
 const UNKNOWN_LABEL = /not known|unknown|don.?t know|not sure/i
 const NOT_APPLICABLE = / (not applicable|doesn t apply|does not apply|don t apply|n a|na|not relevant) /
 
+// Everyday ways of giving answers whose words differ from the label. Said
+// before any word matching, so "I don't have a mortgage" is No mortgage
+// (never No) and "it's not included" is Excluded (never Included).
+const NO_MORTGAGE = / (no mortgage|don t have a mortgage|do not have a mortgage|haven t got a mortgage|not got a mortgage|mortgage free|without a mortgage|own it outright|owned outright|already paid off) /
+const EXCLUDED_SAID = / (excluded|not included|taking (it|them|that|those)|take (it|them) with|i ll take|we ll take|removing (it|them)|not staying|won t stay|not leaving|keeping (it|them)|i m keeping|we re keeping) /
+const NONE_SAID = / (none|there isn t one|there aren t any|isn t one|aren t any|don t have (one|any)|haven t got (one|any)|we don t have|i don t have) /
+const INCLUDED_SAID = / (included|yes|staying|stays|leaving (it|them)|leave (it|them)|i ll leave|we ll leave|it can stay|they can stay) /
+const BUILT_IN = / (built in|integrated|fitted|fixed|plumbed in) /
+
+function phraseChoice<T extends { label: string }>(heard: string, options: T[]): T | null {
+  const find = (re: RegExp) => options.find((o) => re.test(o.label.trim()))
+  const noMortgage = find(/^no mortgage$/i)
+  if (noMortgage && NO_MORTGAGE.test(heard)) return noMortgage
+  // Fixtures and Fittings: Included, Excluded or None
+  const included = find(/^included$/i)
+  const excluded = find(/^excluded$/i)
+  if (included && excluded) {
+    const none = find(/^none$/i)
+    if (EXCLUDED_SAID.test(heard)) return excluded
+    if (none && NONE_SAID.test(heard)) return none
+    if (INCLUDED_SAID.test(heard)) return included
+  }
+  const fitted = find(/^fitted$/i)
+  if (fitted && find(/^freestanding$/i) && BUILT_IN.test(heard)) return fitted
+  return null
+}
+
 function scoreOption(heard: string, label: string): number {
   const l = words(label).trim()
   if (!l) return 0
@@ -842,6 +1296,8 @@ export function matchOption<T extends { label: string }>(said: string | string[]
   const readings = (Array.isArray(said) ? said : [said]).filter(Boolean)
   for (const reading of readings) {
     const heard = words(reading)
+    const phrased = phraseChoice(heard, options)
+    if (phrased) return phrased
     let best: T | null = null
     let bestScore = 0
     for (const o of options) {
