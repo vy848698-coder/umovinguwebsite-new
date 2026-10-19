@@ -423,13 +423,6 @@ const isDev =
 
 // Dev-only diagnostics
 onMounted(() => {
-  console.log('TextUploadQuestion debug:', {
-    displayMode: displayMode.value,
-    question: props.question,
-    answerProp: props.answer,
-    textValue: textValue.value,
-    uploadedFiles: uploadedFiles.value,
-  })
   try {
     if (isDev) {
       console.log('TextUploadQuestion debug:', {

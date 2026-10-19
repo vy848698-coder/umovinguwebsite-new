@@ -75,7 +75,7 @@ export const useCreateAccountData = () => {
       form.postcode = query
       showAddressModal.value = true
     } catch (err) {
-      console.error('Address search error:', err)
+      console.error('Address search error:', err?.data?.message || err?.message)
     } finally {
       searchingAddress.value = false
     }
@@ -119,7 +119,6 @@ export const useCreateAccountData = () => {
   const handleSubmit = async (event: Event): Promise<void> => {
     event.preventDefault()
     event.stopPropagation()
-    console.log('form submitted: ', form)
 
     // Field-level validation
     if (
@@ -160,7 +159,6 @@ export const useCreateAccountData = () => {
         gender: form.gender,
         password: form.password,
       })
-      console.log('Registration successful:', response)
 
       if (response.token) {
         localStorage.setItem('token', response.token)
@@ -170,7 +168,7 @@ export const useCreateAccountData = () => {
 
       await navigateTo('/onboarding/preferences?new=true')
     } catch (err) {
-      console.error('Registration failed:', err)
+      console.error('Registration failed:', err?.data?.message || err?.message)
 
       alert(err?.data?.message || 'Registration failed')
     } finally {

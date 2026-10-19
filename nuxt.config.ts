@@ -8,6 +8,10 @@ const isDev = process.env.NODE_ENV !== 'production'
 const proxyTarget =
   process.env.NUXT_PROXY_TARGET ||
   'https://demo-umu-backend-production.up.railway.app'
+// What the CSP's connect-src/frame-src actually allow-list for API/file
+// calls — mirrors apiBase's own fallback below so the policy always
+// matches whatever host the app is actually calling.
+const BACKEND_ORIGIN = process.env.NUXT_PUBLIC_API_BASE || proxyTarget
 
 export default defineNuxtConfig({
   devtools: { enabled: false },
@@ -19,8 +23,60 @@ export default defineNuxtConfig({
       '/__backend/**': { proxy: `${proxyTarget}/**` },
     },
   },
-  modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt'],
+  modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt', 'nuxt-security'],
   css: ['~/assets/css/main.css'],
+
+  // Baseline security headers (security review 2026-10-19) — ported from
+  // umu-website-integration's already resource-audited CSP (13/14 Oct
+  // 2026), adjusted for this app's actual third-party usage. Google/Apple
+  // OAuth was removed from this app in the same batch (dead code calling
+  // backend routes that don't exist — see useAuth.ts), so no OAuth
+  // domains are needed here either. script-src keeps 'unsafe-inline' for
+  // the inline "wide-zoom" head script below and matches the conservative
+  // choice already made (and documented as unverified beyond that) in the
+  // sibling app this was ported from.
+  security: {
+    headers: {
+      contentSecurityPolicy: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", 'https://unpkg.com', 'https://js.stripe.com'],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://api.mapbox.com', 'https://unpkg.com'],
+        'style-src-attr': ["'unsafe-inline'"],
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        'img-src': [
+          "'self'",
+          'data:',
+          'blob:',
+          'https://api.mapbox.com',
+          'https://api.os.uk',
+          'https://*.tile.openstreetmap.org',
+        ],
+        'connect-src': [
+          "'self'",
+          BACKEND_ORIGIN,
+          'https://api.stripe.com',
+          'https://api.mapbox.com',
+          'https://events.mapbox.com',
+          'https://api.os.uk',
+          'https://*.tile.openstreetmap.org',
+        ],
+        'frame-src': ["'self'", 'https://js.stripe.com', 'https://www.openstreetmap.org', BACKEND_ORIGIN],
+        'worker-src': ["'self'", 'blob:'],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'none'"],
+      },
+      crossOriginEmbedderPolicy: false,
+      xFrameOptions: 'DENY',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      permissionsPolicy: {
+        geolocation: ['self'],
+        camera: ['self'],
+        microphone: [],
+      },
+    },
+  },
 
   pwa: {
     registerType: 'autoUpdate',
@@ -173,8 +229,6 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    // Private keys (only available on server-side)
-    apiSecret: process.env.API_SECRET || '123',
     // Public keys (exposed to client-side)
     public: {
       // In dev, default to the same-origin proxy path so browser calls avoid
@@ -187,14 +241,16 @@ export default defineNuxtConfig({
         (isDev
           ? '/__backend'
           : 'https://demo-umu-backend-production.up.railway.app'),
-      googleClientId:
-        process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID ||
-        '869780740735-rlucf6t174rb3dljniqfj3ri2r0kg9cj.apps.googleusercontent.com',
-      appleClientId:
-        process.env.NUXT_PUBLIC_APPLE_CLIENT_ID || 'io.umovingu.webapp',
-      appleRedirectUri:
-        process.env.NUXT_PUBLIC_APPLE_REDIRECT_URI ||
-        'https://demo-umu-frontend.vercel.app/auth/apple/callback',
+      // googleClientId/appleClientId/appleRedirectUri removed (security
+      // review 2026-10-19): the Google/Apple OAuth flow was dead code —
+      // no /auth/google or /auth/apple routes exist on the backend, and
+      // no sign-in UI linked to it — that also round-tripped the app's
+      // real JWT through a URL query string on redirect (browser
+      // history / server-log leak), the exact pattern umu-website-
+      // integration removed for the same reason on 2026-09-25.
+      // Test-mode PUBLISHABLE key only (safe to ship client-side) — kept as
+      // a fallback so a forgotten env var degrades to test-mode Stripe
+      // rather than breaking checkout outright; never put a secret key here.
       stripeKey:
         process.env.NUXT_PUBLIC_STRIPE_KEY ||
         'pk_test_51RvzhKLR3oJsnvMf4gRG09EZsz4uX4VYt89aqLXTTAdFnphlHHVyfzHlkLyR6I5U0TSi8Su5H3gTaT0Yasza7t6K00h9dldDgB',

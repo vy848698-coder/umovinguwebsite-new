@@ -5810,20 +5810,19 @@ const broadbandPlaceholder = computed<{ title: string; sub: string }>(() => {
   const bb = enrichmentBroadband.value
   const reason = bb && bb.available === false ? bb.reason : null
   switch (reason) {
+    // no_key/unauthorized/rate_limited/network were showing the operator's
+    // own config state (missing/invalid OFCOM_API_KEY, .env instructions,
+    // subscription tier, server connectivity) directly to end users —
+    // unnecessary internal-infrastructure disclosure (data-leakage audit
+    // 2026-10-19). `reason` is still available here for telemetry/logging;
+    // only the copy actually shown to the visitor changed.
     case 'no_key':
-      return {
-        title: 'Broadband lookup not configured',
-        sub: 'The Ofcom API key is missing on this server. Register at developer.ofcom.org.uk and add OFCOM_API_KEY to .env.',
-      }
     case 'unauthorized':
-      return {
-        title: 'Ofcom rejected the API key',
-        sub: 'The configured OFCOM_API_KEY is invalid, expired, or its subscription tier doesn’t include broadband. Regenerate it from your Ofcom developer portal.',
-      }
     case 'rate_limited':
+    case 'network':
       return {
-        title: 'Ofcom rate limit reached',
-        sub: 'Too many requests for this key today. Wait or upgrade your Ofcom subscription tier.',
+        title: 'Broadband data unavailable',
+        sub: 'We couldn’t retrieve coverage for this postcode right now. Check directly on Ofcom’s site below.',
       }
     case 'not_found':
     case 'no_premises':
@@ -5835,11 +5834,6 @@ const broadbandPlaceholder = computed<{ title: string; sub: string }>(() => {
       return {
         title: 'Ofcom request timed out',
         sub: 'The Ofcom API didn’t respond in time. Try again. If this persists, Ofcom may be having an outage.',
-      }
-    case 'network':
-      return {
-        title: 'Couldn’t reach Ofcom',
-        sub: 'Network error talking to Ofcom’s API. Check the server’s outbound connectivity.',
       }
     default:
       return {
