@@ -66,6 +66,12 @@
           </div>
 
           <div class="hero-actions">
+            <!-- UMU reads each question in this section aloud and helps
+                 answer it, by voice or by tap (utils/umuSections) -->
+            <button v-if="umuSectionKey" class="hbtn teal" @click="openUmu">
+              <Icon name="i-lucide-mic" />
+              Answer with UMU
+            </button>
             <button class="hbtn ghost" @click="showHelp = true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10" />
@@ -266,6 +272,7 @@ import SectionProgressCard from '@/components/passport-view/SectionProgressCard.
 import HelpDrawer from '@/components/passport-view/HelpDrawer.vue'
 import SiteFooter from '~/components/homescore/SiteFooter.vue'
 import { toSmartTitleCase, toSentenceCase } from '~/utils/titleCase'
+import { umuSectionKeyOf, umuAssistantPath } from '~/utils/umuSections'
 import {
   usePassportBack,
   usePassportTrail,
@@ -294,6 +301,15 @@ const ppBack = usePassportBack(
   'Back to passport',
 )
 const ppTrail = usePassportTrail()
+
+// Sections the UMU AI assistant covers get an "Answer with UMU" button
+// that opens it straight on this section
+const umuSectionKey = computed(() =>
+  route.query.propertyId ? umuSectionKeyOf(currentStep.value) : null,
+)
+const openUmu = () => {
+  router.push(umuAssistantPath(String(route.query.propertyId), umuSectionKey.value))
+}
 
 // Balance / level / streak for the SectionProgressCard — fetched once on
 // mount rather than kept continuously live: it's a point-in-time display,
