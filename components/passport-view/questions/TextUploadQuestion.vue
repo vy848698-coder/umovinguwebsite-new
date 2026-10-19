@@ -28,7 +28,7 @@
             "
             class="text-input ciw-textarea"
             rows="3"
-           aria-label="
+           :aria-label="
               question.placeholder ||
               'E.g., The irregular boundary near the stream at the rear of the property is owned by...'
             "></textarea>

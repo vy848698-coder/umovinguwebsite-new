@@ -56,13 +56,55 @@
         </span>
       </button>
     </div>
+
+    <!-- The sections UMU can take the seller through, as a route: where the
+         seller picks up, then Next and Then, with earlier sections behind.
+         Tap one to start there; Talk to UMU above opens the same section
+         as "Pick up here". -->
+    <UmuSectionRail
+      v-if="railSections.length"
+      class="aec-secs"
+      heading="UMU can help with these sections. Tap one to start there."
+      current-kicker="Pick up here"
+      :sections="railSections"
+      :current-id="currentKey || railSections[0].id"
+      @pick="(key) => emit('talkSection', key)"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 import UmuBotMascot from '~/components/agent/UmuBotMascot.vue'
+import UmuSectionRail from '~/components/agent/UmuSectionRail.vue'
 
-const emit = defineEmits<{ talk: []; upload: []; manual: [] }>()
+const props = withDefaults(
+  defineProps<{
+    // Sections UMU covers, with the passport page's own progress (percent of
+    // tasks complete), so the status here matches the section cards below
+    sections?: { key: string; title: string; progress: number }[]
+    // The section the seller picks up at (last opened, or the first not
+    // finished)
+    currentKey?: string
+  }>(),
+  { sections: () => [], currentKey: '' },
+)
+
+const emit = defineEmits<{ talk: []; upload: []; manual: []; talkSection: [key: string] }>()
+
+const secStatus = (s: { progress: number }) =>
+  s.progress >= 100 ? 'Complete' : s.progress > 0 ? `${s.progress}% done` : 'Not started'
+
+const railSections = computed(() =>
+  props.sections.map((s) => ({
+    id: s.key,
+    key: s.key,
+    title: s.title,
+    meta: secStatus(s),
+    done: s.progress >= 100,
+    started: s.progress > 0,
+    pct: s.progress,
+  })),
+)
 
 const others = [
   {
@@ -294,6 +336,14 @@ const others = [
   transform: translateX(3px);
   border-color: #2fd0c6;
   color: #2fd0c6;
+}
+
+/* ── Sections UMU covers ── */
+.aec-secs {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  --usr-tick-gap: #231d45;
 }
 
 @keyframes aec-bar {

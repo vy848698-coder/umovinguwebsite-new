@@ -37,9 +37,16 @@ export default defineNuxtPlugin(() => {
   const tryRefresh = async () => {
     try {
       await refreshAccessToken()
-    } catch {
-      // Refresh cookie is dead (missing/expired/revoked/reused) — clear
-      // the local access token so the next authenticated request's
+    } catch (err: any) {
+      // Only a 401 means the refresh cookie is dead (missing/expired/
+      // revoked/reused). Anything else — offline, a backend blip, or the
+      // 403 "Untrusted origin" the backend returns to localhost dev — says
+      // nothing about the session, so the current access token is kept and
+      // still works until it expires; clearing it would sign the user out
+      // on every reload in local dev.
+      const status = err?.response?.status ?? err?.statusCode
+      if (status !== 401) return
+      // Clear the local access token so the next authenticated request's
       // existing 401 handling takes over cleanly instead of retrying a
       // token we know is invalid.
       try {

@@ -98,11 +98,16 @@ const SAY_AS: [RegExp, string][] = [
   [/\binfo\b/gi, 'information'],
   [/\bdocs\b/gi, 'documents'],
   [/\bID\b/g, 'I D'],
+  [/\bMPAN\b/g, 'M P A N'],
+  [/\bMPRN\b/g, 'M P R N'],
+  [/\bEICR\b/g, 'E I C R'],
+  // Fixtures and Fittings writes it as one word
+  [/\bGasFires\b/g, 'Gas fires'],
 ]
 
 // Acronyms that really are said letter by letter; any other word in capitals
 // is a normal word written loudly ("FREEHOLD", "YES") and is said as a word.
-const ACRONYMS = new Set(['UPRN', 'EPC', 'HMRC', 'HMLR', 'VAT', 'KYC', 'NHBC', 'FENSA', 'UMU', 'TA6', 'TA10', 'GOV', 'DIY', 'LPA', 'CCTV', 'NHS', 'ISA', 'LISA', 'SDLT', 'AML', 'PDF', 'PLC'])
+const ACRONYMS = new Set(['UPRN', 'EPC', 'HMRC', 'HMLR', 'VAT', 'KYC', 'NHBC', 'FENSA', 'UMU', 'TA6', 'TA10', 'GOV', 'DIY', 'LPA', 'CCTV', 'NHS', 'ISA', 'LISA', 'SDLT', 'AML', 'PDF', 'PLC', 'MPAN', 'MPRN', 'EICR'])
 const softenCaps = (text: string) =>
   text.replace(/\b[A-Z]{2,}\b/g, (w) => (ACRONYMS.has(w) || (w.length <= 3 && !/^(YES|NO|AND|THE|FOR|NOT|ALL|ANY|OWN)$/.test(w)) ? w : w.toLowerCase()))
 
@@ -127,6 +132,8 @@ export function speakable(text: string): string {
     .replace(/\s*\)\s*/g, ', ')
     .replace(/[•*_#]/g, ' ')
     .replace(/,\s*([.?!])/g, '$1')
+    // "a listed building??", "occurred?." from the form read as one stop
+    .replace(/([?!])[?!.:]+/g, '$1')
     .replace(/(,\s*){2,}/g, ', ')
     .replace(/\s{2,}/g, ' ')
     .trim()

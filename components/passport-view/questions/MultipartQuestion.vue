@@ -38,7 +38,7 @@
       :key="section.groupKey || section.parts[0].partKey"
       class="part-section"
     >
-      <div v-for="part in section.parts" :key="part.partKey" class="group-part">
+      <div v-for="part in section.parts" :key="part.partKey" class="group-part" :data-part-key="part.partKey">
         <!-- Part-specific text display -->
         <template
           v-if="
@@ -106,12 +106,12 @@
           </a>
         </template>
 
-        <div v-if="part.helpText" class="help-section part-help-section">
+        <div v-if="partHelp(part)" class="help-section part-help-section">
           <div class="help-content">
             <h4 class="help-title">
               <img src="/op-icons/homescore/lightbulb.png" alt="" class="help-icon-img" />What is this?
             </h4>
-            <p class="help-text">{{ part.helpText }}</p>
+            <p class="help-text">{{ partHelp(part) }}</p>
           </div>
         </div>
 
@@ -282,6 +282,10 @@ import MultiTextInputQuestion from './MultiTextInputQuestion.vue'
 import MultiFieldFormQuestion from './MultiFieldFormQuestion.vue'
 import VoiceTextInput from './VoiceTextInput.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
+// Cuts content-team notes left at the end of some help texts, and help
+// copied onto a part it doesn't belong to
+import { cleanHelpText } from '~/utils/umuGuide'
+const partHelp = (part) => cleanHelpText(part.helpText, `${part.title || ''} ${part.description || ''}`)
 
 const props = defineProps({
   question: { type: Object, required: true },

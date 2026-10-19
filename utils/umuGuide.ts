@@ -15,8 +15,10 @@ export interface Guide {
   tip: string
 }
 
+// Part descriptions count too: the last three guarantee questions share one
+// title and only their part description ("Roofing", "Underpinning") differs.
 const has = (q: Q, re: RegExp) => {
-  const parts = Array.isArray(q.parts) ? q.parts.map((p: Q) => p?.title || '') : []
+  const parts = Array.isArray(q.parts) ? q.parts.flatMap((p: Q) => [p?.title || '', p?.description || '']) : []
   return re.test([q.question, q.title, q.description, ...parts].join(' '))
 }
 
@@ -95,7 +97,29 @@ const OWNERSHIP: { match: (q: Q) => boolean; guide: Guide }[] = [
     },
   },
   {
-    match: (q) => has(q, /lease/i),
+    match: (q) => has(q, /what we love/i),
+    guide: {
+      say: 'Tell buyers what you love about your home and the area. Pick the ones that fit or add your own, then set each slider.',
+      tip: 'Honest details, like bin days or school run traffic, help buyers trust everything else you say.',
+    },
+  },
+  {
+    match: (q) => has(q, /type of property you are selling/i),
+    guide: {
+      say: 'Tell me what kind of home it is, like detached, terraced or a flat. Then the bedrooms and bathrooms, and any special features.',
+      tip: 'Pick every feature that applies. You can change these later.',
+    },
+  },
+  {
+    match: (q) => has(q, /service charge/i),
+    guide: {
+      say: 'Your lease sets out the service charge. Tell me how often you pay it and how much, then upload a recent statement.',
+      tip: 'The amount and how often you pay are on your latest service charge demand.',
+    },
+  },
+  {
+    // \b, so "please" in any other question's wording is not a lease
+    match: (q) => has(q, /\blease/i),
     guide: {
       say: 'You will find these lease details on your lease or title deeds. Fill in what you know.',
       tip: 'If something does not apply to your lease, leave it empty.',
@@ -109,6 +133,969 @@ const OWNERSHIP: { match: (q: Q) => boolean; guide: Guide }[] = [
     },
   },
 ]
+
+// Boundaries, Disputes and Complaints, Notices and Proposals. Most of these
+// are a Yes or No that opens a details box on Yes, so "say" puts the long
+// question in plain words and "tip" says what to write if the answer is Yes.
+// UMU then adds "Tap Yes or No" (or "You can say Yes or No") itself.
+const NEIGHBOURS: { match: (q: Q) => boolean; guide: Guide }[] = [
+  {
+    match: (q) => (q.type || '').toLowerCase() === 'boundary',
+    guide: {
+      say: 'Picture your home from the road. For each side, left, right, rear and front, choose who looks after the fence, wall or hedge.',
+      tip: 'The T marks on your title plan show who owns each boundary. Choose Unknown for any side you are not sure about.',
+    },
+  },
+  {
+    match: (q) => has(q, /boundaries irregular/i),
+    guide: {
+      say: "Put simply, does the boundary follow an unusual line, rather than a straight or obvious one? If yes, I'll ask you to describe it.",
+      tip: 'If yes, describe where the boundary runs, using landmarks or measurements, or upload a plan that shows it.',
+    },
+  },
+  {
+    match: (q) => has(q, /boundary feature having been moved/i),
+    guide: {
+      say: 'Put simply, has any fence, wall or hedge been moved in the last 10 years?',
+      tip: 'If yes, say what was moved, when, and roughly how far. Photos or a sketch help.',
+    },
+  },
+  {
+    match: (q) => has(q, /adjacent land/i),
+    guide: {
+      say: "Put simply, have you bought any land or property next door while you've owned this home?",
+      tip: 'If yes, add the address, the title number or a description of the extra land.',
+    },
+  },
+  {
+    match: (q) => has(q, /overhang|project under/i),
+    guide: {
+      say: 'Put simply, does any part of your home stick out over, or under, the boundary? Like roof eaves, or a cellar under the pavement.',
+      tip: 'If yes, say what it is, where it is and roughly how big. Add any permission you have for it.',
+    },
+  },
+  {
+    match: (q) => has(q, /party wall/i),
+    guide: {
+      say: 'A party wall notice is a formal letter a neighbour sends before building work on a shared wall or boundary. Have you had one?',
+      tip: 'If yes, say what the work was, who sent the notice, when, and whether the work is finished.',
+    },
+  },
+  {
+    match: (q) => has(q, /disputes or complaints regarding/i),
+    guide: {
+      say: 'Put simply, have there been any disagreements or complaints about this home, or one nearby? For example about noise, parking or boundaries.',
+      tip: "If yes, say what it was about, who was involved, when it happened, and whether it's settled or still going on.",
+    },
+  },
+  {
+    match: (q) => has(q, /might lead to a dispute/i),
+    guide: {
+      say: 'Put simply, do you know of anything that could cause a disagreement in future, about this home or one nearby?',
+      tip: 'If yes, say what the issue is, who it involves, and anything already done about it.',
+    },
+  },
+  {
+    match: (q) => has(q, /notices or correspondence/i),
+    guide: {
+      say: 'Put simply, have you sent or received any letters or notices, or had talks with a neighbour, the council or the government, about something that affects this home or one nearby?',
+      tip: 'For example planning or enforcement notices, party wall letters, tree preservation orders or roadworks. If yes, say what it was and when.',
+    },
+  },
+  {
+    match: (q) => has(q, /proposals to develop/i),
+    guide: {
+      say: 'Put simply, do you know of any plans to build on, or change, land or buildings nearby?',
+      tip: "For example new housing or an extension next door. Planning notices on lamp posts, or your council's planning website, show these.",
+    },
+  },
+]
+
+// Alterations and Planning, Guarantees and Warranties, Insurance and
+// Environmental, matched on the live question wording. Where the question
+// is long or legal, "say" puts it in plain words ("Put simply, ..."); where
+// it is already short, "say" explains the term and where to find the
+// answer, so UMU never just reads the same question twice.
+const WARRANTY_TIP =
+  'If yes, add the provider, the policy number, the start and end dates and any claims. Upload the certificate if you have it.'
+
+const HOME_WORKS: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Alterations and Planning ──
+  {
+    match: (q) => has(q, /following changes been made/i),
+    guide: {
+      say: 'There are four kinds of change: building works like an extension, a change of use, new windows or glazed doors since April 2002, and a conservatory. Answer yes or no to each, and add the date for any yes.',
+      tip: "Then add your planning permissions, Building Regulations approvals and completion certificates, or say why they weren't needed.",
+    },
+  },
+  {
+    match: (q) => has(q, /works disclosed in previous questions unfinished/i),
+    guide: {
+      say: 'Put simply, is any of that work still not finished?',
+      tip: 'If yes, say what is unfinished, where it is, and what is left to do.',
+    },
+  },
+  {
+    match: (q) => has(q, /breaches of planning/i),
+    guide: {
+      say: 'Put simply, do you know of any work that broke the conditions of its planning permission or Building Regulations approval, or that never got every approval it needed?',
+      tip: 'If yes, say what the work was, when it was done, and what the problem is.',
+    },
+  },
+  {
+    match: (q) => has(q, /building control issues to resolve/i),
+    guide: {
+      say: "Put simply, is anything still to be sorted out with the council's planning or building control team?",
+      tip: "For example a retrospective planning application. Say what it is, what's been done so far and what's still to do.",
+    },
+  },
+  {
+    match: (q) => has(q, /solar panels been installed/i),
+    guide: {
+      say: 'Do you have solar panels? If yes, add the date they were fitted.',
+      tip: 'The date is on your installation papers, guarantee or energy statements.',
+    },
+  },
+  {
+    match: (q) => has(q, /solar panels owned outright/i),
+    guide: {
+      say: 'Put simply, do the panels belong to you? Say no if a solar company owns them, or rents your roof space for them.',
+      tip: 'Your purchase invoice, or any agreement with the solar company, shows who owns them.',
+    },
+  },
+  {
+    match: (q) => has(q, /long lease of the roof/i),
+    guide: {
+      say: 'Put simply, has a solar company been given a long lease of your roof, or the space above it, for its panels?',
+      tip: "If yes, upload the agreement, recent electricity bills or tariff payments, and the company's contact details.",
+    },
+  },
+  {
+    match: (q) => has(q, /listed building/i),
+    guide: {
+      say: 'A listed building is on the National Heritage List because of its history or architecture.',
+      tip: "Historic England's website can confirm it. If yes, upload the listing confirmation and any consent for works.",
+    },
+  },
+  {
+    match: (q) => has(q, /conservation area/i),
+    guide: {
+      say: 'A conservation area is where the council protects the look of the neighbourhood with extra planning rules.',
+      tip: "Your council's planning website has a map. If yes, upload the confirmation and any consents or conditions.",
+    },
+  },
+  {
+    match: (q) => has(q, /terms of the order been complied/i),
+    guide: {
+      say: "Put simply, have you only done work on the protected trees with the council's permission, and followed its conditions?",
+      tip: 'If yes, upload any applications, consent letters, or proof of replanting.',
+    },
+  },
+  {
+    match: (q) => has(q, /tree preservation order/i),
+    guide: {
+      say: 'A Tree Preservation Order is a council order that protects a tree, so it cannot be cut back or removed without permission.',
+      tip: 'You would usually know from your purchase paperwork, or a letter from the council.',
+    },
+  },
+
+  // ── Guarantees and Warranties ──
+  {
+    match: (q) => has(q, /new home guarantees/i),
+    guide: {
+      say: 'A new home warranty, from NHBC, Premier Guarantee or similar, usually covers the structure for 10 years after the home is built.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /damp proofing guarantees/i),
+    guide: {
+      say: 'This is a certificate from the company that treated damp in your home.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /timber treatment guarantees/i),
+    guide: {
+      say: 'This is a certificate from a company that treated woodworm or rot in the timbers.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /windows, roof lights/i),
+    guide: {
+      say: 'This is the guarantee from the company that fitted new windows, roof lights or glazed doors.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /electrical work guarantees/i),
+    guide: {
+      say: 'This covers electrical work like rewiring, a new fuse box or new circuits. The electrician gives it when the work is finished.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /guarantee|warrant/i) && has(q, /roofing/i),
+    guide: {
+      say: 'This covers a roof that was replaced or repaired, including a flat roof.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /guarantee|warrant/i) && has(q, /central heating/i),
+    guide: {
+      say: 'This covers your boiler or heating system, gas, electric, oil or a heat pump. The installer or the maker gives it.',
+      tip: WARRANTY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /guarantee|warrant/i) && has(q, /underpinning/i),
+    guide: {
+      say: 'Underpinning is work to strengthen the foundations, often after subsidence.',
+      tip: WARRANTY_TIP,
+    },
+  },
+
+  // ── Insurance ──
+  {
+    match: (q) => has(q, /does the seller insure the property/i),
+    guide: {
+      say: "This means buildings insurance you pay for yourself, covering things like fire or flood. If not, I'll ask why.",
+      tip: "If you don't insure it, for example because the landlord insures the building, say so.",
+    },
+  },
+  {
+    match: (q) => has(q, /landlord insure the building/i),
+    guide: {
+      say: 'In many flats the landlord or freeholder insures the whole building, and the cost is part of the service charge.',
+      tip: 'Your lease or service charge statement shows who insures the building.',
+    },
+  },
+  {
+    match: (q) => has(q, /abnormal rise in premiums/i),
+    guide: {
+      say: 'Put simply, has the price of your buildings insurance ever gone up by much more than usual?',
+      tip: 'A big jump can follow a claim, or a risk such as flooding.',
+    },
+  },
+  {
+    match: (q) => has(q, /subject to high excesses/i),
+    guide: {
+      say: 'Put simply, has your buildings insurance ever had an unusually high excess? That is the amount you pay yourself towards a claim.',
+      tip: 'Your policy schedule shows the excess.',
+    },
+  },
+  {
+    match: (q) => has(q, /subject to unusual conditions/i),
+    guide: {
+      say: 'Put simply, has your buildings insurance ever come with unusual conditions, like extra rules or things it would not cover?',
+      tip: 'These are listed in your policy schedule as conditions, endorsements or exclusions.',
+    },
+  },
+  {
+    match: (q) => has(q, /insurance .*ever been refused/i),
+    guide: {
+      say: 'Put simply, has an insurer ever refused to give you buildings insurance for this home?',
+      tip: 'This only means buildings insurance taken out by you.',
+    },
+  },
+  {
+    match: (q) => has(q, /made any buildings insurance claims/i),
+    guide: {
+      say: "Have you ever claimed on your buildings insurance for this home? If yes, I'll ask for the details.",
+      tip: 'Say what each claim was for, roughly when, and what the outcome was.',
+    },
+  },
+
+  // ── Environmental ──
+  {
+    match: (q) => has(q, /ever been flooded/i),
+    guide: {
+      say: 'This includes the house, the garden and any land, even if it flooded only once.',
+      tip: 'Flooding can come from a river, the sea, heavy rain, groundwater or drains. If yes, say when it happened and which parts flooded.',
+    },
+  },
+  {
+    match: (q) => has(q, /flood risk report/i),
+    guide: {
+      say: 'That is a report from a specialist on how likely your home is to flood. If you have one, upload a copy.',
+      tip: 'You can check the flood risk for any address on GOV.UK.',
+    },
+  },
+  {
+    match: (q) => has(q, /radon test/i),
+    guide: {
+      say: 'Radon is a natural gas that can rise from the ground. If your home was tested for it, upload the result.',
+      tip: 'The result is a letter or report from the testing company.',
+    },
+  },
+  {
+    match: (q) => has(q, /recommended action level/i),
+    guide: {
+      say: 'Your radon result letter says whether the level was below the recommended action level.',
+      tip: 'Below the action level means no work was recommended.',
+    },
+  },
+  {
+    match: (q) => has(q, /remedial measures/i),
+    guide: {
+      say: 'Put simply, when your home was built, was anything added to keep radon gas out, like a barrier under the floor?',
+      tip: "A new home's paperwork, or your survey, may mention a radon barrier or sump.",
+    },
+  },
+  {
+    match: (q) => has(q, /copy of the EPC/i),
+    guide: {
+      say: 'Upload your Energy Performance Certificate. If you do not have it, you can download it free from GOV.UK.',
+      tip: 'Tap the upload box and choose the file.',
+    },
+  },
+  {
+    match: (q) => has(q, /green deal/i),
+    guide: {
+      say: 'The Green Deal was a scheme where energy improvements, like insulation or solar panels, were paid back through the electricity bill. Was anything in your home paid for that way?',
+      tip: 'If yes, list each installation and upload your latest electricity bill, which shows the Green Deal charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /japanese knotweed/i),
+    guide: {
+      say: 'Japanese knotweed is a fast growing plant with hollow, bamboo like stems that can damage buildings.',
+      tip: "If yes, say whether there's a treatment plan in place, and upload it with any insurance that backs it.",
+    },
+  },
+]
+
+// Rights and Informal Arrangements, Parking, Other Charges and Occupiers,
+// matched on the live wording. Rights has both its first questions and the
+// later TA6 9.1 to 9.9 set, so some ask the same thing in other words;
+// each gets guidance for its own wording. Where a question has a Not known
+// or Not applicable answer, the guidance says when to choose it.
+const DETAILS_TIP = 'If yes, say what it is, who it involves, and whether it is written down anywhere.'
+
+const RIGHTS_AND_OCCUPIERS: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Rights and Informal Arrangements ──
+  {
+    match: (q) => has(q, /contribute towards the cost of any jointly used services/i),
+    guide: {
+      say: 'Put simply, do you have to pay towards the upkeep of anything you share with neighbours, like a private road, a shared driveway, a boundary or a drain?',
+      tip: 'If yes, say what is shared, who you pay, how much and how often.',
+    },
+  },
+  {
+    match: (q) => has(q, /been asked to contribute towards the cost/i),
+    guide: {
+      say: 'Put simply, has anyone asked you to pay towards the upkeep of something you share, like a private road or a shared drive? Choose Not applicable if nothing is shared.',
+      tip: 'If yes, say how much you pay, how often, and who you pay.',
+    },
+  },
+  {
+    match: (q) => has(q, /asked the owners? of any other propert(y|ies) to contribute/i),
+    guide: {
+      say: 'Put simply, have you asked a neighbour to pay towards the upkeep of something they use on your land, like a shared drive? Choose Not applicable if nothing is shared.',
+      tip: 'If yes, say whether they pay you or someone else, how much they pay and how often.',
+    },
+  },
+  {
+    match: (q) => has(q, /benefit from any rights or arrangements over any neighbou?ring property/i),
+    guide: {
+      say: "Put simply, do you have the right to use any part of a neighbour's land? For example a right of way along their path or drive.",
+      tip: 'If yes, say what the right is, where it runs, and whether it is written in your title deeds.',
+    },
+  },
+  {
+    match: (q) => has(q, /do you exercise any rights or arrangements over/i),
+    guide: {
+      say: "Put simply, do you use a neighbour's land in any way? For example crossing their path or drive to reach your home.",
+      tip: DETAILS_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /owners of any other propert(y|ies) exercise any rights/i),
+    guide: {
+      say: 'Put simply, does anyone else use part of your land? For example a neighbour who crosses your drive to reach their home.',
+      tip: 'If yes, say who uses it, what for, and whether it is written down anywhere.',
+    },
+  },
+  {
+    match: (q) => has(q, /prevent access to the property/i),
+    guide: {
+      say: 'Put simply, has anyone ever blocked your way in, complained about you using it, or asked you to pay to use it?',
+      tip: 'If yes, say what happened, who was involved, when, and whether it is sorted out.',
+    },
+  },
+  {
+    match: (q) => has(q, /disagreement or complaint about any such right/i),
+    guide: {
+      say: 'Put simply, has there been any disagreement or complaint about the rights or shared use you have just told me about?',
+      tip: 'If yes, say what it was about, who was involved, and whether it is settled. Choose Not known if you are not sure.',
+    },
+  },
+  {
+    match: (q) => has(q, /rights? (of|to) light/i),
+    guide: {
+      say: 'A right to light protects the daylight coming through your windows, so nobody can build something next door that blocks it. Do you know if your home has one?',
+      tip: 'A right to light is usually written in your title deeds. Your solicitor can check if you are not sure.',
+    },
+  },
+  {
+    match: (q) => has(q, /rights? of support/i),
+    guide: {
+      say: 'A right of support means the building or land next door has to keep holding your home up, as with a shared wall. Do you know if your home has this right?',
+      tip: 'It matters most for homes joined to another, like a semi or a terrace. Your title deeds or your solicitor can confirm it.',
+    },
+  },
+  {
+    match: (q) => has(q, /customary rights/i),
+    guide: {
+      say: 'Customary rights come from long local tradition rather than paperwork, like the right to graze animals on a village green. Do you know of any that benefit your home?',
+      tip: 'If yes, say what the right is and how you know about it.',
+    },
+  },
+  {
+    match: (q) => has(q, /mines and minerals/i),
+    guide: {
+      say: 'Put simply, does someone else own the rights to minerals, like coal or stone, under your land?',
+      tip: 'Your title register shows this. If yes, say who holds the rights, if you know.',
+    },
+  },
+  {
+    match: (q) => has(q, /chancel repair/i),
+    guide: {
+      say: 'Chancel repair liability is an old rule that can make a homeowner help pay for repairs to the local parish church. Do you know if it affects your home?',
+      tip: 'A chancel repair search, or insurance taken out when you bought, would show it. If yes, add the details.',
+    },
+  },
+  {
+    match: (q) => has(q, /take things from the land/i),
+    guide: {
+      say: 'Put simply, does anyone else have the right to take things from your land, like timber, hay or fish?',
+      tip: 'If yes, say who has the right and what they can take.',
+    },
+  },
+  {
+    match: (q) => has(q, /any other rights or arrangements affecting the property/i),
+    guide: {
+      say: "Put simply, is there any other right or arrangement that affects your home that we haven't covered yet, including a right of way?",
+      tip: DETAILS_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /drains, pipes or wires serving the property that cross/i),
+    guide: {
+      say: "Put simply, do any drains, pipes or wires that serve your home run under or over a neighbour's land?",
+      tip: "For example your drain running under next door's garden. Choose Not known if you are not sure.",
+    },
+  },
+  {
+    match: (q) => has(q, /drains, pipes or wires leading to any (neighbou?r.?s|other) property/i),
+    guide: {
+      say: "Put simply, do any drains, pipes or wires that serve a neighbour's home run under or over your land?",
+      tip: 'For example a shared drain under your garden, or a cable fixed to your wall. Your water company can tell you where the drains run.',
+    },
+  },
+  {
+    match: (q) => has(q, /agreement or arrangement about drains/i),
+    guide: {
+      say: 'Put simply, is there an agreement, written or not, about those drains, pipes or wires? For example who can reach them, or who pays for repairs.',
+      tip: 'If yes, say what was agreed and who with. If there is a written copy, you can add it now or send it later.',
+    },
+  },
+
+  // ── Parking ──
+  {
+    match: (q) => has(q, /parking arrangements/i),
+    guide: {
+      say: 'Tell me how parking works at your home. For example a garage, a driveway, an allocated space, or parking on the street.',
+      tip: 'Say where you park, how many cars fit, and whether any space is shared or needs a permit.',
+    },
+  },
+  {
+    match: (q) => has(q, /controlled parking zone/i),
+    guide: {
+      say: 'Put simply, does the council control parking on your street, for example with resident permits or time limits?',
+      tip: "Signs on your street, or your council's website, show whether you are in a permit or controlled zone.",
+    },
+  },
+
+  // ── Other Charges ──
+  {
+    match: (q) => has(q, /charges relating to the property/i),
+    guide: {
+      say: 'Put simply, do you pay any regular charges for the property, other than council tax and utility bills? For example to a management company, or for a private drain.',
+      tip: 'If yes, say what each charge is for, who you pay, how much and how often.',
+    },
+  },
+
+  // ── Occupiers ──
+  {
+    match: (q) => has(q, /does the seller live at the property/i),
+    guide: {
+      say: 'Put simply, do you, the seller, live in the home now?',
+      tip: 'Choose No if the home is rented out, empty, or you live somewhere else.',
+    },
+  },
+  {
+    match: (q) => has(q, /anyone else,? aged 17 or over,? live/i),
+    guide: {
+      say: "Put simply, does any other adult, aged 17 or over, live there? If yes, I'll ask for each person's full name.",
+      tip: "Don't include the sellers. Type each full name, then press Enter to add the next one.",
+    },
+  },
+  {
+    match: (q) => has(q, /tenants or lodgers/i),
+    guide: {
+      say: 'Put simply, do any of those adults rent from you, as a tenant or a lodger?',
+      tip: "A tenant or lodger can have a right to stay, so the buyer's solicitor will ask about it.",
+    },
+  },
+  // These three come before plain "vacant possession": older passports ask
+  // them under that same title, with the real question in the description
+  {
+    match: (q) => has(q, /agreed to sign the sale contract/i),
+    guide: {
+      say: 'Put simply, have all the adults living there agreed to sign the sale contract, and to move out by completion?',
+      tip: 'If not, add other evidence that the home will be empty on completion, such as a letter from each person staying there.',
+    },
+  },
+  {
+    match: (q) => has(q, /agreed to leave prior to completion/i),
+    guide: {
+      say: 'Put simply, have all the adults living there agreed to move out before completion?',
+      tip: "If not, the buyer's solicitor will need to know who is staying and why.",
+    },
+  },
+  {
+    match: (q) => has(q, /tenancy agreements/i),
+    guide: {
+      say: 'This is only for a home sold with tenants still living in it. Are their tenancy agreements attached, or will they follow?',
+      tip: 'Choose Attached if you are adding them now, or To follow if you will send them later.',
+    },
+  },
+  {
+    match: (q) => has(q, /sold with vacant possession/i),
+    guide: {
+      say: 'Vacant possession means the home will be empty when the buyer gets the keys, with nobody living there and your belongings gone.',
+      tip: 'Choose No if a tenant, or anyone else, will still be living there after completion.',
+    },
+  },
+]
+
+// Services and Transaction Information, matched on the live wording (the
+// seed plus fix-misplaced-descriptions, restructure-heating-questions and
+// fix-occupiers-transaction-services). Older passports keep a short title
+// ("Is the property connected to mains:") with the real question in the
+// description, and `has` reads both, so each pattern fits either wording.
+const UTILITY_TIP = "The provider's name is on your latest bill for it."
+
+const SERVICES_AND_MOVING: { match: (q: Q) => boolean; guide: Guide }[] = [
+  // ── Services: electricity ──
+  {
+    match: (q) => has(q, /electrical installation been tested/i),
+    guide: {
+      say: 'Put simply, has a qualified electrician tested the wiring, all of it or part of it? If yes, choose the year and add the test certificate.',
+      tip: 'The certificate is usually an Electrical Installation Condition Report, called an EICR. The electrician gives it to you after the test.',
+    },
+  },
+  {
+    match: (q) => has(q, /rewired or had any electrical installation work/i),
+    guide: {
+      say: 'Put simply, has the home been rewired, or had any electrical work done, since January 2005? For example a new fuse box or new circuits.',
+      tip: "If yes, upload the electrician's safety certificate, their Building Regulations compliance certificate, or the council's completion certificate.",
+    },
+  },
+
+  // ── Services: central heating ──
+  {
+    match: (q) => has(q, /how is the property heated|what type of system is it/i),
+    guide: {
+      say: 'Tick every way your home is heated, like mains gas, oil, a heat pump or electric heaters. If yours is not listed, choose Other and say what it is.',
+      tip: 'Your energy bills show the fuel. Tick more than one if your home has more than one kind of heating.',
+    },
+  },
+  {
+    match: (q) => has(q, /have a central heating system/i),
+    guide: {
+      say: 'Put simply, is your home heated by one central system, like a boiler with radiators, or a heat pump?',
+      tip: 'Choose No if you only have separate heaters, such as a storage heater or an electric heater in each room.',
+    },
+  },
+  {
+    match: (q) => has(q, /when was the heating system installed/i),
+    guide: {
+      say: 'Choose the year the heating system was put in, and if there is a boiler, when that was fitted. For heating fitted on or after 1 April 2005, add its completion certificate.',
+      tip: "The Gas Safe completion certificate comes from the installer. If you can't find it, the Gas Safe Register can send a copy for a gas boiler.",
+    },
+  },
+  {
+    match: (q) => has(q, /heating system in good working order/i),
+    guide: {
+      say: 'Put simply, does the heating work properly right now, with no faults you know of?',
+      tip: 'Choose No if there is any fault you know of, even a small one. Your solicitor can add the details.',
+    },
+  },
+  {
+    match: (q) => has(q, /heating system last serviced/i),
+    guide: {
+      say: 'Choose the year the heating was last serviced, and add the service report if you have it.',
+      tip: "The engineer's service record or inspection report shows the date. Most boilers are serviced once a year.",
+    },
+  },
+  {
+    match: (q) => has(q, /replacement to the heating system/i),
+    guide: {
+      say: 'Put simply, apart from a new boiler, has any part of the heating been replaced? For example new radiators or new pipework. Choose Not known if you are not sure.',
+      tip: "Replacing only the boiler doesn't count here.",
+    },
+  },
+  {
+    match: (q) => has(q, /compliance certificates or documentation for the installation/i),
+    guide: {
+      say: 'These are the certificates for fitting or changing the heating, like a Gas Safe certificate or a building regulations completion certificate. Are they attached, to follow, or do you have none?',
+      tip: 'Choose To follow if you will send them later, or None if you do not have any.',
+    },
+  },
+  {
+    match: (q) => has(q, /more than one heating system/i),
+    guide: {
+      say: 'This is only for a home with two or more separate heating systems, which need these answers for each one. Choose Not applicable if you have just one.',
+      tip: 'Choose To follow to send the answers for the other system later, through your solicitor.',
+    },
+  },
+
+  // ── Services: drainage and sewerage ──
+  {
+    match: (q) => has(q, /foul water/i),
+    guide: {
+      say: 'Foul water is the waste water from your toilets, sinks, bath and washing machine. Does it go into the public sewer?',
+      tip: 'Most homes in towns are on mains drainage. Your water bill shows a sewerage charge if you are.',
+    },
+  },
+  {
+    match: (q) => has(q, /surface water/i),
+    guide: {
+      say: 'Surface water is the rain that runs off your roof and driveway. Does it drain into the public sewer?',
+      tip: 'Choose No if it runs into a soakaway in the garden instead. Your water bill may show a surface water charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /septic tank, sewage treatment plant or cesspool shared/i),
+    guide: {
+      say: 'Put simply, does any other home use the same septic tank, treatment plant or cesspool as you? If yes, show how many homes share it.',
+      tip: "Use the plus and minus buttons for the number. Choose No if you don't have one of these systems.",
+    },
+  },
+  {
+    match: (q) => has(q, /outside the boundary of the property/i),
+    guide: {
+      say: "Put simply, is any part of your septic tank, treatment plant or cesspool, including its soakaway or the way in to reach it, on someone else's land? If yes, add a plan that shows where it is.",
+      tip: 'A marked up copy of your title plan is fine. Show the tank, any soakaway or outlet, and the route used to reach it.',
+    },
+  },
+  {
+    match: (q) => has(q, /provided by:?\s*a septic tank/i),
+    guide: {
+      say: 'A septic tank is an underground tank that collects and treats waste water where there is no mains sewer. Do you have one? If yes, add when it was last replaced or upgraded.',
+      tip: "The date is on the installer's invoice or certificate. Choose No if your home is on the mains sewer.",
+    },
+  },
+  {
+    match: (q) => has(q, /provided by:?\s*a sewage treatment plant/i),
+    guide: {
+      say: 'A sewage treatment plant is a small system in the garden that cleans waste water with a pump, so it needs power and regular servicing. Do you have one?',
+      tip: 'Choose No if your home is on the mains sewer.',
+    },
+  },
+  {
+    match: (q) => has(q, /provided by:?\s*a cesspool/i),
+    guide: {
+      say: 'A cesspool is a sealed tank that only stores waste water, so a tanker has to empty it regularly. Do you have one?',
+      tip: 'Choose No if your home is on the mains sewer.',
+    },
+  },
+  {
+    match: (q) => has(q, /system last emptied/i),
+    guide: {
+      say: 'Choose the year your septic tank or cesspool was last emptied.',
+      tip: "The emptying company's invoice shows the date. If your home is on the mains sewer, skip this one.",
+    },
+  },
+  {
+    match: (q) => has(q, /treatment plant last serviced/i),
+    guide: {
+      say: "If you have a sewage treatment plant, choose the year it was last serviced. Choose No if you don't have one.",
+      tip: "The service engineer's report shows the date. Most treatment plants are serviced once a year.",
+    },
+  },
+  {
+    match: (q) => has(q, /when was the system installed/i),
+    guide: {
+      say: "Choose the year your septic tank, treatment plant or cesspool was put in. Choose No if you don't have one.",
+      tip: "The installer's paperwork, or the papers from when you bought the home, usually show the year.",
+    },
+  },
+
+  // ── Services: connection to services and utilities ──
+  {
+    match: (q) => has(q, /mains electricity\s*-/i),
+    guide: {
+      say: "Is your home connected to mains electricity? If yes, add your supplier, your MPAN and where the meter is.",
+      tip: 'The MPAN is the 13 digit supply number on your electricity bill. The meter is often under the stairs, or in a box outside.',
+    },
+  },
+  {
+    match: (q) => has(q, /mains gas\s*-/i),
+    guide: {
+      say: 'Is your home connected to mains gas? If yes, add your supplier, the supply number and where the meter is.',
+      tip: 'Your gas bill shows the supplier and the supply number. Choose No if you only use oil, bottled gas or electricity.',
+    },
+  },
+  {
+    match: (q) => has(q, /mains water\s*-/i),
+    guide: {
+      say: 'Is your home connected to mains water? If yes, add your water company, where the stopcock is, and where the meter is, if you have one.',
+      tip: 'The stopcock turns off the water, and is often under the kitchen sink. Your water company is on your water bill.',
+    },
+  },
+  {
+    match: (q) => has(q, /mains sewage\s*-/i),
+    guide: {
+      say: 'Is your home connected to the mains sewer? If yes, add the company that runs it.',
+      tip: 'This is usually your water company, shown on your water bill.',
+    },
+  },
+  {
+    match: (q) => has(q, /telephone\s*-/i),
+    guide: {
+      say: 'Is there a phone line connected to your home? If yes, add the provider.',
+      tip: UTILITY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /broadband\s*-/i),
+    guide: {
+      say: 'Is broadband connected to your home? If yes, add the provider.',
+      tip: UTILITY_TIP,
+    },
+  },
+  {
+    match: (q) => has(q, /small sewage treatment plant\s*-/i),
+    guide: {
+      say: 'Is your home served by a small sewage treatment plant? If yes, add the provider, the make and model, and who services it.',
+      tip: "The make and model are usually on a label under the lid, or on the service engineer's report.",
+    },
+  },
+  {
+    match: (q) => has(q, /shared ground \/ air source heat pumps\s*-/i),
+    guide: {
+      say: 'Is your home connected to a ground or air source heat pump that is shared with other homes? If yes, add who provides it, the make and model, and who services it.',
+      tip: "Choose No if your heat pump serves only your home, or you don't have one.",
+    },
+  },
+
+  // ── Transaction Information ──
+  {
+    match: (q) => has(q, /dependent on the seller completing the purchase/i),
+    guide: {
+      say: 'Put simply, are you buying another home at the same time, so this sale has to complete on the same day as your purchase?',
+      tip: 'If yes, say where you are with that purchase, for example offer accepted or searches ordered.',
+    },
+  },
+  {
+    match: (q) => has(q, /special requirements about a moving date/i),
+    guide: {
+      say: 'Put simply, do you need to move on a particular date, or avoid one? For example the school holidays, or the end of a tenancy.',
+      tip: 'If yes, say which dates suit you and why. Your solicitor will pass it on.',
+    },
+  },
+  {
+    match: (q) => has(q, /sufficient to repay all mortgages/i),
+    guide: {
+      say: 'Put simply, will the money from the sale be enough to pay off your mortgage, and any other loan secured on the home? Choose No mortgage if there is nothing to pay off.',
+      tip: 'Your lender can send a redemption statement showing what is left to pay, including any early repayment charge.',
+    },
+  },
+  {
+    match: (q) => has(q, /all rubbish is removed/i),
+    guide: {
+      say: 'Put simply, will you clear everything out, including the loft, garden, garage and sheds, and leave the home clean and tidy?',
+      tip: 'If you mean to leave anything behind, like spare paint or tiles, agree it with the buyer first.',
+    },
+  },
+  {
+    match: (q) => has(q, /light fittings are removed/i),
+    guide: {
+      say: 'Put simply, if you take any light fittings with you, will you leave a ceiling rose, flex, bulb holder and bulb in their place?',
+      tip: 'That way no room is left with bare wires. You list the fittings you are taking in Fixtures and Fittings.',
+    },
+  },
+  {
+    match: (q) => has(q, /reasonable care will be taken when removing/i),
+    guide: {
+      say: "Put simply, will you take care not to damage the home when you take out the things you're keeping, like shelves or a TV bracket?",
+      tip: 'For example, filling the screw holes after taking down a mirror or a bracket.',
+    },
+  },
+  {
+    match: (q) => has(q, /keys to all windows and doors/i),
+    guide: {
+      say: 'Put simply, will you leave the keys to every window and door, and the alarm code, at the home or with the estate agent?',
+      tip: 'Label the keys, and write down the alarm code and how to change it, for the buyer.',
+    },
+  },
+]
+
+// Fixtures and Fittings: about a hundred items, each answered Included,
+// Excluded or None, so the guidance is built from the item itself rather
+// than written out a hundred times. The room questions (Carpets, Curtain
+// Rails, Light Fittings, Fitted Units) all ask "Living Room" or "Bedroom 1",
+// so the part description says which list the room belongs to.
+const FIXTURE_TIP =
+  "Included means it stays with the home. Excluded means you're taking it. None means there isn't one. If you'd sell an excluded item to the buyer, add your price."
+const FITTED_TIP =
+  'Fitted means built into the units. Freestanding means it stands on its own and can be moved. If you take it, you can add a price for selling it to the buyer.'
+
+// [item, what UMU calls it, how None is said: one ("there isn't one"),
+// many ("there aren't any") or some ("there isn't any")]
+type Count = 'one' | 'many' | 'some'
+const FIXTURE_ITEMS: [RegExp, string, Count][] = [
+  [/^boiler/i, 'the boiler or immersion heater', 'one'],
+  [/^radiators/i, 'the radiators and wall heaters', 'many'],
+  [/^night.?storage/i, 'the night storage heaters', 'many'],
+  [/^free.?standing heaters/i, 'any free standing heaters', 'many'],
+  [/^gas ?fires/i, 'the gas fires and their surrounds', 'many'],
+  [/^electric fires/i, 'the electric fires and their surrounds', 'many'],
+  [/^light switches/i, 'the light switches', 'many'],
+  [/^roof insulation/i, 'the roof insulation', 'some'],
+  [/^window fittings/i, 'the window locks and handles', 'many'],
+  [/^window shutters/i, 'the window shutters or security grilles', 'many'],
+  [/^internal door/i, 'the handles, locks and hinges on the inside doors', 'many'],
+  [/^external door/i, 'the locks, handles and security fittings on the outside doors', 'many'],
+  [/^doorbell/i, 'the doorbell or chime', 'one'],
+  [/^electric sockets/i, 'the electric sockets', 'many'],
+  [/^burglar alarm/i, 'the burglar alarm', 'one'],
+  [/^hob$/i, 'the hob', 'one'],
+  [/^extractor/i, 'the extractor hood', 'one'],
+  [/^oven/i, 'the oven or grill', 'one'],
+  [/^cooker$/i, 'the cooker', 'one'],
+  [/^microwave/i, 'the microwave', 'one'],
+  [/^refrigerator/i, 'the fridge or fridge freezer', 'one'],
+  [/^freezer$/i, 'the freezer', 'one'],
+  [/^dishwasher/i, 'the dishwasher', 'one'],
+  [/^tumble dryer/i, 'the tumble dryer', 'one'],
+  [/^washing machine/i, 'the washing machine', 'one'],
+  [/^bath$/i, 'the bath', 'one'],
+  [/^shower fitting for bath/i, 'the shower over the bath', 'one'],
+  [/^shower curtain/i, 'the shower curtain', 'one'],
+  [/^bathroom cabinet/i, 'the bathroom cabinet', 'one'],
+  [/^taps$/i, 'the taps', 'many'],
+  [/^separate shower/i, 'the separate shower and its fittings', 'one'],
+  [/^towel rail/i, 'the towel rail', 'one'],
+  [/^soap/i, 'the soap and toothbrush holders', 'many'],
+  [/^toilet roll/i, 'the toilet roll holders', 'many'],
+  [/^bathroom mirror/i, 'the bathroom mirror', 'one'],
+  [/^garden furniture/i, 'the garden furniture', 'some'],
+  [/^garden ornaments/i, 'the garden ornaments', 'many'],
+  [/^trees/i, 'the trees, plants and shrubs', 'many'],
+  [/^barbecue/i, 'the barbecue', 'one'],
+  [/^dustbins/i, 'the dustbins and recycling bins', 'many'],
+  [/^garden shed/i, 'the garden shed', 'one'],
+  [/^greenhouse/i, 'the greenhouse', 'one'],
+  [/^outdoor heater/i, 'the outdoor heater', 'one'],
+  [/^outside lights/i, 'the outside lights', 'many'],
+  [/^water butt/i, 'the water butt', 'one'],
+  [/^clothes line/i, 'the clothes line', 'one'],
+  [/^rotary line/i, 'the rotary washing line', 'one'],
+  [/^telephone receivers/i, 'the telephone handsets', 'many'],
+  [/^television aerial/i, 'the TV aerial', 'one'],
+  [/^radio aerial/i, 'the radio aerial', 'one'],
+  [/^satellite dish/i, 'the satellite dish', 'one'],
+  [/^oil$/i, 'the heating oil left in the tank', 'some'],
+  [/^wood$/i, 'the firewood and logs', 'many'],
+  [/^liquefied petroleum gas/i, 'the bottled or tank gas', 'some'],
+]
+
+// Room lists, told apart by their part description
+const FIXTURE_ROOMS: [RegExp, string, string][] = [
+  [/^floor coverings/i, 'the carpets and floor coverings in', 'carpets'],
+  [/^hardware ?systems for hanging/i, 'the curtain rails, poles and pelmets in', 'rails'],
+  [/^light fixtures/i, 'the light fittings in', 'lights'],
+  [/^built-in (storage|kitchen cabinets|wardrobes)/i, 'the fitted cupboards, shelves and wardrobes in', 'units'],
+]
+
+// What each "Other ..." question is for, from its title and description
+const FIXTURE_OTHERS: [RegExp, string, string][] = [
+  [/other basic fittings/i, 'fitted around the home', 'a smart thermostat, CCTV or an intercom'],
+  [/other kitchen/i, 'in the kitchen', 'a wine cooler, a coffee machine or bar stools'],
+  [/other bathroom/i, 'in the bathroom', 'a heated mirror or extra shelving'],
+  [/other floor coverings/i, 'for the floors', 'carpets in a conservatory or utility room, or a valuable rug'],
+  [/other rooms/i, 'for the windows in other rooms', 'curtains, blinds or rails in a conservatory or home office'],
+  [/other light fittings/i, 'for lighting', 'a chandelier, under cabinet lights or garden lighting'],
+  [/other fitted storage/i, 'built in', 'under stair cupboards, a fitted desk or loft storage'],
+  [/other outdoor/i, 'outside', 'a hot tub, a pergola or play equipment'],
+  [/other items/i, 'anywhere in the home', 'a piano, a safe or garden tools'],
+]
+
+const roomSaid = (room: string) => {
+  const r = room.trim().toLowerCase()
+  return /^bedroom/.test(r) ? r : `the ${r}`
+}
+
+const isFixture = (q: Q) => {
+  const opts = (o: any[] | undefined) => (o || []).map((x) => String(x?.label || '').toLowerCase())
+  const all = [opts(q.options), ...(Array.isArray(q.parts) ? q.parts.map((p: Q) => opts(p?.options)) : [])].flat()
+  return all.includes('included') && all.includes('excluded')
+}
+
+function fixtureGuide(q: Q): Guide | null {
+  if (!isFixture(q) && !/^window treatments and coverings/i.test(q.description || '')) return null
+  const parts: Q[] = Array.isArray(q.parts) ? q.parts.filter(Boolean) : []
+  // "Other ..." questions: the seller names the item themselves
+  if (parts.some((p) => /^(item|room) name$/i.test(String(p?.title || '').trim()))) {
+    const about = `${q.question || q.title || ''} ${q.description || ''}`
+    const other = FIXTURE_OTHERS.find(([re]) => re.test(about))
+    const where = other ? other[1] : 'in the home'
+    const like = other ? `, like ${other[2]}` : ''
+    return {
+      say: `Is there anything else ${where} you'd like to list${like}? If so, add its name and a short description, then choose Included, Excluded or None. If not, say skip question.`,
+      tip: FIXTURE_TIP,
+    }
+  }
+  // Curtains and blinds ask Yes or No for each room
+  if (/^window treatments and coverings/i.test(q.description || '')) {
+    return {
+      say: `Will the curtains and blinds in ${roomSaid(q.question || q.title || '')} stay with the home?`,
+      tip: 'Choose Yes if they stay, or No if you are taking them. Made to measure curtains are often left, as they fit those windows.',
+    }
+  }
+  const optionText = (p: Q) => JSON.stringify(p?.options || []).toLowerCase()
+  const main = parts.find((p) => optionText(p).includes('"included"')) || parts[0] || q
+  const title = String(main.title || q.question || q.title || '').trim()
+  const room = FIXTURE_ROOMS.find(([re]) => re.test(main.description || ''))
+  const item = FIXTURE_ITEMS.find(([re]) => re.test(title))
+  const noun = room ? `${room[1]} ${roomSaid(title)}` : item ? item[1] : title.toLowerCase()
+  if (!noun) return null
+  const count: Count = room ? 'many' : item ? item[2] : /s$/i.test(title) ? 'many' : 'one'
+  const lead = `Will ${noun} stay with the home?`
+  if (parts.some((p) => optionText(p).includes('"fitted"') && optionText(p).includes('"freestanding"'))) {
+    return { say: `${lead} Then choose fitted or freestanding.`, tip: FITTED_TIP }
+  }
+  if (/heating oil|firewood|bottled or tank gas/.test(noun)) {
+    return {
+      say: `${lead} Choose Included, Excluded or None.`,
+      tip: 'Sellers often leave fuel and ask the buyer to pay for what is left. If so, choose Excluded and add your price.',
+    }
+  }
+  if (room?.[2] === 'lights') {
+    return {
+      say: `${lead} Choose Included, Excluded or None.`,
+      tip: `If you take a light fitting, leave a ceiling rose, flex, bulb holder and bulb in its place. ${FIXTURE_TIP}`,
+    }
+  }
+  const none = { one: "isn't one", many: "aren't any", some: "isn't any" }[count]
+  return { say: `${lead} Choose Included, Excluded, or None if there ${none}.`, tip: FIXTURE_TIP }
+}
 
 function typeGuide(type: string): Guide {
   switch (type) {
@@ -138,8 +1125,76 @@ function typeGuide(type: string): Guide {
 }
 
 export function guideFor(question: Q, type: string): Guide {
-  const hit = OWNERSHIP.find((g) => g.match(question))
+  // A Fixtures item is told by its Included / Excluded answers, so it goes
+  // first: its "asking price for this item" box would otherwise get the
+  // house asking price guidance.
+  const fixture = fixtureGuide(question)
+  if (fixture) return fixture
+  // Notes are matched by the Ownership notes guide, so the more specific
+  // lists go first. HOME_WORKS and RIGHTS_AND_OCCUPIERS go before
+  // OWNERSHIP, whose /\blease/ and /photo/ would otherwise catch the solar
+  // roof lease and the EPC upload.
+  const hit =
+    NEIGHBOURS.find((g) => g.match(question)) ||
+    HOME_WORKS.find((g) => g.match(question)) ||
+    RIGHTS_AND_OCCUPIERS.find((g) => g.match(question)) ||
+    SERVICES_AND_MOVING.find((g) => g.match(question)) ||
+    OWNERSHIP.find((g) => g.match(question))
   return hit ? hit.guide : typeGuide(type)
+}
+
+// Notes left in some help texts for the content team ("- please remove text
+// answer yes or no") are cut off, so the seller never sees them. The
+// "Other warranties" help was copied onto several questions it has nothing
+// to do with (vacant possession, some Services questions), so it only shows
+// on a question that is about guarantees or warranties, and the same goes
+// for the kitchen help on a non-kitchen question. `about` is that
+// question's own wording.
+export function cleanHelpText(text: unknown, about = ''): string {
+  const help = String(text ?? '')
+    .replace(/\s*-?\s*(also bottom bit is wrong|please remove|remove please)\b[\s\S]*$/i, '')
+    .trim()
+  if (/^other warranties might include/i.test(help) && !/guarantee|warrant/i.test(about)) return ''
+  // The kitchen help was copied onto Other Bathroom Items too
+  if (/^include any specialty kitchen equipment/i.test(help) && !/kitchen/i.test(about)) return ''
+  return help
+}
+
+// An option as UMU says it: "Yes, select year" is "Yes", "Other, specify
+// below" is "Other"
+export function optionSaid(label: string): string {
+  return String(label || '')
+    .trim()
+    .replace(/,\s*(please\s+)?(select|enter|choose|add|specify|state)\b.*$/i, '')
+}
+
+// "Go to boundaries", "let's do disputes": switching section by voice. A
+// verb is required, so an answer that simply mentions boundaries or a
+// dispute is still typed in as an answer.
+const SECTION_WORDS: [string, RegExp][] = [
+  ['ownershipProfile', /^(the )?(ownership( profile)?)( section)?$/],
+  ['boundaries', /^(the )?(boundaries|boundary)( section)?$/],
+  ['disputesAndComplaints', /^(the )?(disputes?( and complaints)?|complaints)( section)?$/],
+  ['noticesAndProposals', /^(the )?(notices?( and proposals)?|proposals)( section)?$/],
+  ['alterationsAndPlanning', /^(the )?(alterations?( and planning)?|planning)( section)?$/],
+  ['guaranteesAndWarranties', /^(the )?(guarantees?( and warranties)?|warrant(y|ies))( section)?$/],
+  ['insurance', /^(the )?insurance( section)?$/],
+  ['environmental', /^(the )?environment(al)?( matters)?( section)?$/],
+  ['rightsAndInformalArrangements', /^(the )?(rights( and informal arrangements)?|informal arrangements?)( section)?$/],
+  ['parking', /^(the )?parking( section)?$/],
+  ['otherCharges', /^(the )?(other )?charges( section)?$/],
+  ['occupiers', /^(the )?occupiers?( section)?$/],
+  ['services', /^(the )?(services?|utilities)( section)?$/],
+  ['transactionInformation', /^(the )?(transaction( information)?|moving date)( section)?$/],
+  ['fixturesAndFittings', /^(the )?(fixtures?( and fittings)?|fittings)( section)?$/],
+]
+
+export function sectionCommand(said: string): string | null {
+  const w = words(said).trim().replace(/^(umu |please |ok |okay |um |er )+/, '')
+  const m = w.match(/^(go to|go back to|switch to|move to|move on to|take me to|open|start|let s do|let s go to|do|i want to do|can we do)\s+(.+)$/)
+  if (!m) return null
+  const hit = SECTION_WORDS.find(([, re]) => re.test(m[2].trim()))
+  return hit ? hit[0] : null
 }
 
 // ── Speech helpers ──────────────────────────────────────────────────
@@ -179,6 +1234,37 @@ const withDigits = (s: string) =>
 
 const YES = [' yes ', ' yeah ', ' yep ', ' yup ', ' correct ', ' i am ', ' i do ', ' that s right ', ' that is right ', ' sure ', ' absolutely ', ' of course ', ' definitely ', ' affirmative ', ' it is ', ' we are ', ' we do ']
 const NO = [' no ', ' nope ', ' nah ', ' not ', ' i m not ', ' i don t ', ' we don t ', ' we re not ', ' never ', ' negative ', ' it isn t ']
+// Heard text is lower case with single spaces and no punctuation
+const NOT_SURE = / (not sure|don t know|do not know|no idea|not certain|can t remember|unsure|not known|unknown) /
+const UNKNOWN_LABEL = /not known|unknown|don.?t know|not sure/i
+const NOT_APPLICABLE = / (not applicable|doesn t apply|does not apply|don t apply|n a|na|not relevant) /
+
+// Everyday ways of giving answers whose words differ from the label. Said
+// before any word matching, so "I don't have a mortgage" is No mortgage
+// (never No) and "it's not included" is Excluded (never Included).
+const NO_MORTGAGE = / (no mortgage|don t have a mortgage|do not have a mortgage|haven t got a mortgage|not got a mortgage|mortgage free|without a mortgage|own it outright|owned outright|already paid off) /
+const EXCLUDED_SAID = / (excluded|not included|taking (it|them|that|those)|take (it|them) with|i ll take|we ll take|removing (it|them)|not staying|won t stay|not leaving|keeping (it|them)|i m keeping|we re keeping) /
+const NONE_SAID = / (none|there isn t one|there aren t any|isn t one|aren t any|don t have (one|any)|haven t got (one|any)|we don t have|i don t have) /
+const INCLUDED_SAID = / (included|yes|staying|stays|leaving (it|them)|leave (it|them)|i ll leave|we ll leave|it can stay|they can stay) /
+const BUILT_IN = / (built in|integrated|fitted|fixed|plumbed in) /
+
+function phraseChoice<T extends { label: string }>(heard: string, options: T[]): T | null {
+  const find = (re: RegExp) => options.find((o) => re.test(o.label.trim()))
+  const noMortgage = find(/^no mortgage$/i)
+  if (noMortgage && NO_MORTGAGE.test(heard)) return noMortgage
+  // Fixtures and Fittings: Included, Excluded or None
+  const included = find(/^included$/i)
+  const excluded = find(/^excluded$/i)
+  if (included && excluded) {
+    const none = find(/^none$/i)
+    if (EXCLUDED_SAID.test(heard)) return excluded
+    if (none && NONE_SAID.test(heard)) return none
+    if (INCLUDED_SAID.test(heard)) return included
+  }
+  const fitted = find(/^fitted$/i)
+  if (fitted && find(/^freestanding$/i) && BUILT_IN.test(heard)) return fitted
+  return null
+}
 
 function scoreOption(heard: string, label: string): number {
   const l = words(label).trim()
@@ -210,6 +1296,8 @@ export function matchOption<T extends { label: string }>(said: string | string[]
   const readings = (Array.isArray(said) ? said : [said]).filter(Boolean)
   for (const reading of readings) {
     const heard = words(reading)
+    const phrased = phraseChoice(heard, options)
+    if (phrased) return phrased
     let best: T | null = null
     let bestScore = 0
     for (const o of options) {
@@ -229,6 +1317,12 @@ export function matchOption<T extends { label: string }>(said: string | string[]
     if (/ (last|final) (one|option) /.test(heard)) return options[options.length - 1] || null
     const num = withDigits(heard).match(/ (?:option|number|choice) (\d+) /)
     if (num && options[+num[1] - 1]) return options[+num[1] - 1]
+    // "I don't know" is the Not known answer where there is one, and never
+    // a No ("don't" is a no word below)
+    if (NOT_SURE.test(heard)) return options.find((o) => UNKNOWN_LABEL.test(o.label)) || null
+    // "It doesn't apply" is the Not applicable answer
+    const na = options.find((o) => /not applicable|n\/a/i.test(o.label))
+    if (na && NOT_APPLICABLE.test(heard)) return na
     // Yes and No in other words
     const yes = options.find((o) => words(o.label).trim().startsWith('yes'))
     const no = options.find((o) => words(o.label).trim().startsWith('no'))
@@ -236,6 +1330,29 @@ export function matchOption<T extends { label: string }>(said: string | string[]
     if (yes && YES.some((w) => heard.includes(w))) return yes
   }
   return null
+}
+
+// Every option the seller named, for tick boxes where several can be
+// chosen ("river and surface water"). A word only one option has counts on
+// its own ("river" for River flooding); words most options share, like
+// "flooding", do not.
+export function matchOptions<T extends { label: string }>(said: string | string[], options: T[]): T[] {
+  const readings = (Array.isArray(said) ? said : [said]).filter(Boolean)
+  const tokensOf = (label: string) =>
+    words(optionSaid(label)).trim().split(' ').filter((t) => t.length > 2 && !STOP.has(t))
+  const counts = new Map<string, number>()
+  options.forEach((o) => new Set(tokensOf(o.label)).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)))
+  for (const reading of readings) {
+    const heard = words(reading)
+    const hits = options.filter(
+      (o) =>
+        scoreOption(heard, optionSaid(o.label)) > 0 ||
+        tokensOf(o.label).some((t) => counts.get(t) === 1 && heard.includes(` ${t} `)),
+    )
+    if (hits.length) return hits
+  }
+  const one = matchOption(readings, options)
+  return one ? [one] : []
 }
 
 const SMALL: Record<string, number> = {
