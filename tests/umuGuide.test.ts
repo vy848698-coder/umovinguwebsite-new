@@ -93,6 +93,32 @@ describe('matchOption', () => {
     expect(matchOption("I don't know", yesNo)).toBeNull()
   })
 
+  it("takes \"I don't have a mortgage\" as No mortgage, never No", () => {
+    const mortgage = opts('Yes', 'No', 'No mortgage')
+    expect(matchOption("I don't have a mortgage", mortgage)?.label).toBe('No mortgage')
+    expect(matchOption("it's mortgage free", mortgage)?.label).toBe('No mortgage')
+    expect(matchOption('no mortgage', mortgage)?.label).toBe('No mortgage')
+    expect(matchOption('no', mortgage)?.label).toBe('No')
+    expect(matchOption('yes it will', mortgage)?.label).toBe('Yes')
+  })
+
+  it('understands Included, Excluded and None in everyday words', () => {
+    const ien = opts('Included', 'Excluded', 'None')
+    expect(matchOption("I'm taking it with me", ien)?.label).toBe('Excluded')
+    expect(matchOption("it's not included", ien)?.label).toBe('Excluded')
+    expect(matchOption("it's staying", ien)?.label).toBe('Included')
+    expect(matchOption('yes', ien)?.label).toBe('Included')
+    expect(matchOption("there isn't one", ien)?.label).toBe('None')
+    expect(matchOption("we don't have one", ien)?.label).toBe('None')
+    expect(matchOption('excluded', ien)?.label).toBe('Excluded')
+  })
+
+  it('takes built in as Fitted', () => {
+    const kind = opts('Fitted', 'Freestanding')
+    expect(matchOption("it's built in", kind)?.label).toBe('Fitted')
+    expect(matchOption('free standing', kind)?.label).toBe('Freestanding')
+  })
+
   it("takes \"it doesn't apply\" as Not applicable", () => {
     const withNa = opts('Yes', 'No', 'Not applicable')
     expect(matchOption("it doesn't apply", withNa)?.label).toBe('Not applicable')
@@ -142,6 +168,108 @@ describe('guideFor, Rights, Parking, Other Charges and Occupiers', () => {
   })
 })
 
+describe('guideFor, Services and Transaction Information', () => {
+  it.each([
+    [firstPart('Has the whole or any part of the electrical installation been tested by a qualified and registered electrician?'), 'tested the wiring'],
+    [firstPart('Has the property been rewired or had any electrical installation work carried out since 1 January 2005?'), 'rewired'],
+    [plain('How is the property heated? Tick all that apply:'), 'Tick every way your home is heated'],
+    [plain('What type of system is it (e.g. mains gas, liquid gas, oil, electricity, etc.)?'), 'Tick every way your home is heated'],
+    [plain('Does the property have a central heating system?'), 'one central system'],
+    [firstPart('When was the heating system installed?'), 'put in'],
+    [plain('Is the heating system in good working order?'), 'work properly right now'],
+    [firstPart('In what year was the heating system last serviced/maintained?'), 'last serviced'],
+    [plain('Has there been any replacement to the heating system (other than replacement of a boiler)?'), 'apart from a new boiler'],
+    [plain('Supply compliance certificates or documentation for the installation or alteration of each heating system (such as a building regulation completion certificate).'), 'certificates for fitting or changing the heating'],
+    [plain('If there is more than one heating system, attach answers to the above questions separately for each one.'), 'two or more separate heating systems'],
+    [plain('Is the property connected to mains foul water drainage?'), 'Foul water'],
+    // Older passports keep the real question in the description
+    [plain('Is the property connected to mains:', 'A foul water drainage?'), 'Foul water'],
+    [plain('Is the property connected to mains surface water drainage?'), 'Surface water'],
+    [firstPart('Is sewerage for the property provided by a septic tank?'), 'A septic tank is'],
+    [firstPart('Is sewerage for the property provided by:', 'A septic tank?'), 'A septic tank is'],
+    [plain('Is sewerage for any part of the property provided by a sewage treatment plant?'), 'A sewage treatment plant is'],
+    [plain('Is sewerage for any part of the  property provided by:', 'A sewage treatment plant?'), 'A sewage treatment plant is'],
+    [plain('Is sewerage for any part of the property provided by a cesspool?'), 'A cesspool is'],
+    [firstPart('Is the use of the septic tank, sewage treatment plant or cesspool shared with other properties?'), 'any other home use the same'],
+    [plain('When was the system last emptied?'), 'last emptied'],
+    [plain('If the property is served by a sewage treatment plant, when was the treatment plant last serviced?'), 'last serviced'],
+    [plain('When was the system installed?'), 'was put in'],
+    [firstPart('Is any part of the septic tank, sewage treatment plant (including any soakaway or outfall) or cesspool, or the access to it, outside the boundary of the property?'), "on someone else's land"],
+    [firstPart('Mains electricity - is this service/utility connected to the property?'), 'mains electricity'],
+    [firstPart('Mains gas - is this service/utility connected to the property?'), 'mains gas'],
+    [firstPart('Mains water - is this service/utility connected to the property?'), 'mains water'],
+    [firstPart('Mains sewage - is this service/utility connected to the property?'), 'mains sewer'],
+    [firstPart('Telephone - is this service/utility connected to the property?'), 'phone line'],
+    [firstPart('Broadband  - is this service/utility connected to the property?'), 'broadband'],
+    [firstPart('Small sewage treatment plant - is this service/utility connected to the property?'), 'small sewage treatment plant'],
+    [firstPart('Shared ground / air source heat pumps - is this service/utility connected to the property?'), 'shared with other homes'],
+    [firstPart('Is this sale dependent on the seller completing the purchase of another property on the same day?'), 'buying another home'],
+    [firstPart('Does the seller have any special requirements about a moving date?'), 'particular date'],
+    [plain('Will the sale price be sufficient to repay all mortgages and charges secured on the property?'), 'No mortgage'],
+    [plain('Will the seller ensure that all rubbish is removed from the property (including from the loft, garden, outbuildings, garages and sheds) and that the property will be left in a clean and tidy condition?'), 'clear everything out'],
+    [plain('Will the seller ensure that:', 'All rubbish is removed from the property (including from the loft, garden, outbuildings, garages and sheds) and that the property will be left in a clean and tidy condition?'), 'clear everything out'],
+    [plain('Will the seller ensure that, if light fittings are removed, the fittings will be replaced with a ceiling rose, flex, bulb holder and bulb?'), 'ceiling rose'],
+    [plain('Will the seller ensure that reasonable care will be taken when removing any other fittings or contents?'), 'take care not to damage'],
+    [plain('Will the seller ensure that keys to all windows and doors and details of alarm codes will be left at the property or with the estate agent?'), 'alarm code'],
+  ])('%#: guidance that fits the question', (q, words) => {
+    expect(guideFor(q, q.type).say).toContain(words)
+  })
+})
+
+// A Fixtures item as the API sends it: the item, its price box and a note
+const IEN = [{ label: 'Included' }, { label: 'Excluded' }, { label: 'None' }]
+const item = (title: string, description = '', fitted = false) => ({
+  question: '',
+  type: 'multipart',
+  parts: [
+    { title, description, type: 'RADIO', options: IEN },
+    ...(fitted ? [{ title: 'Installation Type', type: 'RADIO', options: [{ label: 'Fitted' }, { label: 'Freestanding' }] }] : []),
+    { title: 'Enter your asking price for this item', type: 'date', options: [{ label: 'Enter Selling Price' }] },
+    { title: '', type: 'text' },
+  ],
+})
+const otherItem = (title: string, description: string) => ({
+  question: title,
+  description,
+  type: 'multipart',
+  parts: [
+    { title: 'Item Name', type: 'text' },
+    { title: 'Item Description', type: 'text' },
+    { title: 'Inclusion Status', type: 'radio', options: IEN },
+    { title: 'Enter your asking price for this item', type: 'date', options: [{ label: 'Enter Selling Price' }] },
+  ],
+})
+
+describe('guideFor, Fixtures and Fittings', () => {
+  it.each([
+    [item('Boiler/Immersion Heater', 'Specify heating equipment and hot water systems included in the sale.'), 'Will the boiler or immersion heater stay'],
+    [item('Radiators/Wall Heaters'), "aren't any"],
+    [item('Burglar Alarm'), "isn't one"],
+    [item('Roof Insulation'), "isn't any"],
+    [item('Hob', 'Cooktop surface for cooking', true), 'fitted or freestanding'],
+    [item('Washing Machine', '', true), 'Will the washing machine stay'],
+    [item('Bath'), 'Will the bath stay'],
+    [item('Rotary Line'), 'rotary washing line'],
+    [item('Oil', 'Heating oil reserves in tanks for oil-fired heating systems'), 'heating oil'],
+    // The same room in four lists, told apart by the description
+    [item('Living Room', 'Floor coverings and carpets in the main living and reception areas'), 'carpets and floor coverings in the living room'],
+    [item('Living Room', 'Hardwaresystems for hanging curtains and window treatments in the main living area'), 'curtain rails'],
+    [item('Bedroom 1', 'Light fixtures and electrical fittings in the main bedroom'), 'light fittings in bedroom 1'],
+    [item('Hall, Stairs and Landing', 'Built-in storage and cupboards in entrance areas and stairways'), 'fitted cupboards'],
+    [item('Kitchen', 'Built-in kitchen cabinets, cupboards, and storage systems'), 'fitted cupboards, shelves and wardrobes in the kitchen'],
+    [{ question: 'Bedroom 2', description: 'Window treatments and coverings in the second bedroom', type: 'radio', options: [{ label: 'Yes' }, { label: 'No' }] }, 'curtains and blinds in bedroom 2'],
+    [otherItem('Other Kitchen Items', 'Additional kitchen appliances, fixtures, or equipment not listed in previous sections'), 'anything else in the kitchen'],
+    [otherItem('Other Rooms', 'Window treatments and coverings in additional rooms not listed in previous sections'), 'windows in other rooms'],
+    [otherItem('Other Items', 'Any additional fixtures, fittings, or contents not covered in previous sections'), 'anywhere in the home'],
+  ])('%#: guidance that fits the item', (q, words) => {
+    expect(guideFor(q, q.type).say).toContain(words)
+  })
+
+  it('never reads the item price box as the house asking price', () => {
+    expect(guideFor(item('Light Switches'), 'multipart').say).not.toContain('three hundred')
+  })
+})
+
 describe('sectionCommand', () => {
   it.each([
     ['go to rights', 'rightsAndInformalArrangements'],
@@ -149,6 +277,11 @@ describe('sectionCommand', () => {
     ['go to parking', 'parking'],
     ['open other charges', 'otherCharges'],
     ['switch to occupiers', 'occupiers'],
+    ['go to services', 'services'],
+    ['open the utilities section', 'services'],
+    ["let's do transaction information", 'transactionInformation'],
+    ['go to fixtures and fittings', 'fixturesAndFittings'],
+    ['open fittings', 'fixturesAndFittings'],
     ['go to boundaries', 'boundaries'],
   ])('"%s" opens %s', (said, key) => {
     expect(sectionCommand(said)).toBe(key)
@@ -166,6 +299,11 @@ describe('cleanHelpText', () => {
   })
   it('keeps it on a warranties question', () => {
     expect(cleanHelpText(stray, 'Are there any other guarantees or warranties?')).toBe(stray)
+  })
+  it('drops the kitchen help copied onto Other Bathroom Items', () => {
+    const kitchen = 'Include any specialty kitchen equipment like wine coolers ice makers coffee machines'
+    expect(cleanHelpText(kitchen, 'Other Bathroom Items Additional bathroom items not listed in previous sections')).toBe('')
+    expect(cleanHelpText(kitchen, 'Other Kitchen Items Additional kitchen appliances')).toBe(kitchen)
   })
   it('cuts content-team notes', () => {
     expect(cleanHelpText('Tells buyers about parking. - please remove text answer yes or no')).toBe('Tells buyers about parking.')
