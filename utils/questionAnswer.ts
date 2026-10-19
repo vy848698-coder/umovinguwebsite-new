@@ -197,3 +197,23 @@ export function isQuestionAnswerValid(question: AnyQuestion): boolean {
 
   return true
 }
+
+// Two parts of one question can share a partKey (Leasehold's "How often is
+// the rent reviewed?" and "How is the increase calculated?" are both
+// "photos"), so typing in one box filled the other and only one answer was
+// kept. A repeated key gets a number on the end; the first part keeps its
+// own, so saved answers and conditions that point at it still match.
+export const withUniquePartKeys = <T extends { parts?: any }>(q: T): T => {
+  if (!Array.isArray(q.parts)) return q
+  const seen = new Map<string, number>()
+  let renamed = false
+  const parts = q.parts.map((p: any) => {
+    if (!p?.partKey) return p
+    const n = (seen.get(p.partKey) || 0) + 1
+    seen.set(p.partKey, n)
+    if (n === 1) return p
+    renamed = true
+    return { ...p, partKey: `${p.partKey}_${n}` }
+  })
+  return renamed ? { ...q, parts } : q
+}

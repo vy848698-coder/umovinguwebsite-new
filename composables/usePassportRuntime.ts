@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { usePassportApi } from './usePassportApi'
 import { hiddenQuestionIds } from '~/utils/questionBranching'
+import { withUniquePartKeys } from '~/utils/questionAnswer'
 
 // ---------- GLOBAL SINGLETON STATE ----------
 const steps = ref([])
@@ -90,7 +91,7 @@ const setCurrentTask = (taskId) => {
 const loadQuestions = async (taskId) => {
   const result = await getApi().getQuestions(taskId)
   currentQuestions.value = result.map((q) => ({
-    ...q,
+    ...withUniquePartKeys(q),
     type: q.type?.toLowerCase(),
   }))
   const firstUnanswered = currentQuestions.value.findIndex((q) => !q.completed)
@@ -121,7 +122,7 @@ const loadSectionQuestions = async (stepId, startAtTaskId = null) => {
 
   currentStep.value.tasks.forEach((task, taskPos) => {
     const normalizedQuestions = taskQuestionLists[taskPos].map((q) => ({
-      ...q,
+      ...withUniquePartKeys(q),
       type: q.type?.toLowerCase(),
       _taskId: task.id,
       _taskTitle: task.title,

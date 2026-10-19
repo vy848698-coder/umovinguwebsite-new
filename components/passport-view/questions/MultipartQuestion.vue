@@ -44,7 +44,8 @@
           v-if="
             part.type?.toLowerCase?.() === 'text' &&
             (part.display?.toLowerCase?.() === 'upload' ||
-              part.display?.toLowerCase?.() === 'both')
+              part.display?.toLowerCase?.() === 'both') &&
+            !namesTextBox(part)
           "
         >
           <!-- Teal section header for upload/both parts (disabled for now) -->
@@ -59,13 +60,13 @@
             <span v-if="false" class="typing-cursor">|</span>
           </p>
 
-          <template v-if="part.description">
+          <template v-if="partDescription(part)">
             <ul
-              v-if="part.description.includes('\n•') || part.description.startsWith('•')"
+              v-if="partDescription(part).includes('\n•') || partDescription(part).startsWith('•')"
               class="part-description-bullets"
             >
               <li
-                v-for="(line, i) in part.description.split('\n').filter(l => l.trim())"
+                v-for="(line, i) in partDescription(part).split('\n').filter(l => l.trim())"
                 :key="i"
                 class="part-description-bullet-item"
               >
@@ -73,7 +74,7 @@
               </li>
             </ul>
             <p v-else class="part-description">
-              {{ part.description }}
+              {{ partDescription(part) }}
             </p>
           </template>
 
@@ -284,8 +285,10 @@ import VoiceTextInput from './VoiceTextInput.vue'
 import OPIcon from '~/components/ui/OPIcon.vue'
 // Cuts content-team notes left at the end of some help texts, and help
 // copied onto a part it doesn't belong to
-import { cleanHelpText } from '~/utils/umuGuide'
+import { cleanHelpText, cleanDescription } from '~/utils/umuGuide'
 const partHelp = (part) => cleanHelpText(part.helpText, `${part.title || ''} ${part.description || ''}`)
+// A description copied from another question is left out
+const partDescription = (part) => cleanDescription(part.description, part.title || '')
 
 const props = defineProps({
   question: { type: Object, required: true },
@@ -401,6 +404,15 @@ const visibleParts = computed(() => {
   return sortedParts.value.filter((part) => isPartVisible(part))
 })
 
+// A text and upload box shows no title of its own, as the question above
+// says what it is for. When two are open at once (Leasehold's "How often is
+// the rent reviewed?" and "How is the increase calculated?") each shows
+// its title, so the seller can tell them apart.
+const isTextBox = (part) =>
+  part?.type?.toLowerCase?.() === 'text' && ['upload', 'both'].includes(part?.display?.toLowerCase?.())
+const namesTextBox = (part) =>
+  !!String(part?.title || '').trim() && visibleParts.value.filter(isTextBox).length > 1
+
 const groupedSections = computed(() => {
   const sections = []
   const groupMap = new Map()
@@ -440,6 +452,10 @@ const getPartComponent = (part) => {
     multitextinput: MultiTextInputQuestion,
     multifieldform: MultiFieldFormQuestion,
   }
+  // A part with answers to pick from but no type of its own is a radio:
+  // Leasehold's "notice that the landlord wants to sell" part has Yes and
+  // No but is typed MULTIPART, which showed an empty text box instead
+  if (!map[type] && Array.isArray(part?.options) && part.options.length) return RadioQuestion
   return map[type] || TextUploadQuestion
 }
 
