@@ -24,6 +24,14 @@ export default defineNuxtConfig({
     },
   },
   modules: ['@nuxt/ui', '@pinia/nuxt', '@vite-pwa/nuxt', 'nuxt-security'],
+
+  routeRules: {
+    // UMU's pre-recorded lines (utils/umuVoiceClips.ts): a clip's name comes
+    // from its words and voice, so a file never changes and is kept for good.
+    // The list of clips changes with each recording, so it is checked.
+    '/umu-voice/clips/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
+    '/umu-voice/manifest.json': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
+  },
   css: ['~/assets/css/main.css'],
 
   // Baseline security headers (security review 2026-10-19) — ported from
@@ -82,7 +90,10 @@ export default defineNuxtConfig({
       permissionsPolicy: {
         geolocation: ['self'],
         camera: ['self'],
-        microphone: [],
+        // UMU's voice answers need the mic on our own pages. An empty list
+        // ("microphone=()") switched it off everywhere, so every voice
+        // answer failed as "microphone blocked".
+        microphone: ['self'],
       },
     },
   },
@@ -151,6 +162,17 @@ export default defineNuxtConfig({
             expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
             cacheableResponse: { statuses: [0, 200] },
             networkTimeoutSeconds: 10,
+          },
+        },
+        {
+          // UMU's pre-recorded voice lines: they never change, so once heard
+          // they play from this device, even offline
+          urlPattern: /\/umu-voice\/clips\/[0-9a-f]+\.mp3$/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'umu-voice',
+            expiration: { maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            cacheableResponse: { statuses: [200] },
           },
         },
         {

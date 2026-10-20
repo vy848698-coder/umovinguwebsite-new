@@ -170,9 +170,9 @@
                   <span>Speed</span>
                   <input
                     type="range"
-                    min="0.8"
-                    max="1.12"
-                    step="0.04"
+                    :min="MIN_UMU_RATE"
+                    :max="MAX_UMU_RATE"
+                    :step="UMU_RATE_STEP"
                     :value="voice.rate.value"
                     aria-label="Speaking speed"
                     @input="(e) => voice.setRate(Number((e.target as HTMLInputElement).value))"
@@ -482,6 +482,7 @@ import { usePathways } from '~/composables/usePathways'
 import { usePassportAchievement } from '~/composables/usePassportAchievement'
 import { useCountUp } from '~/composables/useCountUp'
 import { useUmuVoice } from '~/composables/useUmuVoice'
+import { MIN_UMU_RATE, MAX_UMU_RATE, UMU_RATE_STEP } from '~/utils/umuVoices'
 import { understandAnswer, type Understanding } from '~/composables/useUmuUnderstand'
 import { normalizeQuestionType, isQuestionAnswerValid } from '~/utils/questionAnswer'
 import {
@@ -981,8 +982,23 @@ function segTitle(q: any, i: number) {
 }
 
 // Jump straight to any question, answered or not, to fill it or change it.
+// A tap while an answer is still saving used to be dropped, so going back
+// to the question before seemed to do nothing; now it waits for the save.
+let pendingJump: number | null = null
+watch(saving, (now) => {
+  if (now || pendingJump === null) return
+  const i = pendingJump
+  pendingJump = null
+  // A follow-up or the section's celebration opened meanwhile: keep it
+  if (phase.value === 'pathway' || showSectionComplete.value) return
+  nextTick(() => jumpTo(i))
+})
 function jumpTo(i: number) {
-  if (saving.value || phase.value === 'loading' || phase.value === 'error') return
+  if (phase.value === 'loading' || phase.value === 'error') return
+  if (saving.value) {
+    pendingJump = i
+    return
+  }
   activePathway.value = null
   phase.value = 'question'
   if (rt.currentQuestionIndex.value === i) presentQuestion()
@@ -1152,13 +1168,15 @@ function repeatQuestion() {
   presentQuestion()
 }
 
-// Loads the next question's voice while this one is answered, so UMU
-// starts speaking it the moment this answer is saved.
+// Loads the next questions' voice while this one is answered, so UMU
+// starts speaking the moment this answer is saved, or a skip lands.
 function prefetchNextQuestion() {
-  const next: any = questions.value[rt.currentQuestionIndex.value + 1]
-  if (!next) return
-  const text = askedText(next).replace(/\?{2,}/g, '?')
-  if (text) voice.prefetch(joinSay(text, guideFor(next, normalizeQuestionType(next)).say))
+  for (const step of [1, 2]) {
+    const next: any = questions.value[rt.currentQuestionIndex.value + step]
+    if (!next) return
+    const text = askedText(next).replace(/\?{2,}/g, '?')
+    if (text) voice.prefetch(joinSay(text, guideFor(next, normalizeQuestionType(next)).say))
+  }
 }
 
 // UMU's short replies, loaded once so they never keep the seller waiting
@@ -1789,9 +1807,22 @@ const isQuestionItself = (t: Target) =>
 
 // What UMU says to ask for one box or choice. "voice" when the seller
 // answers by speaking, "tap" when they tap and type.
+// What UMU asks for, after "fill in" or "tell me": "the sale price", but a
+// label that is already a phrase goes in as it is, so UMU never says "fill
+// in the your comments about this item here" or "tell me the this is about
+// how parking works".
+function theLabel(label: string) {
+  // "MPAN number" keeps its capitals, so the voice still spells it out
+  const l = (/^[A-Z]{2,}\b/.test(label) ? label : label.charAt(0).toLowerCase() + label.slice(1))
+    .replace(/^this (is|question is) about\s+/i, '')
+    .replace(/\s+here\.?$/i, '')
+    .replace(/\.$/, '')
+  return /^(your|my|his|her|their|its|how|what|when|where|which|whether|who|why|if|any|all|each|every|a|an|the)\b/i.test(l) ? l : `the ${l}`
+}
+
 function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice') {
   const sameAsQuestion = isQuestionItself(t)
-  const spokenLabel = t.label.charAt(0).toLowerCase() + t.label.slice(1)
+  const spokenLabel = theLabel(t.label)
   if (t.kind === 'confirm') {
     return mode === 'voice'
       ? `I found this address for your property: ${t.address}. Is that right? Say yes, or say no to change it.`
@@ -1822,8 +1853,8 @@ function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice'
   }
   if (t.kind === 'counter') {
     return mode === 'tap'
-      ? `${first ? 'Tap' : 'Next, tap'} plus to set the ${spokenLabel}.`
-      : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+      ? `${first ? 'Tap' : 'Next, tap'} plus to set ${spokenLabel}.`
+      : `${first ? 'Tell' : 'Next, tell'} me ${spokenLabel}.`
   }
   // An excluded Fixtures item: the price is optional
   if (t.label === SALE_PRICE) {
@@ -1834,10 +1865,10 @@ function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice'
   if (mode === 'tap') {
     if (sameAsQuestion) return 'Type your answer in the box.'
     return t.addOnEnter
-      ? `${first ? 'Please add' : 'Next, please add'} the ${spokenLabel}. Press enter after each one.`
-      : `${first ? 'Please fill in' : 'Next, please fill in'} the ${spokenLabel}.`
+      ? `${first ? 'Please add' : 'Next, please add'} ${spokenLabel}. Press enter after each one.`
+      : `${first ? 'Please fill in' : 'Next, please fill in'} ${spokenLabel}.`
   }
-  return first && sameAsQuestion ? "Go ahead, I'm listening." : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+  return first && sameAsQuestion ? "Go ahead, I'm listening." : `${first ? 'Tell' : 'Next, tell'} me ${spokenLabel}.`
 }
 
 // The words on the footer while UMU waits on a box
@@ -1848,9 +1879,9 @@ function targetLabel(t: Target, mode: 'voice' | 'tap') {
   if (isRange(t.el) && mode === 'tap') return t.label === 'answer' ? 'Move the slider' : `${t.label}? Move the slider`
   if (t.label === 'answer') return mode === 'voice' ? 'Say your answer' : 'Type your answer'
   if (t.label === SALE_PRICE) return mode === 'voice' ? 'Your price, or say save' : 'Your price, if you would sell it'
-  if (t.kind === 'counter') return mode === 'voice' ? `Say the ${t.label}` : `Tap plus to set the ${t.label}`
-  const label = /^[A-Z][a-z]/.test(t.label) ? t.label.charAt(0).toLowerCase() + t.label.slice(1) : t.label
-  return mode === 'voice' ? `Tell me the ${label}` : `Fill in the ${label}`
+  if (t.kind === 'counter') return mode === 'voice' ? `Say ${theLabel(t.label)}` : `Tap plus to set ${theLabel(t.label)}`
+  const label = /^[A-Z][a-z]/.test(t.label) ? theLabel(t.label) : `the ${t.label}`
+  return mode === 'voice' ? `Tell me ${label}` : `Fill in ${label}`
 }
 
 async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome> {
@@ -1903,7 +1934,7 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
     // "I don't know" picks the Not known answer, where the question has one
     const unknown = t.kind === 'choice' && isNotSure(said) ? matchOption(said, t.options) : null
     if (unknown) {
-      ack = `You selected ${optionSaid(unknown.label)}.`
+      ack = selectedLine([optionSaid(unknown.label)])
       unknown.el.click()
       return 'next'
     }
@@ -1934,14 +1965,14 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
             o.el.click()
             await nextTick()
           }
-          ack = `You selected ${andList(picks.map((o) => optionSaid(o.label)))}.`
+          ack = selectedLine(picks.map((o) => optionSaid(o.label)))
           return 'next'
         }
       }
       const opt = matchOption([said, ...voice.alternatives.value], t.options)
       if (opt) {
         opt.el.click()
-        ack = `You selected ${optionSaid(opt.label)}.`
+        ack = selectedLine([optionSaid(opt.label)])
         return 'next'
       }
       const meant = await askUmu(t, said)
@@ -1949,7 +1980,7 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       const picked = meant?.option ? t.options.find((o) => o.label.trim() === meant.option) : null
       if (picked) {
         picked.el.click()
-        ack = `You selected ${optionSaid(picked.label)}.`
+        ack = selectedLine([optionSaid(picked.label)])
         return 'next'
       }
       if (meant?.intent === 'not_sure' || meant?.intent === 'skip') {
@@ -2129,7 +2160,7 @@ async function runVoiceAnswer(id: number) {
           }
         }
         opt.el.click()
-        ack = `You selected ${optionSaid(opt.label)}.`
+        ack = selectedLine([optionSaid(opt.label)])
       }
       if (current.value?.id !== q.id) return
     }
@@ -2415,7 +2446,7 @@ function guideAck(t: Target, before: string | undefined) {
     const picked = now ? now.split(' | ') : []
     const added = picked.filter((x) => !was.includes(x))
     const removed = was.filter((x) => !picked.includes(x))
-    if (added.length) return `You selected ${andList(added)}.`
+    if (added.length) return selectedLine(added)
     if (removed.length) return `You removed ${andList(removed)}.`
     return ''
   }
@@ -2432,7 +2463,7 @@ function prefetchGuide(mode: 'voice' | 'tap') {
   const lines = new Set<string>()
   // The replies to the open boxes first: those are needed soonest
   for (const t of all) {
-    if (t.kind === 'choice') for (const o of t.options) lines.add(`You selected ${optionSaid(o.label)}.`)
+    if (t.kind === 'choice') for (const o of t.options) lines.add(selectedLine([optionSaid(o.label)]))
     if (!isFilled(t)) lines.add(targetPrompt(t, false, mode))
   }
   GUIDE_LINES.forEach((l) => lines.add(l))
@@ -2738,7 +2769,16 @@ function heardLine(q: any, value: any) {
     const v = first ? value[first.partKey] : undefined
     label = first ? labelOf(first.options, v && typeof v === 'object' ? v.value : v) : ''
   }
-  return label ? `You selected ${optionSaid(label)}.` : 'Got it.'
+  return label ? selectedLine([optionSaid(label)]) : 'Got it.'
+}
+
+// "You selected No." for the seller's answer. A choice named like an
+// instruction ("Select year", "Enter amount") is not an answer to say back
+// ("You selected Select year."), so UMU just says "Got it." for it.
+const INSTRUCTION_LABEL = /^(select|enter|choose|please|add|type)\b/i
+function selectedLine(said: string[]) {
+  const answers = said.map((x) => (x || '').trim()).filter((x) => x && !INSTRUCTION_LABEL.test(x))
+  return answers.length ? `You selected ${andList(answers)}.` : 'Got it.'
 }
 // Playing while the answer saves; the next question waits for it to finish.
 // heardRun counts answers, so a wait can tell a newer one has come in.
