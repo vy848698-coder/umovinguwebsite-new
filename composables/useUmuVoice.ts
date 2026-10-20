@@ -1,15 +1,18 @@
 // UMU's voice for the AI assistant: reads text aloud in a natural human
 // voice, and listens to the seller.
 //
-// Speaking uses Microsoft Edge's neural voices (free, no key) through our
-// /api/umu-tts route, which needs the seller's sign-in token. Text is spoken sentence by sentence: every sentence
-// starts loading at once, the first plays as soon as it arrives, and each
-// clip's own silence is trimmed and replaced by a short, natural pause, a
-// little longer after a question, so the seller can follow along. Audio is
-// cached, so a repeated line plays instantly. If the voice service can't be
-// reached, the browser's own speech takes over, and with no voice at all the
-// caption still shows the whole line. The seller can choose another voice
-// and speed; both are remembered.
+// Speaking uses Microsoft Edge's neural voices (free, no key). Text is
+// spoken sentence by sentence. Fixed sentences (the questions, options,
+// tips, short replies) are pre-recorded files (utils/umuVoiceClips.ts) that
+// play at once; the rest are made live by our /api/umu-tts route, which
+// needs the seller's sign-in token, and kept in the browser so they are
+// instant next time. Every sentence starts loading at once, the first plays
+// as soon as it arrives, and each clip's own silence is trimmed and replaced
+// by a short, natural pause, a little longer after a question. A sentence
+// whose audio can't be had is said by the browser's own voice instead, so
+// nothing is skipped, and with no voice at all the caption still shows the
+// whole line. The seller can choose another voice and speed; both are
+// remembered.
 //
 // Listening uses the browser's speech recognition, in the seller's own
 // English (UK, India, US and so on, from the browser's languages). It only
@@ -31,11 +34,14 @@ import {
   MIN_UMU_RATE,
   MAX_UMU_RATE,
 } from '~/utils/umuVoices'
+import { UMU_CLIP_DIR, UMU_CLIP_MANIFEST, umuClipId, type UmuClipManifest } from '~/utils/umuVoiceClips'
 
 const MUTE_KEY = 'umu_voice_muted'
-const VOICE_KEY = 'umu_voice_id'
+// v2 (2026-10-20): the default became Andrew at normal speed, so earlier
+// choices (Ryan, 0.92) are not carried over
+const VOICE_KEY = 'umu_voice_id_v2'
 const BROWSER_VOICE_KEY = 'umu_voice_name'
-const RATE_KEY = 'umu_voice_speed'
+const RATE_KEY = 'umu_voice_speed_v2'
 
 const store = {
   get(key: string) {
@@ -54,18 +60,19 @@ const store = {
   },
 }
 
-// Higher is better. English (UK) first, then the most natural engines, and
-// a male voice to match UMU's own. Only used when the Edge voices can't be
-// reached.
+// Higher is better. US English first, to match UMU's own voice, then UK
+// English, the most natural engines, and a male voice. Only used when the
+// Edge voices can't be reached.
 export function scoreVoice(v: SpeechSynthesisVoice): number {
   const name = v.name.toLowerCase()
   const lang = (v.lang || '').toLowerCase().replace('_', '-')
   let s = 0
-  if (lang === 'en-gb') s += 50
+  if (lang === 'en-us') s += 55
+  else if (lang === 'en-gb') s += 50
   else if (lang.startsWith('en')) s += 15
   else return -1
   if (name.includes('natural')) s += 45 // Edge neural voices
-  if (/ryan|thomas|guy|andrew|brian|christopher|connor|william/.test(name)) s += 14
+  if (/andrew|prabhat|ryan|thomas|guy|brian|christopher|connor|william/.test(name)) s += 14
   if (name.includes('google uk english male')) s += 34
   else if (name.includes('google uk english')) s += 22
   if (name.includes('enhanced') || name.includes('premium')) s += 28 // Apple
@@ -103,6 +110,8 @@ const SAY_AS: [RegExp, string][] = [
   [/\bEICR\b/g, 'E I C R'],
   // Fixtures and Fittings writes it as one word
   [/\bGasFires\b/g, 'Gas fires'],
+  // A typo in a Leasehold option ("Long leasehold housee"), said as meant
+  [/\bhousee\b/gi, 'house'],
 ]
 
 // Acronyms that really are said letter by letter; any other word in capitals
@@ -118,6 +127,9 @@ export function speakable(text: string): string {
     .replace(/£\s?([\d,]+(?:\.\d+)?)\s?(k|K)\b/g, '$1 thousand pounds')
     .replace(/£\s?([\d,]+(?:\.\d+)?)/g, '$1 pounds')
     .replace(/(\d)\s?%/g, '$1 percent')
+    // A reference number ("like 12345678") is read digit by digit, not as
+    // "twelve million three hundred and forty five thousand..."
+    .replace(/\b\d{6,}\b/g, (d) => d.split('').join(' '))
     .replace(/\be\.g\.\s*/gi, 'for example, ')
     .replace(/\bi\.e\.\s*/gi, 'that is, ')
     .replace(/\betc\.?/gi, 'and so on')
@@ -166,11 +178,12 @@ function phrases(text: string, max: number, joinBelow: number): string[] {
 }
 
 // The pause after a phrase, once its own silence is trimmed: longer after a
-// question so it can sink in, shortest mid-sentence.
+// question so it can sink in, shortest mid-sentence. Kept short so UMU
+// talks in one flow, as a person does, rather than line by line.
 function pauseAfter(phrase: string) {
-  if (phrase.endsWith('?')) return 560
-  if (/[.!]$/.test(phrase)) return 400
-  return 200
+  if (phrase.endsWith('?')) return 420
+  if (/[.!]$/.test(phrase)) return 300
+  return 160
 }
 
 // Cuts the near-silence a voice clip starts and ends with, keeping a little
@@ -190,6 +203,35 @@ function trimSilence(ctx: BaseAudioContext, buf: AudioBuffer) {
   return out
 }
 
+// Every clip at the same loudness. The voice service makes some lines
+// (short replies like "Saved.") up to half as loud again as others, which
+// sounded like UMU dropping its voice between the question and the rest.
+// Measured on the speech only, so silences don't count, and never pushed
+// past the clip's own peak.
+const TARGET_RMS = 0.13
+function levelLoudness(buf: AudioBuffer) {
+  const data = buf.getChannelData(0)
+  let sum = 0
+  let n = 0
+  let peak = 0
+  for (let i = 0; i < data.length; i++) {
+    const a = Math.abs(data[i])
+    if (a > 0.01) {
+      sum += data[i] * data[i]
+      n++
+    }
+    if (a > peak) peak = a
+  }
+  if (!n || !peak) return buf
+  const gain = Math.min(2, TARGET_RMS / Math.sqrt(sum / n), 0.98 / peak)
+  if (Math.abs(gain - 1) < 0.03) return buf
+  for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+    const d = buf.getChannelData(ch)
+    for (let i = 0; i < d.length; i++) d[i] *= gain
+  }
+  return buf
+}
+
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 // English locales the speech recogniser knows. The seller's own one is used
@@ -205,21 +247,74 @@ function listenLocale() {
   return 'en-GB'
 }
 
-const CLIP_TIMEOUT_MS = 9000
+// A live sentence normally arrives in one to two seconds; past this the
+// browser's voice says it instead.
+const CLIP_TIMEOUT_MS = 6000
 const PREFETCH_MAX = 2
 const PREFETCH_QUEUE_LIMIT = 40
 const prefetchQueue: (() => Promise<unknown>)[] = []
 let prefetchActive = 0
-const CLIP_CACHE_LIMIT = 120
 
-// Shared across pages and visits within the session, so a line heard once
-// plays instantly the next time.
-const clipCache = new Map<string, Promise<AudioBuffer>>()
+// Shared across pages within the visit. The MP3 bytes are small (about
+// 20 KB a sentence), so many are kept; decoded audio is ten times bigger,
+// so only the lines in play are.
+const BYTES_CACHE_LIMIT = 400
+const BUFFER_CACHE_LIMIT = 40
+const bytesCache = new Map<string, Promise<ArrayBuffer>>()
+const bufferCache = new Map<string, Promise<AudioBuffer>>()
 let audioCtx: AudioContext | null = null
 let voiceOut: AudioNode | null = null
 let voiceOutCtx: AudioContext | null = null
-// The Edge voice failed: use the browser's voice until this time.
+// The Edge voice failed: no live sentences until this time.
 let cloudDownUntil = 0
+
+// Ids of the pre-recorded sentences (utils/umuVoiceClips.ts)
+let recorded = new Set<string>()
+let recordedLoad: Promise<void> | null = null
+function loadRecorded() {
+  recordedLoad ||= fetch(UMU_CLIP_MANIFEST)
+    .then((res) => (res.ok ? (res.json() as Promise<UmuClipManifest>) : null))
+    .then((m) => {
+      if (Array.isArray(m?.clips)) recorded = new Set(m!.clips)
+    })
+    .catch(() => {})
+  return recordedLoad
+}
+
+// Live sentences are kept in the browser (Cache Storage) between visits, so
+// a line made once never waits for the voice service again on this device.
+const LIVE_CACHE = 'umu-voice-live-v1'
+const LIVE_CACHE_LIMIT = 600
+const liveUrl = (id: string) => `/umu-voice/live/${id}.mp3`
+let liveTrimmed = false
+
+async function cachedLive(id: string): Promise<ArrayBuffer | null> {
+  try {
+    const hit = await (await caches.open(LIVE_CACHE)).match(liveUrl(id))
+    return hit ? await hit.arrayBuffer() : null
+  } catch {
+    return null // no Cache Storage (private window, old browser)
+  }
+}
+
+async function keepLive(id: string, bytes: ArrayBuffer) {
+  try {
+    const cache = await caches.open(LIVE_CACHE)
+    await cache.put(liveUrl(id), new Response(bytes.slice(0), { headers: { 'Content-Type': 'audio/mpeg' } }))
+    if (liveTrimmed) return
+    liveTrimmed = true
+    const keys = await cache.keys()
+    // Oldest first
+    for (const k of keys.slice(0, Math.max(0, keys.length - LIVE_CACHE_LIMIT))) await cache.delete(k)
+  } catch {
+    /* it just won't be kept */
+  }
+}
+
+function remember<T>(map: Map<string, T>, key: string, value: T, limit: number) {
+  if (map.size >= limit) map.delete(map.keys().next().value!)
+  map.set(key, value)
+}
 
 export interface VoiceOption {
   name: string
@@ -396,7 +491,8 @@ export function useUmuVoice() {
     return gain
   }
 
-  const useNatural = () => hasAudio && Date.now() >= cloudDownUntil
+  // The live voice service is working (as far as we know)
+  const liveUp = () => Date.now() >= cloudDownUntil
 
   function markNaturalDown() {
     cloudDownUntil = Date.now() + 60_000
@@ -404,32 +500,71 @@ export function useUmuVoice() {
     loadBrowserVoices()
   }
 
-  // One phrase of the natural voice, decoded and trimmed (cached).
+  if (isClient) loadRecorded()
+
+  const clipKey = (text: string) => `${voiceName.value}|${rate.value}|${text}`
+  const isRecorded = (text: string) => recorded.has(umuClipId(voiceName.value, rate.value, text))
+
+  // One sentence's MP3: the pre-recorded file when there is one, else the
+  // copy this browser kept, else made live (cached).
+  function clipBytes(text: string): Promise<ArrayBuffer> {
+    const key = clipKey(text)
+    let p = bytesCache.get(key)
+    if (p) return p
+    const voice = voiceName.value
+    const speed = rate.value
+    const id = umuClipId(voice, speed, text)
+    const timed = (url: string, init?: RequestInit) => {
+      const ac = new AbortController()
+      const timer = setTimeout(() => ac.abort(), CLIP_TIMEOUT_MS)
+      return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer))
+    }
+    const live = async () => {
+      const kept = await cachedLive(id)
+      if (kept) return kept
+      // Down a minute ago: don't keep the seller waiting on it again
+      if (!liveUp()) throw new Error('voice service down')
+      // The voice route only serves signed-in sellers
+      const res = await timed('/api/umu-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${store.get('token') ?? ''}` },
+        body: JSON.stringify({ text, voice, rate: speed }),
+      }).catch((e) => {
+        markNaturalDown() // offline or timed out
+        throw e
+      })
+      // 429 is our own limit and 401 a lapsed sign-in: only this line fails
+      if (!res.ok) {
+        if (res.status >= 500) markNaturalDown()
+        throw new Error(`tts ${res.status}`)
+      }
+      const bytes = await res.arrayBuffer()
+      keepLive(id, bytes)
+      return bytes
+    }
+    p = recorded.has(id)
+      ? timed(`${UMU_CLIP_DIR}/${id}.mp3`)
+          .then((res) => (res.ok ? res.arrayBuffer() : live()))
+          .catch(live)
+      : live()
+    p.catch(() => bytesCache.delete(key)) // allow a retry later
+    remember(bytesCache, key, p, BYTES_CACHE_LIMIT)
+    return p
+  }
+
+  // One sentence of the natural voice, decoded and trimmed (cached).
   function clip(text: string): Promise<AudioBuffer> {
     const c = ctx()
     if (!c) return Promise.reject(new Error('no audio'))
-    const key = `${voiceName.value}|${rate.value}|${text}`
-    let p = clipCache.get(key)
+    const key = clipKey(text)
+    let p = bufferCache.get(key)
     if (!p) {
-      const ac = new AbortController()
-      const timer = setTimeout(() => ac.abort(), CLIP_TIMEOUT_MS)
-      // The voice route only serves signed-in sellers
-      p = fetch('/api/umu-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${store.get('token') ?? ''}` },
-        body: JSON.stringify({ text, voice: voiceName.value, rate: rate.value }),
-        signal: ac.signal,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error(`tts ${res.status}`)
-          return res.arrayBuffer()
-        })
-        .then((bytes) => c.decodeAudioData(bytes))
-        .then((buf) => trimSilence(c, buf))
-        .finally(() => clearTimeout(timer))
-      p.catch(() => clipCache.delete(key)) // allow a retry later
-      if (clipCache.size >= CLIP_CACHE_LIMIT) clipCache.delete(clipCache.keys().next().value!)
-      clipCache.set(key, p)
+      // decodeAudioData detaches its input, so it decodes a copy
+      p = clipBytes(text)
+        .then((bytes) => c.decodeAudioData(bytes.slice(0)))
+        .then((buf) => levelLoudness(trimSilence(c, buf)))
+      p.catch(() => bufferCache.delete(key))
+      remember(bufferCache, key, p, BUFFER_CACHE_LIMIT)
     }
     return p
   }
@@ -439,15 +574,18 @@ export function useUmuVoice() {
   const cloudPhrases = (text: string) => phrases(text, 220, 0)
 
   // Loads a line ahead of time, so it plays straight away when spoken.
-  // Lines loaded ahead wait their turn, two at a time, so they never hold
-  // up a line UMU needs to say right now.
-  function prefetch(text: string) {
-    if (muted.value || !useNatural()) return
+  // Pre-recorded sentences are small files and load at once; live ones wait
+  // their turn, two at a time, so they never hold up a line UMU needs to
+  // say right now.
+  async function prefetch(text: string) {
+    if (muted.value || !hasAudio) return
+    await loadRecorded()
     const clean = (text || '').replace(/\s+/g, ' ').trim()
     for (const p of cloudPhrases(clean)) {
       const say = speakable(p)
-      if (clipCache.has(`${voiceName.value}|${rate.value}|${say}`)) continue
-      prefetchQueue.push(() => clip(say).catch(() => {}))
+      if (bytesCache.has(clipKey(say))) continue
+      if (isRecorded(say)) clipBytes(say).catch(() => {})
+      else if (liveUp()) prefetchQueue.push(() => clipBytes(say).catch(() => {}))
     }
     // Only the most recent wishes matter
     if (prefetchQueue.length > PREFETCH_QUEUE_LIMIT) prefetchQueue.splice(0, prefetchQueue.length - PREFETCH_QUEUE_LIMIT)
@@ -468,6 +606,7 @@ export function useUmuVoice() {
   // ── Speaking ──
   let speakRun = 0
   let source: AudioBufferSourceNode | null = null
+  let lastCancel = -1e9
 
   function stopSpeaking() {
     speakRun++
@@ -482,7 +621,10 @@ export function useUmuVoice() {
       }
       source = null
     }
-    if (hasBrowserVoice) window.speechSynthesis.cancel()
+    if (hasBrowserVoice) {
+      window.speechSynthesis.cancel()
+      lastCancel = performance.now()
+    }
   }
 
   // Speaks the text and resolves when it has finished, been stopped, or
@@ -496,7 +638,7 @@ export function useUmuVoice() {
       return false
     }
     const run = ++speakRun
-    if (useNatural()) {
+    if (hasAudio) {
       const spoken = await speakNatural(clean, run)
       if (spoken !== null) return spoken
       if (run !== speakRun) return false
@@ -507,7 +649,7 @@ export function useUmuVoice() {
   }
 
   // The natural voice. Resolves null if it couldn't start, so the browser's
-  // voice can take over.
+  // voice can take over the whole line.
   async function speakNatural(clean: string, run: number): Promise<boolean | null> {
     const c = ctx()
     if (!c) return null
@@ -517,26 +659,31 @@ export function useUmuVoice() {
       // Not allowed to play yet (no tap so far): the browser voice reports it
       if (c.state !== 'running') return null
     }
+    await Promise.race([loadRecorded(), wait(1500)])
+    if (run !== speakRun) return false
     const parts = cloudPhrases(clean)
-    const clips = parts.map((p) => clip(speakable(p)).catch(() => null))
+    const said = parts.map((p) => speakable(p))
+    // Voice service down and nothing here pre-recorded: no point waiting
+    if (!liveUp() && !said.some(isRecorded)) return null
+    const clips = said.map((p) => clip(p).catch(() => null))
     showCaption(parts[0], false)
     preparing.value = true
     const first = await clips[0]
     if (run !== speakRun) return false
     preparing.value = false
-    if (!first) {
-      markNaturalDown()
-      return null
-    }
-    natural.value = true
+    if (first) natural.value = true
     blocked.value = false
     speaking.value = true
     for (let i = 0; i < parts.length; i++) {
       const buf = await clips[i]
       if (run !== speakRun) return false
-      if (!buf) continue
-      await playClip(c, buf, parts[i], run)
+      // No audio for this sentence: the browser's voice says it, in its
+      // place, so no part of the line goes missing
+      if (buf) await playClip(c, buf, parts[i], run)
+      else if (hasBrowserVoice) await sayBrowserPhrase(parts[i], run)
+      else showCaption(parts[i], true)
       if (run !== speakRun) return false
+      speaking.value = true
       if (i < parts.length - 1) await wait(pauseAfter(parts[i]))
       if (run !== speakRun) return false
     }
@@ -574,77 +721,87 @@ export function useUmuVoice() {
     })
   }
 
-  // The browser's own voice, used when the natural one can't be reached.
-  function speakBrowser(clean: string, run: number): Promise<boolean> {
-    if (!browserVoice) loadBrowserVoices()
+  // The browser's own voice, for a whole line when the natural one can't
+  // be reached at all. Resolves true only if it was said to the end.
+  async function speakBrowser(clean: string, run: number): Promise<boolean> {
     // Chrome drops utterances longer than about 15 seconds
     const parts = phrases(clean, 170, 70)
+    for (const shown of parts) {
+      const result = await sayBrowserPhrase(shown, run)
+      if (result === 'stopped' || run !== speakRun) return false
+      if (result === 'failed') {
+        speaking.value = false
+        return false
+      }
+      await wait(pauseAfter(shown) / 2)
+    }
+    speaking.value = false
+    return run === speakRun
+  }
 
+  // One phrase in the browser's voice, with live captions.
+  function sayBrowserPhrase(shown: string, run: number): Promise<'done' | 'stopped' | 'failed'> {
+    if (!browserVoice) loadBrowserVoices()
     return new Promise((resolve) => {
-      let i = 0
-      const next = () => {
-        if (run !== speakRun) return resolve(false)
-        if (i >= parts.length) {
-          speaking.value = false
-          return resolve(true)
+      const u = new SpeechSynthesisUtterance(speakable(shown))
+      if (browserVoice) u.voice = browserVoice
+      u.lang = browserVoice?.lang || 'en-GB'
+      // The seller's speed, relative to UMU's usual one: the browser's
+      // voices already talk at a normal pace
+      u.rate = Math.min(1.3, Math.max(0.8, rate.value / DEFAULT_UMU_RATE))
+      u.pitch = 1
+      const total = shown.split(/\s+/).filter(Boolean).length
+      let boundaries = false
+      let ended = false
+      const finish = (result: 'done' | 'stopped' | 'failed') => {
+        if (ended) return
+        ended = true
+        clearTimeout(watchdog)
+        stopWordTimer()
+        if (run === speakRun && result === 'done') captionWords.value = total
+        resolve(run === speakRun ? result : 'stopped')
+      }
+      // Moves on if the browser never says this phrase ended
+      const watchdog = setTimeout(() => finish('done'), (total / (2.3 * u.rate)) * 1000 + 3500)
+      u.onstart = () => {
+        if (run !== speakRun) return
+        speaking.value = true
+        blocked.value = false
+        showCaption(shown, false)
+        const started = performance.now()
+        wordTimer = setInterval(() => {
+          if (boundaries) return
+          // About 2.6 words a second at normal speed
+          const est = Math.floor(((performance.now() - started) / 1000) * 2.6 * u.rate) + 1
+          captionWords.value = Math.min(total, est)
+        }, 90)
+      }
+      u.onboundary = (e: any) => {
+        if (run !== speakRun || e.name !== 'word') return
+        boundaries = true
+        const spokenSoFar = u.text.slice(0, e.charIndex).split(/\s+/).filter(Boolean).length
+        const ratio = total / Math.max(1, u.text.split(/\s+/).filter(Boolean).length)
+        captionWords.value = Math.min(total, Math.round(spokenSoFar * ratio) + 1)
+      }
+      u.onend = () => finish('done')
+      u.onerror = (e: any) => {
+        if (run !== speakRun) return finish('stopped')
+        if (e?.error === 'interrupted' || e?.error === 'canceled') return finish('done')
+        if (e?.error === 'not-allowed') {
+          blocked.value = true
+          showCaption(shown, true)
         }
-        const shown = parts[i++]
-        const u = new SpeechSynthesisUtterance(speakable(shown))
-        if (browserVoice) u.voice = browserVoice
-        u.lang = browserVoice?.lang || 'en-GB'
-        u.rate = rate.value
-        u.pitch = 1
-        const total = shown.split(/\s+/).filter(Boolean).length
-        let boundaries = false
-        let ended = false
-        // Moves on if the browser never says this phrase ended
-        const watchdog = setTimeout(() => finish(), (total / (2.3 * u.rate)) * 1000 + 3500)
-        const finish = () => {
-          if (ended) return
-          ended = true
-          clearTimeout(watchdog)
-          stopWordTimer()
-          if (run === speakRun) captionWords.value = total
-          setTimeout(next, pauseAfter(shown) / 2)
-        }
-        u.onstart = () => {
-          if (run !== speakRun) return
-          speaking.value = true
-          blocked.value = false
-          showCaption(shown, false)
-          const started = performance.now()
-          wordTimer = setInterval(() => {
-            if (boundaries) return
-            // About 2.6 words a second at normal speed
-            const est = Math.floor(((performance.now() - started) / 1000) * 2.6 * u.rate) + 1
-            captionWords.value = Math.min(total, est)
-          }, 90)
-        }
-        u.onboundary = (e: any) => {
-          if (run !== speakRun || e.name !== 'word') return
-          boundaries = true
-          const spokenSoFar = u.text.slice(0, e.charIndex).split(/\s+/).filter(Boolean).length
-          const ratio = total / Math.max(1, u.text.split(/\s+/).filter(Boolean).length)
-          captionWords.value = Math.min(total, Math.round(spokenSoFar * ratio) + 1)
-        }
-        u.onend = () => finish()
-        u.onerror = (e: any) => {
-          clearTimeout(watchdog)
-          if (run !== speakRun) return resolve(false)
-          if (e?.error === 'interrupted' || e?.error === 'canceled') return finish()
-          speaking.value = false
-          stopWordTimer()
-          if (e?.error === 'not-allowed') {
-            blocked.value = true
-            showCaption(clean, true)
-          }
-          resolve(false)
-        }
+        finish('failed')
+      }
+      // Chrome silently drops speech queued straight after cancel(), which
+      // left UMU quiet on a question it had just been asked to read
+      const sinceCancel = performance.now() - lastCancel
+      setTimeout(() => {
+        if (run !== speakRun) return finish('stopped')
         // Chrome can leave the queue paused after a tab switch
         if (window.speechSynthesis.paused) window.speechSynthesis.resume()
         window.speechSynthesis.speak(u)
-      }
-      next()
+      }, sinceCancel < 120 ? 120 - sinceCancel : 0)
     })
   }
 

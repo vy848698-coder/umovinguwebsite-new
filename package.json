@@ -13,6 +13,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "vitest run",
+    "voice:build": "node scripts/build-umu-voice.ts",
     "mobile:assets": "capacitor-assets generate --ios",
     "mobile:sync": "npm run generate && cap sync ios",
     "mobile:open": "cap open ios"
@@ -29,7 +30,7 @@
     "@stripe/stripe-js": "^8.11.0",
     "@vite-pwa/nuxt": "^1.1.1",
     "mapbox-gl": "^3.20.0",
-    "msedge-tts": "^2.0.9",
+    "msedge-tts": "^2.1.0",
     "nuxt": "^3.13.0",
     "nuxt-security": "^2.5.1",
     "pinia": "^2.2.4",
