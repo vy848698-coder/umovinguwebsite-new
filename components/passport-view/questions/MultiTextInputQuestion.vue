@@ -305,6 +305,8 @@ const cancelEdit = () => {
 
 .text-input {
   flex: 1;
+  /* Lets the box shrink beside its buttons on a small phone */
+  min-width: 0;
   padding: 14px 15px;
   border: 1.5px solid #ececf2;
   border-radius: 12px;

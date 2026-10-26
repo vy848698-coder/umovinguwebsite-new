@@ -39,10 +39,12 @@
             <Icon name="i-lucide-x" />
           </button>
           <div class="ua-top-mid">
-            <h1 class="ua-title">Building your Seller Passport</h1>
-            <p class="ua-top-sub">
-              {{ sectionTitle || 'Your passport' }}<template v-if="questions.length">
-                · {{ answeredCount }} of {{ questions.length }} answered</template>
+            <!-- On a phone the title and the line under it stay one line each:
+                 "Building your" and the section name (shown in the route just
+                 below) step aside there -->
+            <h1 class="ua-title"><span class="ua-title-lead">Building your </span>Seller Passport</h1>
+            <p class="ua-top-sub" :class="{ 'has-count': questions.length }">
+              <span class="ua-top-section">{{ sectionTitle || 'Your passport' }}</span><template v-if="questions.length"><span class="ua-top-sep"> · </span>{{ answeredCount }} of {{ questions.length }} answered</template>
             </p>
           </div>
           <div class="ua-top-end">
@@ -93,7 +95,7 @@
                 <div class="ua-caption-head">
                   <span class="ua-caption-who">
                     <Icon :name="voice.listening.value ? 'i-lucide-user-round' : 'i-lucide-bot'" />
-                    {{ voice.listening.value ? 'You' : 'UMU' }}
+                    <span class="ua-who-name">{{ voice.listening.value ? 'You' : 'UMU' }}</span>
                   </span>
                   <span class="ua-caption-status">
                     <span class="ua-status-dot" :class="`is-${statusTone}`" />
@@ -118,7 +120,7 @@
                     <i v-for="n in 5" :key="n" :style="{ '--i': n, height: barHeight(n) }" />
                   </span>
                 </p>
-                <p v-else class="ua-caption-text">
+                <p v-else ref="captionTextEl" class="ua-caption-text" :class="{ 'is-scrolled': captionScrolled }">
                   <span
                     v-for="(w, i) in captionLine.words"
                     :key="`${captionLine.text}:${i}`"
@@ -1033,6 +1035,34 @@ function setPose(p: 'pointing' | 'celebrate', ms: number) {
 }
 
 const voice = useUmuVoice()
+
+// On a phone the bubble shows four lines at most (a long question filled
+// it to eight and pushed the card off the screen; the card below has the
+// whole question). It follows UMU as it speaks, keeping the word being
+// said in view.
+const captionTextEl = ref<HTMLElement | null>(null)
+const captionScrolled = ref(false)
+watch(
+  () => [captionLine.value.text, captionLine.value.said],
+  async ([, said], old) => {
+    await nextTick()
+    const box = captionTextEl.value
+    if (!box) return
+    if (!old || old[0] !== captionLine.value.text) box.scrollTop = 0
+    if (box.scrollHeight <= box.clientHeight + 1) {
+      captionScrolled.value = false
+      return
+    }
+    const words = box.querySelectorAll<HTMLElement>('.ua-w')
+    const word = words[Math.max(0, Math.min(words.length - 1, (said as number) - 1))]
+    if (!word) return
+    const lineH = word.offsetHeight || 20
+    // Keep the spoken word on the last visible line but one
+    const want = word.offsetTop - box.offsetTop + lineH * 2 - box.clientHeight
+    if (want > box.scrollTop) box.scrollTo({ top: want, behavior: 'smooth' })
+    captionScrolled.value = box.scrollTop > 0 || want > 0
+  },
+)
 const voiceMode = ref(false)
 
 const botState = computed(() => {
@@ -3367,6 +3397,7 @@ onBeforeUnmount(() => {
 }
 .ua-caption-who :deep(svg),
 .ua-caption-who > span { width: 15px; height: 15px; }
+.ua-caption-who > .ua-who-name { width: auto; height: auto; }
 .ua-caption-text {
   margin: 0;
   font-size: 16px;
@@ -3941,7 +3972,64 @@ onBeforeUnmount(() => {
   .hsw-brand-beta { display: none; }
   .hsw-nav-inner { gap: 10px; }
   .ua-title { font-size: 14px; }
-  .ua-bot { width: 88px; }
+  .ua-bot { width: 76px; }
+}
+
+/* ── Phone fit (2026-10-22): measured at 320, 360 and 390 ────────────
+   The header used four lines, the speech bubble refused to shrink and
+   pushed the robot off the left edge, Skip for now wrapped, and the
+   section-complete card kept a tall empty gap. */
+@media (max-width: 640px) {
+  .ua-title,
+  .ua-top-sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* The bubble shrinks to the space it has, so the robot keeps its own */
+  .ua-caption { min-width: 0; }
+  .ua-caption-head { flex-wrap: wrap; row-gap: 4px; }
+  .ua-caption-status { min-width: 0; white-space: normal; }
+  .ua-bot { flex-shrink: 0; }
+  .ua-foot-actions { gap: 6px; }
+  .ua-skip { flex: 0 0 auto !important; padding: 0 12px; white-space: nowrap; }
+  .ua-done { min-height: 0; justify-content: flex-start; padding: 6px 0 4px; }
+  /* Four lines at most; the watcher keeps the spoken word in view */
+  .ua-caption-text { max-height: 6em; overflow: hidden; }
+  .ua-caption-text.is-scrolled {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.2em);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 1.2em);
+  }
+  /* A long section name ("MANAGEMENT AND RESPONSIBILITIES") pushed the
+     "Question 43 of 52" pill out of the card; the pill now wraps under it */
+  .ua-sheet-meta { flex-wrap: wrap; row-gap: 6px; }
+  .ua-kicker { min-width: 0; }
+  /* A long button label wraps rather than running off the card */
+  .ua-save { min-width: 0; white-space: normal; text-align: center; line-height: 1.2; }
+}
+/* Smallest phones: "UMU is speaking" broke over two lines in the bubble */
+@media (max-width: 360px) {
+  .ua-caption-status { font-size: 11px; gap: 5px; }
+  .ua-caption-head { gap: 6px; }
+}
+/* Narrow phones: "Save and continue" ran past the card beside Skip for now;
+   the main action now takes the full width, with Skip under it */
+@media (max-width: 420px) {
+  .ua-foot-actions { flex-direction: column-reverse; align-items: stretch; gap: 4px; }
+  /* flex: 0 0 auto, not the row's flex: 1: in a column a zero basis
+     squashed Save and continue to a sliver */
+  .ua-foot-actions > * { flex: 0 0 auto; width: 100%; }
+  .ua-save { min-height: 46px; height: auto; padding-top: 10px; padding-bottom: 10px; }
+  .ua-skip { height: 40px; }
+}
+@media (max-width: 440px) {
+  /* "UMU is speaking" says who already; the name kept the bubble's top
+     line from fitting, so only the robot icon stays in front of it */
+  .ua-caption:not(.is-you) .ua-who-name { display: none; }
+  .ua-caption-head { flex-wrap: nowrap; }
+  .ua-title-lead,
+  .ua-top-sub.has-count .ua-top-section,
+  .ua-top-sep { display: none; }
 }
 
 /* ── Big screens ──────────────────────────────────────────────────────

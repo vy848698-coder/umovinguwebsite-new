@@ -114,7 +114,7 @@ const onCameraCapture = async (file) => {
 .instruction-text { font-size: 14px; color: #1a1a1a; margin: 0 0 16px; font-weight: 500; line-height: 1.5; }
 .upload-options { display: flex; flex-direction: row; align-items: center; gap: 16px; }
 .upload-btn {
-  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: 100%; min-width: 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;
   padding: 24px 16px; border: 2px solid #e0e0e0; border-radius: 12px; background: white;
   cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 600; color: #1a1a1a;
 }
