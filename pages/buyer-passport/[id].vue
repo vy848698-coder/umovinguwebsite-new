@@ -395,11 +395,11 @@
                     <div class="buyer-record-icon">
                       <OPIcon
                         :name="section.key || section.imageKey || 'fittingsContents'"
-                        class="w-[34px] h-[34px]"
+                        class="buyer-record-icon-img"
                       />
                     </div>
                     <button class="buyer-record-arrow">
-                      <OPIcon name="caretRight" class="w-[12px] h-[12px]" />
+                      <OPIcon name="caretRight" class="buyer-record-arrow-ic" />
                     </button>
                   </div>
                   <div class="buyer-record-info">
@@ -416,14 +416,19 @@
                         :class="'pill--' + sectionCompletion(section)"
                       >
                         <template v-if="sectionCompletion(section) === 'complete'">
-                          ✓ Fully answered
+                          <Icon name="i-lucide-circle-check" />
+                          Fully answered
                         </template>
                         <template
                           v-else-if="sectionCompletion(section) === 'partial'"
                         >
-                          ⏳ Partially answered
+                          <Icon name="i-lucide-hourglass" />
+                          Partially answered
                         </template>
-                        <template v-else>○ Not started</template>
+                        <template v-else>
+                          <Icon name="i-lucide-circle-dashed" />
+                          Not started
+                        </template>
                       </span>
                     </div>
                     <div class="buyer-record-progress">
@@ -1773,11 +1778,11 @@ async function deleteNote(noteId: string) {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: 14px;
+  padding: 20px 20px 18px;
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1),
@@ -1810,28 +1815,30 @@ async function deleteNote(noteId: string) {
 }
 .buyer-record-head { display: flex; align-items: flex-start; justify-content: space-between; }
 .buyer-record-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-  background: rgba(0, 161, 154, 0.08);
-  border: 1px solid rgba(0, 161, 154, 0.18);
-  color: var(--teal);
+  width: 64px;
+  height: 64px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  overflow: hidden;
-  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.2, 1),
-    background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* The illustration is the hero of the card: big, straight on the white
+   card with no tinted tile behind it. The copy steps down from it. */
+.buyer-record-icon-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 .buyer-record-row:hover .buyer-record-icon {
-  transform: scale(1.08) rotate(-3deg);
-  background: rgba(0, 161, 154, 0.14);
-  border-color: rgba(0, 161, 154, 0.32);
-  box-shadow: 0 10px 20px -8px rgba(0, 161, 154, 0.35);
+  transform: scale(1.06) rotate(-3deg);
+}
+.buyer-record-arrow-ic {
+  width: 14px;
+  height: 14px;
 }
 .buyer-record-arrow {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #f8f7fc;
   border: 1px solid var(--line);
@@ -1855,7 +1862,7 @@ async function deleteNote(noteId: string) {
 }
 .buyer-record-info { flex: 1; min-width: 0; }
 .buyer-record-title {
-  font-size: 15px;
+  font-size: 17.5px;
   font-weight: 800;
   color: var(--ink);
   letter-spacing: -0.01em;
@@ -1864,15 +1871,15 @@ async function deleteNote(noteId: string) {
   transition: color 0.2s ease;
 }
 .buyer-record-row:hover .buyer-record-title { color: var(--teal-dark); }
-.buyer-record-sub { font-size: 12px; color: var(--ink-faint); margin: 0 0 10px; line-height: 1.45; }
-.buyer-record-meta { margin-bottom: 8px; }
+.buyer-record-sub { font-size: 13px; color: var(--ink-soft); margin: 0 0 12px; line-height: 1.45; }
+.buyer-record-meta { margin-bottom: 12px; }
 .buyer-record-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 999px;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -1881,13 +1888,15 @@ async function deleteNote(noteId: string) {
 .pill--complete { background: #d1fae5; color: #1f7a66; border: 1px solid #a7f3d0; }
 .pill--partial { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 .pill--empty { background: #f1f5f9; color: var(--ink-soft); border: 1px solid #e2e8f0; }
-.buyer-record-progress { display: flex; align-items: center; gap: 8px; }
-.buyer-record-track { flex: 1; height: 5px; background: #eef0f6; border-radius: 999px; overflow: hidden; }
+.buyer-record-pill :deep(svg),
+.buyer-record-pill :deep(.iconify) { width: 13px; height: 13px; flex-shrink: 0; }
+.buyer-record-progress { display: flex; align-items: center; gap: 10px; }
+.buyer-record-track { flex: 1; height: 6px; background: #eef0f6; border-radius: 999px; overflow: hidden; }
 .buyer-record-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
 .fill--complete { background: linear-gradient(90deg, #16a34a, #34d399); }
 .fill--partial { background: linear-gradient(90deg, #f59e0b, #f5c44c); }
 .fill--empty { background: #e2e8f0; }
-.buyer-record-pct { font-size: 11px; font-weight: 800; color: var(--ink-soft); min-width: 32px; text-align: right; letter-spacing: -0.01em; }
+.buyer-record-pct { font-size: 13px; font-weight: 800; color: var(--ink-soft); min-width: 40px; text-align: right; letter-spacing: -0.01em; }
 
 /* ── Comparables ──────────────────────────────────────────────────── */
 .buyer-comparables-list {
@@ -1933,28 +1942,25 @@ async function deleteNote(noteId: string) {
 }
 .bp-side-title { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 4px; }
 .bp-side-sub { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 16px; line-height: 1.5; }
-.bp-pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 14px; }
+.bp-pd-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; }
 .bp-pd-item {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   min-width: 0;
 }
+/* Illustrated icons carry their own colour: shown big, straight on the
+   white card, with no tile or ring behind them. */
 .bp-pd-ic {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  /* Illustrated icons carry their own colour, so the tile stays neutral
-     instead of tinting them teal. */
-  background: #fff;
-  border: 1px solid rgba(0, 161, 154, 0.14);
+  width: 44px;
+  height: 44px;
   color: var(--teal);
   flex-shrink: 0;
 }
-.bp-pd-ic svg { width: 18px; height: 18px; }
-.bp-pd-ic-img { width: 26px; height: 26px; object-fit: contain; }
+.bp-pd-ic svg { width: 22px; height: 22px; }
+.bp-pd-ic-img { width: 44px; height: 44px; object-fit: contain; }
 .bp-pd-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .bp-pd-label {
   font-size: 9.5px;
@@ -1963,17 +1969,18 @@ async function deleteNote(noteId: string) {
   text-transform: uppercase;
   letter-spacing: 0.07em;
 }
-.bp-pd-value { font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.bp-pd-value { font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .bp-pd-chip {
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: #b45309;
   background: #fef3c7;
   border: 1px solid #fde68a;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 6px;
+  white-space: nowrap;
 }
 .bp-sc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .bp-sc-label { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
@@ -2198,6 +2205,19 @@ async function deleteNote(noteId: string) {
   .bp-hero-actions { flex-direction: column; align-items: stretch; }
   .buyer-pdf-row { padding: 14px; }
   .buyer-pdf-btn { width: 100%; justify-content: center; margin-left: 0; }
+}
+/* Small phones: the record card keeps its big illustration but trims it
+   and the padding a touch so the title still gets a comfortable line. */
+@media (max-width: 420px) {
+  .buyer-record-row { padding: 16px 16px 15px; gap: 12px; }
+  .buyer-record-icon,
+  .buyer-record-icon-img { width: 56px; height: 56px; }
+  .buyer-record-title { font-size: 16.5px; }
+}
+/* Very narrow: two property facts side by side leave the values a word per
+   line, so they stack one per row. */
+@media (max-width: 360px) {
+  .bp-pd-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
 }
 /* The search field's input keeps a ~150px intrinsic width; let it shrink so
    the filter button stays inside the card in narrow windows. */

@@ -128,6 +128,9 @@ const iconMap: Record<string, string> = {
   upload: '/op-icons/passportview/upload.svg',
   scan: '/op-icons/passportview/scan.svg',
   underReview: '/op-icons/passportview/steps/underReview.svg',
+  // Same desk, cropped to the artwork so it can be shown big without the
+  // transparent margin the SVG carries.
+  underReviewDesk: '/op-icons/passportview/steps/underReviewDesk.png',
   infoCircle: '/op-icons/passportview/steps/infoCircle.svg',
   expertIcon: '/op-icons/passportview/steps/expertIcon.svg',
   progressMan: '/op-icons/passportview/progressMan.svg',

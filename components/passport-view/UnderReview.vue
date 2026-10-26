@@ -1,30 +1,30 @@
 <template>
   <div class="expert">
-    <span class="ribbon"><span class="pulse"></span> Under Review</span>
-    <div class="expert-row">
-      <div class="expert-content">
-        <h3 class="expert-h3">{{ title }}</h3>
-        <p class="qcount">{{ description }}</p>
-        <span class="meta">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            width="12"
-            height="12"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          Minimum time: {{ minimumTime }}
-        </span>
-      </div>
+    <div class="expert-top">
       <div class="expert-avatar" aria-hidden="true">
-        <OPIcon name="underReview" class="w-[60px] h-[60px]" />
+        <OPIcon name="underReviewDesk" class="expert-avatar-img" />
       </div>
+      <span class="ribbon"><span class="pulse"></span> Under Review</span>
+    </div>
+    <div class="expert-content">
+      <h3 class="expert-h3">{{ title }}</h3>
+      <p class="qcount">{{ description }}</p>
+      <span class="meta">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          width="12"
+          height="12"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        Minimum time: {{ minimumTime }}
+      </span>
     </div>
     <button class="expert-cta" @click="$emit('viewProfile')">
       <svg
@@ -71,9 +71,18 @@ defineEmits(['viewProfile'])
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 20px;
-  padding: 18px;
+  padding: 20px;
   position: relative;
   overflow: hidden;
+}
+/* Illustration leads the card, big and on plain white; the status badge
+   sits opposite it, like the arrow on the section cards. */
+.expert-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 .ribbon {
   display: inline-flex;
@@ -85,7 +94,8 @@ defineEmits(['viewProfile'])
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  margin-bottom: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pulse {
   width: 6px;
@@ -100,50 +110,46 @@ defineEmits(['viewProfile'])
   70% { box-shadow: 0 0 0 8px rgba(20, 184, 166, 0); }
   100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
 }
-.expert-row {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
 .expert-content {
-  flex: 1;
   min-width: 0;
 }
 .expert-h3 {
-  margin: 0 0 4px;
+  margin: 0 0 5px;
   font-size: 16px;
   font-weight: 700;
   color: #0a0f2c;
   letter-spacing: -0.01em;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .qcount {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.45;
   color: #0f766e;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 .meta {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   color: #64748b;
   background: #f1f5f9;
-  padding: 6px 10px;
+  padding: 5px 10px;
   border-radius: 999px;
 }
 .expert-avatar {
-  width: 64px;
-  height: 64px;
-  display: grid;
-  place-items: center;
+  width: 84px;
   flex-shrink: 0;
 }
+.expert-avatar-img {
+  display: block;
+  width: 84px;
+  height: auto;
+}
 .expert-cta {
-  margin-top: 14px;
+  margin-top: 16px;
   display: flex;
   align-items: center;
   width: 100%;
@@ -163,6 +169,13 @@ defineEmits(['viewProfile'])
 .expert-cta:active {
   transform: scale(0.98);
 }
+@media (max-width: 420px) {
+  .expert {
+    padding: 16px;
+  }
+  .expert-avatar,
+  .expert-avatar-img {
+    width: 72px;
+  }
+}
 </style>
-
-
