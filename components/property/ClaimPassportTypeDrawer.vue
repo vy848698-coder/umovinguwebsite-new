@@ -28,7 +28,7 @@
               <div class="cpt-card-meta">For selling your home</div>
               <ul class="cpt-card-list">
                 <li>Full TA6 / TA10 / TA7 forms</li>
-                <li>18 sections — boundaries, deeds, alterations, services</li>
+                <li>18 sections: boundaries, deeds, alterations, services</li>
                 <li>Buyer-shareable digital passport</li>
               </ul>
             </div>
@@ -48,8 +48,8 @@
               <div class="cpt-card-title">Landlord passport</div>
               <div class="cpt-card-meta">For letting your property</div>
               <ul class="cpt-card-list">
-                <li>Compliance docs — Gas, EICR, EPC, alarms, Legionella</li>
-                <li>Tenancy — AST, deposit, Right-to-Rent, How-to-Rent</li>
+                <li>Compliance docs: Gas, EICR, EPC, alarms, Legionella</li>
+                <li>Tenancy: AST, deposit, Right to Rent, How to Rent</li>
                 <li>Tenant-shareable doc bundle</li>
               </ul>
             </div>
@@ -65,7 +65,7 @@
               <div class="cpt-toggle-content">
                 <div class="cpt-toggle-title">Is this an HMO?</div>
                 <div class="cpt-toggle-meta">
-                  House in Multiple Occupation — adds PAT testing & HMO licence sections
+                  House in Multiple Occupation. Adds PAT testing & HMO licence sections
                 </div>
               </div>
               <div class="cpt-toggle" :class="{ on: isHmo }" />
@@ -170,6 +170,14 @@ const confirm = () => {
   .cpt-handle { display: block; width: 36px; height: 4px; background: #d9dae0; border-radius: 100px; margin: 8px auto 0; }
 }
 @keyframes cpt-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+/* Big screens scale the 1366px design up (--wide-zoom); this sits on <body>,
+   outside the zoomed page, so the box zooms itself and divides its vh cap. */
+@media (min-width: 1367px) {
+  .cpt-modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(88vh / var(--wide-zoom, 1)), 720px);
+  }
+}
 .cpt-header { display: flex; align-items: center; padding: 12px 18px 10px; }
 .cpt-title { flex: 1; font-size: 16px; font-weight: 800; color: #0e2840; letter-spacing: -0.4px; }
 .cpt-close {
@@ -272,6 +280,12 @@ const confirm = () => {
   transition: transform 0.15s ease;
 }
 .cpt-card.active .cpt-card-dot { transform: scale(1); }
+/* Narrow phones: smaller passport art so the feature list keeps its width. */
+@media (max-width: 380px) {
+  .cpt-body { padding: 6px 14px 14px; }
+  .cpt-card { padding: 12px; gap: 10px; }
+  .cpt-card-icon, .cpt-card-passport { width: 38px; }
+}
 
 /* HMO toggle */
 .cpt-hmo { margin-top: 8px; }
