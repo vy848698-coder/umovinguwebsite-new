@@ -108,6 +108,13 @@ const emit = defineEmits<{
 const chosen = ref<PassportType | null>(null)
 const isHmo = ref(false)
 
+// Freeze the page behind while open, so only the sheet scrolls (two
+// scrollbars side by side on a short window otherwise).
+function lockPage(lock: boolean) {
+  if (typeof document === 'undefined') return
+  document.documentElement.style.overflow = lock ? 'hidden' : ''
+}
+
 watch(
   () => props.modelValue,
   (open) => {
@@ -115,8 +122,11 @@ watch(
       chosen.value = null
       isHmo.value = false
     }
+    lockPage(open)
   },
+  { immediate: true },
 )
+onBeforeUnmount(() => lockPage(false))
 
 const close = () => emit('update:modelValue', false)
 const confirm = () => {
@@ -188,7 +198,18 @@ const confirm = () => {
   display: flex; align-items: center; justify-content: center;
 }
 
-.cpt-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
+.cpt-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 18px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #cfd6dc transparent;
+}
+.cpt-body::-webkit-scrollbar { width: 6px; }
+.cpt-body::-webkit-scrollbar-thumb { background: #cfd6dc; border-radius: 99px; }
+.cpt-body::-webkit-scrollbar-track { background: transparent; }
 .cpt-intro {
   font-size: 12.5px;
   font-weight: 600;
@@ -280,11 +301,34 @@ const confirm = () => {
   transition: transform 0.15s ease;
 }
 .cpt-card.active .cpt-card-dot { transform: scale(1); }
-/* Narrow phones: smaller passport art so the feature list keeps its width. */
-@media (max-width: 380px) {
-  .cpt-body { padding: 6px 14px 14px; }
-  .cpt-card { padding: 12px; gap: 10px; }
-  .cpt-card-icon, .cpt-card-passport { width: 38px; }
+/* Small screens: passport art, title and tag share the top line and the
+   feature list runs the full card width beneath, instead of squeezing
+   into a narrow column beside the art (tall cards, forced scrolling). */
+@media (max-width: 640px) {
+  .cpt-body { padding: 4px 14px 12px; }
+  .cpt-intro { margin-bottom: 12px; }
+  .cpt-card {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 22px;
+    gap: 0 10px;
+    padding: 12px;
+  }
+  .cpt-card-body { display: contents; }
+  .cpt-card-icon { grid-column: 1; grid-row: 1 / span 2; }
+  /* Short enough to sit within the title + tag lines without pushing them apart. */
+  .cpt-card-icon { width: 28px; }
+  .cpt-card-passport { width: auto; height: 34px; }
+  .cpt-card-title { grid-column: 2; grid-row: 1; }
+  .cpt-card-meta { grid-column: 2; grid-row: 2; margin-bottom: 0; }
+  .cpt-card-tick { grid-column: 3; grid-row: 1; }
+  .cpt-card-list {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 10px;
+    padding: 10px 0 0;
+    border-top: 1px solid #eef1f0;
+  }
+  .cpt-modal { max-height: 92dvh; }
 }
 
 /* HMO toggle */
