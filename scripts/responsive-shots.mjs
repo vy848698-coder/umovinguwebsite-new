@@ -45,7 +45,7 @@ const DESKTOP = flags.includes('--desktop')
 const MOCK_BUYER = flags.includes('--mock-buyer')
 const MOCK_DASH = flags.includes('--mock-dash')
 const DASH_ROLE = process.env.DASH_ROLE || 'buy'
-const ORIGIN = 'http://localhost:3000'
+const ORIGIN = process.env.ORIGIN || 'http://localhost:3000'
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const PORT = 9333
 fs.mkdirSync(OUT, { recursive: true })

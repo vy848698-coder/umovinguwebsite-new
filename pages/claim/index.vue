@@ -32,7 +32,7 @@
         <p class="clw-kicker"><span class="clw-kicker-dot" />Claim your Passport</p>
         <h1>Claim your Property Passport</h1>
         <p class="clw-lede">
-          Find your property and we'll verify ownership via HM Land Registry —
+          Find your property and we'll verify ownership via HM Land Registry,
           then your Property Passport is yours to build and share.
         </p>
         <div class="clw-progress">
@@ -94,21 +94,21 @@
                 <span class="clw-step-num">2</span>
                 <div>
                   <div class="clw-step-h">Verify ownership</div>
-                  <p>We confirm you're the owner via HM Land Registry — securely.</p>
+                  <p>We securely confirm you're the owner via HM Land Registry.</p>
                 </div>
               </li>
             </ol>
             <div class="clw-trust">
-              <span class="clw-trust-item">🔒 Encrypted</span>
-              <span class="clw-trust-item">🏛️ HM Land Registry</span>
-              <span class="clw-trust-item">🚫 Never sold</span>
+              <span class="clw-trust-item"><Icon name="i-lucide-lock" />Encrypted</span>
+              <span class="clw-trust-item"><Icon name="i-lucide-landmark" />HM Land Registry</span>
+              <span class="clw-trust-item"><Icon name="i-lucide-ban" />Never sold</span>
             </div>
           </div>
         </aside>
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
   </div>
 </template>
@@ -149,6 +149,8 @@ const onBack = useGoBack('/dashboard')
   --line: #dbe7f5;
   --color-border: #e7ecf2;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   color: var(--navy);
   background: #f3f2ef;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
@@ -321,6 +323,7 @@ const onBack = useGoBack('/dashboard')
 
 /* ── Page head ────────────────────────────────────────────────────── */
 .clw-main {
+  flex: 1 0 auto;
   padding: 48px 0 60px;
 }
 
@@ -596,6 +599,9 @@ const onBack = useGoBack('/dashboard')
 }
 
 .clw-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11.5px;
   font-weight: 700;
   color: #4a5570;
@@ -605,6 +611,12 @@ const onBack = useGoBack('/dashboard')
   border-radius: 999px;
 }
 
+.clw-trust-item .iconify {
+  width: 13px;
+  height: 13px;
+  color: #00857f;
+}
+
 .cl-mobile-nav {
   display: none;
 }
@@ -612,7 +624,7 @@ const onBack = useGoBack('/dashboard')
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 980px) {
   .clw-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
 
@@ -656,6 +668,60 @@ const onBack = useGoBack('/dashboard')
 
   .cl-h2 {
     font-size: 23px;
+  }
+}
+
+/* Small phones: the brand, BETA tag and Back button no longer fit on one
+   row, so the nav tightens and drops the BETA tag. */
+@media (max-width: 460px) {
+  .hsw-nav-inner {
+    gap: 12px;
+  }
+
+  .hsw-brand {
+    font-size: 18px;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .hsw-brand-beta {
+    display: none;
+  }
+
+  .hsw-back {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .clw-main {
+    padding-top: 26px;
+  }
+
+  .clw-head h1 {
+    font-size: 28px;
+  }
+
+  .clw-lede {
+    font-size: 15.5px;
+  }
+
+  .clw-aside-card {
+    padding: 22px 18px;
+  }
+
+  .cl-h2 {
+    font-size: 21px;
+  }
+}
+
+/* ── Big screens (>1366px) ────────────────────────────────────────
+   The 1366px laptop layout is the design; wider monitors show that same
+   layout scaled up (--wide-zoom = width / 1366, set in nuxt.config.ts). */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  main.hsw-shell {
+    zoom: var(--wide-zoom, 1);
   }
 }
 
