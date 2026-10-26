@@ -170,11 +170,15 @@ const confirm = () => {
 .cpt-handle { display: none; }
 
 @media (max-width: 640px) {
-  .cpt-overlay { align-items: flex-end; padding: 0; }
+  /* Floats with a small gap on every side instead of touching the edges. */
+  .cpt-overlay {
+    align-items: flex-end;
+    padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+  }
   .cpt-modal {
     max-width: none;
-    border-radius: 24px 24px 0 0;
-    max-height: 92vh;
+    border-radius: 22px;
+    max-height: calc(100dvh - 20px);
     animation: cpt-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .cpt-handle { display: block; width: 36px; height: 4px; background: #d9dae0; border-radius: 100px; margin: 8px auto 0; }
@@ -328,7 +332,6 @@ const confirm = () => {
     padding: 10px 0 0;
     border-top: 1px solid #eef1f0;
   }
-  .cpt-modal { max-height: 92dvh; }
 }
 
 /* HMO toggle */
@@ -372,7 +375,7 @@ const confirm = () => {
 
 /* Footer */
 .cpt-footer {
-  padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+  padding: 12px 18px 14px;
   border-top: 1px solid #e8eceb;
   background: #fafaf8;
   display: flex;
