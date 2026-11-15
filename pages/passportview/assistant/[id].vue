@@ -39,10 +39,12 @@
             <Icon name="i-lucide-x" />
           </button>
           <div class="ua-top-mid">
-            <h1 class="ua-title">Building your Seller Passport</h1>
-            <p class="ua-top-sub">
-              {{ sectionTitle || 'Your passport' }}<template v-if="questions.length">
-                · {{ answeredCount }} of {{ questions.length }} answered</template>
+            <!-- On a phone the title and the line under it stay one line each:
+                 "Building your" and the section name (shown in the route just
+                 below) step aside there -->
+            <h1 class="ua-title"><span class="ua-title-lead">Building your </span>Seller Passport</h1>
+            <p class="ua-top-sub" :class="{ 'has-count': questions.length }">
+              <span class="ua-top-section">{{ sectionTitle || 'Your passport' }}</span><template v-if="questions.length"><span class="ua-top-sep"> · </span>{{ answeredCount }} of {{ questions.length }} answered</template>
             </p>
           </div>
           <div class="ua-top-end">
@@ -93,7 +95,7 @@
                 <div class="ua-caption-head">
                   <span class="ua-caption-who">
                     <Icon :name="voice.listening.value ? 'i-lucide-user-round' : 'i-lucide-bot'" />
-                    {{ voice.listening.value ? 'You' : 'UMU' }}
+                    <span class="ua-who-name">{{ voice.listening.value ? 'You' : 'UMU' }}</span>
                   </span>
                   <span class="ua-caption-status">
                     <span class="ua-status-dot" :class="`is-${statusTone}`" />
@@ -118,7 +120,7 @@
                     <i v-for="n in 5" :key="n" :style="{ '--i': n, height: barHeight(n) }" />
                   </span>
                 </p>
-                <p v-else class="ua-caption-text">
+                <p v-else ref="captionTextEl" class="ua-caption-text" :class="{ 'is-scrolled': captionScrolled }">
                   <span
                     v-for="(w, i) in captionLine.words"
                     :key="`${captionLine.text}:${i}`"
@@ -170,9 +172,9 @@
                   <span>Speed</span>
                   <input
                     type="range"
-                    min="0.8"
-                    max="1.12"
-                    step="0.04"
+                    :min="MIN_UMU_RATE"
+                    :max="MAX_UMU_RATE"
+                    :step="UMU_RATE_STEP"
                     :value="voice.rate.value"
                     aria-label="Speaking speed"
                     @input="(e) => voice.setRate(Number((e.target as HTMLInputElement).value))"
@@ -482,6 +484,7 @@ import { usePathways } from '~/composables/usePathways'
 import { usePassportAchievement } from '~/composables/usePassportAchievement'
 import { useCountUp } from '~/composables/useCountUp'
 import { useUmuVoice } from '~/composables/useUmuVoice'
+import { MIN_UMU_RATE, MAX_UMU_RATE, UMU_RATE_STEP } from '~/utils/umuVoices'
 import { understandAnswer, type Understanding } from '~/composables/useUmuUnderstand'
 import { normalizeQuestionType, isQuestionAnswerValid } from '~/utils/questionAnswer'
 import {
@@ -981,8 +984,23 @@ function segTitle(q: any, i: number) {
 }
 
 // Jump straight to any question, answered or not, to fill it or change it.
+// A tap while an answer is still saving used to be dropped, so going back
+// to the question before seemed to do nothing; now it waits for the save.
+let pendingJump: number | null = null
+watch(saving, (now) => {
+  if (now || pendingJump === null) return
+  const i = pendingJump
+  pendingJump = null
+  // A follow-up or the section's celebration opened meanwhile: keep it
+  if (phase.value === 'pathway' || showSectionComplete.value) return
+  nextTick(() => jumpTo(i))
+})
 function jumpTo(i: number) {
-  if (saving.value || phase.value === 'loading' || phase.value === 'error') return
+  if (phase.value === 'loading' || phase.value === 'error') return
+  if (saving.value) {
+    pendingJump = i
+    return
+  }
   activePathway.value = null
   phase.value = 'question'
   if (rt.currentQuestionIndex.value === i) presentQuestion()
@@ -1017,6 +1035,34 @@ function setPose(p: 'pointing' | 'celebrate', ms: number) {
 }
 
 const voice = useUmuVoice()
+
+// On a phone the bubble shows four lines at most (a long question filled
+// it to eight and pushed the card off the screen; the card below has the
+// whole question). It follows UMU as it speaks, keeping the word being
+// said in view.
+const captionTextEl = ref<HTMLElement | null>(null)
+const captionScrolled = ref(false)
+watch(
+  () => [captionLine.value.text, captionLine.value.said],
+  async ([, said], old) => {
+    await nextTick()
+    const box = captionTextEl.value
+    if (!box) return
+    if (!old || old[0] !== captionLine.value.text) box.scrollTop = 0
+    if (box.scrollHeight <= box.clientHeight + 1) {
+      captionScrolled.value = false
+      return
+    }
+    const words = box.querySelectorAll<HTMLElement>('.ua-w')
+    const word = words[Math.max(0, Math.min(words.length - 1, (said as number) - 1))]
+    if (!word) return
+    const lineH = word.offsetHeight || 20
+    // Keep the spoken word on the last visible line but one
+    const want = word.offsetTop - box.offsetTop + lineH * 2 - box.clientHeight
+    if (want > box.scrollTop) box.scrollTo({ top: want, behavior: 'smooth' })
+    captionScrolled.value = box.scrollTop > 0 || want > 0
+  },
+)
 const voiceMode = ref(false)
 
 const botState = computed(() => {
@@ -1152,13 +1198,15 @@ function repeatQuestion() {
   presentQuestion()
 }
 
-// Loads the next question's voice while this one is answered, so UMU
-// starts speaking it the moment this answer is saved.
+// Loads the next questions' voice while this one is answered, so UMU
+// starts speaking the moment this answer is saved, or a skip lands.
 function prefetchNextQuestion() {
-  const next: any = questions.value[rt.currentQuestionIndex.value + 1]
-  if (!next) return
-  const text = askedText(next).replace(/\?{2,}/g, '?')
-  if (text) voice.prefetch(joinSay(text, guideFor(next, normalizeQuestionType(next)).say))
+  for (const step of [1, 2]) {
+    const next: any = questions.value[rt.currentQuestionIndex.value + step]
+    if (!next) return
+    const text = askedText(next).replace(/\?{2,}/g, '?')
+    if (text) voice.prefetch(joinSay(text, guideFor(next, normalizeQuestionType(next)).say))
+  }
 }
 
 // UMU's short replies, loaded once so they never keep the seller waiting
@@ -1789,9 +1837,22 @@ const isQuestionItself = (t: Target) =>
 
 // What UMU says to ask for one box or choice. "voice" when the seller
 // answers by speaking, "tap" when they tap and type.
+// What UMU asks for, after "fill in" or "tell me": "the sale price", but a
+// label that is already a phrase goes in as it is, so UMU never says "fill
+// in the your comments about this item here" or "tell me the this is about
+// how parking works".
+function theLabel(label: string) {
+  // "MPAN number" keeps its capitals, so the voice still spells it out
+  const l = (/^[A-Z]{2,}\b/.test(label) ? label : label.charAt(0).toLowerCase() + label.slice(1))
+    .replace(/^this (is|question is) about\s+/i, '')
+    .replace(/\s+here\.?$/i, '')
+    .replace(/\.$/, '')
+  return /^(your|my|his|her|their|its|how|what|when|where|which|whether|who|why|if|any|all|each|every|a|an|the)\b/i.test(l) ? l : `the ${l}`
+}
+
 function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice') {
   const sameAsQuestion = isQuestionItself(t)
-  const spokenLabel = t.label.charAt(0).toLowerCase() + t.label.slice(1)
+  const spokenLabel = theLabel(t.label)
   if (t.kind === 'confirm') {
     return mode === 'voice'
       ? `I found this address for your property: ${t.address}. Is that right? Say yes, or say no to change it.`
@@ -1822,8 +1883,8 @@ function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice'
   }
   if (t.kind === 'counter') {
     return mode === 'tap'
-      ? `${first ? 'Tap' : 'Next, tap'} plus to set the ${spokenLabel}.`
-      : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+      ? `${first ? 'Tap' : 'Next, tap'} plus to set ${spokenLabel}.`
+      : `${first ? 'Tell' : 'Next, tell'} me ${spokenLabel}.`
   }
   // An excluded Fixtures item: the price is optional
   if (t.label === SALE_PRICE) {
@@ -1834,10 +1895,10 @@ function targetPrompt(t: Target, first: boolean, mode: 'voice' | 'tap' = 'voice'
   if (mode === 'tap') {
     if (sameAsQuestion) return 'Type your answer in the box.'
     return t.addOnEnter
-      ? `${first ? 'Please add' : 'Next, please add'} the ${spokenLabel}. Press enter after each one.`
-      : `${first ? 'Please fill in' : 'Next, please fill in'} the ${spokenLabel}.`
+      ? `${first ? 'Please add' : 'Next, please add'} ${spokenLabel}. Press enter after each one.`
+      : `${first ? 'Please fill in' : 'Next, please fill in'} ${spokenLabel}.`
   }
-  return first && sameAsQuestion ? "Go ahead, I'm listening." : `${first ? 'Tell' : 'Next, tell'} me the ${spokenLabel}.`
+  return first && sameAsQuestion ? "Go ahead, I'm listening." : `${first ? 'Tell' : 'Next, tell'} me ${spokenLabel}.`
 }
 
 // The words on the footer while UMU waits on a box
@@ -1848,9 +1909,9 @@ function targetLabel(t: Target, mode: 'voice' | 'tap') {
   if (isRange(t.el) && mode === 'tap') return t.label === 'answer' ? 'Move the slider' : `${t.label}? Move the slider`
   if (t.label === 'answer') return mode === 'voice' ? 'Say your answer' : 'Type your answer'
   if (t.label === SALE_PRICE) return mode === 'voice' ? 'Your price, or say save' : 'Your price, if you would sell it'
-  if (t.kind === 'counter') return mode === 'voice' ? `Say the ${t.label}` : `Tap plus to set the ${t.label}`
-  const label = /^[A-Z][a-z]/.test(t.label) ? t.label.charAt(0).toLowerCase() + t.label.slice(1) : t.label
-  return mode === 'voice' ? `Tell me the ${label}` : `Fill in the ${label}`
+  if (t.kind === 'counter') return mode === 'voice' ? `Say ${theLabel(t.label)}` : `Tap plus to set ${theLabel(t.label)}`
+  const label = /^[A-Z][a-z]/.test(t.label) ? theLabel(t.label) : `the ${t.label}`
+  return mode === 'voice' ? `Tell me ${label}` : `Fill in ${label}`
 }
 
 async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome> {
@@ -1903,7 +1964,7 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
     // "I don't know" picks the Not known answer, where the question has one
     const unknown = t.kind === 'choice' && isNotSure(said) ? matchOption(said, t.options) : null
     if (unknown) {
-      ack = `You selected ${optionSaid(unknown.label)}.`
+      ack = selectedLine([optionSaid(unknown.label)])
       unknown.el.click()
       return 'next'
     }
@@ -1934,14 +1995,14 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
             o.el.click()
             await nextTick()
           }
-          ack = `You selected ${andList(picks.map((o) => optionSaid(o.label)))}.`
+          ack = selectedLine(picks.map((o) => optionSaid(o.label)))
           return 'next'
         }
       }
       const opt = matchOption([said, ...voice.alternatives.value], t.options)
       if (opt) {
         opt.el.click()
-        ack = `You selected ${optionSaid(opt.label)}.`
+        ack = selectedLine([optionSaid(opt.label)])
         return 'next'
       }
       const meant = await askUmu(t, said)
@@ -1949,7 +2010,7 @@ async function askTarget(t: Target, id: number, first: boolean): Promise<Outcome
       const picked = meant?.option ? t.options.find((o) => o.label.trim() === meant.option) : null
       if (picked) {
         picked.el.click()
-        ack = `You selected ${optionSaid(picked.label)}.`
+        ack = selectedLine([optionSaid(picked.label)])
         return 'next'
       }
       if (meant?.intent === 'not_sure' || meant?.intent === 'skip') {
@@ -2129,7 +2190,7 @@ async function runVoiceAnswer(id: number) {
           }
         }
         opt.el.click()
-        ack = `You selected ${optionSaid(opt.label)}.`
+        ack = selectedLine([optionSaid(opt.label)])
       }
       if (current.value?.id !== q.id) return
     }
@@ -2415,7 +2476,7 @@ function guideAck(t: Target, before: string | undefined) {
     const picked = now ? now.split(' | ') : []
     const added = picked.filter((x) => !was.includes(x))
     const removed = was.filter((x) => !picked.includes(x))
-    if (added.length) return `You selected ${andList(added)}.`
+    if (added.length) return selectedLine(added)
     if (removed.length) return `You removed ${andList(removed)}.`
     return ''
   }
@@ -2432,7 +2493,7 @@ function prefetchGuide(mode: 'voice' | 'tap') {
   const lines = new Set<string>()
   // The replies to the open boxes first: those are needed soonest
   for (const t of all) {
-    if (t.kind === 'choice') for (const o of t.options) lines.add(`You selected ${optionSaid(o.label)}.`)
+    if (t.kind === 'choice') for (const o of t.options) lines.add(selectedLine([optionSaid(o.label)]))
     if (!isFilled(t)) lines.add(targetPrompt(t, false, mode))
   }
   GUIDE_LINES.forEach((l) => lines.add(l))
@@ -2738,7 +2799,16 @@ function heardLine(q: any, value: any) {
     const v = first ? value[first.partKey] : undefined
     label = first ? labelOf(first.options, v && typeof v === 'object' ? v.value : v) : ''
   }
-  return label ? `You selected ${optionSaid(label)}.` : 'Got it.'
+  return label ? selectedLine([optionSaid(label)]) : 'Got it.'
+}
+
+// "You selected No." for the seller's answer. A choice named like an
+// instruction ("Select year", "Enter amount") is not an answer to say back
+// ("You selected Select year."), so UMU just says "Got it." for it.
+const INSTRUCTION_LABEL = /^(select|enter|choose|please|add|type)\b/i
+function selectedLine(said: string[]) {
+  const answers = said.map((x) => (x || '').trim()).filter((x) => x && !INSTRUCTION_LABEL.test(x))
+  return answers.length ? `You selected ${andList(answers)}.` : 'Got it.'
 }
 // Playing while the answer saves; the next question waits for it to finish.
 // heardRun counts answers, so a wait can tell a newer one has come in.
@@ -3327,6 +3397,7 @@ onBeforeUnmount(() => {
 }
 .ua-caption-who :deep(svg),
 .ua-caption-who > span { width: 15px; height: 15px; }
+.ua-caption-who > .ua-who-name { width: auto; height: auto; }
 .ua-caption-text {
   margin: 0;
   font-size: 16px;
@@ -3901,7 +3972,64 @@ onBeforeUnmount(() => {
   .hsw-brand-beta { display: none; }
   .hsw-nav-inner { gap: 10px; }
   .ua-title { font-size: 14px; }
-  .ua-bot { width: 88px; }
+  .ua-bot { width: 76px; }
+}
+
+/* ── Phone fit (2026-10-22): measured at 320, 360 and 390 ────────────
+   The header used four lines, the speech bubble refused to shrink and
+   pushed the robot off the left edge, Skip for now wrapped, and the
+   section-complete card kept a tall empty gap. */
+@media (max-width: 640px) {
+  .ua-title,
+  .ua-top-sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* The bubble shrinks to the space it has, so the robot keeps its own */
+  .ua-caption { min-width: 0; }
+  .ua-caption-head { flex-wrap: wrap; row-gap: 4px; }
+  .ua-caption-status { min-width: 0; white-space: normal; }
+  .ua-bot { flex-shrink: 0; }
+  .ua-foot-actions { gap: 6px; }
+  .ua-skip { flex: 0 0 auto !important; padding: 0 12px; white-space: nowrap; }
+  .ua-done { min-height: 0; justify-content: flex-start; padding: 6px 0 4px; }
+  /* Four lines at most; the watcher keeps the spoken word in view */
+  .ua-caption-text { max-height: 6em; overflow: hidden; }
+  .ua-caption-text.is-scrolled {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.2em);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 1.2em);
+  }
+  /* A long section name ("MANAGEMENT AND RESPONSIBILITIES") pushed the
+     "Question 43 of 52" pill out of the card; the pill now wraps under it */
+  .ua-sheet-meta { flex-wrap: wrap; row-gap: 6px; }
+  .ua-kicker { min-width: 0; }
+  /* A long button label wraps rather than running off the card */
+  .ua-save { min-width: 0; white-space: normal; text-align: center; line-height: 1.2; }
+}
+/* Smallest phones: "UMU is speaking" broke over two lines in the bubble */
+@media (max-width: 360px) {
+  .ua-caption-status { font-size: 11px; gap: 5px; }
+  .ua-caption-head { gap: 6px; }
+}
+/* Narrow phones: "Save and continue" ran past the card beside Skip for now;
+   the main action now takes the full width, with Skip under it */
+@media (max-width: 420px) {
+  .ua-foot-actions { flex-direction: column-reverse; align-items: stretch; gap: 4px; }
+  /* flex: 0 0 auto, not the row's flex: 1: in a column a zero basis
+     squashed Save and continue to a sliver */
+  .ua-foot-actions > * { flex: 0 0 auto; width: 100%; }
+  .ua-save { min-height: 46px; height: auto; padding-top: 10px; padding-bottom: 10px; }
+  .ua-skip { height: 40px; }
+}
+@media (max-width: 440px) {
+  /* "UMU is speaking" says who already; the name kept the bubble's top
+     line from fitting, so only the robot icon stays in front of it */
+  .ua-caption:not(.is-you) .ua-who-name { display: none; }
+  .ua-caption-head { flex-wrap: nowrap; }
+  .ua-title-lead,
+  .ua-top-sub.has-count .ua-top-section,
+  .ua-top-sep { display: none; }
 }
 
 /* ── Big screens ──────────────────────────────────────────────────────

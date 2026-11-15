@@ -1,16 +1,19 @@
 // UMU's voice. POST { text, voice, rate } → audio/mpeg. Needs the seller's
 // sign-in token (Authorization: Bearer), and is rate limited per seller.
 //
-// Uses Microsoft Edge's read-aloud service: the same neural voices as Azure,
-// free and without a key. It is unofficial and can change without notice,
-// so the page falls back to the browser's own voice whenever this fails.
+// Uses Microsoft Edge's read-aloud service (server/utils/edgeVoice.ts). Most
+// of what UMU says is pre-recorded (utils/umuVoiceClips.ts) and never comes
+// here; this makes the rest. If it fails, the page falls back to the
+// browser's own voice for that sentence.
+//
+// In development, UMU_VOICE_LOG=<file> adds every new default-voice line to
+// that file, so scripts/build-umu-voice.ts can pre-record it.
 
-import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts'
-import { UMU_VOICES, MIN_UMU_RATE, MAX_UMU_RATE } from '../../utils/umuVoices'
+import { appendFile } from 'node:fs/promises'
+import { UMU_VOICES, MIN_UMU_RATE, MAX_UMU_RATE, DEFAULT_UMU_VOICE, DEFAULT_UMU_RATE } from '../../utils/umuVoices'
 
 // UMU speaks a sentence or two per request; this caps abuse of the endpoint.
 const MAX_CHARS = 600
-const TIMEOUT_MS = 15000
 
 // Only signed-in sellers can use it, and each one only so often. UMU loads
 // every line it might say next (the answer options, the follow-up prompts),
@@ -44,13 +47,14 @@ export default defineEventHandler(async (event) => {
     throttleUmuUser(event, userId, 'tts-new-hour', NEW_SPEECH_PER_HOUR, 3_600_000)
     try {
       // Edge drops a connection now and then, so one retry before giving up
-      bytes = await edgeSlot(() => edge(voice, text, rate).catch(() => edge(voice, text, rate)))
+      bytes = await edgeSlot(() => edgeSpeak(voice, text, rate).catch(() => edgeSpeak(voice, text, rate)))
     } catch (err) {
       console.error('[umu-tts]', voice, (err as Error).message)
       throw createError({ statusCode: 502, statusMessage: 'Voice service failed' })
     }
     if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!)
     cache.set(key, bytes)
+    logLine(voice, rate, text)
   }
 
   setResponseHeaders(event, {
@@ -78,32 +82,12 @@ async function edgeSlot<T>(fn: () => Promise<T>) {
   }
 }
 
-async function edge(voice: string, text: string, rate: number) {
-  const tts = new MsEdgeTTS()
-  try {
-    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3)
-    const percent = Math.round((rate - 1) * 100)
-    const { audioStream } = tts.toStream(escapeXml(text), { rate: `${percent >= 0 ? '+' : ''}${percent}%` })
-    const read = (async () => {
-      const chunks: Buffer[] = []
-      for await (const c of audioStream) chunks.push(c as Buffer)
-      return Buffer.concat(chunks)
-    })()
-    const bytes = await withTimeout(read, 'Edge voice timed out')
-    if (!bytes.length) throw new Error('Edge returned no audio')
-    return bytes
-  } finally {
-    tts.close()
-  }
-}
-
-const escapeXml = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
-
-function withTimeout<T>(p: Promise<T>, message: string) {
-  let timer: ReturnType<typeof setTimeout>
-  return Promise.race([
-    p,
-    new Promise<never>((_, reject) => (timer = setTimeout(() => reject(new Error(message)), TIMEOUT_MS))),
-  ]).finally(() => clearTimeout(timer))
+// Development only: collects the lines UMU still makes live
+const logged = new Set<string>()
+function logLine(voice: string, rate: number, text: string) {
+  const file = process.env.UMU_VOICE_LOG
+  if (!file || process.env.NODE_ENV === 'production') return
+  if (voice !== DEFAULT_UMU_VOICE || rate !== DEFAULT_UMU_RATE || logged.has(text)) return
+  logged.add(text)
+  appendFile(file, text + '\n').catch(() => {})
 }

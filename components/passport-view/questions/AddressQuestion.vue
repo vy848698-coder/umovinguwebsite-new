@@ -262,11 +262,17 @@ watch(knownAddress, syncAnswer)
 }
 .text-field {
   flex: 1;
+  /* A text box keeps about 20 characters' width unless told it may shrink,
+     which pushed Find URN past the card on a small phone */
+  min-width: 0;
+  text-overflow: ellipsis;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
 }
 .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
   padding: 8px 12px;
   border-radius: 8px;
   background: #00a19a;

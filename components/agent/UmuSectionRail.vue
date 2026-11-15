@@ -7,7 +7,7 @@
        those, or "See all", show every section in the same row (scrolling
        sideways when there are many), so nothing ever covers the page.
        Any stop can be tapped, in any order. -->
-  <nav class="usr" :class="{ 'is-all': showAll }" :aria-label="ariaLabel">
+  <nav ref="navEl" class="usr" :class="{ 'is-all': showAll }" :aria-label="ariaLabel">
     <div class="usr-head">
       <p class="usr-label">{{ heading }}</p>
       <div class="usr-head-end">
@@ -153,17 +153,21 @@ const curIndex = computed(() => {
 })
 const doneCount = computed(() => props.sections.filter((s) => s.done).length)
 
-// Two stops either side of the current one, one on a phone. At either end
-// of the list the window slides so it still shows five (or three).
+// Two stops either side of the current one, one where the rail is narrow
+// (a phone, or a narrow card). At either end of the list the window slides
+// so it still shows five (or three). Goes by the rail's own width, like its
+// styles, since it doesn't always span the screen.
+const navEl = ref<HTMLElement | null>(null)
 const narrow = ref(false)
-let mq: MediaQueryList | null = null
-const onMq = () => (narrow.value = !!mq?.matches)
+let ro: ResizeObserver | null = null
 onMounted(() => {
-  mq = window.matchMedia('(max-width: 640px)')
-  onMq()
-  mq.addEventListener('change', onMq)
+  const el = navEl.value
+  if (!el) return
+  narrow.value = el.clientWidth < 620
+  ro = new ResizeObserver(([entry]) => (narrow.value = entry.contentRect.width < 620))
+  ro.observe(el)
 })
-onBeforeUnmount(() => mq?.removeEventListener('change', onMq))
+onBeforeUnmount(() => ro?.disconnect())
 
 const showAll = ref(false)
 
@@ -263,6 +267,15 @@ function pick(id: string) {
   --usr-node: 46px;
   --usr-node-y: calc(10px + var(--usr-node) / 2);
   min-width: 0;
+  container: usr / inline-size;
+}
+/* Smaller nodes on a phone (a container can't restyle itself, so this
+   one still goes by the screen) */
+@media (max-width: 640px) {
+  .usr { --usr-node: 40px; }
+}
+@media (max-width: 400px) {
+  .usr { --usr-node: 36px; }
 }
 
 .usr-head {
@@ -466,14 +479,17 @@ function pick(id: string) {
 .usr-title {
   display: -webkit-box;
   overflow: hidden;
-  -webkit-line-clamp: 2;
+  /* Three lines, so "Rights and Informal Arrangements" fits whole on a
+     tablet's five-stop route; words break between themselves, not inside */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   max-width: 100%;
   margin-top: 3px;
   font-size: 13.5px;
   font-weight: 800;
   line-height: 1.25;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  hyphens: auto;
 }
 .usr-meta {
   max-width: 100%;
@@ -526,9 +542,11 @@ function pick(id: string) {
   .usr-stub-node { transition: none; }
 }
 
-/* Phone: one stop either side, smaller nodes, the heading above the count */
-@media (max-width: 640px) {
-  .usr { --usr-node: 40px; }
+/* Small widths. These go by the rail's own width, not the screen's: the
+   same rail sits full width in the assistant but inside a padded card on
+   the passport page, where screen-width rules let "Occupiers" clip and
+   "Left to do" wrap. */
+@container usr (max-width: 620px) {
   .usr-head { flex-direction: column; align-items: flex-start; gap: 6px; }
   .usr-head-end { width: 100%; justify-content: space-between; }
   .usr-stub { flex-basis: 44px; }
@@ -536,7 +554,62 @@ function pick(id: string) {
   .usr-node-ic { width: 24px; height: 24px; }
   .usr-title { font-size: 12.5px; }
   .usr-meta { font-size: 11px; }
-  .usr-kicker { font-size: 9.5px; letter-spacing: 0.05em; }
   .usr.is-all .usr-stop { min-width: 104px; }
+  /* Labels like "Left to do" and "Pick up here" were wider than their stop
+     and ran into the next one; they now fit, and wrap rather than spill */
+  .usr-kicker {
+    max-width: 100%;
+    gap: 3px;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    white-space: normal;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .usr-kicker-ic { width: 10px; height: 10px; flex-shrink: 0; }
+  /* Titles break between words ("Occu-piers" at worst), never "Occupier s",
+     and a longer one gets a third line rather than an ellipsis */
+  .usr-title { overflow-wrap: normal; word-break: normal; hyphens: auto; -webkit-line-clamp: 3; }
+  /* "2 questions left" wraps under itself rather than ending in "..." */
+  .usr-meta { white-space: normal; text-overflow: clip; line-height: 1.2; }
+  /* The current stop gets a little more room than its neighbours */
+  .usr-stop.is-current { flex-grow: 1.2; }
+}
+
+@container usr (max-width: 380px) {
+  .usr-stub { flex-basis: 34px; }
+  .usr-stub-node { width: 28px; height: 28px; font-size: 11px; }
+  /* Keeps the smaller circle centred on the line */
+  .usr-stub-btn { padding-top: calc(var(--usr-node-y) - 14px); }
+  .usr-stub::before { right: calc(50% + 14px); }
+  .usr-stub::after { left: calc(50% + 14px); }
+  .usr-stub-text { font-size: 10px; }
+  .usr-btn { padding: 8px 3px; }
+  .usr-node-ic { width: 22px; height: 22px; }
+  .usr-kicker { font-size: 9px; letter-spacing: 0.03em; }
+  /* The label's colour already marks it; the icon made "Left to do" wrap */
+  .usr-kicker-ic { display: none; }
+  .usr-title { font-size: 12px; }
+  /* "Section 1 of 17 · 0 complete" broke after the 0 on the passport card */
+  .usr-head-end { gap: 8px; }
+  .usr-count { font-size: 12px; white-space: nowrap; }
+  .usr-all { height: 28px; padding: 0 10px; gap: 4px; font-size: 12px; }
+  .usr-all-ic { width: 13px; height: 13px; }
+}
+
+/* Narrowest (a small phone, or the passport card on one): the "+9" and
+   "+6" stubs step aside, since See all opens the same sections, and the
+   three stops share the whole width */
+@container usr (max-width: 330px) {
+  .usr-stub { display: none; }
+  /* Equal stops and a smaller title, so a long one-word name
+     ("Environmental") fits whole, and a long name gets a fourth line
+     rather than an ellipsis ("Rights and Informal Arrangements") */
+  .usr-stop.is-current { flex-grow: 1; }
+  .usr-btn { padding-left: 2px; padding-right: 2px; }
+  .usr-title { font-size: 11px; -webkit-line-clamp: 4; }
+  .usr-count { font-size: 11.5px; }
+  .usr-count-sep { margin: 0 3px; }
 }
 </style>

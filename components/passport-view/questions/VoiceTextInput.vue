@@ -1,11 +1,11 @@
 <template>
   <div class="voice-input-container">
-    <div class="voice-input-row">
+    <div ref="rowEl" class="voice-input-row">
       <input
         v-model="inputText"
         class="voice-input-field"
         type="text"
-        :placeholder="placeholder"
+        :placeholder="shownPlaceholder"
         @keydown.enter.prevent="submit"
         @input="onInput"
        :aria-label="placeholder" />
@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
 
 const props = defineProps({
   value: { type: String, default: '' },
@@ -70,6 +70,23 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update', 'submit'])
+
+// On a small phone the box is too narrow for the full prompt ("Start typing
+// or use voic..."), so the default one shortens there; the label read out
+// to screen readers stays whole.
+const DEFAULT_PLACEHOLDER = 'Start typing or use voice...'
+const rowEl = ref(null)
+const narrowRow = ref(false)
+let rowObserver = null
+onMounted(() => {
+  if (!rowEl.value || typeof ResizeObserver === 'undefined') return
+  rowObserver = new ResizeObserver(([entry]) => (narrowRow.value = entry.contentRect.width < 300))
+  rowObserver.observe(rowEl.value)
+})
+onBeforeUnmount(() => rowObserver?.disconnect())
+const shownPlaceholder = computed(() =>
+  narrowRow.value && props.placeholder === DEFAULT_PLACEHOLDER ? 'Type or speak...' : props.placeholder,
+)
 
 const inputText = ref(props.value || '')
 const isRecording = ref(false)
@@ -189,6 +206,10 @@ onUnmounted(() => {
 
 .voice-input-field {
   flex: 1;
+  /* A text box won't shrink below about 20 characters on its own, which
+     pushed the mic and send buttons off a small phone's screen */
+  min-width: 0;
+  text-overflow: ellipsis;
   border: none;
   padding: 10px 12px;
   outline: none;

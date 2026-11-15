@@ -31,7 +31,11 @@
 
     <main class="hsw-shell claim-main">
       <!-- ── Desktop page header (title + progress span the canvas) ── -->
-      <div v-if="!isFullscreenStep" class="claim-head">
+      <div
+        v-if="!isFullscreenStep"
+        class="claim-head"
+        :class="{ 'claim-head--single': !hasAside }"
+      >
         <button class="cl-back" @click="onBack" aria-label="Back">‹</button>
         <div class="claim-head-text">
           <div class="claim-head-title">{{ topbarTitle }}</div>
@@ -44,13 +48,16 @@
 
       <div
         class="claim-layout"
-        :class="{ 'claim-layout--full': isFullscreenStep }"
+        :class="{
+          'claim-layout--full': isFullscreenStep,
+          'claim-layout--single': !isFullscreenStep && !hasAside,
+        }"
       >
         <section class="claim-panel">
 
     <!-- ════════════════════════════ SEARCH ════════════════════════════ -->
     <div v-if="step === 'search'" class="cl-screen">
-      <div class="cl-icon-square">🏠</div>
+      <div class="cl-icon-square"><img src="/dashboard-art/searchHouse.png" alt="" /></div>
       <h1 class="cl-h2 cl-center">Which property are you claiming?</h1>
       <p class="cl-body cl-center cl-mb-lg">
         Enter your postcode and select your address. We'll verify ownership via
@@ -68,7 +75,7 @@
 
       <div v-if="selectedProperty" class="cl-sel-card">
         <div class="cl-sel-eyebrow">Selected address</div>
-        <div class="cl-sel-line1">{{ selectedProperty.addressLine1 || '—' }}</div>
+        <div class="cl-sel-line1">{{ selectedProperty.addressLine1 || 'Address not available' }}</div>
         <div class="cl-sel-line2">
           {{ [selectedProperty.city, selectedProperty.postcode].filter(Boolean).join(', ') }}
         </div>
@@ -97,9 +104,9 @@
         <div class="cl-navy-glow" />
         <img class="cl-navy-img" src="/dashboard-art/searchHouse-left.png" alt="" />
         <div class="cl-navy-eyebrow">Found on Land Registry</div>
-        <div class="cl-navy-addr1">{{ selectedProperty?.addressLine1 || '—' }}</div>
+        <div class="cl-navy-addr1">{{ selectedProperty?.addressLine1 || 'Address not available' }}</div>
         <div class="cl-navy-addr2">
-          {{ [selectedProperty?.city, selectedProperty?.postcode].filter(Boolean).join(', ') || '—' }}
+          {{ [selectedProperty?.city, selectedProperty?.postcode].filter(Boolean).join(', ') }}
         </div>
         <div class="cl-tile-grid">
           <div class="cl-tile">
@@ -233,7 +240,7 @@
       <h1 class="cl-h1">Before we build your Passport</h1>
       <p class="cl-body cl-mb-lg">
         We need to confirm who you are and that you own the property. Takes
-        around 2 minutes — done once only.
+        around 2 minutes and is done once only.
       </p>
 
       <div class="cl-card cl-text-l cl-mb-sm">
@@ -257,7 +264,7 @@
             <div class="cl-step-ic"><img src="/build/shield.png" alt="" /></div>
             <div>
               <div class="cl-step-t">AML screening</div>
-              <div class="cl-step-s">Automatic check — takes seconds</div>
+              <div class="cl-step-s">Automatic check, takes seconds</div>
             </div>
           </div>
         </div>
@@ -269,7 +276,7 @@
           <div>
             <div class="cl-pale-t">Usually under 2 minutes</div>
             <div class="cl-pale-s">
-              Powered by Persona — used by major UK fintechs.
+              Powered by Persona, used by major UK fintechs.
             </div>
           </div>
         </div>
@@ -288,7 +295,9 @@
 
       <!-- Polling state — shown after the user opens the Persona hosted flow -->
       <div v-if="personaPolling || personaInquiryId" class="cl-info-pale" style="margin-top: 14px;">
-        <div class="cl-info-ic">{{ personaPolling ? '⏳' : '👋' }}</div>
+        <div class="cl-info-ic">
+          <Icon :name="personaPolling ? 'i-lucide-hourglass' : 'i-lucide-hand'" />
+        </div>
         <div class="cl-info-body">
           <template v-if="personaPolling">
             Verification is open in a new tab. We'll continue automatically as
@@ -399,7 +408,7 @@
             class="cl-live-ring"
           />
         </svg>
-        <div class="cl-live-inner">🤳</div>
+        <div class="cl-live-inner"><Icon name="i-lucide-scan-face" /></div>
       </div>
 
       <h1 class="cl-h1">Quick selfie check</h1>
@@ -419,7 +428,7 @@
           </div>
           <div class="cl-num-row">
             <div class="cl-num">3</div>
-            Hold still — we'll capture automatically
+            Hold still and we'll capture automatically
           </div>
         </div>
       </div>
@@ -427,7 +436,7 @@
 
     <!-- ════════════════════════════ KYC AML ════════════════════════════ -->
     <div v-else-if="step === 'kyc-aml'" class="cl-screen cl-center-col">
-      <div class="cl-icon-square cl-icon-lg">🛡️</div>
+      <div class="cl-icon-square cl-icon-lg"><img src="/build/shield.png" alt="" /></div>
       <h1 class="cl-h1">Almost there</h1>
       <p class="cl-body cl-mb-lg">
         Automatic check against sanctions lists and PEP registers. Happens
@@ -453,7 +462,7 @@
 
       <div class="cl-card-pale cl-text-l">
         <div class="cl-pale-row">
-          <div class="cl-pale-ic-sm">🔒</div>
+          <div class="cl-pale-ic-sm"><Icon name="i-lucide-lock" /></div>
           <div class="cl-pale-s">
             AML checks are required by UK regulations. Data processed securely.
           </div>
@@ -492,7 +501,7 @@
     <div v-else-if="step === 'lr-searching'" class="cl-screen cl-center-full">
       <div class="cl-lr-pulse-wrap">
         <div class="cl-lr-pulse" />
-        <div class="cl-lr-inner">🏛️</div>
+        <div class="cl-lr-inner"><Icon name="i-lucide-landmark" /></div>
       </div>
       <h1 class="cl-h1 cl-center">Searching Land Registry</h1>
       <p class="cl-body cl-center cl-mb-lg">
@@ -540,7 +549,7 @@
     <!-- ════════════════════════════ LR FAILED ════════════════════════════ -->
     <div v-else-if="step === 'lr-failed'" class="cl-screen cl-center-col">
       <div class="cl-lr-pulse-wrap">
-        <div class="cl-lr-inner" style="background: #fef2f2; color: #b91c1c">⚠️</div>
+        <div class="cl-lr-inner" style="background: #fef2f2; color: #b91c1c"><Icon name="i-lucide-triangle-alert" /></div>
       </div>
       <h1 class="cl-h1" style="text-align: center">Ownership not confirmed</h1>
       <p class="cl-body" style="text-align: center; max-width: 320px">
@@ -575,11 +584,11 @@
         </div>
       </div>
 
-      <div class="cl-w-full" style="max-width: 360px; display: flex; gap: 8px">
-        <button class="cl-btn-ghost" style="flex: 1" @click="step = 'search'">
+      <div class="cl-w-full cl-lrf-actions" style="max-width: 360px">
+        <button class="cl-btn-ghost" @click="step = 'search'">
           Try another property
         </button>
-        <button class="cl-btn-brand" style="flex: 1" @click="runLrSearch()">
+        <button class="cl-btn-brand" @click="runLrSearch()">
           Retry
         </button>
       </div>
@@ -643,7 +652,7 @@
         <div class="cl-pale-row">
           <div class="cl-big-tick"><img src="/build/maxineShield.png" alt="" /></div>
           <div>
-            <div class="cl-pale-t">{{ proprietorDisplay }} — confirmed</div>
+            <div class="cl-pale-t">{{ proprietorDisplay }} confirmed</div>
             <div class="cl-pale-s">
               Your KYC-verified name matches the registered proprietor. Your
               Passport is ready.
@@ -684,7 +693,7 @@
              asked for (client feedback, 2026-10-05/06: it repeated on every
              single step) - the final step gets its own "what happens next"
              card instead of repeating it again. -->
-        <aside v-if="!isFullscreenStep" class="claim-aside">
+        <aside v-if="hasAside" class="claim-aside">
           <div v-if="step === 'payment'" class="claim-aside-card">
             <div class="claim-aside-eyebrow">Why this is safe</div>
             <ul class="claim-aside-list">
@@ -757,7 +766,7 @@
       </div>
     </main>
 
-    <SiteFooter />
+    <SiteFooter wide />
 
     <ClaimPassportTypeDrawer
       v-model="showTypeDrawer"
@@ -887,6 +896,9 @@ onMounted(async () => {
 const isFullscreenStep = computed(() =>
   ['kyc-verified', 'lr-searching'].includes(step.value),
 )
+// Only these steps have a side card; the rest centre a single column
+// instead of leaving an empty rail beside the panel.
+const hasAside = computed(() => ['payment', 'lr-found'].includes(step.value))
 const showCta = computed(
   () => !['lr-searching', 'lr-failed', 'payment'].includes(step.value),
 )
@@ -913,22 +925,22 @@ const progressPct = computed(() => stepMeta[step.value].pct)
 
 // ── Display fields (from selectedProperty) ─────────────────────
 const tenureDisplay = computed(
-  () => selectedProperty.value?.tenure || '—',
+  () => selectedProperty.value?.tenure || 'Not available',
 )
 const titleDisplay = computed(
-  () => selectedProperty.value?.titleNumber || '—',
+  () => selectedProperty.value?.titleNumber || 'Not available',
 )
 const typeDisplay = computed(
-  () => selectedProperty.value?.propertyType || '—',
+  () => selectedProperty.value?.propertyType || 'Not available',
 )
 const registeredDisplay = computed(() => {
   const d = selectedProperty.value?.createdAt
-  if (!d) return '—'
+  if (!d) return 'Not available'
   try {
     const date = new Date(d)
     return date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
   } catch {
-    return '—'
+    return 'Not available'
   }
 })
 const proprietorDisplay = computed(
@@ -1344,7 +1356,7 @@ async function startPersonaKyc() {
     const w = window.open(start.hostedUrl, '_blank', 'noopener')
     if (!w) {
       personaError.value =
-        'Pop-ups blocked — allow pop-ups for this site and try again.'
+        'Pop-ups blocked. Allow pop-ups for this site and try again.'
       personaPolling.value = false
       return
     }
@@ -1376,7 +1388,7 @@ async function runPolling() {
         'Identity verification failed. Please retry or contact support.'
     } else if (finalStatus === 'needs_review') {
       personaError.value =
-        "Your details need a manual review — we'll email you when it's done."
+        "Your details need a manual review. We'll email you when it's done."
     }
   } catch (e: any) {
     if (e?.message === 'timeout') {
@@ -1407,10 +1419,10 @@ async function checkPersonaNow() {
         'Identity verification failed. Please retry or contact support.'
     } else if (r.status === 'needs_review') {
       personaError.value =
-        "Your details need a manual review — we'll email you when it's done."
+        "Your details need a manual review. We'll email you when it's done."
     } else if (r.status === 'pending') {
       personaError.value =
-        "We can't see your result yet — Persona usually takes a few seconds. Try again in a moment."
+        "We can't see your result yet. Persona usually takes a few seconds. Try again in a moment."
     } else {
       personaError.value = "We haven't received a verification result yet."
     }
@@ -1624,6 +1636,8 @@ async function issuePassport() {
 <style scoped>
 .claim-root {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: #f3f2ef;
   padding-bottom: 0;
   color: #231d45;
@@ -1798,6 +1812,7 @@ async function issuePassport() {
 
 /* ── Desktop wizard canvas ────────────────────────────────────────── */
 .claim-main {
+  flex: 1 0 auto;
   padding-top: 40px;
   padding-bottom: 56px;
   display: flex;
@@ -1852,7 +1867,15 @@ async function issuePassport() {
 }
 .claim-layout--full {
   width: min(100%, 640px);
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
+}
+/* Steps without a side card: one centred column, header to match. */
+.claim-layout--single {
+  width: min(100%, 680px);
+  grid-template-columns: minmax(0, 1fr);
+}
+.claim-head--single {
+  width: min(100%, 680px);
 }
 
 .claim-panel {
@@ -2271,7 +2294,7 @@ async function issuePassport() {
 }
 .cl-tile-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
   position: relative;
 }
@@ -2726,7 +2749,32 @@ async function issuePassport() {
 .cl-lrf-row-last { border-bottom: none; padding-bottom: 0; }
 .cl-lrf-l { color: #94a3b8; }
 .cl-lrf-l--bold { font-weight: 800; color: #231d45; }
-.cl-lrf-v { font-weight: 700; color: #231d45; }
+.cl-lrf-v { font-weight: 700; color: #231d45; text-align: right; overflow-wrap: break-word; }
+.cl-lrf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cl-lrf-actions > button {
+  flex: 1 1 140px;
+  width: auto;
+}
+.cl-btn-ghost {
+  padding: 14px 18px;
+  border: 1px solid #d8e3ee;
+  border-radius: 14px;
+  background: #fff;
+  color: #231d45;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cl-btn-ghost:hover {
+  border-color: #bfd1e4;
+  background: #f8fbff;
+}
 .cl-lrf-v-good { color: #15803d; }
 .cl-big-tick {
   width: 46px;
@@ -2847,7 +2895,7 @@ async function issuePassport() {
 
 @media (max-width: 980px) {
   .claim-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 22px;
   }
 
@@ -2895,6 +2943,110 @@ async function issuePassport() {
 
   .cl-btn-brand {
     width: 100%;
+  }
+}
+
+/* Small phones: brand, BETA tag and Exit no longer fit on one row, and
+   the house art beside the address eats half the card. */
+@media (max-width: 460px) {
+  .hsw-shell {
+    width: calc(100% - 24px);
+  }
+  .hsw-nav-inner {
+    gap: 12px;
+  }
+  .hsw-brand {
+    font-size: 18px;
+    gap: 8px;
+    min-width: 0;
+  }
+  .hsw-brand-beta {
+    display: none;
+  }
+  .hsw-back {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .claim-main {
+    padding-top: 24px;
+  }
+  .claim-head {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .claim-head-text {
+    min-width: 0;
+    flex: 1;
+  }
+  .claim-panel {
+    padding: 20px 14px 18px;
+  }
+  .cl-navy-card {
+    padding: 16px 14px;
+  }
+  .cl-navy-img {
+    width: 60px;
+    height: 60px;
+    right: 10px;
+  }
+  .cl-navy-eyebrow,
+  .cl-navy-addr1,
+  .cl-navy-addr2 {
+    padding-right: 66px;
+  }
+  .cl-navy-addr1 {
+    font-size: 16px;
+  }
+  .cl-owned {
+    gap: 12px;
+  }
+  .cl-owned-illus {
+    width: 60px;
+    height: 60px;
+  }
+  .cl-owned-t {
+    font-size: 1.15rem;
+  }
+  .cl-lrf-row {
+    gap: 8px;
+  }
+  .cl-lrf-rowhead {
+    flex-shrink: 0;
+    gap: 6px;
+  }
+  .cl-lrf-v {
+    min-width: 0;
+  }
+}
+
+/* Very narrow: value goes under its label instead of squeezing beside it. */
+@media (max-width: 360px) {
+  .cl-lrf-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .cl-lrf-v {
+    text-align: left;
+  }
+  .cl-lrf-rowhead + .cl-lrf-v {
+    padding-left: 34px;
+  }
+  .cl-hero-img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* ── Big screens (>1366px) ────────────────────────────────────────
+   The 1366px laptop layout is the design; wider monitors show that same
+   layout scaled up (--wide-zoom = width / 1366, set in nuxt.config.ts).
+   ClaimPassportTypeDrawer is teleported, so it zooms its own box. */
+@media (min-width: 1367px) {
+  .hsw-nav-inner,
+  main.hsw-shell {
+    zoom: var(--wide-zoom, 1);
   }
 }
 
