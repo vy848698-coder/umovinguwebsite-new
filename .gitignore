@@ -31,3 +31,11 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Security/launch review finding #14 (2026-11-14): keep stray one-off
+# status notes and alternate package-manager lockfiles out of the repo.
+bun.lock
+bun.lockb
+FINAL_STATUS.md
+STATUS.md
+*_STATUS.md
