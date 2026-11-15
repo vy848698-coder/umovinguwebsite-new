@@ -98,7 +98,7 @@ export const useVerificationCode = () => {
           ...(postcode ? { postcode } : {}),
           password,
         })
-        localStorage.setItem('token', regRes.token)
+        setToken(regRes.token)
         setSessionFlag()
         sessionStorage.removeItem('umu-pending-email')
         pendingSignup.value = null

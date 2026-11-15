@@ -161,7 +161,7 @@ export const useCreateAccountData = () => {
       })
 
       if (response.token) {
-        localStorage.setItem('token', response.token)
+        setToken(response.token)
         setSessionFlag()
       }
       pendingSignup.value = null

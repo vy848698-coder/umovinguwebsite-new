@@ -292,7 +292,7 @@ async function onBreakdownClick() {
   if (breakdownLoading.value) return
   breakdownLoading.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     if (token) {
       try {
         const list = await $fetch<any[]>(`${config.public.apiBase}/profile/passports`, {

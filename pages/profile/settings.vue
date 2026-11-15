@@ -421,7 +421,7 @@ async function submitChangePassword() {
   }
   cpSaving.value = true
   try {
-    const tok = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    const tok = typeof localStorage !== 'undefined' ? getToken() : null
     if (!tok) throw new Error('Not signed in')
     await $fetch(`${config.public.apiBase}/auth/change-password`, {
       method: 'POST',
@@ -449,7 +449,7 @@ async function setPref(key: keyof typeof prefs, value: boolean) {
   prefs[key] = value
   try {
     const tok =
-      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+      typeof localStorage !== 'undefined' ? getToken() : null
     if (!tok) return
     await $fetch(`${config.public.apiBase}/profile/me`, {
       method: 'PATCH',

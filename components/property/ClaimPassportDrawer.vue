@@ -238,7 +238,7 @@ const handlePayment = async () => {
   stripeError.value = ''
 
   try {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     const { clientSecret } = await $fetch<{ clientSecret: string }>(
       `${config.public.apiBase}/payment/create-intent`,
       {

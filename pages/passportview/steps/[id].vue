@@ -332,7 +332,7 @@ const sectionBonusPoints = ref(SECTION_BONUS_FALLBACK)
 
 async function loadProgress() {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     const cfg = useRuntimeConfig()

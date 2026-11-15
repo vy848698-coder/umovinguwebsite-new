@@ -419,7 +419,7 @@ onMounted(async () => {
   slideWidth.value = (carouselRef.value?.offsetWidth ?? 0) * 0.88
 
   try {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     if (!token) return
     const result = await $fetch<{ items: any[]; total: number }>(
       `${config.public.apiBase}/property/for-you`,

@@ -8,6 +8,14 @@
 // Runs once per app boot, client-only: if a token exists but the flag does
 // not, set it, so their very next visit to `/` gets the flash-free SSR
 // redirect. Also self-heals a cookie the user cleared without signing out.
+//
+// Security review finding #7 (2026-11-15): the access token moved out of
+// localStorage into memory only (composables/useAuthToken.ts) — new
+// logins never write here again. This plugin now only ever sees a STALE
+// leftover from before that change, expired within its 1h TTL regardless,
+// and deliberately reads raw localStorage (not getToken()) one last time
+// to use it as a "this browser was logged in" signal, then scrubs it
+// immediately so it isn't left sitting around as a dead, unused secret.
 import { setSessionFlag } from '~/composables/useSessionFlag'
 
 export default defineNuxtPlugin(() => {
@@ -18,5 +26,11 @@ export default defineNuxtPlugin(() => {
     // Private mode / blocked site data — nothing to sync.
     return
   }
-  if (token) setSessionFlag()
+  if (!token) return
+  setSessionFlag()
+  try {
+    localStorage.removeItem('token')
+  } catch {
+    // ignore
+  }
 })

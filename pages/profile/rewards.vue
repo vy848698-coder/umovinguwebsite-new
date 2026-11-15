@@ -320,7 +320,7 @@ const loadingStamps = ref(true)
 const earnedStampIds = computed(() => new Set(earnedStamps.value.map((s) => s.stampDefinitionId)))
 
 function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   return { Authorization: `Bearer ${token}` }
 }
 

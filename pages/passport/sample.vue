@@ -705,7 +705,7 @@ onBeforeUnmount(() => {
 // property; visitors without an account are sent to sign up first.
 function startPassport() {
   const loggedIn =
-    typeof window !== 'undefined' && !!localStorage.getItem('token')
+    typeof window !== 'undefined' && !!getToken()
   navigateTo(loggedIn ? '/dashboard' : '/onboarding/signup')
 }
 

@@ -28,7 +28,7 @@ export async function understandAnswer(field: UnderstandField, said: string[]): 
   if (unavailable || !readings.length || typeof window === 'undefined') return null
   let token = ''
   try {
-    token = localStorage.getItem('token') || ''
+    token = getToken() || ''
   } catch {
     /* no token, no request */
   }

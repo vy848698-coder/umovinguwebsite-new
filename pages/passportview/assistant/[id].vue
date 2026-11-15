@@ -704,7 +704,7 @@ async function switchSection(id: string) {
   talkEl.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` })
+const authHeaders = () => ({ Authorization: `Bearer ${getToken() ?? ''}` })
 
 async function loadPropertyFacts() {
   try {

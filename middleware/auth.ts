@@ -1,11 +1,23 @@
 import { clearSessionFlag } from '~/composables/useSessionFlag'
 
-export default defineNuxtRouteMiddleware((to) => {
+// Security review finding #7 (2026-11-15): the access token now lives only
+// in memory (composables/useAuthToken.ts), so a fresh load/reload always
+// starts with none — that no longer means signed-out. Before redirecting,
+// try the httpOnly refresh cookie once; only a failed refresh (missing/
+// expired/revoked cookie) is a real "no session".
+export default defineNuxtRouteMiddleware(async (to) => {
   if (process.server) return
 
-  const token = localStorage.getItem('token')
+  if (!getToken()) {
+    try {
+      const { refreshAccessToken } = useAuth()
+      await refreshAccessToken()
+    } catch {
+      // No valid refresh cookie — genuinely signed out.
+    }
+  }
 
-  if (!token) {
+  if (!getToken()) {
     // The umu_has_session_new cookie is only a routing hint for SSR (see
     // composables/useSessionFlag.ts). Reaching here means it lied: no real
     // token. Clear it, or middleware/guest.ts keeps trusting it and the two

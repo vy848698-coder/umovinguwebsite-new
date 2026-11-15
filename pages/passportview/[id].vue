@@ -953,7 +953,7 @@ async function loadSections() {
   if (steps.value.length <= 1) {
     try {
       const passportToken =
-        typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        typeof window !== 'undefined' ? getToken() : null
       const passport = await $fetch(
         `${config.public.apiBase}/passport/${id}`,
         { headers: { Authorization: `Bearer ${passportToken}` } },
@@ -1060,7 +1060,7 @@ onMounted(async () => {
   // data loaders below.
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     const probe = await $fetch(
       `${config.public.apiBase}/passport/${route.params.id}`,
       { headers: { Authorization: `Bearer ${token}` } },
@@ -1081,7 +1081,7 @@ onMounted(async () => {
   fetchReadiness()
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     const passport = await $fetch(
       `${config.public.apiBase}/passport/${route.params.id}`,
       {
@@ -1112,7 +1112,7 @@ onMounted(async () => {
 
 async function fetchResumeTarget() {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     const r = await $fetch(
@@ -1267,7 +1267,7 @@ const publishDrawerOpen = ref(false)
 
 async function fetchReadiness() {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     readiness.value = await $fetch(
@@ -1336,7 +1336,7 @@ async function onPublishConfirm() {
 async function togglePublish() {
   if (publishLoading.value) return
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   publishLoading.value = true
   try {
@@ -1676,7 +1676,7 @@ function setHistoryCategory(key) {
 }
 
 async function fetchHistory(reset = false) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   historyLoading.value = true
   try {
@@ -1744,7 +1744,7 @@ const allFlags = computed(() => [
 ])
 
 async function fetchActions() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     passportActions.value = await $fetch(
@@ -1757,7 +1757,7 @@ async function fetchActions() {
 }
 
 async function markActionAddressed(actionId) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     await $fetch(
@@ -1789,7 +1789,7 @@ async function openHistoryEvent(e) {
   historyDrawerEvent.value = null
   historyDrawerOpen.value = true
   historyDrawerLoading.value = true
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   try {
     historyDrawerEvent.value = await $fetch(
       `${config.public.apiBase}/passport/${route.params.id}/history/${e.id}`,

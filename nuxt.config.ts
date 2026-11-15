@@ -31,16 +31,25 @@ export default defineNuxtConfig({
   // 2026), adjusted for this app's actual third-party usage. Google/Apple
   // OAuth was removed from this app in the same batch (dead code calling
   // backend routes that don't exist — see useAuth.ts), so no OAuth
-  // domains are needed here either. script-src keeps 'unsafe-inline' for
-  // the inline "wide-zoom" head script below and matches the conservative
-  // choice already made (and documented as unverified beyond that) in the
-  // sibling app this was ported from.
+  // domains are needed here either.
+  //
+  // script-src DROPPED 'unsafe-inline' (security review finding #7,
+  // 2026-11-15): nuxt-security's auto-nonce reaches the inline "wide-zoom"
+  // head script below (same mechanism confirmed in umu-website-integration,
+  // 13/14 Oct 2026), and CSP3 browsers ignore 'unsafe-inline' once a
+  // nonce-source is present anyway — it was inert for them already.
+  // Leaflet/js.stripe.com need neither a nonce nor strict-dynamic: they're
+  // matched by the explicit host-source entries below, a separate CSP
+  // matching path from nonces.
   security: {
     headers: {
       contentSecurityPolicy: {
         'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'", 'https://unpkg.com', 'https://js.stripe.com'],
-        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://api.mapbox.com', 'https://unpkg.com'],
+        // unpkg DROPPED (security/launch review finding #12, 2026-11-14):
+        // Leaflet is self-hosted via npm/Vite now — see SearchDrawer.vue /
+        // property/[id].vue / property-full/[id].vue's loadLeaflet.
+        'script-src': ["'self'", 'https://js.stripe.com'],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://api.mapbox.com'],
         'style-src-attr': ["'unsafe-inline'"],
         'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
         // images.pexels.com: placeholder photo in MessageSentModal.vue —
@@ -59,12 +68,17 @@ export default defineNuxtConfig({
         // api.postcodes.io: the postcode/place-suggestion autocomplete
         // used across search and onboarding — same missing-from-the-
         // reference-CSP gap as img-src above.
+        //
+        // events.mapbox.com DELIBERATELY left off (security/launch review
+        // finding #10, 2026-11-14): Mapbox's own anonymous-usage telemetry
+        // endpoint, not needed for tiles/styles (api.mapbox.com only).
+        // Blocking it fails those background POSTs closed — fire-and-
+        // forget by design, map still renders fine.
         'connect-src': [
           "'self'",
           BACKEND_ORIGIN,
           'https://api.stripe.com',
           'https://api.mapbox.com',
-          'https://events.mapbox.com',
           'https://api.os.uk',
           'https://*.tile.openstreetmap.org',
           'https://api.postcodes.io',

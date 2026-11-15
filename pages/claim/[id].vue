@@ -841,7 +841,7 @@ const userFullName = ref<string>('')
 
 // ── Helpers ──────────────────────────────────────────────────
 function token() {
-  return typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  return typeof window !== 'undefined' ? getToken() : null
 }
 function authHeaders() {
   return {

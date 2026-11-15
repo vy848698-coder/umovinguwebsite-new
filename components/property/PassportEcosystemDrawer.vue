@@ -213,7 +213,7 @@ const ROLE_COPY: Record<string, { title: string; body: string }> = {
 }
 
 function hasToken(): boolean {
-  return typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
+  return typeof localStorage !== 'undefined' && !!getToken()
 }
 
 // A guest picking a role needs an account first, with copy naming the role

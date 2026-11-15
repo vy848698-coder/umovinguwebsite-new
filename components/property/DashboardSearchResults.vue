@@ -447,7 +447,7 @@ const viewMode = ref<'list' | 'map'>('list')
 const hasMore = computed(() => total.value > items.value.length)
 
 function authHeaders(): Record<string, string> {
-  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof localStorage !== 'undefined' ? getToken() : null
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 

@@ -576,7 +576,7 @@ function recordPointsEarned(pointsAwarded) {
 
 async function loadRunningBalance() {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     const cfg = useRuntimeConfig()
@@ -773,7 +773,7 @@ async function loadPropertyFacts() {
   const passportId = route.query.propertyId
   if (!passportId) return
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   const cfg = useRuntimeConfig()
   try {
@@ -790,7 +790,7 @@ async function recordLastVisited() {
   const passportId = route.query.propertyId
   if (!passportId || !taskId) return
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   const cfg = useRuntimeConfig()
   try {

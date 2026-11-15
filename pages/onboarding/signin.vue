@@ -385,7 +385,7 @@ const handleLogin = async () => {
   loginLoading.value = true
   try {
     const response: any = await login(emailInput.value, passwordInput.value)
-    localStorage.setItem('token', response.token)
+    setToken(response.token)
     setSessionFlag()
     await redirectAfterAuth()
   } catch {

@@ -396,7 +396,7 @@ const loadingAi = ref(false)
 onMounted(async () => {
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     allData.value = await $fetch(
       `${config.public.apiBase}/passport/${passportId}/buyer-view`,
       { headers: { Authorization: `Bearer ${token}` } },
@@ -650,7 +650,7 @@ async function fetchAiSummary() {
   loadingAi.value = true
   aiSummary.value = ''
   try {
-    const tok = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const tok = typeof window !== 'undefined' ? getToken() : null
     const res = await $fetch<{ summary: string }>(
       `${config.public.apiBase}/passport/${passportId}/ai-summary/${section.value.key}`,
       { method: 'POST', headers: { Authorization: `Bearer ${tok}` } },

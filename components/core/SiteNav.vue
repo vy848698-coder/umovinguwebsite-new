@@ -112,7 +112,7 @@ const mobileOpen = ref(false)
 const signedIn = ref(false)
 onMounted(() => {
   try {
-    signedIn.value = !!localStorage.getItem('token')
+    signedIn.value = !!getToken()
   } catch {
     /* private mode / blocked storage: stays signed out */
   }

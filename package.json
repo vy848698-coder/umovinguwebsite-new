@@ -28,6 +28,7 @@
     "@pinia/nuxt": "^0.5.5",
     "@stripe/stripe-js": "^8.11.0",
     "@vite-pwa/nuxt": "^1.1.1",
+    "leaflet": "^1.9.4",
     "mapbox-gl": "^3.20.0",
     "msedge-tts": "^2.0.9",
     "nuxt": "^3.13.0",
