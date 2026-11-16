@@ -166,14 +166,41 @@
                 <span>Receives property address and record data</span>
               </div>
               <div class="lg-row">
+                <strong>Railway</strong>
+                <span>Hosts our live application servers, database and file storage today — this is
+                  where your account and property data actually live</span>
+              </div>
+              <div class="lg-row">
+                <strong>AWS (Amazon Web Services)</strong>
+                <span>A separate infrastructure environment we are setting up for a future migration;
+                  it does not currently hold any live customer data</span>
+              </div>
+              <div class="lg-row">
+                <strong>Vercel</strong>
+                <span>Hosts the website itself</span>
+              </div>
+              <div class="lg-row">
                 <strong>Legal or regulatory authorities</strong>
                 <span>Information required by law or court order</span>
               </div>
             </div>
           </section>
 
+          <section id="international-transfers" class="lg-sec">
+            <h2><span class="lg-num">06</span>International transfers</h2>
+            <p>
+              Railway, which hosts your account and property data today, runs in the United States.
+              This means personal data is processed outside the UK/EEA as part of providing the
+              service. UK GDPR requires an appropriate safeguard (such as the UK's International Data
+              Transfer Addendum or Standard Contractual Clauses) to be in place for this. We are in the
+              process of confirming and documenting the specific safeguard used with Railway; this
+              section will be updated as that review completes. If we complete the planned migration to
+              AWS's UK (London) region, this section will be updated to reflect that change.
+            </p>
+          </section>
+
           <section id="how-long" class="lg-sec">
-            <h2><span class="lg-num">06</span>How long we keep your information</h2>
+            <h2><span class="lg-num">07</span>How long we keep your information</h2>
             <div class="lg-rows">
               <div class="lg-row">
                 <strong>Contact form enquiries</strong>
@@ -195,7 +222,7 @@
           </section>
 
           <section id="your-rights" class="lg-sec">
-            <h2><span class="lg-num">07</span>Your rights</h2>
+            <h2><span class="lg-num">08</span>Your rights</h2>
             <p>
               Under UK GDPR, individuals may exercise rights by emailing
               <a href="mailto:hello@umovingu.io">hello@umovingu.io</a> within one month:
@@ -214,7 +241,7 @@
           </section>
 
           <section id="security" class="lg-sec">
-            <h2><span class="lg-num">08</span>Security</h2>
+            <h2><span class="lg-num">09</span>Security</h2>
             <ul class="lg-list">
               <li>Encrypted transmission between browser and servers (HTTPS)</li>
               <li>Access controls for authorised team members only</li>
@@ -225,7 +252,7 @@
           </section>
 
           <section id="links-children" class="lg-sec">
-            <h2><span class="lg-num">09</span>Links and children</h2>
+            <h2><span class="lg-num">10</span>Links and children</h2>
             <p>
               External site links are not covered by this privacy policy. The service is not directed at
               children under 16. Contact the company if a child has provided information.
@@ -233,7 +260,7 @@
           </section>
 
           <section id="contact" class="lg-sec">
-            <h2><span class="lg-num">10</span>Contact us</h2>
+            <h2><span class="lg-num">11</span>Contact us</h2>
             <div class="lg-contact-grid">
               <div>
                 <small>Email</small>
@@ -326,11 +353,12 @@ const sections = [
   { id: 'legal-basis', num: '03', title: 'Legal basis' },
   { id: 'how-we-use', num: '04', title: 'How we use it' },
   { id: 'who-we-share-with', num: '05', title: 'Who we share with' },
-  { id: 'how-long', num: '06', title: 'How long we keep it' },
-  { id: 'your-rights', num: '07', title: 'Your rights' },
-  { id: 'security', num: '08', title: 'Security' },
-  { id: 'links-children', num: '09', title: 'Links and children' },
-  { id: 'contact', num: '10', title: 'Contact us' },
+  { id: 'international-transfers', num: '06', title: 'International transfers' },
+  { id: 'how-long', num: '07', title: 'How long we keep it' },
+  { id: 'your-rights', num: '08', title: 'Your rights' },
+  { id: 'security', num: '09', title: 'Security' },
+  { id: 'links-children', num: '10', title: 'Links and children' },
+  { id: 'contact', num: '11', title: 'Contact us' },
 ]
 
 const rights = [
