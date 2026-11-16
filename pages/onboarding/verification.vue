@@ -30,11 +30,9 @@
 <script setup lang="ts">
 import VerificationCode from '@/components/VerificationCode.vue'
 
-if (typeof definePageMeta === 'function') {
-  definePageMeta({
-    title: 'Email Verification - UmovingU',
-  })
-}
+definePageMeta({
+  title: 'Email Verification - UmovingU',
+})
 </script>
 
 <style scoped>

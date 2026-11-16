@@ -115,6 +115,12 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     strategies: 'generateSW',
+    // @vite-pwa/nuxt v2 moved this out of generateSW/workbox to the
+    // top-level pwa config - nested here it's silently ignored and the
+    // build fails back to the 2 MiB default (same relocation the sibling
+    // umu-website-integration upgrade hit). Some images (e.g. Exp.png
+    // ~2.16 MB) exceed the default, so this needs to be raised here.
+    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
     manifest: {
       name: 'UmovingU - Property Toolkit',
       short_name: 'UmovingU',
@@ -148,12 +154,12 @@ export default defineNuxtConfig({
       ],
       screenshots: [],
     },
-    workbox: {
+    // Nuxt 4 / @vite-pwa/nuxt v2: `workbox` is deprecated in favour of
+    // `generateSW` (same key shape, new name) - kept as `generateSW` since
+    // strategies is 'generateSW' above.
+    generateSW: {
       navigateFallback: '/offline',
       navigateFallbackDenylist: [/^\/api\//],
-      // Default precache cap is 2 MiB; some images (e.g. Exp.png ~2.16 MB)
-      // exceed it. Raise to 3 MiB so they're still precached.
-      maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
       globIgnores: ['op-icons/temp/**'],
       runtimeCaching: [
