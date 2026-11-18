@@ -4041,7 +4041,7 @@ const readOnlyMode = computed(
 // to hide owner-only options (the "This is my home" button) for guest viewers.
 const isGuest = computed(() => {
   if (typeof localStorage === 'undefined') return true
-  return !localStorage.getItem('token')
+  return !getToken()
 })
 
 // Three mutually exclusive states for the banner on the landing screen:
@@ -5264,7 +5264,7 @@ async function saveSimBill() {
   simBillError.value = ''
   try {
     const token =
-      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+      typeof localStorage !== 'undefined' ? getToken() : null
     // Guests / non-owners: keep the local-only UX (just flip the flag so the
     // EPC nudge advances). The OCR endpoint is JWT-gated.
     if (!token) {
@@ -5598,7 +5598,7 @@ function simReset() {
 async function saveSimulatorResult() {
   if (!isPropertyOwner.value) return
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   if (!token) return
   const answersMap: Record<string, string> = {}
   for (const s of simSteps.value) {
@@ -5844,7 +5844,7 @@ async function verifyWith(method: VerifyMethod) {
   kycMethod.value = method
   kycSubmitting.value = true
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   try {
     if (token) {
       await fetch(
@@ -5877,7 +5877,7 @@ async function confirmPublish() {
   if (publishLoading.value) return
   publishLoading.value = true
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   try {
     // Ensure the user's HomeScoreResult exists server-side first.
     await saveSimulatorResult()
@@ -5915,7 +5915,7 @@ function doRetake() {
 
 async function claimOrAccessPassport() {
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   if (!token) {
     router.push(`/property/${propertyId}`)
     return
@@ -6208,7 +6208,7 @@ async function loadBuyerEnrichment() {
   bvEnrichmentRequested = true
   try {
     const token =
-      typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+      typeof localStorage !== 'undefined' ? getToken() : null
     const res = await fetch(
       `${config.public.apiBase}/property/${propertyId}/enrichment`,
       { headers: token ? { Authorization: `Bearer ${token}` } : {} },
@@ -6502,7 +6502,7 @@ watch(
       isBuyer &&
       !bvUserProfile.value &&
       typeof localStorage !== 'undefined' &&
-      localStorage.getItem('token')
+      getToken()
     )
       bvFetchProfile().catch(() => {})
   },
@@ -6510,7 +6510,7 @@ watch(
 )
 function onBuyerStartVerification() {
   const tk =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   if (!tk) {
     try {
       localStorage.setItem('redirectAfterLogin', '/buyer-profile')
@@ -6532,7 +6532,7 @@ function onVerifyBuyerStart() {
   verifyBuyerDrawerOpen.value = false
   const target = '/buyer-profile/build'
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   if (!token) {
     try {
       localStorage.setItem('redirectAfterLogin', target)
@@ -6932,7 +6932,7 @@ function onWatchSubmit(prefs: Record<string, boolean>) {
   // Redirect to the property page, resuming after sign-in for guests.
   const target = `/property/${propertyId}?watched=1`
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   if (!token) {
     try {
       localStorage.setItem('redirectAfterLogin', target)
@@ -7215,7 +7215,7 @@ async function saveToBackend() {
   // Only save to DB if this user is the verified property owner
   if (!isPropertyOwner.value) return
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     await fetch(`${config.public.apiBase}/property/${propertyId}/homescore`, {
@@ -7314,8 +7314,8 @@ async function loadInitialScreen() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(localStorage.getItem('token')
-          ? { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        ...(getToken()
+          ? { Authorization: `Bearer ${getToken()}` }
           : {}),
       },
       body: JSON.stringify({ sessionId: sid }),
@@ -7330,7 +7330,7 @@ async function loadInitialScreen() {
 
   // Check ownership and load saved score from backend if owner
   const token =
-    typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    typeof localStorage !== 'undefined' ? getToken() : null
 
   // Passport status check — also drives read-only mode for non-owners.
   // For guests (no token) we use the public passport state seeded from /property/:id above.

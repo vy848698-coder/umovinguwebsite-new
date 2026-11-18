@@ -948,7 +948,7 @@ const resultHeading = computed(() => {
 })
 
 function hasToken(): boolean {
-  return typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
+  return typeof localStorage !== 'undefined' && !!getToken()
 }
 
 function sqftLabel(floorAreaSqm: number): string {
@@ -1587,7 +1587,7 @@ onMounted(() => {
 
   loadVerified()
   if (signedIn.value) {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     if (token) loadYourSpace(token)
   }
 

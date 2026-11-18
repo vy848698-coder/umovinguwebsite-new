@@ -290,6 +290,22 @@ const { dragStyle, onTouchStart, onTouchMove, onTouchEnd } = useSwipeToDismiss({
 .ppd-enter-from .ppd-sheet,
 .ppd-leave-to .ppd-sheet { transform: translateY(100%); }
 
+/* Phone: the checklist scrolled inside a sheet that also scrolls, so a
+   thumb could get stuck in the wrong one. The sheet now scrolls once, and
+   Not yet / Publish stay pinned at its foot however long the list is. */
+@media (max-width: 767px) {
+  .ppd-gate-list { max-height: none; overflow: visible; }
+  .ppd-docs-list { max-height: none; overflow: visible; }
+  .ppd-cta-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding: 12px 22px calc(12px + env(safe-area-inset-bottom));
+    background: var(--card);
+    box-shadow: 0 -8px 16px -8px rgba(35, 29, 69, 0.18);
+  }
+}
+
 /* Desktop: the rest of this app is a full-width web experience, so the
    sheet becomes a centred dialog rather than a phone-style bottom sheet
    pinned to the edge of a 1440px screen. Same markup, same gestures

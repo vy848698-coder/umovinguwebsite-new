@@ -306,11 +306,11 @@
             <div class="step-card-top">
               <div class="step-icon-container">
                 <div class="step-icon-bg">
-                  <OPIcon :name="step.key" class="w-[38px] h-[38px]" />
+                  <OPIcon :name="step.key" class="step-icon-img" />
                 </div>
               </div>
               <button class="step-arrow">
-                <OPIcon name="caretRight" class="w-[13px] h-[13px]" />
+                <OPIcon name="caretRight" class="step-arrow-ic" />
               </button>
             </div>
             <div class="step-info">
@@ -953,7 +953,7 @@ async function loadSections() {
   if (steps.value.length <= 1) {
     try {
       const passportToken =
-        typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        typeof window !== 'undefined' ? getToken() : null
       const passport = await $fetch(
         `${config.public.apiBase}/passport/${id}`,
         { headers: { Authorization: `Bearer ${passportToken}` } },
@@ -1060,7 +1060,7 @@ onMounted(async () => {
   // data loaders below.
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     const probe = await $fetch(
       `${config.public.apiBase}/passport/${route.params.id}`,
       { headers: { Authorization: `Bearer ${token}` } },
@@ -1081,7 +1081,7 @@ onMounted(async () => {
   fetchReadiness()
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     const passport = await $fetch(
       `${config.public.apiBase}/passport/${route.params.id}`,
       {
@@ -1112,7 +1112,7 @@ onMounted(async () => {
 
 async function fetchResumeTarget() {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     const r = await $fetch(
@@ -1267,7 +1267,7 @@ const publishDrawerOpen = ref(false)
 
 async function fetchReadiness() {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     readiness.value = await $fetch(
@@ -1336,7 +1336,7 @@ async function onPublishConfirm() {
 async function togglePublish() {
   if (publishLoading.value) return
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   publishLoading.value = true
   try {
@@ -1676,7 +1676,7 @@ function setHistoryCategory(key) {
 }
 
 async function fetchHistory(reset = false) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   historyLoading.value = true
   try {
@@ -1744,7 +1744,7 @@ const allFlags = computed(() => [
 ])
 
 async function fetchActions() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     passportActions.value = await $fetch(
@@ -1757,7 +1757,7 @@ async function fetchActions() {
 }
 
 async function markActionAddressed(actionId) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
   try {
     await $fetch(
@@ -1789,7 +1789,7 @@ async function openHistoryEvent(e) {
   historyDrawerEvent.value = null
   historyDrawerOpen.value = true
   historyDrawerLoading.value = true
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   try {
     historyDrawerEvent.value = await $fetch(
       `${config.public.apiBase}/passport/${route.params.id}/history/${e.id}`,
@@ -2573,7 +2573,7 @@ const groupedHistory = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 18px 18px 16px;
+  padding: 20px 20px 18px;
   background: #fff;
   border: 1px solid #eef2f7;
   border-radius: 18px;
@@ -2620,7 +2620,7 @@ const groupedHistory = computed(() => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .step-icon-container {
@@ -2644,7 +2644,7 @@ const groupedHistory = computed(() => {
 }
 
 .step-title {
-  font-size: 16px;
+  font-size: 17.5px;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -2652,8 +2652,8 @@ const groupedHistory = computed(() => {
 }
 
 .step-points {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 13px;
+  line-height: 18px;
   color: #00a19a;
   font-weight: 600;
   margin-top: 2px;
@@ -2663,15 +2663,15 @@ const groupedHistory = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 .step-count-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -2692,12 +2692,12 @@ const groupedHistory = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   background: #fef3c7;
   color: #92400e;
   border: 1px solid #fef3c7;
-  padding: 3px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   cursor: pointer;
 }
@@ -2714,7 +2714,7 @@ const groupedHistory = computed(() => {
 }
 
 .progress-bar.small {
-  height: 5px;
+  height: 6px;
   flex: 1;
   background: #eef2f7;
   border-radius: 999px;
@@ -2725,8 +2725,8 @@ const groupedHistory = computed(() => {
 }
 
 .step-arrow {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #f7f9fc;
   border: 1px solid #e6ebf2;
@@ -4420,14 +4420,42 @@ const groupedHistory = computed(() => {
 }
 
 /* ── Section cards — refined ───────────────────────────────────────── */
+/* The illustration is the hero of the card: big, straight on the white
+   card with no tinted tile behind it. The copy steps down from it. */
 .step-icon-bg {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
+  width: 64px;
+  height: 64px;
+  border-radius: 0;
+  background: none;
+}
+.step-icon-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.step-card:hover .step-icon-img {
+  transform: scale(1.06) rotate(-3deg);
+}
+.step-arrow-ic {
+  width: 14px;
+  height: 14px;
 }
 .step-points {
-  color: #8b93a7;
+  color: #6b7489;
   font-weight: 600;
+}
+.step-count-pill :deep(svg),
+.step-count-pill :deep(.iconify),
+.step-expiry :deep(svg),
+.step-expiry :deep(.iconify) {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+.step-progress .progress-percentage {
+  font-size: 13px;
+  min-width: 40px;
 }
 .step-count-docs,
 .step-count-q {
@@ -4692,6 +4720,22 @@ const groupedHistory = computed(() => {
   }
   .pp-hero-stat-val {
     font-size: 19px;
+  }
+}
+
+/* Small phones: the section card keeps its big illustration but trims it
+   and the padding a touch so the title still gets a comfortable line. */
+@media (max-width: 420px) {
+  .step-card {
+    padding: 16px 16px 15px;
+  }
+  .step-icon-bg,
+  .step-icon-img {
+    width: 56px;
+    height: 56px;
+  }
+  .step-title {
+    font-size: 16.5px;
   }
 }
 

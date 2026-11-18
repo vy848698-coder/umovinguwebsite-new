@@ -554,7 +554,7 @@ const authPromptOpen = ref(false)
 const signedIn = ref(false)
 onMounted(async () => {
   try {
-    signedIn.value = !!localStorage.getItem('token')
+    signedIn.value = !!getToken()
   } catch {
     /* blocked storage — treated as signed out */
   }

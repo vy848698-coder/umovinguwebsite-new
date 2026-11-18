@@ -99,7 +99,7 @@ onMounted(async () => {
   runConfetti()
 
   try {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+    const token = typeof localStorage !== 'undefined' ? getToken() : null
     if (!token) return
     profile.value = await $fetch(`${config.public.apiBase}/profile/me`, {
       headers: { Authorization: `Bearer ${token}` },

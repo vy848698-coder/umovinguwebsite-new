@@ -1174,7 +1174,7 @@ async function fetchForYou(token: string) {
 // Fired by ForYouFeed once a postcode is saved. Re-reads the token rather
 // than closing over onMounted's copy, since this can fire much later.
 function refetchForYou() {
-  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof localStorage !== 'undefined' ? getToken() : null
   if (token) fetchForYou(token)
 }
 
@@ -1207,7 +1207,7 @@ async function fetchBuyerSide(token: string) {
 onMounted(async () => {
   if (route.query.focusSearch && !searchMode.value) searchInputEl.value?.focus()
   if (!profile.value) await fetchProfile()
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
   if (!token) return
 
   // A cached role renders the right shell immediately; the preferences call

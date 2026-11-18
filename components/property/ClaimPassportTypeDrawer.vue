@@ -28,7 +28,7 @@
               <div class="cpt-card-meta">For selling your home</div>
               <ul class="cpt-card-list">
                 <li>Full TA6 / TA10 / TA7 forms</li>
-                <li>18 sections — boundaries, deeds, alterations, services</li>
+                <li>18 sections: boundaries, deeds, alterations, services</li>
                 <li>Buyer-shareable digital passport</li>
               </ul>
             </div>
@@ -48,8 +48,8 @@
               <div class="cpt-card-title">Landlord passport</div>
               <div class="cpt-card-meta">For letting your property</div>
               <ul class="cpt-card-list">
-                <li>Compliance docs — Gas, EICR, EPC, alarms, Legionella</li>
-                <li>Tenancy — AST, deposit, Right-to-Rent, How-to-Rent</li>
+                <li>Compliance docs: Gas, EICR, EPC, alarms, Legionella</li>
+                <li>Tenancy: AST, deposit, Right to Rent, How to Rent</li>
                 <li>Tenant-shareable doc bundle</li>
               </ul>
             </div>
@@ -65,7 +65,7 @@
               <div class="cpt-toggle-content">
                 <div class="cpt-toggle-title">Is this an HMO?</div>
                 <div class="cpt-toggle-meta">
-                  House in Multiple Occupation — adds PAT testing & HMO licence sections
+                  House in Multiple Occupation. Adds PAT testing & HMO licence sections
                 </div>
               </div>
               <div class="cpt-toggle" :class="{ on: isHmo }" />
@@ -108,6 +108,13 @@ const emit = defineEmits<{
 const chosen = ref<PassportType | null>(null)
 const isHmo = ref(false)
 
+// Freeze the page behind while open, so only the sheet scrolls (two
+// scrollbars side by side on a short window otherwise).
+function lockPage(lock: boolean) {
+  if (typeof document === 'undefined') return
+  document.documentElement.style.overflow = lock ? 'hidden' : ''
+}
+
 watch(
   () => props.modelValue,
   (open) => {
@@ -115,8 +122,11 @@ watch(
       chosen.value = null
       isHmo.value = false
     }
+    lockPage(open)
   },
+  { immediate: true },
 )
+onBeforeUnmount(() => lockPage(false))
 
 const close = () => emit('update:modelValue', false)
 const confirm = () => {
@@ -160,16 +170,28 @@ const confirm = () => {
 .cpt-handle { display: none; }
 
 @media (max-width: 640px) {
-  .cpt-overlay { align-items: flex-end; padding: 0; }
+  /* Floats with a small gap on every side instead of touching the edges. */
+  .cpt-overlay {
+    align-items: flex-end;
+    padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+  }
   .cpt-modal {
     max-width: none;
-    border-radius: 24px 24px 0 0;
-    max-height: 92vh;
+    border-radius: 22px;
+    max-height: calc(100dvh - 20px);
     animation: cpt-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .cpt-handle { display: block; width: 36px; height: 4px; background: #d9dae0; border-radius: 100px; margin: 8px auto 0; }
 }
 @keyframes cpt-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+/* Big screens scale the 1366px design up (--wide-zoom); this sits on <body>,
+   outside the zoomed page, so the box zooms itself and divides its vh cap. */
+@media (min-width: 1367px) {
+  .cpt-modal {
+    zoom: var(--wide-zoom, 1);
+    max-height: min(calc(88vh / var(--wide-zoom, 1)), 720px);
+  }
+}
 .cpt-header { display: flex; align-items: center; padding: 12px 18px 10px; }
 .cpt-title { flex: 1; font-size: 16px; font-weight: 800; color: #0e2840; letter-spacing: -0.4px; }
 .cpt-close {
@@ -180,7 +202,18 @@ const confirm = () => {
   display: flex; align-items: center; justify-content: center;
 }
 
-.cpt-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
+.cpt-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 18px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #cfd6dc transparent;
+}
+.cpt-body::-webkit-scrollbar { width: 6px; }
+.cpt-body::-webkit-scrollbar-thumb { background: #cfd6dc; border-radius: 99px; }
+.cpt-body::-webkit-scrollbar-track { background: transparent; }
 .cpt-intro {
   font-size: 12.5px;
   font-weight: 600;
@@ -272,6 +305,34 @@ const confirm = () => {
   transition: transform 0.15s ease;
 }
 .cpt-card.active .cpt-card-dot { transform: scale(1); }
+/* Small screens: passport art, title and tag share the top line and the
+   feature list runs the full card width beneath, instead of squeezing
+   into a narrow column beside the art (tall cards, forced scrolling). */
+@media (max-width: 640px) {
+  .cpt-body { padding: 4px 14px 12px; }
+  .cpt-intro { margin-bottom: 12px; }
+  .cpt-card {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 22px;
+    gap: 0 10px;
+    padding: 12px;
+  }
+  .cpt-card-body { display: contents; }
+  .cpt-card-icon { grid-column: 1; grid-row: 1 / span 2; }
+  /* Short enough to sit within the title + tag lines without pushing them apart. */
+  .cpt-card-icon { width: 28px; }
+  .cpt-card-passport { width: auto; height: 34px; }
+  .cpt-card-title { grid-column: 2; grid-row: 1; }
+  .cpt-card-meta { grid-column: 2; grid-row: 2; margin-bottom: 0; }
+  .cpt-card-tick { grid-column: 3; grid-row: 1; }
+  .cpt-card-list {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 10px;
+    padding: 10px 0 0;
+    border-top: 1px solid #eef1f0;
+  }
+}
 
 /* HMO toggle */
 .cpt-hmo { margin-top: 8px; }
@@ -314,7 +375,7 @@ const confirm = () => {
 
 /* Footer */
 .cpt-footer {
-  padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+  padding: 12px 18px 14px;
   border-top: 1px solid #e8eceb;
   background: #fafaf8;
   display: flex;

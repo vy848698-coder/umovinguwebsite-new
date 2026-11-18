@@ -11,7 +11,7 @@ export const useAuth = () => {
   const base = config.public.apiBase
 
   const getHeaders = () => {
-    const token = localStorage.getItem('token')
+    const token = getToken()
 
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
@@ -79,7 +79,7 @@ export const useAuth = () => {
       method: 'POST',
       credentials: 'include',
     })
-    if (res?.token) localStorage.setItem('token', res.token)
+    if (res?.token) setToken(res.token)
     return res?.token as string
   }
 
@@ -96,9 +96,15 @@ export const useAuth = () => {
     } catch {
       // Ignore - local state is still cleared below.
     } finally {
+      clearToken()
+      // Stale keys from before the access token moved to in-memory storage
+      // and the refresh token moved to an httpOnly cookie - harmless to
+      // leave, but nothing should still be writing them, and a pre-
+      // migration value left in a browser's localStorage would otherwise
+      // silently authenticate requests forever (found + fixed on
+      // umu-website-integration's claim page, 2026-11-18 - applying the
+      // same defensive purge here).
       localStorage.removeItem('token')
-      // Stale key from before this change - harmless to leave, but
-      // nothing should still be writing it.
       localStorage.removeItem('refreshToken')
       clearSessionFlag()
     }

@@ -331,7 +331,7 @@ onMounted(async () => {
   }
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     if (token) {
       const prefs = await $fetch(
         `${config.public.apiBase}/profile/preferences`,
@@ -355,7 +355,7 @@ async function setRole(key) {
   currentRole.value = key // optimistic update
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     // A 502/503/504 here is the host, not the request: Railway answers 503
     // with no body while the backend restarts, redeploys or wakes from idle,
     // which is what surfaced as "503 Service Unavailable" on a role switch.
@@ -549,7 +549,7 @@ const deleteAccount = async () => {
   isDeletingAccount.value = true
   try {
     const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      typeof window !== 'undefined' ? getToken() : null
     if (token) {
       await $fetch(`${config.public.apiBase}/profile/me`, {
         method: 'DELETE',
@@ -560,7 +560,7 @@ const deleteAccount = async () => {
     // Proceed with local cleanup regardless
   } finally {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token')
+      clearToken()
       // Clear the routing-hint cookie too, or middleware/guest.ts keeps
       // bouncing this browser to /dashboard after sign-out.
       clearSessionFlag()

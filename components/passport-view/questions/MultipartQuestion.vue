@@ -896,6 +896,8 @@ const getVisibleParts = () => {
   font-weight: 500;
   color: #1a1a1a;
   flex: 1;
+  /* A long label wraps instead of pushing the number box off the card */
+  min-width: 0;
 }
 
 .number-input {

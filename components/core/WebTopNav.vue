@@ -88,7 +88,7 @@ const navIsActive = (basePath: string) =>
 const signedIn = ref(false)
 onMounted(() => {
   signedIn.value =
-    typeof localStorage !== 'undefined' && !!localStorage.getItem('token')
+    typeof localStorage !== 'undefined' && !!getToken()
 })
 
 const learnIsActive = computed(() =>

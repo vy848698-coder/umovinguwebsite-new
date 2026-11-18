@@ -367,7 +367,7 @@ const handleFileSelect = async (event) => {
   // the file, but on the endpoint that only returns a URL rather than
   // overwriting the parent's whole answer with this one part.
   const endpoint = props.question?.uploadOnly ? 'upload-part' : 'upload'
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? getToken() : null
 
   uploading.value = true
   uploadError.value = ''
@@ -660,6 +660,17 @@ onMounted(() => {
     width: 100%;
     flex-direction: row;
   }
+  /* Side by side the two buttons ran past the card on a small phone:
+     each now takes half the row and its words wrap inside it */
+  .ciw-upload-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.25;
+    text-align: center;
+  }
+  .ciw-upload-btn :deep(svg),
+  .ciw-upload-btn > :first-child { flex-shrink: 0; }
   .ciw-or {
     width: 100%;
     height: 20px;
@@ -673,6 +684,12 @@ onMounted(() => {
     width: auto;
     height: 1px;
   }
+}
+/* Small phones: side by side each label squeezed onto three lines, so the
+   two buttons stack, each full width on one line */
+@media (max-width: 420px) {
+  .ciw-col-upload { flex-direction: column; }
+  .ciw-upload-btn { flex: 0 0 auto; width: 100%; white-space: nowrap; }
 }
 
 .pending-badge {
@@ -740,6 +757,8 @@ onMounted(() => {
 
 .upload-btn {
   width: 100%;
+  min-width: 0;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
