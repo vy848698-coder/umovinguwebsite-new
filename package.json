@@ -40,12 +40,16 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.116",
-    "@nuxt/devtools": "^1.5.2",
+    "@nuxt/devtools": "^4.2.0",
     "@nuxt/typescript-build": "^3.0.2",
     "@tailwindcss/typography": "^0.5.15",
     "magicast": "^0.5.5",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.9.2",
     "vitest": "^3.2.7"
+  },
+  "overrides": {
+    "tinypool": "^2.2.0",
+    "minimatch": "^11.0.1"
   }
 }
