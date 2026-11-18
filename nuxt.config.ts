@@ -42,13 +42,20 @@ export default defineNuxtConfig({
   // domains are needed here either.
   //
   // script-src DROPPED 'unsafe-inline' (security review finding #7,
-  // 2026-11-15): nuxt-security's auto-nonce reaches the inline "wide-zoom"
-  // head script below (same mechanism confirmed in umu-website-integration,
-  // 13/14 Oct 2026), and CSP3 browsers ignore 'unsafe-inline' once a
-  // nonce-source is present anyway — it was inert for them already.
-  // Leaflet/js.stripe.com need neither a nonce nor strict-dynamic: they're
-  // matched by the explicit host-source entries below, a separate CSP
-  // matching path from nonces.
+  // 2026-11-15) on the understanding that nuxt-security's auto-nonce
+  // covers every inline <script> - true in principle, but the actual
+  // 'nonce-{{nonce}}' entry that makes the CSP header accept those
+  // nonce'd scripts was never added to the array below, so the browser
+  // had nothing to match the nonce against. That includes Nuxt's own
+  // SSR hydration payload script (window.__NUXT__ = {...}), which is
+  // inlined on every single response regardless of anything in this
+  // app's own code - with no 'unsafe-inline' and no nonce entry, the
+  // browser silently blocked it, Vue never hydrated, and no click
+  // handler anywhere in the app ever ran (found 2026-11-18 chasing a
+  // cookie-banner "Accept all does nothing" report, same root cause
+  // across all three UMU frontends). Leaflet/js.stripe.com need neither
+  // a nonce nor strict-dynamic: they're matched by the explicit
+  // host-source entries below, a separate CSP matching path from nonces.
   security: {
     headers: {
       contentSecurityPolicy: {
@@ -56,7 +63,7 @@ export default defineNuxtConfig({
         // unpkg DROPPED (security/launch review finding #12, 2026-11-14):
         // Leaflet is self-hosted via npm/Vite now — see SearchDrawer.vue /
         // property/[id].vue / property-full/[id].vue's loadLeaflet.
-        'script-src': ["'self'", 'https://js.stripe.com'],
+        'script-src': ["'self'", "'nonce-{{nonce}}'", 'https://js.stripe.com'],
         'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://api.mapbox.com'],
         'style-src-attr': ["'unsafe-inline'"],
         'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
