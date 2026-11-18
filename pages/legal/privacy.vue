@@ -171,13 +171,45 @@
                   where your account and property data actually live</span>
               </div>
               <div class="lg-row">
-                <strong>AWS (Amazon Web Services)</strong>
-                <span>A separate infrastructure environment we are setting up for a future migration;
-                  it does not currently hold any live customer data</span>
+                <strong>Microsoft Azure</strong>
+                <span>A UK (London) region infrastructure environment we are setting up for a future
+                  migration; it does not currently hold any live customer data</span>
               </div>
               <div class="lg-row">
                 <strong>Vercel</strong>
                 <span>Hosts the website itself</span>
+              </div>
+              <div class="lg-row">
+                <strong>Persona</strong>
+                <span>Verifies identity documents during KYC checks</span>
+              </div>
+              <div class="lg-row">
+                <strong>Stripe</strong>
+                <span>Processes payments</span>
+              </div>
+              <div class="lg-row">
+                <strong>Groq</strong>
+                <span>Powers the AI assistant and AI-generated summaries</span>
+              </div>
+              <div class="lg-row">
+                <strong>Sentry</strong>
+                <span>Receives application error reports for monitoring and debugging</span>
+              </div>
+              <div class="lg-row">
+                <strong>Resend</strong>
+                <span>Sends transactional emails (one-time codes, notifications)</span>
+              </div>
+              <div class="lg-row">
+                <strong>HM Land Registry</strong>
+                <span>Receives property/title lookups to verify ownership</span>
+              </div>
+              <div class="lg-row">
+                <strong>Mapbox</strong>
+                <span>Provides maps and address geocoding</span>
+              </div>
+              <div class="lg-row">
+                <strong>Ordnance Survey</strong>
+                <span>Provides UK address and property data</span>
               </div>
               <div class="lg-row">
                 <strong>Legal or regulatory authorities</strong>
@@ -194,8 +226,9 @@
               service. UK GDPR requires an appropriate safeguard (such as the UK's International Data
               Transfer Addendum or Standard Contractual Clauses) to be in place for this. We are in the
               process of confirming and documenting the specific safeguard used with Railway; this
-              section will be updated as that review completes. If we complete the planned migration to
-              AWS's UK (London) region, this section will be updated to reflect that change.
+              section will be updated as that review completes. We plan to migrate hosting to Microsoft
+              Azure's UK (London) region; once that migration completes, this section will be updated
+              to reflect that change.
             </p>
           </section>
 
