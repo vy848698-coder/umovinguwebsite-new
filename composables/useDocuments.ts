@@ -4,6 +4,18 @@ function getAuthHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+// Provenance/assurance status (client feedback, 2026-11-19) - mirrors
+// computeProvenanceStatus in umu-backend/src/common/provenance-status.ts.
+// Labels come straight from the backend response (provenanceStatusLabel);
+// this map is just the per-status chip colour for display.
+export const DOCUMENT_PROVENANCE_STYLE: Record<string, { className: string }> = {
+  added_by_homeowner: { className: 'prov-default' },
+  source_confirmed: { className: 'prov-confirmed' },
+  checked: { className: 'prov-checked' },
+  needs_checking: { className: 'prov-needs-checking' },
+  expired: { className: 'prov-expired' },
+}
+
 export interface DocumentItem {
   id: string
   title: string
@@ -16,6 +28,8 @@ export interface DocumentItem {
   expiresAt?: string | null
   uploadedAt: string
   source: 'passport' | 'user'
+  provenanceStatus?: string
+  provenanceStatusLabel?: string
 }
 
 export interface DocumentsResponse {
@@ -97,6 +111,42 @@ export function useDocuments() {
     }
   }
 
+  // Owner self-check ("I've reviewed this and it's correct and up to
+  // date" - client feedback, 2026-11-19), on either a vault document
+  // ('user') or a passport-answer file ('answer' - passportDocuments
+  // above, source: 'passport'). Updates local state in place so the chip
+  // flips immediately without a full refetch.
+  async function setDocumentChecked(
+    id: string,
+    checked: boolean,
+    kind: 'answer' | 'user',
+  ): Promise<{ id: string; verifiedAt: string | null; provenanceStatus: string; provenanceStatusLabel: string }> {
+    const result = await $fetch<{ id: string; verifiedAt: string | null; provenanceStatus: string; provenanceStatusLabel: string }>(
+      `${BASE_URL}/documents/${kind}/${id}/checked`,
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: { checked },
+      },
+    )
+
+    if (documents.value) {
+      const list = kind === 'answer' ? documents.value.passportDocuments : documents.value.userDocuments
+      const doc = list.find((d) => d.id === id)
+      if (doc) {
+        doc.provenanceStatus = result.provenanceStatus
+        doc.provenanceStatusLabel = result.provenanceStatusLabel
+      }
+      const recent = documents.value.recentUploads.find((d) => d.id === id)
+      if (recent) {
+        recent.provenanceStatus = result.provenanceStatus
+        recent.provenanceStatusLabel = result.provenanceStatusLabel
+      }
+    }
+
+    return result
+  }
+
   return {
     documents,
     loading,
@@ -104,5 +154,6 @@ export function useDocuments() {
     fetchDocuments,
     uploadDocument,
     deleteDocument,
+    setDocumentChecked,
   }
 }

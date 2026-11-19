@@ -139,6 +139,18 @@
               <div class="dc-doc-meta">
                 {{ docMeta(doc) }}
               </div>
+              <div v-if="doc.provenanceStatus" class="dc-doc-prov">
+                <span class="dc-prov-chip" :class="provenanceClass(doc)">{{ doc.provenanceStatusLabel }}</span>
+                <label class="dc-prov-check" @click.stop>
+                  <input
+                    type="checkbox"
+                    :checked="doc.provenanceStatus === 'checked'"
+                    :disabled="checkingDocId === doc.id"
+                    @change="toggleChecked(doc, $event.target.checked)"
+                  />
+                  I've reviewed this
+                </label>
+              </div>
             </div>
             <div class="dc-doc-action">›</div>
           </div>
@@ -299,9 +311,27 @@ import SiteFooter from '~/components/homescore/SiteFooter.vue'
 
 definePageMeta({ title: 'Your Documents - UmovingU', middleware: 'auth' })
 
-const { documents, loading, fetchDocuments, uploadDocument, deleteDocument } = useDocuments()
+const { documents, loading, fetchDocuments, uploadDocument, deleteDocument, setDocumentChecked } = useDocuments()
 
 onMounted(fetchDocuments)
+
+// ── Provenance self-check (client feedback, 2026-11-19) ─────────────────────
+const checkingDocId = ref('')
+function provenanceClass(doc) {
+  return DOCUMENT_PROVENANCE_STYLE[doc.provenanceStatus]?.className ?? 'prov-default'
+}
+async function toggleChecked(doc, checked) {
+  const kind = doc.source === 'passport' ? 'answer' : 'user'
+  checkingDocId.value = doc.id
+  try {
+    await setDocumentChecked(doc.id, checked, kind)
+  } catch {
+    // doc.provenanceStatus only changes once the request succeeds, so the
+    // checkbox (bound straight to it) naturally reverts on failure.
+  } finally {
+    checkingDocId.value = ''
+  }
+}
 
 // ── Computed lists ──────────────────────────────────────────────────────────
 
@@ -943,6 +973,39 @@ const goBack = useGoBack('/profile')
   font-weight: 600;
   color: #7388a1;
   margin-top: 2px;
+}
+.dc-doc-prov {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.dc-prov-chip {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.dc-prov-chip.prov-default { background: #eef1f6; color: #5b6b80; }
+.dc-prov-chip.prov-confirmed { background: #e3f0ff; color: #1c63b7; }
+.dc-prov-chip.prov-checked { background: #dcf7ef; color: #0f7a66; }
+.dc-prov-chip.prov-needs-checking { background: #fff2dc; color: #a2690c; }
+.dc-prov-chip.prov-expired { background: #ffe6e1; color: #b5402a; }
+.dc-prov-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #7388a1;
+  cursor: pointer;
+}
+.dc-prov-check input {
+  accent-color: #0f9b8e;
+  cursor: pointer;
 }
 .dc-doc-action {
   color: #8fa2bc;
