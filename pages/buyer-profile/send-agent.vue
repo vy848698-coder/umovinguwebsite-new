@@ -93,15 +93,15 @@
             </div>
             <div class="scope-row">
               <span class="scope-check"><Icon name="heroicons:check-16-solid" class="scope-check-ic" /></span>
-              Budget · Proof of deposit · AML clear
+              Chain free · Solicitor instructed
             </div>
             <div class="scope-row">
               <span class="scope-check"><Icon name="heroicons:check-16-solid" class="scope-check-ic" /></span>
-              Chain free · Solicitor instructed
+              Your intro message
             </div>
             <div class="scope-hidden">
               <Icon name="heroicons:lock-closed" class="scope-hidden-ic" />
-              Not shared: account numbers, full DOB, credit score, personal address
+              Not shared: proof of deposit, affordability, account numbers, full DOB, credit score, personal address
             </div>
           </div>
 
@@ -183,7 +183,13 @@ async function onSend() {
       recipientName,
       recipientEmail: email,
       expiresInDays: 30,
-      scope: ['identity', 'deposit', 'sof', 'afford', 'story'],
+      // Financial categories are opt-in, not auto-sent here either —
+      // matches ShareProfileDrawer's default. Chain/timeline/solicitor
+      // status are sent regardless of scope (see buyer-profile.service.ts
+      // getSharedBuyerProfile — "always include... these are
+      // non-financial"), which is why the "THEY WILL SEE" copy above
+      // still lists them even with no 'deposit'/'sof'/'afford' here.
+      scope: ['identity', 'story'],
     })
     // Stamp a synthetic id so the confirmation panel switches in.
     sentId.value = `${Date.now()}`
