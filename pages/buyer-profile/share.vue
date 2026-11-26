@@ -42,10 +42,6 @@
           <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
           ID Verified (Onfido / DVS)
         </div>
-        <div v-if="passport?.fundsAmount" class="scope-row">
-          <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
-          Budget — up to {{ fundsShort }}
-        </div>
         <div class="scope-row">
           <div class="scope-check"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
           {{ chainShort }}{{ passport?.solicitorStatus === 'yes' ? ' · solicitor instructed' : '' }}
@@ -56,7 +52,7 @@
         </div>
         <div class="scope-hidden">
           <Icon name="heroicons:lock-closed" class="scope-hidden-ic" />
-          Not shared: personal address, full name, date of birth, account numbers
+          Not shared: proof of deposit, affordability, personal address, full name, date of birth, account numbers
         </div>
       </div>
 
@@ -139,7 +135,7 @@
         <div class="sh-link-url">
           {{ canonicalShareLink }}
         </div>
-        <button class="sh-link-copy" @click="copyLink">Copy link</button>
+        <button class="sh-link-copy" :disabled="linkShareLoading" @click="copyLink">Copy link</button>
       </div>
 
       <!-- QR code -->
@@ -207,7 +203,7 @@ import BuyerProfileNav from '~/components/buyer-profile/BuyerProfileNav.vue'
 definePageMeta({ title: 'Share Passport — UmovingU', middleware: 'auth' })
 
 const router = useRouter()
-const { getBuyerProfile, listShares, revokeShare } = useBuyerProfile()
+const { getBuyerProfile, listShares, revokeShare, createShare } = useBuyerProfile()
 const { fetchProfile, profile } = useProfile()
 const { showToast } = useAppToast()
 
@@ -287,11 +283,63 @@ const chainShort = computed(() => {
   return 'Add chain'
 })
 
+// The public share page (pages/shared-buyer/[token].vue) looks up a
+// BuyerProfileShare row by its `token` — it has no concept of
+// BuyerProfile.publicRef at all. This tab's link/QR previously built a
+// URL from publicRef under a fake "umu.co" domain and the wrong
+// "/profile/" path, which 404'd for every visitor: neither the domain,
+// the path, nor the identifier matched anything real (same bug already
+// fixed in umu-mobile-webapp — ported here). A generic (no named
+// recipient) BuyerProfileShare is created lazily — reusing one if this
+// tab already minted an unexpired one — and its real token backs both
+// the QR code and "Copy link".
+//
+// createShare({}) deliberately omits scope so it picks up the backend's
+// safe default (identity + story only, never deposit/sof/afford) rather
+// than this generic, not-tied-to-a-recipient link exposing financial
+// detail to anyone who scans/forwards it — same restrictive-by-default
+// principle as ShareProfileDrawer and the Send to Agent flow.
+const linkShareToken = ref<string | null>(null)
+const linkShareLoading = ref(false)
+
+const shareOrigin = computed(() =>
+  typeof window !== 'undefined' && window.location?.origin
+    ? window.location.origin
+    : '',
+)
 const canonicalShareLink = computed(() => {
-  const ref = (passport.value as any)?.publicRef
-  if (!ref) return 'umu.co/profile/—'
-  return `umu.co/profile/${ref}`
+  if (!linkShareToken.value) return 'Generating link…'
+  return `${shareOrigin.value}/shared-buyer/${linkShareToken.value}`
 })
+
+async function ensureLinkShare(): Promise<string | null> {
+  if (linkShareToken.value) return linkShareToken.value
+  linkShareLoading.value = true
+  try {
+    // Reuse an existing generic link (no recipient) if one's still valid,
+    // rather than minting a fresh BuyerProfileShare every time this tab
+    // is opened.
+    const existing = shares.value.find(
+      (s) => !s.recipientName && !s.recipientEmail && !s.revokedAt && !isExpired(s),
+    )
+    if (existing) {
+      linkShareToken.value = existing.token
+      return existing.token
+    }
+    const created = await createShare({})
+    linkShareToken.value = created.token
+    await refreshShares()
+    return created.token
+  } catch (e: any) {
+    showToast({
+      message: e?.data?.message || 'Could not generate a share link.',
+      iconEmoji: '⚠️',
+    })
+    return null
+  } finally {
+    linkShareLoading.value = false
+  }
+}
 
 function initialsFor(name: string | null | undefined): string {
   if (!name) return '??'
@@ -334,7 +382,9 @@ async function onRevoke(id: string) {
 }
 
 async function copyLink() {
-  const text = canonicalShareLink.value
+  const token = await ensureLinkShare()
+  if (!token) return
+  const text = `${shareOrigin.value}/shared-buyer/${token}`
   try {
     await navigator.clipboard.writeText(text)
     showToast({ message: 'Link copied', iconEmoji: '🔗' })
@@ -360,17 +410,9 @@ async function buildQrDataUrl(text: string): Promise<string> {
 
 async function drawQr() {
   if (!qrCanvasEl.value) return
-  // Use a fully-qualified URL so a scan opens the real site, not "umu.co/..."
-  // as a search query. Falls back to the canonical short form if window
-  // isn't available (SSR).
-  const origin =
-    typeof window !== 'undefined' && window.location?.origin
-      ? window.location.origin
-      : 'https://umu.co'
-  const publicRef = (passport.value as any)?.publicRef
-  const target = publicRef
-    ? `${origin}/profile/${publicRef}`
-    : canonicalShareLink.value
+  const token = await ensureLinkShare()
+  if (!token) return
+  const target = `${shareOrigin.value}/shared-buyer/${token}`
   try {
     qrDataUrl.value = await buildQrDataUrl(target)
     qrCanvasEl.value.innerHTML = `<img src="${qrDataUrl.value}" alt="Share QR code" width="220" height="220" />`
@@ -380,35 +422,23 @@ async function drawQr() {
   }
 }
 
-// Re-draw whenever the user lands on the Link & QR tab, or when the
-// public ref arrives async from the profile load.
+// Draw whenever the user lands on the Link & QR tab. drawQr() calls
+// ensureLinkShare() itself, which reuses shares.value once loaded (or
+// creates one) — no separate watcher needed for data arriving late.
 watch(activeTab, async (t) => {
   if (t === 'link') {
     await nextTick()
     drawQr()
   }
 })
-watch(
-  () => (passport.value as any)?.publicRef,
-  async (ref) => {
-    if (ref && activeTab.value === 'link') {
-      await nextTick()
-      drawQr()
-    }
-  },
-)
 
 // Save the QR to the camera roll / downloads folder.
 async function downloadQr() {
   if (!qrDataUrl.value) {
     try {
-      const target =
-        typeof window !== 'undefined' && window.location?.origin
-          ? `${window.location.origin}/profile/${
-              (passport.value as any)?.publicRef ?? ''
-            }`
-          : canonicalShareLink.value
-      qrDataUrl.value = await buildQrDataUrl(target)
+      const token = await ensureLinkShare()
+      if (!token) return
+      qrDataUrl.value = await buildQrDataUrl(`${shareOrigin.value}/shared-buyer/${token}`)
     } catch {
       showToast({ message: 'Could not generate QR', iconEmoji: '⚠️' })
       return
@@ -416,9 +446,7 @@ async function downloadQr() {
   }
   const a = document.createElement('a')
   a.href = qrDataUrl.value
-  a.download = `umu-buyer-profile-qr-${
-    (passport.value as any)?.publicRef ?? 'share'
-  }.png`
+  a.download = `umu-buyer-passport-qr-${linkShareToken.value ?? 'share'}.png`
   a.click()
   showToast({ message: 'QR saved', iconEmoji: '📥' })
 }
