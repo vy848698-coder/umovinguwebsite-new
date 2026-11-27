@@ -166,18 +166,9 @@
                 <span>Receives property address and record data</span>
               </div>
               <div class="lg-row">
-                <strong>Railway</strong>
-                <span>Hosts our live application servers, database and file storage today — this is
-                  where your account and property data actually live</span>
-              </div>
-              <div class="lg-row">
-                <strong>Microsoft Azure</strong>
-                <span>A UK (London) region infrastructure environment we are setting up for a future
-                  migration; it does not currently hold any live customer data</span>
-              </div>
-              <div class="lg-row">
-                <strong>Vercel</strong>
-                <span>Hosts the website itself</span>
+                <strong>Microsoft Azure (UK South, London)</strong>
+                <span>Hosts our website, application servers, database and file storage. Your account
+                  and property data are stored in the UK.</span>
               </div>
               <div class="lg-row">
                 <strong>Persona</strong>
@@ -221,14 +212,11 @@
           <section id="international-transfers" class="lg-sec">
             <h2><span class="lg-num">06</span>International transfers</h2>
             <p>
-              Railway, which hosts your account and property data today, runs in the United States.
-              This means personal data is processed outside the UK/EEA as part of providing the
-              service. UK GDPR requires an appropriate safeguard (such as the UK's International Data
-              Transfer Addendum or Standard Contractual Clauses) to be in place for this. We are in the
-              process of confirming and documenting the specific safeguard used with Railway; this
-              section will be updated as that review completes. We plan to migrate hosting to Microsoft
-              Azure's UK (London) region; once that migration completes, this section will be updated
-              to reflect that change.
+              Your account and property data are stored in the UK, in Microsoft Azure's London region.
+              Some of the services listed above (for example Persona, Stripe, Groq, Sentry, Resend and
+              Mapbox) may process limited personal data outside the UK. Where they do, we rely on
+              appropriate safeguards required by UK GDPR, such as the UK International Data Transfer
+              Addendum or Standard Contractual Clauses.
             </p>
           </section>
 
